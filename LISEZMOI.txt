@@ -1,0 +1,30 @@
+APPLICATION UGTM SOUSS-MASSA – MODE D'EMPLOI RAPIDE
+
+Contenu du dossier
+- index.html            l'application (ne pas modifier)
+- data.js               VOS liens, communiqués et événements (le seul fichier à modifier)
+- manifest.webmanifest  permet l'installation sur l'écran d'accueil
+- sw.js                 permet l'ouverture sans connexion
+- cloud.js              connexion Google et données partagées (actif après configuration)
+- firestore.rules       règles de sécurité à coller dans Firebase
+- SETUP-FIREBASE.txt    guide pour activer les comptes, l'espace membre et l'administration
+- icons/                les icônes de l'application
+
+Mise en ligne (Netlify Drop, gratuit)
+1. Décompressez le fichier zip. Vous obtenez un dossier contenant index.html.
+2. Ouvrez https://app.netlify.com/drop dans un navigateur, sur ordinateur.
+3. Glissez le dossier dans la zone indiquée. Le lien du site s'affiche.
+4. Créez un compte gratuit pour garder le site en ligne : sans compte, un site
+   déposé est supprimé au bout d'environ une heure.
+
+Mettre à jour un communiqué
+Avant l'activation des comptes :
+1. Modifiez data.js avec le Bloc-notes.
+2. Sur Netlify, ouvrez votre site, puis l'onglet des déploiements (Deploys),
+   et glissez de nouveau le dossier complet.
+Après l'activation des comptes : publiez directement depuis l'application
+(icône compte > Espace administrateur), sans redéposer de fichiers.
+
+Installation par les adhérents
+- Android : ouvrir le lien dans Chrome, menu ⋮, « Installer l'application ».
+- iPhone : ouvrir le lien dans Safari, Partager, « Sur l'écran d'accueil ».

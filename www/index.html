@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#14395B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="UGTM SM">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Installer UGTM Souss-Massa</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: linear-gradient(135deg, #14395B 0%, #1a4a7a 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white; border-radius: 20px; padding: 40px 30px;
+      text-align: center; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .logo {
+      width: 80px; height: 80px; background: #14395B; border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin: 0 auto 30px; font-weight: bold; color: #F4B860;
+    }
+    h1 {
+      color: #14395B; font-size: 24px; margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #999; font-size: 14px; margin-bottom: 30px;
+    }
+    .features {
+      text-align: left; margin: 30px 0; padding: 20px;
+      background: #f5f5f5; border-radius: 15px;
+    }
+    .feature {
+      display: flex; align-items: center; margin: 12px 0; font-size: 14px; color: #333;
+    }
+    .feature-icon {
+      width: 24px; height: 24px; background: #F4B860; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-right: 10px; color: white; font-weight: bold; flex-shrink: 0;
+    }
+    .install-btn {
+      background: linear-gradient(135deg, #14395B, #1a4a7a);
+      color: white; border: none; padding: 16px 40px;
+      font-size: 16px; font-weight: 600; border-radius: 12px;
+      cursor: pointer; width: 100%; margin-bottom: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .install-btn:active { transform: scale(0.98); }
+    .install-btn:hover { box-shadow: 0 5px 20px rgba(20, 57, 91, 0.3); }
+    .open-btn {
+      background: #F4B860; color: #14395B; border: none; padding: 16px 40px;
+      font-size: 16px; font-weight: 600; border-radius: 12px;
+      cursor: pointer; width: 100%; 
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .open-btn:active { transform: scale(0.98); }
+    .open-btn:hover { box-shadow: 0 5px 20px rgba(244, 184, 96, 0.3); }
+    .hidden { display: none; }
+    .info {
+      font-size: 12px; color: #999; margin-top: 20px; line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">U</div>
+    <h1>UGTM Souss-Massa</h1>
+    <p class="subtitle">Fédération régionale</p>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">✓</div>
+        <div>Communiqués et agenda</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✓</div>
+        <div>Signaler les dysfonctionnements</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✓</div>
+        <div>Espace adhérent personnel</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">✓</div>
+        <div>Fonctionne hors ligne</div>
+      </div>
+    </div>
+
+    <button id="installBtn" class="install-btn">📱 Installer l'application</button>
+    <button id="openBtn" class="open-btn hidden">Ouvrir l'application</button>
+
+    <p class="info">
+      💡 Une fois installée, l'app apparaît sur votre écran d'accueil comme une application classique.
+    </p>
+  </div>
+
+  <script>
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    const openBtn = document.getElementById('openBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.classList.remove('hidden');
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+          installBtn.classList.add('hidden');
+          openBtn.classList.remove('hidden');
+        }
+      } else {
+        // Pas de prompt natif, ouvrir directement l'app
+        window.location.href = '/app.html';
+      }
+    });
+
+    openBtn.addEventListener('click', () => {
+      window.location.href = '/app.html';
+    });
+
+    // Si l'app est déjà installée
+    window.addEventListener('appinstalled', () => {
+      installBtn.classList.add('hidden');
+      openBtn.classList.remove('hidden');
+    });
+
+    // Vérifier si on est dans l'app (mode standalone)
+    if (window.navigator.standalone === true) {
+      window.location.href = '/app.html';
+    }
+  </script>
+</body>
+</html>
