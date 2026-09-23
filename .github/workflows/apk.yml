@@ -15,7 +15,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trouver et extraire le projet
+      - name: Trouver et extraire le ZIP
         run: |
           ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
 
@@ -46,7 +46,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Installer Capacitor
         working-directory: ${{ env.TARGET_DIR }}
@@ -54,7 +54,7 @@ jobs:
           npm install
           npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
-      - name: Vérifier la configuration Capacitor
+      - name: Vérifier capacitor.config.json
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           if [ -f capacitor.config.json ]; then
@@ -76,56 +76,22 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Ajouter google-services.json
+      - name: Installer google-services.json depuis GitHub Secret
         working-directory: ${{ env.TARGET_DIR }}
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
-          mkdir -p android/app
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "ERREUR : le secret GOOGLE_SERVICES_JSON est absent."
+            exit 1
+          fi
 
-          cat > android/app/google-services.json <<'EOF'
-          {
-            "project_info": {
-              "project_number": "313270677240",
-              "project_id": "ugtm-fns-souss-massa",
-              "storage_bucket": "ugtm-fns-souss-massa.firebasestorage.app"
-            },
-            "client": [
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:313270677240:android:1946a591ebb17c33dd150d",
-                  "android_client_info": {
-                    "package_name": "ma.ugtm.souss.massa"
-                  }
-                },
-                "oauth_client": [
-                  {
-                    "client_id": "313270677240-qj5nkj8cgm22cl9kkh0fnckeerfdh7sj.apps.googleusercontent.com",
-                    "client_type": 3
-                  }
-                ],
-                "api_key": [
-                  {
-                    "current_key": "AIzaSyChPWsxsg9rAEFbv3Rr9v4eyjUEmPf8Nos"
-                  }
-                ],
-                "services": {
-                  "appinvite_service": {
-                    "other_platform_oauth_client": [
-                      {
-                        "client_id": "313270677240-qj5nkj8cgm22cl9kkh0fnckeerfdh7sj.apps.googleusercontent.com",
-                        "client_type": 3
-                      }
-                    ]
-                  }
-                }
-              }
-            ],
-            "configuration_version": "1"
-          }
-          EOF
+          mkdir -p android/app
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
 
           echo "google-services.json installé."
 
-      - name: Configurer Google Services
+      - name: Configurer Google Services Gradle
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           python3 - <<'PY'
@@ -166,10 +132,6 @@ jobs:
 
           KEYSTORE="$HOME/.config/.android/debug.keystore"
 
-          echo "=========================================="
-          echo "CREATION DU DEBUG KEYSTORE"
-          echo "=========================================="
-
           mkdir -p "$HOME/.config/.android"
 
           if [ ! -f "$KEYSTORE" ]; then
@@ -194,7 +156,7 @@ jobs:
             -v \
             -keystore "$KEYSTORE" \
             -storepass android \
-            -alias AndroidDebugKey | grep -E "SHA1:|SHA-1:"
+            -alias AndroidDebugKey | grep -E "SHA1:|SHA-1:" || true
 
           echo ""
           echo "=========================================="
@@ -205,14 +167,7 @@ jobs:
             -v \
             -keystore "$KEYSTORE" \
             -storepass android \
-            -alias AndroidDebugKey | grep -E "SHA256:|SHA-256:"
-
-          echo ""
-          echo "=========================================="
-          echo "SIGNING REPORT"
-          echo "=========================================="
-
-          ./gradlew signingReport --console=plain || true
+            -alias AndroidDebugKey | grep -E "SHA256:|SHA-256:" || true
 
       - name: Compiler APK
         working-directory: ${{ env.TARGET_DIR }}/android
@@ -231,13 +186,3 @@ jobs:
           name: UGTM-Android-APK
           path: ${{ env.TARGET_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-
-⚠️ Petite correction importante : dans le "google-services.json" ci-dessus, vérifie bien que la clé API est exactement celle de ton fichier original :
-
-"AIzaSyChPWsxsg9rAEFbv3Rr9V4eyjUEmPf8Nos"
-
-Puis lance le workflow.
-
-Dans le log, tu dois maintenant avoir SHA-1 DU CERTIFICAT ANDROID suivi d'une valeur.
-
-👉 Copie-moi cette valeur et on passe à Firebase.
