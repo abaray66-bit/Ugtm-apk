@@ -104,7 +104,7 @@ jobs:
                 ],
                 "api_key": [
                   {
-                    "current_key": "AIzaSyChPWsxsg9rAEFbv3R9v4eyjUEmPf8Nos"
+                    "current_key": "AIzaSyChPWsxsg9rAEFbv3Rr9v4eyjUEmPf8Nos"
                   }
                 ],
                 "services": {
@@ -159,25 +159,60 @@ jobs:
         run: |
           npx cap sync android
 
-      - name: Afficher SHA-1 et SHA-256
+      - name: Créer le debug keystore et afficher SHA
         working-directory: ${{ env.TARGET_DIR }}/android
         run: |
           chmod +x gradlew
 
+          KEYSTORE="$HOME/.config/.android/debug.keystore"
+
           echo "=========================================="
-          echo "       EMPREINTES ANDROID"
+          echo "CREATION DU DEBUG KEYSTORE"
           echo "=========================================="
 
-          ./gradlew signingReport --console=plain 2>&1 | tee signing-report.txt
+          mkdir -p "$HOME/.config/.android"
+
+          if [ ! -f "$KEYSTORE" ]; then
+            keytool -genkeypair \
+              -v \
+              -keystore "$KEYSTORE" \
+              -storepass android \
+              -alias AndroidDebugKey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
 
           echo ""
           echo "=========================================="
-          echo "       SHA-1 / SHA-256"
+          echo "SHA-1 DU CERTIFICAT ANDROID"
           echo "=========================================="
 
-          grep -E "SHA1:|SHA-1:|SHA256:|SHA-256:" signing-report.txt || true
+          keytool -list \
+            -v \
+            -keystore "$KEYSTORE" \
+            -storepass android \
+            -alias AndroidDebugKey | grep -E "SHA1:|SHA-1:"
 
+          echo ""
           echo "=========================================="
+          echo "SHA-256 DU CERTIFICAT ANDROID"
+          echo "=========================================="
+
+          keytool -list \
+            -v \
+            -keystore "$KEYSTORE" \
+            -storepass android \
+            -alias AndroidDebugKey | grep -E "SHA256:|SHA-256:"
+
+          echo ""
+          echo "=========================================="
+          echo "SIGNING REPORT"
+          echo "=========================================="
+
+          ./gradlew signingReport --console=plain || true
 
       - name: Compiler APK
         working-directory: ${{ env.TARGET_DIR }}/android
@@ -196,3 +231,13 @@ jobs:
           name: UGTM-Android-APK
           path: ${{ env.TARGET_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+⚠️ Petite correction importante : dans le "google-services.json" ci-dessus, vérifie bien que la clé API est exactement celle de ton fichier original :
+
+"AIzaSyChPWsxsg9rAEFbv3Rr9V4eyjUEmPf8Nos"
+
+Puis lance le workflow.
+
+Dans le log, tu dois maintenant avoir SHA-1 DU CERTIFICAT ANDROID suivi d'une valeur.
+
+👉 Copie-moi cette valeur et on passe à Firebase.
