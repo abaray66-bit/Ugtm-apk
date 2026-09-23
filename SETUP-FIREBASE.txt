@@ -1,0 +1,81 @@
+CONFIGURER LES COMPTES (CONNEXION GOOGLE + ESPACE MEMBRE + ADMINISTRATION)
+==========================================================================
+Durée : environ 20 minutes, sur ordinateur. Gratuit (formule Spark de Firebase).
+Tant que cette configuration n'est pas faite, l'application fonctionne comme avant.
+
+Vous avez besoin d'un compte Google (celui de l'administrateur).
+
+1. CRÉER LE PROJET
+   - Allez sur https://console.firebase.google.com et connectez-vous.
+   - « Créer un projet » : nom, par exemple ugtm-souss-massa. Google Analytics : vous pouvez désactiver.
+
+2. ENREGISTRER L'APPLICATION WEB
+   - Page d'accueil du projet : cliquez sur l'icône « </> » (Web).
+   - Donnez un nom, cliquez « Enregistrer l'application » (sans cocher l'hébergement Firebase).
+   - Un bloc « firebaseConfig » s'affiche (apiKey, authDomain, projectId, appId...). Gardez-le ouvert.
+
+3. ACTIVER LA CONNEXION GOOGLE
+   - Menu « Build » > « Authentication » > « Commencer ».
+   - Onglet « Sign-in method » > « Google » > Activer.
+   - Choisissez l'e-mail d'assistance (le vôtre) > Enregistrer.
+   - Onglet « Settings » > « Authorized domains » > « Add domain » :
+     collez votre adresse Netlify sans https://  (exemple : ugtm-soussmassa.netlify.app)
+
+4. CRÉER LA BASE DE DONNÉES
+   - Menu « Build » > « Firestore Database » > « Créer une base de données ».
+   - Emplacement : choisissez un emplacement en Europe (eur3 ou europe-west). Il ne peut pas être changé ensuite.
+   - Mode : « Production ».
+
+5. PUBLIER LES RÈGLES DE SÉCURITÉ (étape essentielle)
+   - Firestore Database > onglet « Règles ».
+   - Ouvrez le fichier firestore.rules de ce dossier, copiez tout son contenu et remplacez le contenu affiché.
+   - Dans ce texte, remplacez VOTRE.ADRESSE@gmail.com par l'adresse Google de l'administrateur
+     (gardez les guillemets simples). Plusieurs administrateurs : ['a@gmail.com', 'b@gmail.com'].
+   - Cliquez « Publier ».
+
+6. RELIER L'APPLICATION
+   - Ouvrez data.js avec le Bloc-notes.
+   - Remplacez  firebase: null,  par le bloc fourni à l'étape 2, sous cette forme :
+       firebase: {
+         apiKey: "...",
+         authDomain: "votre-projet.firebaseapp.com",
+         projectId: "votre-projet",
+         appId: "..."
+       },
+   - Remplacez  adminEmails: [],  par  adminEmails: ["votre.adresse@gmail.com"],
+     (la même adresse qu'à l'étape 5).
+   - Enregistrez, puis redéposez le dossier complet sur Netlify (onglet Deploys).
+
+7. TESTER
+   - Ouvrez l'application, touchez l'icône de compte en haut, « Se connecter avec Google ».
+   - Vous devez voir « Espace administrateur ». Dans Membres, validez votre propre profil.
+   - Publiez un communiqué de test (Communiqués). Il apparaît chez tous les utilisateurs.
+   - Avec un second compte Google (ou un collègue), vérifiez que le compte reste « En attente »
+     jusqu'à ce que vous le validiez, et qu'il ne voit pas les communiqués réservés aux adhérents.
+
+QUI PEUT FAIRE QUOI
+   - N'importe qui (sans compte) : lit les communiqués publics et l'agenda.
+   - Membre connecté, en attente ou suspendu : idem, plus son propre profil (modifiable).
+   - Adhérent validé : voit aussi les communiqués « réservés aux adhérents » et sa carte numérique.
+   - Administrateur (les adresses listées) : valide ou suspend les membres, exporte la liste,
+     publie et supprime les communiqués et événements.
+   Ces droits sont appliqués par Firebase (fichier firestore.rules), pas seulement par l'application.
+
+SÉCURITÉ
+   - Il n'y a volontairement pas de « code d'accès » administrateur écrit dans l'application : un code
+     placé dans le fichier pourrait être lu par n'importe qui. L'administrateur est reconnu par son
+     compte Google. Activez la validation en deux étapes sur ce compte (myaccount.google.com > Sécurité).
+   - Ne partagez jamais votre compte Google d'administrateur.
+
+DONNÉES PERSONNELLES (à traiter avant le lancement)
+   - L'appartenance syndicale est une donnée sensible. Renseignez-vous auprès de la CNDP (loi 09-08) sur
+     la déclaration ou l'autorisation nécessaire, notamment parce que la base est hébergée hors du Maroc.
+   - La page « Mon espace » permet à chaque membre de supprimer ses données. Le compte Google lui-même
+     peut ensuite être retiré dans Firebase > Authentication si besoin.
+
+EN CAS DE BLOCAGE
+   - « auth/unauthorized-domain » : le domaine Netlify n'est pas ajouté à l'étape 3.
+   - « permission-denied » : les règles de l'étape 5 ne sont pas publiées, ou l'adresse administrateur
+     n'est pas la même dans firestore.rules et dans data.js.
+   - La fenêtre de connexion Google ne s'ouvre pas dans l'icône installée d'un iPhone : ouvrez le lien
+     dans Safari pour vous connecter.
