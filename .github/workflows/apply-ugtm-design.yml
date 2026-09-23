@@ -1,0 +1,252 @@
+name: Apply UGTM Interface Design
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  redesign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Redesign interface
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path("www/app.html")
+          text = path.read_text(encoding="utf-8")
+
+          # Couleur navigateur / Android
+          text = text.replace(
+              '<meta name="theme-color" content="#14395B">',
+              '<meta name="theme-color" content="#D81B60">'
+          )
+
+          # Nouvelle identité visuelle UGTM
+          css = r'''
+          /* ===== UGTM MODERN DESIGN ===== */
+
+          :root{
+            --bg:#FFF7FA;
+            --surface:#FFFFFF;
+            --ink:#373737;
+            --muted:#6B6870;
+            --line:#E9D8E0;
+
+            --primary:#D81B60;
+            --on-primary:#FFFFFF;
+            --link:#C2185B;
+
+            --accent:#B79B59;
+            --on-accent:#FFFFFF;
+
+            --alert:#B32645;
+            --soft:#F9E7EF;
+            --focus:#D81B60;
+
+            --ugtm-green:#C0D075;
+            --ugtm-gold:#B79B59;
+            --ugtm-pink:#D81B60;
+          }
+
+          :root[data-theme="dark"]{
+            --bg:#24131B;
+            --surface:#321B26;
+            --ink:#FFF2F7;
+            --muted:#D7BBC6;
+            --line:#553541;
+
+            --primary:#E83A78;
+            --on-primary:#FFFFFF;
+            --link:#FF9FBE;
+
+            --accent:#C9AE6B;
+            --on-accent:#241A0B;
+
+            --alert:#FF809D;
+            --soft:#432431;
+            --focus:#FF8FB0;
+          }
+
+          @media (prefers-color-scheme: dark){
+            :root:not([data-theme="light"]){
+              --bg:#24131B;
+              --surface:#321B26;
+              --ink:#FFF2F7;
+              --muted:#D7BBC6;
+              --line:#553541;
+
+              --primary:#E83A78;
+              --on-primary:#FFFFFF;
+              --link:#FF9FBE;
+
+              --accent:#C9AE6B;
+              --on-accent:#241A0B;
+
+              --alert:#FF809D;
+              --soft:#432431;
+              --focus:#FF8FB0;
+            }
+          }
+
+          .top{
+            padding:10px 16px;
+            box-shadow:0 2px 12px rgba(216,27,96,.08);
+          }
+
+          .mark{
+            width:46px;
+            height:46px;
+            border-radius:50%;
+            background:#fff;
+            border:2px solid var(--ugtm-gold);
+            overflow:hidden;
+            box-shadow:0 2px 7px rgba(55,55,55,.12);
+          }
+
+          .mark img{
+            width:100%;
+            height:100%;
+            object-fit:cover;
+            display:block;
+          }
+
+          .brand b{
+            color:var(--primary);
+            font-weight:800;
+          }
+
+          .hero{
+            background:linear-gradient(135deg,#D81B60 0%,#A90F4A 100%);
+            border-radius:22px;
+            border-inline-start:6px solid var(--accent);
+            box-shadow:0 10px 24px rgba(216,27,96,.18);
+          }
+
+          .hero h1{
+            letter-spacing:-.2px;
+          }
+
+          .btn.gold{
+            background:#fff;
+            color:#B91352;
+            box-shadow:0 4px 12px rgba(0,0,0,.10);
+          }
+
+          .btn.primary{
+            background:var(--primary);
+            box-shadow:0 4px 12px rgba(216,27,96,.14);
+          }
+
+          .fbtn[aria-pressed="true"]{
+            background:var(--primary);
+            border-color:var(--primary);
+            color:#fff;
+            box-shadow:0 3px 8px rgba(216,27,96,.18);
+          }
+
+          .ico{
+            color:var(--primary);
+            border:1px solid rgba(216,27,96,.10);
+          }
+
+          .tab[aria-selected="true"]{
+            color:var(--primary);
+            font-weight:700;
+          }
+
+          .tab .bubble{
+            background:var(--primary);
+            color:#fff;
+            box-shadow:
+              0 0 0 5px var(--surface),
+              0 5px 12px rgba(216,27,96,.20);
+          }
+
+          .mcard{
+            background:linear-gradient(135deg,#D81B60,#A90F4A);
+            box-shadow:0 10px 24px rgba(216,27,96,.18);
+          }
+
+          .statusline.active{
+            border-inline-start-color:var(--ugtm-green);
+          }
+
+          .tag.st-active{
+            color:#568000;
+            border-color:#8DAA3A;
+          }
+
+          /* Cartes de contenu */
+          .item,
+          .ev{
+            transition:background .15s ease;
+          }
+
+          .item:has(.head:active),
+          .ev:active{
+            background:var(--soft);
+          }
+
+          /* ===== FIN DESIGN UGTM ===== */
+          '''
+
+          marker = "</style>"
+          if "/* ===== UGTM MODERN DESIGN ===== */" not in text:
+              text = text.replace(marker, css + "\n" + marker, 1)
+
+          # Logo UGTM
+          old = '''<div class="mark" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E3A72F" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v9a6 6 0 0 0 12 0V5"/></svg>
+            </div>'''
+
+          new = '''<div class="mark" aria-hidden="true">
+              <img
+                src="https://cdn.brandfetch.io/idROksgqJs/w/670/h/680/theme/dark/icon.jpeg"
+                alt="UGTM"
+                onerror="this.style.display='none'">
+            </div>'''
+
+          if old in text:
+              text = text.replace(old, new, 1)
+          else:
+              print("Ancien logo déjà modifié ou structure différente.")
+
+          path.write_text(text, encoding="utf-8")
+
+          # Manifest
+          manifest = Path("www/manifest.webmanifest")
+
+          if manifest.exists():
+              m = manifest.read_text(encoding="utf-8")
+              m = m.replace('"background_color": "#F3F5F8"', '"background_color": "#FFF7FA"')
+              m = m.replace('"theme_color": "#14395B"', '"theme_color": "#D81B60"')
+              manifest.write_text(m, encoding="utf-8")
+
+          print("Interface UGTM mise à jour.")
+          PY
+
+      - name: Vérifier
+        run: |
+          grep -q "UGTM MODERN DESIGN" www/app.html
+          grep -q "#D81B60" www/app.html
+          grep -q "brandfetch.io" www/app.html
+
+          echo "Interface vérifiée."
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add www/app.html www/manifest.webmanifest
+
+          git commit -m "Redesign UGTM interface"
+
+          git push
