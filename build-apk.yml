@@ -1,0 +1,89 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trouver le projet (extrait le zip si présent)
+        run: |
+          ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+          if [ -n "$ZIP" ]; then
+            echo "Archive trouvée : $ZIP"
+            mkdir -p app
+            unzip -o "$ZIP" -d app
+            TARGET_DIR="app"
+          else
+            PKG_PATH=$(find . -name package.json -not -path "*/node_modules/*" | head -n 1)
+            if [ -z "$PKG_PATH" ]; then
+              TARGET_DIR="."
+              echo '{"name":"ugtm-app","version":"1.0.0","private":true}' > package.json
+            else
+              TARGET_DIR=$(dirname "$PKG_PATH")
+            fi
+          fi
+          echo "TARGET_DIR=$TARGET_DIR" >> "$GITHUB_ENV"
+          echo "Projet : $TARGET_DIR"
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Installer Capacitor
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          npm install
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+
+      - name: Vérifier la configuration Capacitor
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          if [ -f capacitor.config.json ]; then
+            echo "Configuration existante conservée :"
+            cat capacitor.config.json
+          else
+            printf '%s\n' \
+              '{' \
+              '  "appId": "ma.ugtm.souss.massa",' \
+              '  "appName": "UGTM Souss-Massa",' \
+              '  "webDir": "www"' \
+              '}' > capacitor.config.json
+            echo "Configuration créée par défaut :"
+            cat capacitor.config.json
+          fi
+
+      - name: Générer Android
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Compiler APK
+        working-directory: ${{ env.TARGET_DIR }}/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Récupérer APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: UGTM-Android-APK
+          path: ${{ env.TARGET_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
