@@ -48,7 +48,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Installer Capacitor et Firebase Android
+      - name: Installer Capacitor
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           npm install
@@ -70,7 +70,7 @@ jobs:
           EOF
           fi
 
-      - name: Générer le projet Android
+      - name: Générer Android
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           npx cap add android
@@ -125,7 +125,7 @@ jobs:
 
           echo "google-services.json installé."
 
-      - name: Configurer Google Services Gradle
+      - name: Configurer Google Services
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           python3 - <<'PY'
@@ -159,13 +159,27 @@ jobs:
         run: |
           npx cap sync android
 
-      - name: Afficher le SHA-1 Android
+      - name: Afficher SHA-1 et SHA-256
         working-directory: ${{ env.TARGET_DIR }}/android
         run: |
           chmod +x gradlew
-          ./gradlew signingReport
 
-      - name: Compiler APK Debug
+          echo "=========================================="
+          echo "       EMPREINTES ANDROID"
+          echo "=========================================="
+
+          ./gradlew signingReport --console=plain 2>&1 | tee signing-report.txt
+
+          echo ""
+          echo "=========================================="
+          echo "       SHA-1 / SHA-256"
+          echo "=========================================="
+
+          grep -E "SHA1:|SHA-1:|SHA256:|SHA-256:" signing-report.txt || true
+
+          echo "=========================================="
+
+      - name: Compiler APK
         working-directory: ${{ env.TARGET_DIR }}/android
         run: |
           chmod +x gradlew
