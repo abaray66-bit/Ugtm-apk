@@ -7,6 +7,9 @@ on:
       - master
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,32 +18,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trouver et extraire le ZIP
+      - name: Vérifier le projet
         run: |
-          ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+          set -e
 
-          if [ -n "$ZIP" ]; then
-            echo "Archive trouvée : $ZIP"
-            mkdir -p app
-            unzip -o "$ZIP" -d app
-            TARGET_DIR="app"
-          else
-            PKG_PATH=$(find . -name package.json -not -path "*/node_modules/*" | head -n 1)
+          echo "Contenu du projet :"
+          ls -la
 
-            if [ -z "$PKG_PATH" ]; then
-              TARGET_DIR="."
-            else
-              TARGET_DIR=$(dirname "$PKG_PATH")
-            fi
+          if [ ! -f package.json ]; then
+            echo "ERREUR : package.json introuvable."
+            exit 1
           fi
 
-          echo "TARGET_DIR=$TARGET_DIR" >> "$GITHUB_ENV"
-          echo "Projet : $TARGET_DIR"
+          if [ ! -d www ]; then
+            echo "ERREUR : dossier www introuvable."
+            exit 1
+          fi
+
+          if [ ! -f capacitor.config.json ]; then
+            echo "ERREUR : capacitor.config.json introuvable."
+            exit 1
+          fi
+
+          echo "Projet UGTM valide."
 
       - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Java 21
         uses: actions/setup-java@v4
@@ -48,51 +54,40 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Installer Capacitor
-        working-directory: ${{ env.TARGET_DIR }}
+      - name: Installer les dépendances
         run: |
           npm install
+
+      - name: Vérifier Capacitor
+        run: |
+          npx cap --version
+
+      - name: Installer Capacitor Android
+        run: |
           npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
-      - name: Vérifier capacitor.config.json
-        working-directory: ${{ env.TARGET_DIR }}
-        run: |
-          if [ -f capacitor.config.json ]; then
-            echo "Configuration existante :"
-            cat capacitor.config.json
-          else
-            cat > capacitor.config.json <<'EOF'
-          {
-            "appId": "ma.ugtm.souss.massa",
-            "appName": "UGTM Souss-Massa",
-            "webDir": "www"
-          }
-          EOF
-          fi
-
       - name: Générer Android
-        working-directory: ${{ env.TARGET_DIR }}
         run: |
           npx cap add android
-          npx cap sync android
 
       - name: Installer google-services.json
-        working-directory: ${{ env.TARGET_DIR }}
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
+          set -e
+
           if [ -z "$GOOGLE_SERVICES_JSON" ]; then
             echo "ERREUR : le secret GOOGLE_SERVICES_JSON est absent."
             exit 1
           fi
 
           mkdir -p android/app
+
           printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
 
           echo "google-services.json installé."
 
       - name: Configurer Google Services Gradle
-        working-directory: ${{ env.TARGET_DIR }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -120,15 +115,22 @@ jobs:
           app.write_text(text)
           PY
 
-      - name: Configurer le debug keystore officiel
-        working-directory: ${{ env.TARGET_DIR }}/android
+          echo "Google Services configuré."
+
+      - name: Synchroniser Capacitor
         run: |
+          npx cap sync android
+
+      - name: Configurer le debug keystore
+        working-directory: android
+        run: |
+          set -e
+
           chmod +x gradlew
 
           KEYSTORE="$HOME/.android/debug.keystore"
 
           mkdir -p "$HOME/.android"
-
           rm -f "$KEYSTORE"
 
           keytool -genkeypair \
@@ -144,7 +146,7 @@ jobs:
 
           echo ""
           echo "=========================================="
-          echo "SHA-1 DU DEBUG KEYSTORE UTILISE"
+          echo "SHA-1 DU DEBUG KEYSTORE"
           echo "=========================================="
 
           keytool -list \
@@ -155,7 +157,7 @@ jobs:
 
           echo ""
           echo "=========================================="
-          echo "SHA-256 DU DEBUG KEYSTORE UTILISE"
+          echo "SHA-256 DU DEBUG KEYSTORE"
           echo "=========================================="
 
           keytool -list \
@@ -164,8 +166,8 @@ jobs:
             -storepass android \
             -alias androiddebugkey | grep -E "SHA256:|SHA-256:" || true
 
-      - name: Forcer Gradle à utiliser le debug keystore
-        working-directory: ${{ env.TARGET_DIR }}/android
+      - name: Forcer la signature debug
+        working-directory: android
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -175,6 +177,7 @@ jobs:
 
           if "signingConfigs" not in text:
               marker = "android {"
+
               signing = """
               signingConfigs {
                   debug {
@@ -192,6 +195,7 @@ jobs:
 
           if "signingConfig signingConfigs.debug" not in text:
               marker = "buildTypes {"
+
               replacement = """buildTypes {
                   debug {
                       signingConfig signingConfigs.debug
@@ -207,21 +211,18 @@ jobs:
           echo "Configuration de signature :"
           grep -n -A15 -B3 "signingConfigs" app/build.gradle || true
 
-      - name: Synchroniser Capacitor
-        working-directory: ${{ env.TARGET_DIR }}
-        run: |
-          npx cap sync android
-
       - name: Compiler APK
-        working-directory: ${{ env.TARGET_DIR }}/android
+        working-directory: android
         run: |
           chmod +x gradlew
+
           ./gradlew clean
           ./gradlew assembleDebug
 
       - name: Vérifier APK
-        working-directory: ${{ env.TARGET_DIR }}
         run: |
+          set -e
+
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
 
           if [ ! -f "$APK" ]; then
@@ -240,23 +241,9 @@ jobs:
             --print-certs \
             "$APK"
 
-      - name: Afficher SHA-1 final de l'APK
-        working-directory: ${{ env.TARGET_DIR }}
-        run: |
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
-
-          echo ""
-          echo "=========================================="
-          echo "SHA-1 UTILISE PAR L'APK FINAL"
-          echo "=========================================="
-
-          $ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner verify \
-            --print-certs \
-            "$APK"
-
-      - name: Récupérer APK
+      - name: Publier APK
         uses: actions/upload-artifact@v4
         with:
           name: UGTM-Android-APK
-          path: ${{ env.TARGET_DIR }}/android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
