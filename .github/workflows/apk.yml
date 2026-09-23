@@ -15,9 +15,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trouver le projet (extrait le zip si présent)
+      - name: Trouver et extraire le projet
         run: |
           ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+
           if [ -n "$ZIP" ]; then
             echo "Archive trouvée : $ZIP"
             mkdir -p app
@@ -25,13 +26,14 @@ jobs:
             TARGET_DIR="app"
           else
             PKG_PATH=$(find . -name package.json -not -path "*/node_modules/*" | head -n 1)
+
             if [ -z "$PKG_PATH" ]; then
               TARGET_DIR="."
-              echo '{"name":"ugtm-app","version":"1.0.0","private":true}' > package.json
             else
               TARGET_DIR=$(dirname "$PKG_PATH")
             fi
           fi
+
           echo "TARGET_DIR=$TARGET_DIR" >> "$GITHUB_ENV"
           echo "Projet : $TARGET_DIR"
 
@@ -46,7 +48,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Installer Capacitor
+      - name: Installer Capacitor et Firebase Android
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           npm install
@@ -56,30 +58,123 @@ jobs:
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           if [ -f capacitor.config.json ]; then
-            echo "Configuration existante conservée :"
+            echo "Configuration existante :"
             cat capacitor.config.json
           else
-            printf '%s\n' \
-              '{' \
-              '  "appId": "ma.ugtm.souss.massa",' \
-              '  "appName": "UGTM Souss-Massa",' \
-              '  "webDir": "www"' \
-              '}' > capacitor.config.json
-            echo "Configuration créée par défaut :"
-            cat capacitor.config.json
+            cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "ma.ugtm.souss.massa",
+            "appName": "UGTM Souss-Massa",
+            "webDir": "www"
+          }
+          EOF
           fi
 
-      - name: Générer Android
+      - name: Générer le projet Android
         working-directory: ${{ env.TARGET_DIR }}
         run: |
           npx cap add android
           npx cap sync android
 
-      - name: Compiler APK
+      - name: Ajouter google-services.json
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          mkdir -p android/app
+
+          cat > android/app/google-services.json <<'EOF'
+          {
+            "project_info": {
+              "project_number": "313270677240",
+              "project_id": "ugtm-fns-souss-massa",
+              "storage_bucket": "ugtm-fns-souss-massa.firebasestorage.app"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:313270677240:android:1946a591ebb17c33dd150d",
+                  "android_client_info": {
+                    "package_name": "ma.ugtm.souss.massa"
+                  }
+                },
+                "oauth_client": [
+                  {
+                    "client_id": "313270677240-qj5nkj8cgm22cl9kkh0fnckeerfdh7sj.apps.googleusercontent.com",
+                    "client_type": 3
+                  }
+                ],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyChPWsxsg9rAEFbv3R9v4eyjUEmPf8Nos"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": [
+                      {
+                        "client_id": "313270677240-qj5nkj8cgm22cl9kkh0fnckeerfdh7sj.apps.googleusercontent.com",
+                        "client_type": 3
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          EOF
+
+          echo "google-services.json installé."
+
+      - name: Configurer Google Services Gradle
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("android/build.gradle")
+          text = root.read_text()
+
+          if "com.google.gms:google-services" not in text:
+              text = (
+                  "buildscript {\n"
+                  "    dependencies {\n"
+                  "        classpath 'com.google.gms:google-services:4.4.2'\n"
+                  "    }\n"
+                  "}\n\n"
+                  + text
+              )
+              root.write_text(text)
+
+          app = Path("android/app/build.gradle")
+          text = app.read_text()
+
+          if "com.google.gms.google-services" not in text:
+              text += "\n\napply plugin: 'com.google.gms.google-services'\n"
+
+          app.write_text(text)
+          PY
+
+      - name: Synchroniser Capacitor
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          npx cap sync android
+
+      - name: Afficher le SHA-1 Android
+        working-directory: ${{ env.TARGET_DIR }}/android
+        run: |
+          chmod +x gradlew
+          ./gradlew signingReport
+
+      - name: Compiler APK Debug
         working-directory: ${{ env.TARGET_DIR }}/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
+
+      - name: Vérifier APK
+        working-directory: ${{ env.TARGET_DIR }}
+        run: |
+          ls -lh android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Récupérer APK
         uses: actions/upload-artifact@v4
