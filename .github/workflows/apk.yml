@@ -18,6 +18,9 @@ jobs:
         run: |
           set -e
 
+          echo "=== Structure du projet ==="
+          ls -la
+
           test -f package.json || {
             echo "ERREUR : package.json introuvable"
             exit 1
@@ -33,8 +36,6 @@ jobs:
             exit 1
           }
 
-          echo "Projet vérifié."
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -45,23 +46,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-
-      - name: Préparer les variables
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
-            echo "HAS_GOOGLE_SERVICES=true" >> "$GITHUB_ENV"
-          else
-            echo "HAS_GOOGLE_SERVICES=false" >> "$GITHUB_ENV"
-          fi
-
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
-            echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
-          else
-            echo "HAS_KEYSTORE=false" >> "$GITHUB_ENV"
-          fi
 
       - name: Installer les dépendances
         run: |
@@ -89,9 +73,12 @@ jobs:
             "https://ugtm.ma/?wpdmdl=985" \
             -o resources/icon.png
 
-          test -s resources/icon.png
+          if [ ! -s resources/icon.png ]; then
+            echo "ERREUR : impossible de télécharger le logo UGTM."
+            exit 1
+          fi
 
-          echo "Logo téléchargé :"
+          echo "=== Logo UGTM ==="
           file resources/icon.png
           ls -lh resources/icon.png
 
@@ -115,11 +102,15 @@ jobs:
             --iconBackgroundColorDark "#FFFFFF"
 
       - name: Installer Google Services
-        if: env.HAS_GOOGLE_SERVICES == 'true'
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -e
+
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Google Services non configuré."
+            exit 0
+          fi
 
           mkdir -p android/app
 
@@ -128,29 +119,33 @@ jobs:
 
           test -s android/app/google-services.json
 
-          echo "Google Services installé."
+          echo "google-services.json installé."
 
       - name: Configurer Google Services Gradle
-        if: env.HAS_GOOGLE_SERVICES == 'true'
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -e
+
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "Google Services non configuré."
+            exit 0
+          fi
 
           python3 - <<'PY'
           from pathlib import Path
 
+          # Projet Gradle principal
           p = Path("android/build.gradle")
           s = p.read_text()
 
           if "com.google.gms:google-services" not in s:
-              if "buildscript {" in s:
-                  marker = "dependencies {"
-
-                  if marker in s:
-                      s = s.replace(
-                          marker,
-                          marker + "\n        classpath 'com.google.gms:google-services:4.4.2'",
-                          1
-                      )
+              if "buildscript {" in s and "dependencies {" in s:
+                  s = s.replace(
+                      "dependencies {",
+                      "dependencies {\n        classpath 'com.google.gms:google-services:4.4.2'",
+                      1
+                  )
               else:
                   s = """buildscript {
               repositories {
@@ -166,6 +161,7 @@ jobs:
 
           p.write_text(s)
 
+          # Module application
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
@@ -181,12 +177,48 @@ jobs:
 
           npx cap sync android
 
-      - name: Configurer la signature APK
-        if: env.HAS_KEYSTORE == 'true'
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      - name: Vérifier le projet Android
         run: |
           set -e
+
+          test -f android/gradlew || {
+            echo "ERREUR : android/gradlew introuvable."
+            exit 1
+          }
+
+          chmod +x android/gradlew
+
+          echo "=== android/app/build.gradle ==="
+          sed -n '1,120p' android/app/build.gradle
+
+      - name: Préparer la signature APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -e
+
+          test -n "$ANDROID_KEYSTORE_BASE64" || {
+            echo "ERREUR : ANDROID_KEYSTORE_BASE64 est vide."
+            exit 1
+          }
+
+          test -n "$ANDROID_KEYSTORE_PASSWORD" || {
+            echo "ERREUR : ANDROID_KEYSTORE_PASSWORD est vide."
+            exit 1
+          }
+
+          test -n "$ANDROID_KEY_ALIAS" || {
+            echo "ERREUR : ANDROID_KEY_ALIAS est vide."
+            exit 1
+          }
+
+          test -n "$ANDROID_KEY_PASSWORD" || {
+            echo "ERREUR : ANDROID_KEY_PASSWORD est vide."
+            exit 1
+          }
 
           printf '%s' "$ANDROID_KEYSTORE_BASE64" \
             | base64 --decode > android/ugtm-release.keystore
@@ -196,106 +228,100 @@ jobs:
             exit 1
           }
 
+          echo "Keystore présent."
+
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
-          # -------------------------------------------------
-          # 1. Ajouter signingConfigs DANS android {
-          # -------------------------------------------------
+          # Ne jamais créer un deuxième bloc android {.
+          # On insère uniquement signingConfigs à l'intérieur
+          # du bloc android existant.
+
           if "signingConfigs {" not in s:
 
               marker = "android {"
-
-              signing = """
-              signingConfigs {
-                  release {
-                      storeFile file("../ugtm-release.keystore")
-                      storePassword System.getenv("KEYSTORE_PASSWORD")
-                      keyAlias System.getenv("KEY_ALIAS")
-                      keyPassword System.getenv("KEY_PASSWORD")
-                  }
-              }
-              """
 
               if marker not in s:
                   raise SystemExit(
                       "ERREUR : bloc android { introuvable."
                   )
 
-              # IMPORTANT :
-              # On conserve le "android {" existant.
-              s = s.replace(
-                  marker,
-                  marker + signing,
-                  1
+              signing = """
+              signingConfigs {
+                  release {
+                      storeFile file("../ugtm-release.keystore")
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+              }
+              """
+
+              position = s.find(marker) + len(marker)
+
+              s = (
+                  s[:position]
+                  + signing
+                  + s[position:]
               )
 
-          # -------------------------------------------------
-          # 2. Ajouter signingConfig dans release
-          # -------------------------------------------------
+          # Cherche le buildTypes release existant.
+          # S'il existe déjà, on ajoute seulement la ligne de signature.
+
           if "signingConfig signingConfigs.release" not in s:
 
-              pattern = r"(buildTypes\s*\{\s*release\s*\{)"
+              build_types = s.find("buildTypes {")
 
-              replacement = (
-                  r"\1\n"
-                  r"        signingConfig signingConfigs.release"
-              )
-
-              s, count = re.subn(
-                  pattern,
-                  replacement,
-                  s,
-                  count=1
-              )
-
-              if count == 0:
+              if build_types == -1:
                   raise SystemExit(
-                      "ERREUR : bloc buildTypes { release { introuvable."
+                      "ERREUR : buildTypes { introuvable."
                   )
+
+              release = s.find("release {", build_types)
+
+              if release == -1:
+                  raise SystemExit(
+                      "ERREUR : release { introuvable dans buildTypes."
+                  )
+
+              position = release + len("release {")
+
+              s = (
+                  s[:position]
+                  + "\n        signingConfig signingConfigs.release"
+                  + s[position:]
+              )
 
           p.write_text(s)
           PY
 
-          echo "=== Vérification build.gradle ==="
-          sed -n '1,100p' android/app/build.gradle
+          echo "=== Signature configurée ==="
+          grep -n \
+            "signingConfigs\|signingConfig\|storeFile\|storePassword\|keyAlias\|keyPassword" \
+            android/app/build.gradle || true
 
-      - name: Vérifier les secrets de signature
-        if: env.HAS_KEYSTORE == 'true'
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Vérifier la configuration finale Gradle
         run: |
           set -e
 
-          test -n "$KEYSTORE_PASSWORD" || {
-            echo "ERREUR : ANDROID_KEYSTORE_PASSWORD est vide."
-            exit 1
-          }
+          echo "=== Début build.gradle ==="
+          sed -n '1,120p' android/app/build.gradle
 
-          test -n "$KEY_ALIAS" || {
-            echo "ERREUR : ANDROID_KEY_ALIAS est vide."
-            exit 1
-          }
+          echo "=== Test Gradle ==="
+          cd android
+          chmod +x gradlew
 
-          test -n "$KEY_PASSWORD" || {
-            echo "ERREUR : ANDROID_KEY_PASSWORD est vide."
-            exit 1
-          }
-
-          echo "Paramètres de signature présents."
+          ./gradlew tasks --no-daemon
 
       - name: Build APK Release
         working-directory: android
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
 
@@ -321,10 +347,10 @@ jobs:
             -name "*.apk" \
             | head -1)
 
-          test -n "$APK" || {
+          if [ -z "$APK" ]; then
             echo "ERREUR : aucun APK Release trouvé."
             exit 1
-          }
+          fi
 
           echo "APK trouvé : $APK"
 
