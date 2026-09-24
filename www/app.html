@@ -1,3865 +1,2094 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-<meta name="theme-color" content="#B83268">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="UGTM SM">
-
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<title>UGTM Souss-Massa</title>
-
-<style>
-:root{
-  --primary:#B83268;
-  --primary-dark:#A92F60;
-  --accent:#D7A72C;
-  --soft:#FCECF3;
-  --bg:#FFF7FA;
-  --surface:#FFFFFF;
-  --text:#252126;
-  --muted:#756B72;
-  --line:#E9DDE3;
-  --focus:#C94B7D;
-  --alert:#B83268;
-}
-
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  min-height:100%;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
-
-body{
-  min-height:100vh;
-}
-
-button,input,textarea,select{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
-
-a{
-  color:var(--primary);
-  text-decoration:none;
-}
-
-.app{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-}
-
-.topbar{
-  position:sticky;
-  top:0;
-  z-index:50;
-  background:rgba(255,255,255,.96);
-  border-bottom:1px solid var(--line);
-  backdrop-filter:blur(12px);
-}
-
-.topbar-inner{
-  max-width:1100px;
-  margin:auto;
-  min-height:64px;
-  padding:10px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:0;
-}
-
-.brand-logo{
-  width:42px;
-  height:42px;
-  object-fit:contain;
-  border-radius:10px;
-  flex:none;
-}
-
-.brand-text{
-  min-width:0;
-}
-
-.brand-title{
-  font-weight:900;
-  color:var(--primary);
-  font-size:17px;
-  line-height:1.1;
-}
-
-.brand-sub{
-  color:var(--muted);
-  font-size:11px;
-  margin-top:3px;
-}
-
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-
-.icon-btn{
-  border:1px solid var(--line);
-  background:var(--surface);
-  color:var(--text);
-  min-width:38px;
-  height:38px;
-  padding:0 9px;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:15px;
-  font-weight:800;
-}
-
-.container{
-  width:min(1100px,100%);
-  margin:0 auto;
-  padding:18px 16px 100px;
-  flex:1;
-}
-
-.screen{
-  width:100%;
-}
-
-.hero{
-  background:linear-gradient(135deg,#B83268 0%,#A92F60 100%);
-  color:#fff;
-  border-radius:22px;
-  padding:24px 20px;
-  margin-bottom:18px;
-  box-shadow:0 10px 30px rgba(184,50,104,.18);
-}
-
-.hero h1{
-  margin:0;
-  font-size:28px;
-  line-height:1.08;
-  font-weight:900;
-}
-
-.hero p{
-  margin:10px 0 18px;
-  line-height:1.5;
-  opacity:.94;
-}
-
-.btn{
-  border:0;
-  border-radius:11px;
-  padding:12px 16px;
-  font-weight:800;
-  min-height:44px;
-  transition:.15s ease;
-}
-
-.btn:active{
-  transform:scale(.98);
-}
-
-.btn.primary{
-  background:var(--primary);
-  color:#fff;
-}
-
-.btn.gold{
-  background:var(--accent);
-  color:#fff;
-}
-
-.btn.ghost{
-  background:transparent;
-  border:1px solid var(--line);
-  color:var(--primary);
-}
-
-.btn.block{
-  width:100%;
-}
-
-.actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
-
-.title{
-  margin:8px 0;
-  font-size:26px;
-  font-weight:900;
-  color:var(--primary);
-}
-
-.lead{
-  margin:0 0 18px;
-  color:var(--muted);
-  line-height:1.55;
-}
-
-.card{
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:14px;
-}
-
-.card.clickable{
-  cursor:pointer;
-}
-
-.card.clickable:hover{
-  border-color:var(--primary);
-}
-
-.card h2,
-.card h3{
-  margin-top:0;
-}
-
-.h2{
-  font-size:21px;
-  margin:8px 0 14px;
-  color:var(--primary);
-}
-
-.points{
-  padding-left:20px;
-  color:var(--muted);
-  line-height:1.6;
-}
-
-/* Navigation : 4 boutons normalement, 5 pour admin */
-.bottom-nav{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:40;
-  background:rgba(255,255,255,.97);
-  border-top:1px solid var(--line);
-  backdrop-filter:blur(12px);
-}
-
-.bottom-nav-inner{
-  max-width:760px;
-  margin:auto;
-  display:flex;
-  justify-content:space-around;
-  padding:7px 8px calc(7px + env(safe-area-inset-bottom));
-}
-
-.nav-btn{
-  border:0;
-  background:transparent;
-  color:var(--muted);
-  padding:7px 4px;
-  border-radius:10px;
-  font-size:11px;
-  font-weight:700;
-  flex:1 1 0;
-  max-width:96px;
-}
-
-.nav-btn.active{
-  color:var(--primary);
-  background:var(--soft);
-}
-
-.nav-icon{
-  display:block;
-  font-size:19px;
-  margin-bottom:2px;
-}
-
-.field{
-  margin-bottom:15px;
-}
-
-.field label{
-  display:block;
-  margin-bottom:6px;
-  font-size:13px;
-  font-weight:800;
-}
-
-.field input,
-.field textarea,
-.field select{
-  width:100%;
-  border:1px solid var(--line);
-  background:#fff;
-  color:var(--text);
-  border-radius:11px;
-  padding:12px 13px;
-  outline:none;
-}
-
-.field textarea{
-  min-height:130px;
-  resize:vertical;
-}
-
-.field input:focus,
-.field textarea:focus,
-.field select:focus{
-  border-color:var(--focus);
-  box-shadow:0 0 0 3px rgba(201,75,125,.12);
-}
-
-.required{
-  color:var(--alert);
-}
-
-.hint{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:5px;
-  line-height:1.4;
-}
-
-.choice-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
-}
-
-.choice{
-  position:relative;
-}
-
-.choice input{
-  position:absolute;
-  opacity:0;
-  pointer-events:none;
-}
-
-.choice label{
-  display:block;
-  padding:11px 12px;
-  border:1px solid var(--line);
-  border-radius:11px;
-  background:#fff;
-  color:var(--text);
-  cursor:pointer;
-  font-size:13px;
-  font-weight:700;
-}
-
-.choice input:checked + label{
-  border-color:var(--primary);
-  background:var(--soft);
-  color:var(--primary);
-}
-
-.switch-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:var(--soft);
-  margin-bottom:15px;
-}
-
-.switch-text strong{
-  display:block;
-  font-size:14px;
-}
-
-.switch-text span{
-  display:block;
-  color:var(--muted);
-  font-size:12px;
-  margin-top:3px;
-}
-
-.switch{
-  position:relative;
-  width:48px;
-  height:27px;
-  flex:none;
-}
-
-.switch input{
-  opacity:0;
-  width:0;
-  height:0;
-}
-
-.slider{
-  position:absolute;
-  inset:0;
-  background:#D8CCD2;
-  border-radius:999px;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.slider:before{
-  content:"";
-  position:absolute;
-  width:21px;
-  height:21px;
-  left:3px;
-  top:3px;
-  background:#fff;
-  border-radius:50%;
-  transition:.2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.2);
-}
-
-.switch input:checked + .slider{
-  background:var(--primary);
-}
-
-.switch input:checked + .slider:before{
-  transform:translateX(21px);
-}
-
-.filebox{
-  padding:12px;
-  border:1px dashed var(--line);
-  border-radius:10px;
-  background:var(--bg);
-}
-
-.filebox input{
-  border:0;
-  padding:0;
-  background:transparent;
-}
-
-.success-box{
-  display:none;
-  background:#E7F6EC;
-  border:1px solid #BFE2C9;
-  color:#23733B;
-  border-radius:14px;
-  padding:16px;
-  margin-bottom:15px;
-}
-
-.success-box.show{
-  display:block;
-}
-
-.success-box strong{
-  display:block;
-  margin-bottom:6px;
-  font-size:17px;
-}
-
-.reference{
-  display:inline-block;
-  margin-top:7px;
-  padding:6px 10px;
-  border-radius:8px;
-  background:#fff;
-  color:#23733B;
-  font-weight:900;
-  direction:ltr;
-}
-
-.report-card{
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:16px;
-  margin:0 0 14px;
-}
-
-.report-card h3{
-  margin:0 0 6px;
-  font-size:17px;
-}
-
-.report-card p{
-  margin:4px 0;
-  color:var(--muted);
-  font-size:14px;
-}
-
-.report-ref{
-  display:inline-block;
-  margin-top:8px;
-  padding:5px 10px;
-  border-radius:8px;
-  background:var(--soft);
-  color:var(--primary);
-  font-weight:800;
-  direction:ltr;
-}
-
-.report-status{
-  display:inline-block;
-  margin-top:8px;
-  margin-inline-start:5px;
-  padding:4px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-}
-
-.report-status.new{
-  background:var(--soft);
-  color:var(--primary);
-}
-
-.report-status.progress{
-  background:#FFF4D6;
-  color:#8A6500;
-}
-
-.report-status.done{
-  background:#E7F6EC;
-  color:#23733B;
-}
-
-.report-admin-response{
-  margin-top:12px;
-  padding:12px;
-  border-radius:10px;
-  background:var(--soft);
-  border-inline-start:4px solid var(--accent);
-}
-
-.report-admin-response strong{
-  display:block;
-  margin-bottom:4px;
-}
-
-.admin-badge{
-  display:inline-flex;
-  min-width:22px;
-  height:22px;
-  align-items:center;
-  justify-content:center;
-  padding:0 6px;
-  margin-inline-start:4px;
-  border-radius:999px;
-  background:var(--alert);
-  color:#fff;
-  font-size:11px;
-  font-weight:800;
-}
-
-.admin-tabs{
-  display:flex;
-  gap:7px;
-  overflow:auto;
-  padding-bottom:5px;
-  margin-bottom:15px;
-}
-
-.fbtn{
-  border:1px solid var(--line);
-  background:#fff;
-  color:var(--muted);
-  padding:9px 12px;
-  border-radius:10px;
-  white-space:nowrap;
-  font-weight:800;
-  font-size:12px;
-}
-
-.fbtn[aria-pressed="true"]{
-  background:var(--primary);
-  color:#fff;
-  border-color:var(--primary);
-}
-
-.admin-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:7px;
-  margin-top:12px;
-}
-
-.small-btn{
-  border:1px solid var(--line);
-  background:#fff;
-  color:var(--primary);
-  border-radius:9px;
-  padding:8px 10px;
-  font-size:12px;
-  font-weight:800;
-}
-
-.small-btn.primary{
-  background:var(--primary);
-  color:#fff;
-  border-color:var(--primary);
-}
-
-.small-btn.gold{
-  background:var(--accent);
-  color:#fff;
-  border-color:var(--accent);
-}
-
-.admin-response{
-  margin-top:12px;
-}
-
-.admin-response textarea{
-  width:100%;
-  min-height:90px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:10px;
-  resize:vertical;
-}
-
-.empty{
-  text-align:center;
-  padding:30px 15px;
-  color:var(--muted);
-  border:1px dashed var(--line);
-  border-radius:14px;
-  background:var(--surface);
-}
-
-.toast{
-  position:fixed;
-  left:50%;
-  bottom:85px;
-  transform:translateX(-50%) translateY(20px);
-  z-index:100;
-  max-width:calc(100% - 30px);
-  background:#292329;
-  color:#fff;
-  padding:11px 15px;
-  border-radius:11px;
-  font-size:13px;
-  font-weight:700;
-  opacity:0;
-  pointer-events:none;
-  transition:.2s;
-}
-
-.toast.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-
-.hidden{
-  display:none !important;
-}
-
-@media(max-width:600px){
-  .hero h1{
-    font-size:25px;
-  }
-
-  .choice-grid{
-    grid-template-columns:1fr;
-  }
-
-  .container{
-    padding-left:13px;
-    padding-right:13px;
-  }
-}
-
-@media(prefers-color-scheme:dark){
-  :root{
-    --primary:#A92F60;
-    --accent:#E2B33B;
-    --soft:#321D28;
-    --bg:#171316;
-    --surface:#211B1F;
-    --text:#F4EDF0;
-    --muted:#B9ADB3;
-    --line:#3B3036;
-    --focus:#C94B7D;
-  }
-
-  .topbar,
-  .bottom-nav{
-    background:rgba(33,27,31,.97);
-  }
-
-  .field input,
-  .field textarea,
-  .field select,
-  .choice label,
-  .fbtn,
-  .small-btn{
-    background:var(--surface);
-    color:var(--text);
-  }
-
-  .filebox{
-    background:#1C171A;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#B83268">
+  <meta name="description" content="Application officielle de l'UGTM Souss-Massa - Signalements et services aux professionnels de santé.">
+  <title>UGTM Souss-Massa — Santé</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    :root {
+      --primary: #B83268;
+      --primary-hover: #962654;
+      --primary-light: #FDF2F5;
+      --secondary: #D7A72C;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --danger: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F172A;
+        --surface: #1E293B;
+        --text: #F8FAFC;
+        --text-muted: #94A3B8;
+        --border: #334155;
+        --primary-light: #2A121D;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .app-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--surface);
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .h2 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .btn.block {
+      width: 100%;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn.secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status.success {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
+    }
+
+    .status.warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--warning);
+    }
+
+    .status.danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--text-muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 100;
+    }
+
+    .bottom-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      gap: 4px;
+      cursor: pointer;
+      width: 20%;
+    }
+
+    .bottom-btn.active {
+      color: var(--primary);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+    }
+
+    [dir="rtl"] {
+      text-align: right;
+    }
+
+    [dir="rtl"] .bottom-btn,
+    [dir="rtl"] .nav-tabs {
+      direction: rtl;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="app">
-
-<header class="topbar">
-  <div class="topbar-inner">
-
-    <div class="brand">
-      <img
-        class="brand-logo"
-        src="icons/icon-192.png"
-        alt="UGTM"
-        onerror="this.style.display='none'"
-      >
-
-      <div class="brand-text">
-        <div class="brand-title">UGTM Souss-Massa</div>
-        <div class="brand-sub">Fédération régionale</div>
+  <header class="header">
+    <div class="logo-group">
+      <div class="app-title-group">
+        <h1 class="app-title" data-i18n="appTitle">
+          UGTM Souss-Massa
+        </h1>
+        <p class="app-subtitle" data-i18n="appSubtitle">
+          Fédération Régionale de la Santé
+        </p>
       </div>
     </div>
 
-    <div class="top-actions">
-      <button
-        class="icon-btn"
-        type="button"
-        data-action="lang"
-        aria-label="العربية"
-      >ع</button>
-    </div>
-
-  </div>
-</header>
-
-
-<main class="container">
-
-<section class="screen" id="s-home">
-
-  <div class="hero">
-
-    <h1 data-i18n="heroTitle">
-      UGTM Souss-Massa
-    </h1>
-
-    <p data-i18n="heroText">
-      Plateforme régionale de communication et de suivi au service des travailleurs de la santé.
-    </p>
-
-    <div class="actions">
-
-      <button
-        class="btn gold"
-        type="button"
-        data-form="1"
-        data-i18n="heroBtn"
-      >
-        Signaler une situation
-      </button>
-
-    </div>
-
-  </div>
-
-  <div class="card">
-    <h2 class="h2" data-i18n="newsTitle">Actualités</h2>
-    <div id="homeNews"></div>
-  </div>
-
-  <div class="card">
-    <h2 class="h2" data-i18n="eventsTitle">Agenda</h2>
-    <div id="homeEvents"></div>
-  </div>
-
-</section>
-
-
-<section class="screen" id="s-news" hidden>
-
-  <h1 class="title" data-i18n="newsTitle">
-    Actualités
-  </h1>
-
-  <p class="lead" data-i18n="newsLead">
-    Communiqués et informations de la fédération régionale.
-  </p>
-
-  <div id="newsList"></div>
-
-</section>
-
-
-<section class="screen" id="s-events" hidden>
-
-  <h1 class="title" data-i18n="eventsTitle">
-    Agenda
-  </h1>
-
-  <p class="lead" data-i18n="eventsLead">
-    Réunions, rencontres et activités.
-  </p>
-
-  <div id="eventsList"></div>
-
-</section>
-
-
-<section class="screen" id="s-report" hidden>
-
-  <h1 class="title" data-i18n="reportT">
-    Signaler une situation
-  </h1>
-
-  <p class="lead" data-i18n="reportP">
-    Transmettez un signalement à la fédération régionale.
-  </p>
-
-
-  <div id="reportSuccess" class="success-box">
-
-    <strong data-i18n="reportSuccessTitle">
-      Signalement envoyé
-    </strong>
-
-    <div data-i18n="reportSuccessText">
-      Votre signalement a bien été enregistré.
-    </div>
-
-    <span id="reportSuccessRef" class="reference"></span>
-
-    <div class="hint" style="margin-top:10px" data-i18n="reportSuccessHint">
-      Conservez cette référence pour le suivi.
-    </div>
-
-    <div class="actions" style="margin-top:12px">
-
-      <button
-        type="button"
-        class="btn primary"
-        data-action="myReports"
-        data-i18n="followReports"
-      >
-        Mes signalements
-      </button>
-
-      <button
-        type="button"
-        class="btn ghost"
-        data-action="newReport"
-        data-i18n="newReport"
-      >
-        Nouveau signalement
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <form id="reportForm" class="card">
-
-    <div class="switch-row">
-
-      <div class="switch-text">
-
-        <strong data-i18n="anonymousLabel">
-          Signalement anonyme
-        </strong>
-
-        <span data-i18n="anonymousHint">
-          Votre nom ne sera pas enregistré dans le signalement.
-        </span>
-
-      </div>
-
-      <label class="switch">
-
-        <input
-          type="checkbox"
-          id="reportAnonymous"
-        >
-
-        <span class="slider"></span>
-
-      </label>
-
-    </div>
-
-
-    <div class="field" id="reportNameWrap">
-
-      <label for="reportName" data-i18n="nameLabel">
-        Nom et prénom
-      </label>
-
-      <input
-        id="reportName"
-        type="text"
-        maxlength="120"
-        autocomplete="name"
-      >
-
-    </div>
-
-
-    <div class="field">
-
-      <label for="reportEtab">
-
-        <span data-i18n="etabLabel">
-          Établissement
-        </span>
-
-        <span class="required">*</span>
-
-      </label>
-
-      <input
-        id="reportEtab"
-        type="text"
-        maxlength="160"
-        required
-      >
-
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        <span data-i18n="categoryLabel">Catégorie</span>
-        <span class="required">*</span>
-      </label>
-
-      <div class="choice-grid">
-
-        <div class="choice">
-          <input
-            type="radio"
-            id="catConditions"
-            name="reportCategory"
-            value="conditions"
-            required
-          >
-          <label for="catConditions" data-i18n="catConditions">
-            Conditions de travail
-          </label>
-        </div>
-
-        <div class="choice">
-          <input
-            type="radio"
-            id="catAdmin"
-            name="reportCategory"
-            value="administratif"
-          >
-          <label for="catAdmin" data-i18n="catAdmin">
-            Administratif
-          </label>
-        </div>
-
-        <div class="choice">
-          <input
-            type="radio"
-            id="catAffectation"
-            name="reportCategory"
-            value="affectation"
-          >
-          <label for="catAffectation" data-i18n="catAffectation">
-            Affectation / mutation
-          </label>
-        </div>
-
-        <div class="choice">
-          <input
-            type="radio"
-            id="catViolence"
-            name="reportCategory"
-            value="violence"
-          >
-          <label for="catViolence" data-i18n="catViolence">
-            Violence / agression
-          </label>
-        </div>
-
-        <div class="choice">
-          <input
-            type="radio"
-            id="catOther"
-            name="reportCategory"
-            value="autre"
-          >
-          <label for="catOther" data-i18n="catOther">
-            Autre
-          </label>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="field">
-
-      <label for="reportDescription">
-
-        <span data-i18n="descriptionLabel">
-          Description de la situation
-        </span>
-
-        <span class="required">*</span>
-
-      </label>
-
-      <textarea
-        id="reportDescription"
-        maxlength="4000"
-        required
-      ></textarea>
-
-      <div class="hint" data-i18n="descriptionHint">
-        Décrivez les faits de manière précise.
-      </div>
-
-    </div>
-
-
-    <div class="field">
-
-      <label for="reportDate">
-
-        <span data-i18n="dateLabel">
-          Date des faits
-        </span>
-
-        <span class="required">*</span>
-
-      </label>
-
-      <input
-        id="reportDate"
-        type="date"
-        required
-      >
-
-    </div>
-
-
-    <div class="field">
-
-      <label for="reportLocation" data-i18n="locationLabel">
-        Lieu précis
-      </label>
-
-      <input
-        id="reportLocation"
-        type="text"
-        maxlength="160"
-      >
-
-    </div>
-
-
-    <div class="field">
-
-      <label for="reportFile" data-i18n="attachmentLabel">
-        Pièce jointe
-      </label>
-
-      <div class="filebox">
-
-        <input
-          id="reportFile"
-          type="file"
-          accept="image/*,.pdf,.doc,.docx"
-        >
-
-        <div class="hint" data-i18n="attachmentHint">
-          Facultatif. Image ou document. Taille maximale : 300 Ko.
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="actions">
-
-      <button
-        id="reportSubmit"
-        type="submit"
-        class="btn primary block"
-        data-i18n="sendReport"
-      >
-        Envoyer le signalement
-      </button>
-
-      <button
-        type="button"
-        class="btn ghost block"
-        data-link="num"
-        data-i18n="sendDocs"
-      >
-        Contacter directement par WhatsApp
-      </button>
-
-    </div>
-
-  </form>
-
-
-  <div id="myReportsBox" class="card">
-
-    <h2 class="h2" data-i18n="myReportsTitle">
-      Mes signalements
-    </h2>
-
-    <div id="myReportsList"></div>
-
-  </div>
-
-</section>
-
-
-<section class="screen" id="s-contact" hidden>
-
-  <h1 class="title" data-i18n="contactTitle">
-    Contact
-  </h1>
-
-  <p class="lead" data-i18n="contactLead">
-    Les principaux canaux de communication de la fédération.
-  </p>
-
-  <div id="contactList"></div>
-
-  <div class="card">
-
-    <h2 class="h2" data-i18n="permanenceTitle">
-      Permanence régionale
-    </h2>
-
-    <p id="permanenceAddress"></p>
-    <p id="permanencePhone"></p>
-    <p id="permanenceEmail"></p>
-    <p id="permanenceHours"></p>
-
-  </div>
-
-</section>
-
-
-<section class="screen" id="s-profile" hidden>
-
-  <h1 class="title" data-i18n="profileTitle">
-    Mon espace
-  </h1>
-
-  <div id="profileContent"></div>
-
-  <div id="profileReportsBox" class="card">
-
-    <h2 class="h2" data-i18n="myReportsTitle">
-      Mes signalements
-    </h2>
-
-    <div id="profileReportsList"></div>
-
-  </div>
-
-</section>
-
-
-<section class="screen" id="s-admin" hidden>
-
-  <h1 class="title" data-i18n="adminTitle">
-    Administration
-  </h1>
-
-  <div class="admin-tabs">
-
-    <button
-      type="button"
-      class="fbtn"
-      data-adm="members"
-      aria-pressed="true"
-      data-i18n="adminMembers"
-    >
-      Membres
+    <button class="btn ghost" id="lang-toggle">
+      عربي
+    </button>
+  </header>
+
+  <nav class="nav-tabs">
+
+    <button class="tab-btn active"
+            data-tab="s-report"
+            data-i18n="navReport">
+      Signalement
     </button>
 
-    <button
-      type="button"
-      class="fbtn"
-      data-adm="news"
-      aria-pressed="false"
-      data-i18n="adminNews"
-    >
-      Communiqués
+    <button class="tab-btn"
+            data-tab="s-news"
+            data-i18n="navNews">
+      Actualités
     </button>
 
-    <button
-      type="button"
-      class="fbtn"
-      data-adm="events"
-      aria-pressed="false"
-      data-i18n="adminEvents"
-    >
+    <button class="tab-btn"
+            data-tab="s-events"
+            data-i18n="navEvents">
       Événements
     </button>
 
-    <button
-      type="button"
-      class="fbtn"
-      data-adm="reports"
-      aria-pressed="false"
-    >
-      <span data-i18n="adminReports">
-        Signalements
+    <button class="tab-btn"
+            data-tab="s-profile"
+            data-i18n="navProfile">
+      Mon Espace
+    </button>
+
+    <button class="tab-btn"
+            id="admin-tab"
+            data-tab="s-admin"
+            data-i18n="navAdmin"
+            hidden>
+      Administration
+    </button>
+
+  </nav>
+
+  <main class="container">
+
+    <!-- SIGNALEMENT -->
+
+    <section id="s-report" class="section active">
+
+      <div class="card">
+
+        <h2 class="h2" data-i18n="reportTitle">
+          Nouveau Signalement
+        </h2>
+
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:16px"
+           data-i18n="reportInfo">
+          Votre signalement sera transmis de manière sécurisée.
+        </p>
+
+        <form id="report-form">
+
+          <div class="form-group">
+
+            <label class="form-label"
+                   data-i18n="lblCategory">
+              Catégorie
+            </label>
+
+            <select class="form-control"
+                    name="category"
+                    required>
+
+              <option value="conditions"
+                      data-i18n="catConditions">
+                Conditions de travail
+              </option>
+
+              <option value="admin"
+                      data-i18n="catAdmin">
+                Administratif
+              </option>
+
+              <option value="affectation"
+                      data-i18n="catAffectation">
+                Affectation / Mutation
+              </option>
+
+              <option value="violence"
+                      data-i18n="catViolence">
+                Agression / Violence
+              </option>
+
+              <option value="other"
+                      data-i18n="catOther">
+                Autre
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label class="form-label"
+                   data-i18n="lblMessage">
+              Description du problème
+            </label>
+
+            <textarea
+              class="form-control"
+              name="message"
+              required
+              maxlength="4000"></textarea>
+
+          </div>
+
+          <button type="submit"
+                  class="btn primary block"
+                  id="report-submit"
+                  data-i18n="btnSubmit">
+            Envoyer le signalement
+          </button>
+
+        </form>
+
+      </div>
+
+      <div id="my-reports"></div>
+
+    </section>
+
+
+    <!-- ACTUALITES -->
+
+    <section id="s-news" class="section">
+
+      <div id="news-list">
+        <div class="empty"
+             data-i18n="noNews">
+          Aucune actualité disponible.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- EVENEMENTS -->
+
+    <section id="s-events" class="section">
+
+      <div id="events-list">
+        <div class="empty"
+             data-i18n="noEvents">
+          Aucun événement disponible.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PROFIL -->
+
+    <section id="s-profile" class="section">
+
+      <div id="profile-box"></div>
+
+    </section>
+
+
+    <!-- ADMIN -->
+
+    <section id="s-admin" class="section">
+
+      <div id="admin-box">
+
+        <div class="card">
+
+          <h2 class="h2"
+              data-i18n="adminTitle">
+            Administration
+          </h2>
+
+          <p data-i18n="adminRequired">
+            Accès réservé aux administrateurs.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div id="toast" class="toast"></div>
+
+
+  <!-- NAVIGATION BAS -->
+
+  <nav class="bottom-nav">
+
+    <button class="bottom-btn active"
+            data-tab="s-report">
+
+      <span data-i18n="navReport">
+        Signalement
       </span>
 
-      <span
-        id="adminReportsBadge"
-        class="admin-badge"
-        hidden
-      >0</span>
+    </button>
+
+    <button class="bottom-btn"
+            data-tab="s-news">
+
+      <span data-i18n="navNews">
+        Actualités
+      </span>
 
     </button>
 
-  </div>
+    <button class="bottom-btn"
+            data-tab="s-events">
 
+      <span data-i18n="navEvents">
+        Événements
+      </span>
 
-  <div id="adm-members">
-
-    <h2 class="h2" data-i18n="adminMembers">
-      Membres
-    </h2>
-
-    <div id="adminMembersList"></div>
-
-  </div>
-
-
-  <div id="adm-news" hidden>
-
-    <h2 class="h2" data-i18n="adminNews">
-      Communiqués
-    </h2>
-
-    <div id="adminNewsList"></div>
-
-  </div>
-
-
-  <div id="adm-events" hidden>
-
-    <h2 class="h2" data-i18n="adminEvents">
-      Événements
-    </h2>
-
-    <div id="adminEventsList"></div>
-
-  </div>
-
-
-  <div id="adm-reports" hidden>
-
-    <h2 class="h2" data-i18n="adminReports">
-      Signalements
-    </h2>
-
-    <div id="admReportsList"></div>
-
-  </div>
-
-</section>
-
-</main>
-
-
-<nav class="bottom-nav">
-
-  <div class="bottom-nav-inner">
-
-    <button
-      type="button"
-      class="nav-btn active"
-      data-go="home"
-    >
-      <span class="nav-icon">⌂</span>
-      <span data-i18n="navHome">Accueil</span>
     </button>
 
-    <button
-      type="button"
-      class="nav-btn"
-      data-go="news"
-    >
-      <span class="nav-icon">▤</span>
-      <span data-i18n="navNews">Actualités</span>
+    <button class="bottom-btn"
+            data-tab="s-profile">
+
+      <span data-i18n="navProfile">
+        Mon Espace
+      </span>
+
     </button>
 
-    <button
-      type="button"
-      class="nav-btn"
-      data-go="events"
-    >
-      <span class="nav-icon">◷</span>
-      <span data-i18n="navEvents">Agenda</span>
-    </button>
+  </nav>
 
-    <button
-      type="button"
-      class="nav-btn"
-      data-go="contact"
-    >
-      <span class="nav-icon">☎</span>
-      <span data-i18n="navContact">Contact</span>
-    </button>
 
-    <button
-      type="button"
-      class="nav-btn"
-      id="adminNav"
-      data-go="admin"
-      hidden
-    >
-      <span class="nav-icon">⚙</span>
-      <span data-i18n="navAdmin">Admin</span>
-    </button>
+  <!-- IMPORTANT : data.js AVANT app.js -->
 
-  </div>
+  <script src="data.js"></script>
 
-</nav>
 
-<div id="toast" class="toast"></div>
+  <script>
 
-</div>
+    /*
+     * ============================================================
+     * DONNEES
+     * ============================================================
+     */
 
+    var DATA = window.APP_DATA || {};
 
-<script>
-(function(){
-
-"use strict";
-
-
-var DATA=window.APP_DATA||{};
-var CLOUD=window.CLOUD||null;
-var CLOUD_ON=!!CLOUD;
-
-var LINKS={
-  num:"https://wa.me/212661386247"
-};
-
-
-var S={
-  cloud:CLOUD_ON?"loading":"off",
-  user:null,
-  member:null,
-  isAdmin:false,
-  members:[],
-  news:[],
-  events:[],
-  reports:[],
-  admTab:"members",
-  reportAnonymous:false
-};
-
-
-function $(id){
-  return document.getElementById(id);
-}
-
-
-function all(selector){
-  return Array.prototype.slice.call(
-    document.querySelectorAll(selector)
-  );
-}
-
-
-function esc(value){
-  return String(value==null?"":value)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
-}
-
-
-function val(id){
-  var el=$(id);
-  return el?String(el.value||"").trim():"";
-}
-
-
-function todayStr(){
-  var d=new Date();
-  var m=String(d.getMonth()+1).padStart(2,"0");
-  var day=String(d.getDate()).padStart(2,"0");
-
-  return d.getFullYear()+"-"+m+"-"+day;
-}
-
-
-function openUrl(url){
-
-  if(!url)return;
-
-  if(/^tel:/i.test(url)){
-    window.location.href=url;
-    return;
-  }
-
-  window.open(
-    url,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
-
-/* =========================
-   I18N
-   ========================= */
-
-var LANG="fr";
-
-var I18N={
-
-fr:{
-
-heroTitle:"UGTM Souss-Massa",
-
-heroText:
-"Plateforme régionale de communication et de suivi au service des travailleurs de la santé.",
-
-heroBtn:"Signaler une situation",
-
-newsTitle:"Actualités",
-newsLead:"Communiqués et informations de la fédération régionale.",
-
-eventsTitle:"Agenda",
-eventsLead:"Réunions, rencontres et activités.",
-
-reportT:"Signaler une situation",
-reportP:"Transmettez un signalement à la fédération régionale. Vous pouvez choisir de ne pas communiquer votre identité dans le signalement.",
-
-anonymousLabel:"Signalement anonyme",
-anonymousHint:"Votre nom ne sera pas enregistré dans le signalement.",
-
-nameLabel:"Nom et prénom",
-etabLabel:"Établissement",
-
-categoryLabel:"Catégorie",
-catConditions:"Conditions de travail",
-catAdmin:"Administratif",
-catAffectation:"Affectation / mutation",
-catViolence:"Violence / agression",
-catOther:"Autre",
-
-descriptionLabel:"Description de la situation",
-descriptionHint:"Décrivez les faits de manière précise : lieu, personnes concernées, circonstances et conséquences.",
-
-dateLabel:"Date des faits",
-locationLabel:"Lieu précis",
-
-attachmentLabel:"Pièce jointe",
-attachmentHint:"Facultatif. Image ou document. Taille maximale : 300 Ko.",
-
-sendReport:"Envoyer le signalement",
-sendDocs:"Contacter directement par WhatsApp",
-
-reportSuccessTitle:"Signalement envoyé",
-reportSuccessText:"Votre signalement a bien été enregistré.",
-reportSuccessHint:"Conservez cette référence pour le suivi.",
-
-followReports:"Mes signalements",
-newReport:"Nouveau signalement",
-myReportsTitle:"Mes signalements",
-
-navHome:"Accueil",
-navNews:"Actualités",
-navEvents:"Agenda",
-navContact:"Contact",
-navAdmin:"Admin",
-
-contactTitle:"Contact",
-contactLead:"Les principaux canaux de communication de la fédération.",
-permanenceTitle:"Permanence régionale",
-
-profileTitle:"Mon espace",
-
-adminTitle:"Administration",
-adminMembers:"Membres",
-adminNews:"Communiqués",
-adminEvents:"Événements",
-adminReports:"Signalements",
-
-noData:"Aucune information disponible.",
-noReports:"Aucun signalement enregistré.",
-
-reportNew:"Nouveau",
-reportProgress:"En cours",
-reportDone:"Traité",
-
-reportResponse:"Réponse de la fédération",
-reportDate:"Date",
-reportCategory:"Catégorie",
-reportEstablishment:"Établissement",
-reportAnonymous:"Anonyme",
-reportAttachment:"Pièce jointe",
-
-adminInProgress:"En cours",
-adminDone:"Traité",
-adminResponse:"Réponse",
-saveResponse:"Enregistrer",
-
-responsePlaceholder:"Écrire une réponse ou une observation…",
-
-reportSent:"Signalement envoyé avec succès.",
-reportError:"Impossible d'envoyer le signalement.",
-
-fileTooLarge:"La pièce jointe dépasse 300 Ko.",
-invalidFile:"Type de fichier non autorisé.",
-
-loginRequired:"Vous devez être connecté pour envoyer un signalement.",
-
-categoryRequired:"Veuillez choisir une catégorie.",
-descriptionRequired:"Veuillez décrire la situation.",
-
-adminUpdated:"Signalement mis à jour."
-
-},
-
-ar:{
-
-heroTitle:"UGTM سوس ماسة",
-
-heroText:"منصة جهوية للتواصل وتتبع ملفات العاملين في قطاع الصحة.",
-
-heroBtn:"التبليغ عن وضعية",
-
-newsTitle:"المستجدات",
-newsLead:"بلاغات ومعلومات الجامعة الجهوية.",
-
-eventsTitle:"الأجندة",
-eventsLead:"الاجتماعات واللقاءات والأنشطة.",
-
-reportT:"التبليغ عن وضعية",
-reportP:"يمكنكم إرسال تبليغ إلى الجامعة الجهوية مع إمكانية عدم تسجيل هويتكم داخل التبليغ.",
-
-anonymousLabel:"تبليغ مجهول",
-anonymousHint:"لن يتم تسجيل اسمكم في التبليغ.",
-
-nameLabel:"الاسم الكامل",
-etabLabel:"المؤسسة",
-
-categoryLabel:"الفئة",
-catConditions:"ظروف العمل",
-catAdmin:"إداري",
-catAffectation:"التعيين / الانتقال",
-catViolence:"العنف / الاعتداء",
-catOther:"أخرى",
-
-descriptionLabel:"وصف الوضعية",
-descriptionHint:"يرجى وصف الوقائع بدقة مع تحديد المكان والأشخاص والظروف والنتائج.",
-
-dateLabel:"تاريخ الوقائع",
-locationLabel:"المكان بالتحديد",
-
-attachmentLabel:"وثيقة مرفقة",
-attachmentHint:"اختياري. صورة أو وثيقة. الحجم الأقصى 300 كيلوبايت.",
-
-sendReport:"إرسال التبليغ",
-sendDocs:"التواصل مباشرة عبر واتساب",
-
-reportSuccessTitle:"تم إرسال التبليغ",
-reportSuccessText:"تم تسجيل التبليغ بنجاح.",
-reportSuccessHint:"احتفظوا بالمرجع لتتبع الملف.",
-
-followReports:"تبليغاتي",
-newReport:"تبليغ جديد",
-myReportsTitle:"تبليغاتي",
-
-navHome:"الرئيسية",
-navNews:"المستجدات",
-navEvents:"الأجندة",
-navContact:"اتصل بنا",
-navAdmin:"الإدارة",
-
-contactTitle:"اتصل بنا",
-contactLead:"قنوات التواصل الرئيسية للجامعة.",
-permanenceTitle:"المداومة الجهوية",
-
-profileTitle:"فضائي",
-
-adminTitle:"الإدارة",
-adminMembers:"المنخرطون",
-adminNews:"البلاغات",
-adminEvents:"الأنشطة",
-adminReports:"التبليغات",
-
-noData:"لا توجد معلومات متاحة.",
-noReports:"لا توجد تبليغات مسجلة.",
-
-reportNew:"جديد",
-reportProgress:"قيد المعالجة",
-reportDone:"تمت المعالجة",
-
-reportResponse:"جواب الجامعة",
-reportDate:"التاريخ",
-reportCategory:"الفئة",
-reportEstablishment:"المؤسسة",
-reportAnonymous:"مجهول",
-reportAttachment:"وثيقة مرفقة",
-
-adminInProgress:"قيد المعالجة",
-adminDone:"تمت المعالجة",
-adminResponse:"الجواب",
-saveResponse:"حفظ",
-
-responsePlaceholder:"اكتب جوابا أو ملاحظة…",
-
-reportSent:"تم إرسال التبليغ بنجاح.",
-reportError:"تعذر إرسال التبليغ.",
-
-fileTooLarge:"حجم الوثيقة يتجاوز 300 كيلوبايت.",
-invalidFile:"نوع الملف غير مسموح به.",
-
-loginRequired:"يجب تسجيل الدخول لإرسال تبليغ.",
-
-categoryRequired:"يرجى اختيار الفئة.",
-descriptionRequired:"يرجى وصف الوضعية.",
-
-adminUpdated:"تم تحديث التبليغ."
-
-}
-
-};
-
-
-function T(key){
-
-  return (
-    I18N[LANG] &&
-    I18N[LANG][key]
-  ) ||
-  I18N.fr[key] ||
-  key;
-}
-
-
-function applyLang(){
-
-  document.documentElement.lang=LANG;
-
-  document.documentElement.dir=
-    LANG==="ar"?"rtl":"ltr";
-
-
-  all("[data-i18n]").forEach(function(el){
-
-    var key=el.getAttribute("data-i18n");
-
-    if(
-      I18N[LANG] &&
-      I18N[LANG][key]
-    ){
-      el.textContent=
-        I18N[LANG][key];
-    }
-
-  });
-
-
-  var langBtn=
-    document.querySelector(
-      '[data-action="lang"]'
-    );
-
-
-  if(langBtn){
-
-    langBtn.textContent=
-      LANG==="ar"?"Fr":"ع";
-
-    langBtn.setAttribute(
-      "aria-label",
-      LANG==="ar"
-        ?"Français"
-        :"العربية"
-    );
-
-  }
-
-}
-
-
-/* =========================
-   TOAST
-   ========================= */
-
-function toast(message){
-
-  var el=$("toast");
-
-  if(!el)return;
-
-  el.textContent=message;
-
-  el.classList.add("show");
-
-  clearTimeout(toast.timer);
-
-  toast.timer=setTimeout(function(){
-    el.classList.remove("show");
-  },3000);
-
-}
-
-
-/* =========================
-   NAVIGATION
-   ========================= */
-
-function go(screen){
-
-  var ids=[
-    "home",
-    "news",
-    "events",
-    "report",
-    "contact",
-    "profile",
-    "admin"
-  ];
-
-
-  ids.forEach(function(id){
-
-    var el=$("s-"+id);
-
-    if(el){
-      el.hidden=id!==screen;
-    }
-
-  });
-
-
-  all("[data-go]").forEach(function(btn){
-
-    btn.classList.toggle(
-      "active",
-      btn.getAttribute("data-go")===screen
-    );
-
-  });
-
-
-  if(screen==="report"){
-    renderReports();
-  }
-
-
-  if(screen==="profile"){
-    renderProfile();
-  }
-
-
-  if(screen==="admin"){
-
-    if(!S.isAdmin){
-      go("home");
-      return;
-    }
-
-    renderAdminAll();
-
-  }
-
-
-  window.scrollTo({
-    top:0,
-    behavior:"smooth"
-  });
-
-}
-
-
-/* =========================
-   CATEGORIES / STATUS
-   ========================= */
-
-function reportCategoryText(category){
-
-  var map={
-    conditions:"catConditions",
-    administratif:"catAdmin",
-    affectation:"catAffectation",
-    violence:"catViolence",
-    autre:"catOther"
-  };
-
-  return T(
-    map[category]||"catOther"
-  );
-
-}
-
-
-function reportStatusText(status){
-
-  if(status==="progress"){
-    return T("reportProgress");
-  }
-
-  if(status==="done"){
-    return T("reportDone");
-  }
-
-  return T("reportNew");
-
-}
-
-
-function reportStatusClass(status){
-
-  if(status==="progress"){
-    return "progress";
-  }
-
-  if(status==="done"){
-    return "done";
-  }
-
-  return "new";
-
-}
-
-
-function reportRef(report){
-
-  if(!report)return "";
-
-  if(report.reference){
-    return report.reference;
-  }
-
-  if(report.id){
-    return "R-"+
-      String(report.id)
-      .slice(-8)
-      .toUpperCase();
-  }
-
-  return "";
-
-}
-
-
-/* =========================
-   REPORT FORM
-   ========================= */
-
-function toggleReportAnonymous(){
-
-  var checkbox=$("reportAnonymous");
-  var wrap=$("reportNameWrap");
-  var name=$("reportName");
-
-  if(!checkbox || !wrap)return;
-
-  S.reportAnonymous=
-    !!checkbox.checked;
-
-
-  wrap.classList.toggle(
-    "hidden",
-    S.reportAnonymous
-  );
-
-
-  if(name){
-
-    name.required=
-      !S.reportAnonymous;
-
-    if(S.reportAnonymous){
-      name.value="";
-    }
-
-  }
-
-}
-
-
-function resetReportForm(){
-
-  var form=$("reportForm");
-
-  if(!form)return;
-
-  form.hidden=false;
-
-  form.reset();
-
-  S.reportAnonymous=false;
-
-
-  var success=$("reportSuccess");
-
-  if(success){
-    success.classList.remove("show");
-  }
-
-
-  var date=$("reportDate");
-
-  if(date){
-    date.value=todayStr();
-  }
-
-
-  toggleReportAnonymous();
-
-
-  var submit=$("reportSubmit");
-
-  if(submit){
-
-    submit.disabled=false;
-
-    submit.textContent=
-      T("sendReport");
-
-  }
-
-}
-
-
-function fileToData(file){
-
-  return new Promise(function(resolve,reject){
-
-    if(!file){
-
-      resolve({
-        name:"",
-        type:"",
-        data:""
-      });
-
-      return;
-    }
-
-
-    if(file.size>300*1024){
-
-      reject(
-        new Error("FILE_TOO_LARGE")
-      );
-
-      return;
-    }
-
-
-    var allowed=[
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ];
-
-
-    var image=
-      file.type &&
-      file.type.indexOf("image/")===0;
-
-
-    if(
-      !image &&
-      allowed.indexOf(file.type)===-1
-    ){
-
-      reject(
-        new Error("INVALID_FILE")
-      );
-
-      return;
-    }
-
-
-    var reader=new FileReader();
-
-
-    reader.onload=function(){
-
-      var result=
-        String(reader.result||"");
-
-      var comma=
-        result.indexOf(",");
-
-      var data=
-        comma>=0
-          ? result.slice(comma+1)
-          : result;
-
-
-      resolve({
-        name:file.name,
-        type:
-          file.type ||
-          "application/octet-stream",
-        data:data
-      });
-
+    var S = {
+      lang: 'fr',
+      user: null,
+      member: null,
+      isAdmin: false,
+      cloud: DATA.firebase ? 'loading' : 'off',
+      news: [],
+      events: [],
+      members: [],
+      reports: []
     };
 
 
-    reader.onerror=function(){
+    /*
+     * ============================================================
+     * TRADUCTIONS
+     * ============================================================
+     */
 
-      reject(
-        new Error("FILE_ERROR")
-      );
+    var T = function(key) {
 
-    };
+      var dict = {
 
+        fr: {
 
-    reader.readAsDataURL(file);
+          appTitle: "UGTM Souss-Massa",
 
-  });
+          appSubtitle:
+            "Fédération Régionale de la Santé",
 
-}
+          navReport:
+            "Signalement",
 
+          navNews:
+            "Actualités",
 
-async function submitReport(event){
+          navEvents:
+            "Événements",
 
-  event.preventDefault();
+          navProfile:
+            "Mon Espace",
 
+          navAdmin:
+            "Administration",
 
-  if(!CLOUD_ON || !CLOUD){
+          reportTitle:
+            "Nouveau Signalement",
 
-    toast(T("reportError"));
-    return;
+          reportInfo:
+            "Votre signalement sera transmis de manière sécurisée.",
 
-  }
+          lblCategory:
+            "Catégorie",
 
+          catConditions:
+            "Conditions de travail",
 
-  if(!S.user){
+          catAdmin:
+            "Administratif",
 
-    toast(T("loginRequired"));
-    return;
+          catAffectation:
+            "Affectation / Mutation",
 
-  }
+          catViolence:
+            "Agression / Violence",
 
+          catOther:
+            "Autre",
 
-  var category=
-    document.querySelector(
-      'input[name="reportCategory"]:checked'
-    );
+          lblMessage:
+            "Description du problème",
 
+          btnSubmit:
+            "Envoyer le signalement",
 
-  if(!category){
+          profileTitle:
+            "Mon Espace",
 
-    toast(T("categoryRequired"));
-    return;
+          loginRequired:
+            "Vous devez être connecté pour accéder à votre espace.",
 
-  }
+          signin:
+            "Se connecter avec Google",
 
+          signout:
+            "Se déconnecter",
 
-  var description=
-    val("reportDescription");
+          connected:
+            "Connecté",
 
+          notConnected:
+            "Non connecté",
 
-  if(!description){
+          loginFirst:
+            "Veuillez vous connecter avant d'envoyer un signalement.",
 
-    toast(T("descriptionRequired"));
-    return;
+          sending:
+            "Envoi en cours...",
 
-  }
+          sent:
+            "Signalement envoyé avec succès.",
 
+          sendError:
+            "Impossible d'envoyer le signalement.",
 
-  var submit=$("reportSubmit");
+          connectionError:
+            "Le service de connexion n'est pas disponible.",
 
+          connectionFailed:
+            "Connexion impossible.",
 
-  if(submit){
+          logoutFailed:
+            "Déconnexion impossible.",
 
-    submit.disabled=true;
+          noNews:
+            "Aucune actualité disponible.",
 
-    submit.textContent=
-      LANG==="ar"
-        ?"جار الإرسال…"
-        :"Envoi…";
+          noEvents:
+            "Aucun événement disponible.",
 
-  }
+          noReports:
+            "Aucun signalement personnel.",
 
+          adminTitle:
+            "Administration",
 
-  try{
+          adminRequired:
+            "Accès réservé aux administrateurs."
 
-    var fileEl=$("reportFile");
+        },
 
-    var file=
-      fileEl &&
-      fileEl.files &&
-      fileEl.files[0]
-        ? fileEl.files[0]
-        : null;
+        ar: {
 
+          appTitle:
+            "الاتحاد العام للشغالين بالمغرب",
 
-    var attachment=
-      await fileToData(file);
+          appSubtitle:
+            "الجامعة الوطنية للصحة - سوس ماسة",
 
+          navReport:
+            "تبليغ",
 
-    var payload={
+          navNews:
+            "أخبار",
 
-      anonymous:S.reportAnonymous,
+          navEvents:
+            "أنشطة",
 
-      name:
-        S.reportAnonymous
-          ?""
-          :val("reportName"),
+          navProfile:
+            "حسابي",
 
-      etab:val("reportEtab"),
+          navAdmin:
+            "الإدارة",
 
-      category:category.value,
+          reportTitle:
+            "تبليغ جديد",
 
-      description:description,
+          reportInfo:
+            "سيتم إرسال تبليغكم بطريقة آمنة.",
 
-      date:
-        val("reportDate")||
-        todayStr(),
+          lblCategory:
+            "الصنف",
 
-      location:
-        val("reportLocation"),
+          catConditions:
+            "ظروف العمل",
 
-      attachmentName:
-        attachment.name,
+          catAdmin:
+            "إداري",
 
-      attachmentType:
-        attachment.type,
+          catAffectation:
+            "تعيين / انتقال",
 
-      attachmentData:
-        attachment.data
+          catViolence:
+            "اعتداء / عنف",
 
-    };
+          catOther:
+            "آخر",
 
+          lblMessage:
+            "وصف المشكل",
 
-    var result=
-      await CLOUD.addReport(payload);
+          btnSubmit:
+            "إرسال التبليغ",
 
+          profileTitle:
+            "حسابي",
 
-    var reference=
-      result &&
-      (
-        result.reference||
-        result.id
+          loginRequired:
+            "يجب تسجيل الدخول للوصول إلى حسابك.",
+
+          signin:
+            "تسجيل الدخول بواسطة Google",
+
+          signout:
+            "تسجيل الخروج",
+
+          connected:
+            "متصل",
+
+          notConnected:
+            "غير متصل",
+
+          loginFirst:
+            "يرجى تسجيل الدخول قبل إرسال التبليغ.",
+
+          sending:
+            "جاري الإرسال...",
+
+          sent:
+            "تم إرسال التبليغ بنجاح.",
+
+          sendError:
+            "تعذر إرسال التبليغ.",
+
+          connectionError:
+            "خدمة تسجيل الدخول غير متاحة.",
+
+          connectionFailed:
+            "تعذر تسجيل الدخول.",
+
+          logoutFailed:
+            "تعذر تسجيل الخروج.",
+
+          noNews:
+            "لا توجد أخبار حاليا.",
+
+          noEvents:
+            "لا توجد أنشطة حاليا.",
+
+          noReports:
+            "لا توجد تبليغات شخصية.",
+
+          adminTitle:
+            "الإدارة",
+
+          adminRequired:
+            "الوصول مخصص للمسؤولين."
+
+        }
+
+      };
+
+      return (
+        dict[S.lang] &&
+        dict[S.lang][key]
       )
-        ?(
-          result.reference||
-          "R-"+
-          String(result.id)
-          .slice(-8)
-          .toUpperCase()
-        )
-        :"R-"+Date.now();
+        ? dict[S.lang][key]
+        : key;
 
+    };
 
-    var success=$("reportSuccess");
 
-    if(success){
-      success.classList.add("show");
-    }
+    /*
+     * ============================================================
+     * SECURITE HTML
+     * ============================================================
+     */
 
+    function esc(str) {
 
-    var refEl=
-      $("reportSuccessRef");
-
-    if(refEl){
-      refEl.textContent=reference;
-    }
-
-
-    var form=$("reportForm");
-
-    if(form){
-
-      form.reset();
-
-      form.hidden=true;
-
-    }
-
-
-    S.reportAnonymous=false;
-
-    renderReports();
-
-    toast(T("reportSent"));
-
-
-  }catch(error){
-
-    console.error(error);
-
-    var message=
-      T("reportError");
-
-
-    if(
-      error &&
-      error.message==="FILE_TOO_LARGE"
-    ){
-      message=T("fileTooLarge");
-    }
-
-
-    if(
-      error &&
-      error.message==="INVALID_FILE"
-    ){
-      message=T("invalidFile");
-    }
-
-
-    toast(message);
-
-
-  }finally{
-
-    if(submit){
-
-      submit.disabled=false;
-
-      submit.textContent=
-        T("sendReport");
-
-    }
-
-  }
-
-}
-
-
-/* =========================
-   REPORT CARD
-   ========================= */
-
-function responseElement(id){
-
-  var nodes=
-    all("[data-report-response]");
-
-  for(
-    var i=0;
-    i<nodes.length;
-    i++
-  ){
-
-    if(
-      String(
-        nodes[i].getAttribute(
-          "data-report-response"
-        )
-      )===String(id)
-    ){
-      return nodes[i];
-    }
-
-  }
-
-  return null;
-
-}
-
-
-function renderReportCard(report,admin){
-
-  report=report||{};
-
-
-  var reference=
-    reportRef(report);
-
-  var status=
-    report.status||"new";
-
-  var category=
-    reportCategoryText(
-      report.category
-    );
-
-  var etab=
-    report.etab||"-";
-
-  var description=
-    report.description||"-";
-
-  var date=
-    report.date||"-";
-
-  var location=
-    report.location||"";
-
-  var anonymous=
-    report.anonymous===true;
-
-
-  var attachment="";
-
-
-  if(report.attachmentName){
-
-    attachment=
-      '<div class="hint" style="margin-top:8px">'+
-      esc(T("reportAttachment"))+
-      ": "+
-      esc(report.attachmentName)+
-      "</div>";
-
-  }
-
-
-  var response="";
-
-
-  if(report.response){
-
-    response=
-      '<div class="report-admin-response">'+
-        "<strong>"+
-          esc(T("reportResponse"))+
-        "</strong>"+
-        "<div>"+
-          esc(report.response)+
-        "</div>"+
-      "</div>";
-
-  }
-
-
-  var adminActions="";
-
-
-  if(admin){
-
-    adminActions=
-      '<div class="admin-response">'+
-
-        '<textarea '+
-          'data-report-response="'+
-          esc(report.id)+
-          '" '+
-          'placeholder="'+
-          esc(T("responsePlaceholder"))+
-        '">'+
-          esc(report.response||"")+
-        "</textarea>"+
-
-        '<div class="admin-actions">'+
-
-          '<button '+
-            'type="button" '+
-            'class="small-btn" '+
-            'data-report-status="progress" '+
-            'data-report-id="'+
-            esc(report.id)+
-          '">'+
-            esc(T("adminInProgress"))+
-          "</button>"+
-
-          '<button '+
-            'type="button" '+
-            'class="small-btn gold" '+
-            'data-report-status="done" '+
-            'data-report-id="'+
-            esc(report.id)+
-          '">'+
-            esc(T("adminDone"))+
-          "</button>"+
-
-          '<button '+
-            'type="button" '+
-            'class="small-btn primary" '+
-            'data-report-save="'+
-            esc(report.id)+
-          '">'+
-            esc(T("saveResponse"))+
-          "</button>"+
-
-        "</div>"+
-
-      "</div>";
-
-  }
-
-
-  return(
-
-    '<article class="report-card">'+
-
-      "<h3>"+
-        esc(
-          anonymous
-            ?T("reportAnonymous")
-            :(report.name||"Signalement")
-        )+
-      "</h3>"+
-
-      '<span class="report-ref">'+
-        esc(reference)+
-      "</span>"+
-
-      '<span class="report-status '+
-        esc(
-          reportStatusClass(status)
-        )+
-      '">'+
-        esc(
-          reportStatusText(status)
-        )+
-      "</span>"+
-
-      "<p>"+
-        "<strong>"+
-          esc(T("reportEstablishment"))+
-        ":</strong> "+
-        esc(etab)+
-      "</p>"+
-
-      "<p>"+
-        "<strong>"+
-          esc(T("reportCategory"))+
-        ":</strong> "+
-        esc(category)+
-      "</p>"+
-
-      "<p>"+
-        "<strong>"+
-          esc(T("reportDate"))+
-        ":</strong> "+
-        esc(date)+
-      "</p>"+
-
-      (
-        location
-          ?"<p>"+
-             "<strong>"+
-               esc(T("locationLabel"))+
-             ":</strong> "+
-             esc(location)+
-           "</p>"
-          :""
-      )+
-
-      '<p style="margin-top:10px">'+
-        esc(description)+
-      "</p>"+
-
-      attachment+
-
-      response+
-
-      adminActions+
-
-    "</article>"
-
-  );
-
-}
-
-
-/* =========================
-   REPORTS
-   ========================= */
-
-function getMyReports(){
-
-  if(!S.user){
-    return [];
-  }
-
-
-  return S.reports.filter(
-    function(report){
-
-      return(
-        report.ownerUid===
-        S.user.uid
-      );
-
-    }
-  );
-
-}
-
-
-function renderReports(){
-
-  var mine=
-    getMyReports();
-
-
-  var htmlMine="";
-
-
-  if(!S.user){
-
-    htmlMine=
-      '<div class="empty">'+
-        esc(T("loginRequired"))+
-      "</div>";
-
-  }
-  else if(!mine.length){
-
-    htmlMine=
-      '<div class="empty">'+
-        esc(T("noReports"))+
-      "</div>";
-
-  }
-  else{
-
-    htmlMine=
-      mine
-      .slice()
-      .reverse()
-      .map(function(report){
-
-        return renderReportCard(
-          report,
-          false
-        );
-
-      })
-      .join("");
-
-  }
-
-
-  var myList=
-    $("myReportsList");
-
-  if(myList){
-    myList.innerHTML=
-      htmlMine;
-  }
-
-
-  var profileList=
-    $("profileReportsList");
-
-  if(profileList){
-    profileList.innerHTML=
-      htmlMine;
-  }
-
-
-  var adminList=
-    $("admReportsList");
-
-
-  if(adminList){
-
-    if(!S.isAdmin){
-
-      adminList.innerHTML=
-        '<div class="empty">'+
-          esc(T("noReports"))+
-        "</div>";
-
-    }
-    else if(!S.reports.length){
-
-      adminList.innerHTML=
-        '<div class="empty">'+
-          esc(T("noReports"))+
-        "</div>";
-
-    }
-    else{
-
-      adminList.innerHTML=
-        S.reports
-        .slice()
-        .reverse()
-        .map(function(report){
-
-          return renderReportCard(
-            report,
-            true
-          );
-
-        })
-        .join("");
-
-    }
-
-  }
-
-
-  updateReportBadge();
-
-}
-
-
-function updateReportBadge(){
-
-  var badge=
-    $("adminReportsBadge");
-
-  if(!badge)return;
-
-
-  if(!S.isAdmin){
-
-    badge.hidden=true;
-    return;
-
-  }
-
-
-  var count=
-    S.reports.filter(
-      function(report){
-
-        return(
-          !report.status||
-          report.status==="new"
-        );
-
+      if (!str) {
+        return '';
       }
-    ).length;
+
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    }
 
 
-  badge.textContent=count;
+    /*
+     * ============================================================
+     * TOAST
+     * ============================================================
+     */
 
-  badge.hidden=
-    count===0;
+    function toast(msg) {
 
-}
+      var t =
+        document.getElementById('toast');
 
-
-/* =========================
-   ADMIN ACTIONS
-   ========================= */
-
-async function updateReport(id,status){
-
-  if(
-    !S.isAdmin||
-    !CLOUD||
-    !CLOUD.admin||
-    !CLOUD.admin.updateReport
-  ){
-    return;
-  }
-
-
-  var textarea=
-    responseElement(id);
-
-
-  var response=
-    textarea
-      ?String(
-        textarea.value||""
-      ).trim()
-      :"";
-
-
-  try{
-
-    await CLOUD.admin.updateReport(
-      id,
-      status,
-      response
-    );
-
-
-    toast(T("adminUpdated"));
-
-    renderReports();
-
-
-  }catch(error){
-
-    console.error(error);
-
-    toast(
-      LANG==="ar"
-        ?"تعذر تحديث التبليغ."
-        :"Impossible de mettre à jour le signalement."
-    );
-
-  }
-
-}
-
-
-async function saveReportResponse(id){
-
-  if(
-    !S.isAdmin||
-    !CLOUD||
-    !CLOUD.admin||
-    !CLOUD.admin.updateReport
-  ){
-    return;
-  }
-
-
-  var textarea=
-    responseElement(id);
-
-
-  var response=
-    textarea
-      ?String(
-        textarea.value||""
-      ).trim()
-      :"";
-
-
-  var current=
-    S.reports.find(
-      function(report){
-
-        return String(report.id)===
-          String(id);
-
+      if (!t) {
+        return;
       }
-    );
 
+      t.textContent = msg;
 
-  var status=
-    current &&
-    current.status
-      ?current.status
-      :"new";
+      t.classList.add('show');
 
+      setTimeout(function() {
 
-  try{
+        t.classList.remove('show');
 
-    await CLOUD.admin.updateReport(
-      id,
-      status,
-      response
-    );
+      }, 3000);
 
-
-    toast(T("adminUpdated"));
-
-    renderReports();
-
-
-  }catch(error){
-
-    console.error(error);
-
-    toast(
-      LANG==="ar"
-        ?"تعذر حفظ الجواب."
-        :"Impossible d'enregistrer la réponse."
-    );
-
-  }
-
-}
-
-
-/* =========================
-   NEWS
-   ========================= */
-
-function renderNews(){
-
-  var list=$("newsList");
-  var home=$("homeNews");
-
-  var html="";
-
-
-  if(!S.news.length){
-
-    html=
-      '<div class="empty">'+
-        esc(T("noData"))+
-      "</div>";
-
-  }
-  else{
-
-    html=
-      S.news
-      .slice()
-      .reverse()
-      .map(function(item){
-
-        return(
-          '<article class="card">'+
-            "<h3>"+
-              esc(item.title||"")+
-            "</h3>"+
-            "<p>"+
-              esc(
-                item.text||
-                item.content||
-                ""
-              )+
-            "</p>"+
-          "</article>"
-        );
-
-      })
-      .join("");
-
-  }
-
-
-  if(list){
-    list.innerHTML=html;
-  }
-
-  if(home){
-    home.innerHTML=html;
-  }
-
-}
-
-
-/* =========================
-   EVENTS
-   ========================= */
-
-function renderEvents(){
-
-  var list=$("eventsList");
-  var home=$("homeEvents");
-
-  var html="";
-
-
-  if(!S.events.length){
-
-    html=
-      '<div class="empty">'+
-        esc(T("noData"))+
-      "</div>";
-
-  }
-  else{
-
-    html=
-      S.events
-      .slice()
-      .reverse()
-      .map(function(item){
-
-        return(
-          '<article class="card">'+
-
-            "<h3>"+
-              esc(item.title||"")+
-            "</h3>"+
-
-            "<p>"+
-              esc(item.date||"")+
-            "</p>"+
-
-            "<p>"+
-              esc(
-                item.description||
-                item.text||
-                ""
-              )+
-            "</p>"+
-
-          "</article>"
-        );
-
-      })
-      .join("");
-
-  }
-
-
-  if(list){
-    list.innerHTML=html;
-  }
-
-  if(home){
-    home.innerHTML=html;
-  }
-
-}
-
-
-/* =========================
-   CONTACT
-   ========================= */
-
-function renderContact(){
-
-  var list=$("contactList");
-
-  if(!list)return;
-
-
-  var contacts=
-    DATA.contact||[];
-
-
-  list.innerHTML=
-    contacts.map(function(item){
-
-      var url=
-        item.url||"";
-
-
-      return(
-        '<article class="card'+
-          (url?" clickable":"")+
-        '"'+
-        (
-          url
-            ?' data-url="'+
-              esc(url)+
-              '"'
-            :""
-        )+
-        '>'+
-
-          "<h3>"+
-            esc(
-              item.icon
-                ?item.icon+" "+item.title
-                :item.title
-            )+
-          "</h3>"+
-
-          "<p>"+
-            esc(
-              item.description||""
-            )+
-          "</p>"+
-
-        "</article>"
-      );
-
-    })
-    .join("");
-
-
-  var p=
-    DATA.permanence||{};
-
-
-  if($("permanenceAddress")){
-    $("permanenceAddress").textContent=
-      p.address||"";
-  }
-
-  if($("permanencePhone")){
-    $("permanencePhone").textContent=
-      p.phone||"";
-  }
-
-  if($("permanenceEmail")){
-    $("permanenceEmail").textContent=
-      p.email||"";
-  }
-
-  if($("permanenceHours")){
-    $("permanenceHours").textContent=
-      p.hours||"";
-  }
-
-}
-
-
-/* =========================
-   PROFILE
-   ========================= */
-
-function renderProfile(){
-
-  var box=$("profileContent");
-
-  if(!box)return;
-
-
-  if(!S.user){
-
-    box.innerHTML=
-      '<div class="card">'+
-        "<p>"+
-          esc(T("loginRequired"))+
-        "</p>"+
-      "</div>";
-
-    return;
-
-  }
-
-
-  var name=
-    S.member&&
-    S.member.name
-      ?S.member.name
-      :(
-        S.user.displayName||
-        S.user.email||
-        ""
-      );
-
-
-  box.innerHTML=
-
-    '<div class="card">'+
-
-      '<h2 class="h2">'+
-        esc(name)+
-      "</h2>"+
-
-      "<p>"+
-        esc(S.user.email||"")+
-      "</p>"+
-
-      (
-        S.member
-          ?"<p>"+
-             esc(S.member.etab||"")+
-           "</p>"
-          :""
-      )+
-
-    "</div>";
-
-
-  renderReports();
-
-}
-
-
-/* =========================
-   ADMIN
-   ========================= */
-
-function renderAdminMembers(){
-
-  var list=$("adminMembersList");
-
-  if(!list)return;
-
-
-  if(!S.members.length){
-
-    list.innerHTML=
-      '<div class="empty">'+
-        esc(T("noData"))+
-      "</div>";
-
-    return;
-
-  }
-
-
-  list.innerHTML=
-    S.members
-    .map(function(member){
-
-      return(
-        '<article class="card">'+
-
-          "<h3>"+
-            esc(
-              member.name||
-              member.email||
-              ""
-            )+
-          "</h3>"+
-
-          "<p>"+
-            esc(member.email||"")+
-          "</p>"+
-
-          "<p>"+
-            esc(member.etab||"")+
-          "</p>"+
-
-          "<p>"+
-            esc(member.prov||"")+
-          "</p>"+
-
-          "<p>"+
-            esc(member.status||"")+
-          "</p>"+
-
-        "</article>"
-      );
-
-    })
-    .join("");
-
-}
-
-
-function renderAdminNews(){
-
-  var list=$("adminNewsList");
-
-  if(!list)return;
-
-
-  list.innerHTML=
-    S.news.length
-
-      ?S.news.map(function(item){
-
-          return(
-            '<article class="card">'+
-              "<h3>"+
-                esc(item.title||"")+
-              "</h3>"+
-              "<p>"+
-                esc(
-                  item.text||
-                  item.content||
-                  ""
-                )+
-              "</p>"+
-            "</article>"
-          );
-
-        }).join("")
-
-      :'<div class="empty">'+
-          esc(T("noData"))+
-        "</div>";
-
-}
-
-
-function renderAdminEvents(){
-
-  var list=$("adminEventsList");
-
-  if(!list)return;
-
-
-  list.innerHTML=
-    S.events.length
-
-      ?S.events.map(function(item){
-
-          return(
-            '<article class="card">'+
-              "<h3>"+
-                esc(item.title||"")+
-              "</h3>"+
-              "<p>"+
-                esc(item.date||"")+
-              "</p>"+
-              "<p>"+
-                esc(
-                  item.description||
-                  ""
-                )+
-              "</p>"+
-            "</article>"
-          );
-
-        }).join("")
-
-      :'<div class="empty">'+
-          esc(T("noData"))+
-        "</div>";
-
-}
-
-
-function renderAdminAll(){
-
-  if(!S.isAdmin)return;
-
-  renderAdminMembers();
-  renderAdminNews();
-  renderAdminEvents();
-  renderReports();
-
-}
-
-
-function showAdmTab(tab){
-
-  if(!S.isAdmin)return;
-
-
-  var tabs=[
-    "members",
-    "news",
-    "events",
-    "reports"
-  ];
-
-
-  S.admTab=tab;
-
-
-  tabs.forEach(function(name){
-
-    var panel=
-      $("adm-"+name);
-
-    if(panel){
-      panel.hidden=
-        name!==tab;
     }
 
 
-    var btn=
-      document.querySelector(
-        '[data-adm="'+name+'"]'
-      );
+    /*
+     * ============================================================
+     * CLOUD
+     * ============================================================
+     */
+
+    var CLOUD =
+      window.CLOUD || null;
+
+    var CLOUD_ON =
+      !!DATA.firebase;
 
 
-    if(btn){
+    /*
+     * ============================================================
+     * SESSION FIREBASE
+     * ============================================================
+     */
 
-      btn.setAttribute(
-        "aria-pressed",
-        name===tab
-          ?"true"
-          :"false"
-      );
-
-    }
-
-  });
+    window.UGTM =
+      window.UGTM || {};
 
 
-  if(tab==="reports"){
-    renderReports();
-  }
+    window.UGTM.ready =
+      function() {
 
-}
+        CLOUD =
+          window.CLOUD || null;
 
-
-/* =========================
-   CLOUD
-   ========================= */
-
-function setupCloud(){
-
-  if(!CLOUD_ON){
-
-    S.cloud="off";
-
-    renderNews();
-    renderEvents();
-    renderContact();
-
-    return;
-
-  }
-
-
-  S.cloud="loading";
-
-
-  if(CLOUD.onReady){
-
-    CLOUD.onReady(function(){
-
-      S.cloud="ready";
-
-    });
-
-  }
-
-
-  if(CLOUD.onError){
-
-    CLOUD.onError(function(error){
-
-      console.error(error);
-
-      S.cloud="error";
-
-    });
-
-  }
-
-
-  if(CLOUD.subscribeSession){
-
-    CLOUD.subscribeSession(
-      function(session){
-
-        S.user=
-          session&&session.user
-            ?session.user
-            :null;
-
-
-        S.member=
-          session&&session.member
-            ?session.member
-            :null;
-
-
-        S.isAdmin=
-          !!(
-            session&&
-            session.isAdmin
-          );
-
-
-        if(
-          window.UGTM&&
-          window.UGTM.setSession
-        ){
-
-          window.UGTM.setSession(
-            S.user,
-            S.member,
-            S.isAdmin
-          );
-
-        }
-
-
-        var adminNav=
-          $("adminNav");
-
-        if(adminNav){
-          adminNav.hidden=
-            !S.isAdmin;
-        }
-
+        S.cloud =
+          'ready';
 
         renderProfile();
+
         renderReports();
 
-      }
-    );
-
-  }
+      };
 
 
-  if(CLOUD.subscribeNews){
+    window.UGTM.failed =
+      function() {
 
-    CLOUD.subscribeNews(
-      function(list){
+        S.cloud =
+          'error';
 
-        S.news=list||[];
+        renderProfile();
+
+        renderReports();
+
+      };
+
+
+    window.UGTM.error =
+      function(error) {
+
+        console.error(
+          'UGTM Cloud:',
+          error
+        );
+
+      };
+
+
+    /*
+     * IMPORTANT :
+     * cloud.js envoie un objet session :
+     *
+     * {
+     *   user,
+     *   member,
+     *   isAdmin
+     * }
+     */
+
+    window.UGTM.setSession =
+      function(session) {
+
+        session =
+          session || {};
+
+        S.user =
+          session.user || null;
+
+        S.member =
+          session.member || null;
+
+        S.isAdmin =
+          !!session.isAdmin;
+
+        var adminTab =
+          document.getElementById('admin-tab');
+
+        if (adminTab) {
+
+          adminTab.hidden =
+            !S.isAdmin;
+
+        }
+
+        renderProfile();
+
+        renderReports();
+
+      };
+
+
+    window.UGTM.setNews =
+      function(news) {
+
+        S.news =
+          news || [];
 
         renderNews();
 
-      }
-    );
-
-  }
+      };
 
 
-  if(CLOUD.subscribeEvents){
+    window.UGTM.setEvents =
+      function(events) {
 
-    CLOUD.subscribeEvents(
-      function(list){
-
-        S.events=list||[];
+        S.events =
+          events || [];
 
         renderEvents();
 
-      }
-    );
-
-  }
+      };
 
 
-  if(CLOUD.subscribeMembers){
+    window.UGTM.setMembers =
+      function(members) {
 
-    CLOUD.subscribeMembers(
-      function(list){
+        S.members =
+          members || [];
 
-        S.members=list||[];
-
-        renderAdminMembers();
-
-      }
-    );
-
-  }
+      };
 
 
-  if(CLOUD.subscribeReports){
+    window.UGTM.setReports =
+      function(reports) {
 
-    CLOUD.subscribeReports(
-      function(list){
-
-        S.reports=list||[];
+        S.reports =
+          reports || [];
 
         renderReports();
 
+      };
+
+
+    /*
+     * ============================================================
+     * PROFIL
+     * ============================================================
+     */
+
+    function renderProfile() {
+
+      var box =
+        document.getElementById(
+          'profile-box'
+        );
+
+      if (!box) {
+        return;
       }
-    );
 
-  }
 
-}
+      if (!S.user) {
 
+        box.innerHTML =
 
-/* =========================
-   PUBLIC API
-   ========================= */
+          '<div class="card">' +
 
-window.UGTM=window.UGTM||{};
+            '<h2 class="h2">' +
 
+              esc(
+                T('profileTitle')
+              ) +
 
-window.UGTM.ready=function(){
-  return S.cloud==="ready";
-};
+            '</h2>' +
 
+            '<p>' +
 
-window.UGTM.failed=function(){
-  return S.cloud==="error";
-};
+              esc(
+                T('loginRequired')
+              ) +
 
+            '</p>' +
 
-window.UGTM.setNews=function(list){
+            '<button ' +
 
-  S.news=list||[];
+              'type="button" ' +
 
-  renderNews();
+              'class="btn primary block" ' +
 
-};
+              'data-action="signin" ' +
 
+              'style="margin-top:12px">' +
 
-window.UGTM.setEvents=function(list){
+              esc(
+                T('signin')
+              ) +
 
-  S.events=list||[];
+            '</button>' +
 
-  renderEvents();
+          '</div>';
 
-};
+        return;
 
+      }
 
-window.UGTM.setSession=function(
-  user,
-  member,
-  isAdmin
-){
 
-  S.user=user||null;
-  S.member=member||null;
-  S.isAdmin=!!isAdmin;
+      var name =
+        S.user.displayName ||
+        S.user.email ||
+        'Utilisateur';
 
 
-  var adminNav=
-    $("adminNav");
+      var memberInfo = '';
 
-  if(adminNav){
-    adminNav.hidden=!S.isAdmin;
-  }
 
+      if (S.member) {
 
-  renderProfile();
-  renderReports();
+        if (S.member.name) {
 
-};
-
-
-window.UGTM.setMembers=function(list){
-
-  S.members=list||[];
-
-  renderAdminMembers();
-
-};
-
-
-window.UGTM.setReports=function(list){
-
-  S.reports=list||[];
-
-  renderReports();
-
-};
-
-
-window.UGTM.toast=toast;
-
-
-/* =========================
-   EVENTS
-   ========================= */
-
-document.addEventListener(
-"click",
-function(event){
-
-  var el=
-    event.target.closest(
-      "[data-go],[data-form],[data-link],[data-url],[data-action],[data-adm],[data-report-status],[data-report-save]"
-    );
-
-
-  if(!el)return;
-
-
-  if(el.hasAttribute("data-go")){
-
-    var destination=
-      el.getAttribute("data-go");
-
-
-    if(
-      destination==="admin"&&
-      !S.isAdmin
-    ){
-
-      toast(
-        LANG==="ar"
-          ?"غير مسموح."
-          :"Accès réservé à l'administration."
-      );
-
-      return;
-
-    }
-
-
-    go(destination);
-
-    return;
-
-  }
-
-
-  if(el.hasAttribute("data-form")){
-
-    resetReportForm();
-
-    go("report");
-
-    return;
-
-  }
-
-
-  if(el.hasAttribute("data-link")){
-
-    var link=
-      el.getAttribute("data-link");
-
-
-    if(link==="num"){
-      openUrl(LINKS.num);
-    }
-
-    return;
-
-  }
-
-
-  if(
-    el.hasAttribute("data-url")&&
-    el.getAttribute("data-url")
-  ){
-
-    openUrl(
-      el.getAttribute("data-url")
-    );
-
-    return;
-
-  }
-
-
-  if(el.hasAttribute("data-action")){
-
-    var action=
-      el.getAttribute("data-action");
-
-
-    if(action==="newReport"){
-
-      resetReportForm();
-
-      go("report");
-
-      return;
-
-    }
-
-
-    if(action==="myReports"){
-
-      go("report");
-
-      renderReports();
-
-
-      setTimeout(function(){
-
-        var box=
-          $("myReportsBox");
-
-
-        if(box){
-
-          box.scrollIntoView({
-            behavior:"smooth",
-            block:"start"
-          });
+          memberInfo +=
+            '<p style="margin-top:8px">' +
+              '<strong>Nom :</strong> ' +
+              esc(S.member.name) +
+            '</p>';
 
         }
 
-      },100);
+        if (S.member.etab) {
 
-      return;
+          memberInfo +=
+            '<p>' +
+              '<strong>Établissement :</strong> ' +
+              esc(S.member.etab) +
+            '</p>';
+
+        }
+
+      }
+
+
+      box.innerHTML =
+
+        '<div class="card">' +
+
+          '<h2 class="h2">' +
+
+            esc(
+              T('profileTitle')
+            ) +
+
+          '</h2>' +
+
+          '<span class="status success">' +
+
+            esc(
+              T('connected')
+            ) +
+
+          '</span>' +
+
+          '<p style="margin-top:12px">' +
+
+            'Bonjour, <strong>' +
+
+              esc(name) +
+
+            '</strong>' +
+
+          '</p>' +
+
+          '<p style="color:var(--text-muted)">' +
+
+            esc(
+              S.user.email || ''
+            ) +
+
+          '</p>' +
+
+          memberInfo +
+
+          '<button ' +
+
+            'type="button" ' +
+
+            'class="btn ghost block" ' +
+
+            'data-action="signout" ' +
+
+            'style="margin-top:16px">' +
+
+            esc(
+              T('signout')
+            ) +
+
+          '</button>' +
+
+        '</div>';
 
     }
 
 
-    if(action==="lang"){
+    /*
+     * ============================================================
+     * SIGNALEMENTS
+     * ============================================================
+     */
 
-      LANG=
-        LANG==="fr"
-          ?"ar"
-          :"fr";
+    function renderReports() {
 
+      var box =
+        document.getElementById(
+          'my-reports'
+        );
 
-      applyLang();
-
-      renderNews();
-      renderEvents();
-      renderContact();
-      renderReports();
-      renderAdminAll();
-
-      return;
-
-    }
-
-  }
+      if (!box) {
+        return;
+      }
 
 
-  if(el.hasAttribute("data-adm")){
+      if (!S.user) {
 
-    showAdmTab(
-      el.getAttribute("data-adm")
-    );
+        box.innerHTML = '';
 
-    return;
+        return;
 
-  }
+      }
 
 
-  if(
-    el.hasAttribute(
-      "data-report-status"
-    )
-  ){
+      var mine =
+        (S.reports || []).filter(
+          function(report) {
 
-    updateReport(
-      el.getAttribute(
-        "data-report-id"
-      ),
-      el.getAttribute(
-        "data-report-status"
-      )
-    );
-
-    return;
-
-  }
-
-
-  if(
-    el.hasAttribute(
-      "data-report-save"
-    )
-  ){
-
-    saveReportResponse(
-      el.getAttribute(
-        "data-report-save"
-      )
-    );
-
-    return;
-
-  }
-
-});
-
-
-document.addEventListener(
-"change",
-function(event){
-
-  var el=event.target;
-
-
-  if(
-    el&&
-    el.id==="reportAnonymous"
-  ){
-
-    toggleReportAnonymous();
-
-  }
-
-});
-
-
-document.addEventListener(
-"submit",
-function(event){
-
-  var form=event.target;
-
-
-  if(
-    form&&
-    form.id==="reportForm"
-  ){
-
-    submitReport(event);
-
-  }
-
-});
-
-
-/* =========================
-   INIT
-   ========================= */
-
-function init(){
-
-  applyLang();
-
-  renderNews();
-  renderEvents();
-  renderContact();
-
-  /*
-   * Sécurise l'état initial du formulaire,
-   * même en cas d'accès direct/deep-link.
-   */
-  toggleReportAnonymous();
-
-
-  var date=$("reportDate");
-
-  if(
-    date&&
-    !date.value
-  ){
-    date.value=todayStr();
-  }
-
-
-  var adminNav=
-    $("adminNav");
-
-  if(adminNav){
-    adminNav.hidden=true;
-  }
-
-
-  setupCloud();
-
-
-  /*
-   * Service Worker.
-   * Non bloquant pour l'application.
-   */
-  if(
-    "serviceWorker" in navigator&&
-    location.protocol!=="file:"
-  ){
-
-    window.addEventListener(
-      "load",
-      function(){
-
-        navigator.serviceWorker
-          .register("./sw.js")
-          .then(function(){
-
-            console.log(
-              "UGTM Service Worker actif"
+            return (
+              report &&
+              report.ownerUid ===
+              S.user.uid
             );
 
-          })
-          .catch(function(error){
+          }
+        );
 
-            console.warn(
-              "Service Worker non disponible:",
+
+      if (!mine.length) {
+
+        box.innerHTML =
+
+          '<div class="card">' +
+
+            '<h2 class="h2">' +
+
+              'Mes signalements' +
+
+            '</h2>' +
+
+            '<div class="empty">' +
+
+              esc(
+                T('noReports')
+              ) +
+
+            '</div>' +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html =
+
+        '<div class="card">' +
+
+          '<h2 class="h2">' +
+
+            'Mes signalements' +
+
+          '</h2>';
+
+
+      mine.forEach(
+        function(report) {
+
+          html +=
+
+            '<div style="' +
+
+              'border-top:1px solid var(--border);' +
+
+              'padding:12px 0">' +
+
+              '<strong>' +
+
+                esc(
+                  report.category
+                ) +
+
+              '</strong>' +
+
+              '<p style="' +
+
+                'margin-top:6px;' +
+
+                'white-space:pre-wrap">' +
+
+                esc(
+                  report.description ||
+                  report.message ||
+                  ''
+                ) +
+
+              '</p>' +
+
+              '<small style="' +
+
+                'color:var(--text-muted)">' +
+
+                esc(
+                  report.status || 'new'
+                ) +
+
+              '</small>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      html +=
+        '</div>';
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * ACTUALITES
+     * ============================================================
+     */
+
+    function renderNews() {
+
+      var box =
+        document.getElementById(
+          'news-list'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.news.length) {
+
+        box.innerHTML =
+
+          '<div class="card empty">' +
+
+            esc(
+              T('noNews')
+            ) +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html = '';
+
+
+      S.news.forEach(
+        function(item) {
+
+          html +=
+
+            '<div class="card">' +
+
+              '<h2 class="h2">' +
+
+                esc(
+                  item.title ||
+                  ''
+                ) +
+
+              '</h2>' +
+
+              '<p style="white-space:pre-wrap">' +
+
+                esc(
+                  item.content ||
+                  item.description ||
+                  ''
+                ) +
+
+              '</p>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * EVENEMENTS
+     * ============================================================
+     */
+
+    function renderEvents() {
+
+      var box =
+        document.getElementById(
+          'events-list'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.events.length) {
+
+        box.innerHTML =
+
+          '<div class="card empty">' +
+
+            esc(
+              T('noEvents')
+            ) +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html = '';
+
+
+      S.events.forEach(
+        function(item) {
+
+          html +=
+
+            '<div class="card">' +
+
+              '<h2 class="h2">' +
+
+                esc(
+                  item.title ||
+                  ''
+                ) +
+
+              '</h2>' +
+
+              '<p>' +
+
+                esc(
+                  item.description ||
+                  item.content ||
+                  ''
+                ) +
+
+              '</p>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * SETUP CLOUD
+     * ============================================================
+     */
+
+    function setupCloud() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD) {
+
+        S.cloud =
+          'error';
+
+        renderProfile();
+
+        renderReports();
+
+        return;
+
+      }
+
+
+      S.cloud =
+        'ready';
+
+      renderProfile();
+
+      renderReports();
+
+    }
+
+
+    /*
+     * ============================================================
+     * ENVOI SIGNALEMENT
+     * ============================================================
+     */
+
+    async function submitReport(form) {
+
+      if (!CLOUD ||
+          !CLOUD.addReport) {
+
+        toast(
+          T('sendError')
+        );
+
+        return;
+
+      }
+
+
+      if (!S.user) {
+
+        toast(
+          T('loginFirst')
+        );
+
+        return;
+
+      }
+
+
+      var submit =
+        document.getElementById(
+          'report-submit'
+        );
+
+
+      if (submit) {
+
+        submit.disabled =
+          true;
+
+        submit.textContent =
+          T('sending');
+
+      }
+
+
+      var fd =
+        new FormData(form);
+
+
+      var category =
+        String(
+          fd.get('category') ||
+          ''
+        ).trim();
+
+
+      var message =
+        String(
+          fd.get('message') ||
+          ''
+        ).trim();
+
+
+      if (!message) {
+
+        if (submit) {
+
+          submit.disabled =
+            false;
+
+          submit.textContent =
+            T('btnSubmit');
+
+        }
+
+        return;
+
+      }
+
+
+      var payload = {
+
+        ownerUid:
+          S.user.uid || '',
+
+        anonymous:
+          false,
+
+        name:
+          S.user.displayName ||
+          S.user.email ||
+          '',
+
+        etab:
+          S.member &&
+          S.member.etab
+            ? S.member.etab
+            : '',
+
+        category:
+          category,
+
+        description:
+          message,
+
+        date:
+          new Date()
+            .toISOString()
+            .slice(0, 10),
+
+        location:
+          '',
+
+        attachmentName:
+          '',
+
+        attachmentType:
+          '',
+
+        attachmentData:
+          '',
+
+        status:
+          'new',
+
+        response:
+          ''
+
+      };
+
+
+      try {
+
+        await CLOUD.addReport(
+          payload
+        );
+
+
+        form.reset();
+
+
+        toast(
+          T('sent')
+        );
+
+
+      }
+      catch (error) {
+
+        console.error(
+          'Signalement:',
+          error
+        );
+
+        toast(
+          T('sendError')
+        );
+
+      }
+      finally {
+
+        if (submit) {
+
+          submit.disabled =
+            false;
+
+          submit.textContent =
+            T('btnSubmit');
+
+        }
+
+      }
+
+    }
+
+
+    /*
+     * ============================================================
+     * CONNEXION / DECONNEXION
+     * ============================================================
+     */
+
+    function signIn() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD ||
+          !CLOUD.signIn) {
+
+        toast(
+          T('connectionError')
+        );
+
+        return;
+
+      }
+
+
+      CLOUD.signIn()
+        .catch(
+          function(error) {
+
+            console.error(
+              'Connexion:',
               error
             );
 
-          });
+            toast(
+              T('connectionFailed')
+            );
+
+          }
+        );
+
+    }
+
+
+    function signOut() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD ||
+          !CLOUD.signOut) {
+
+        return;
+
+      }
+
+
+      CLOUD.signOut()
+        .catch(
+          function(error) {
+
+            console.error(
+              'Déconnexion:',
+              error
+            );
+
+            toast(
+              T('logoutFailed')
+            );
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * NAVIGATION
+     * ============================================================
+     */
+
+    function showTab(targetId) {
+
+      document
+        .querySelectorAll(
+          '.tab-btn, .bottom-btn'
+        )
+        .forEach(
+          function(button) {
+
+            button.classList.toggle(
+              'active',
+              button.getAttribute(
+                'data-tab'
+              ) === targetId
+            );
+
+          }
+        );
+
+
+      document
+        .querySelectorAll(
+          '.section'
+        )
+        .forEach(
+          function(section) {
+
+            section.classList.toggle(
+              'active',
+              section.id === targetId
+            );
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * CHANGEMENT LANGUE
+     * ============================================================
+     */
+
+    function applyLanguage() {
+
+      document.documentElement
+        .lang =
+          S.lang;
+
+      document.documentElement
+        .dir =
+          S.lang === 'ar'
+            ? 'rtl'
+            : 'ltr';
+
+
+      document
+        .querySelectorAll(
+          '[data-i18n]'
+        )
+        .forEach(
+          function(element) {
+
+            var key =
+              element.getAttribute(
+                'data-i18n'
+              );
+
+            element.textContent =
+              T(key);
+
+          }
+        );
+
+
+      var langButton =
+        document.getElementById(
+          'lang-toggle'
+        );
+
+
+      if (langButton) {
+
+        langButton.textContent =
+          S.lang === 'fr'
+            ? 'عربي'
+            : 'Français';
+
+      }
+
+
+      renderProfile();
+
+      renderReports();
+
+      renderNews();
+
+      renderEvents();
+
+    }
+
+
+    /*
+     * ============================================================
+     * EVENEMENTS
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'click',
+      function(e) {
+
+        var actionElement =
+          e.target.closest(
+            '[data-action]'
+          );
+
+
+        if (actionElement) {
+
+          var action =
+            actionElement.getAttribute(
+              'data-action'
+            );
+
+
+          if (action === 'signin') {
+
+            signIn();
+
+            return;
+
+          }
+
+
+          if (action === 'signout') {
+
+            signOut();
+
+            return;
+
+          }
+
+        }
+
+
+        var tabButton =
+          e.target.closest(
+            '[data-tab]'
+          );
+
+
+        if (tabButton) {
+
+          var targetId =
+            tabButton.getAttribute(
+              'data-tab'
+            );
+
+
+          if (
+            targetId === 's-admin' &&
+            !S.isAdmin
+          ) {
+
+            toast(
+              T('adminRequired')
+            );
+
+            return;
+
+          }
+
+
+          showTab(
+            targetId
+          );
+
+        }
 
       }
     );
 
-  }
 
-}
+    /*
+     * ============================================================
+     * FORMULAIRE SIGNALEMENT
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'submit',
+      function(e) {
+
+        if (
+          e.target &&
+          e.target.id ===
+          'report-form'
+        ) {
+
+          e.preventDefault();
+
+          submitReport(
+            e.target
+          );
+
+        }
+
+      }
+    );
 
 
-if(
-  document.readyState==="loading"
-){
+    /*
+     * ============================================================
+     * LANGUE
+     * ============================================================
+     */
 
-  document.addEventListener(
-    "DOMContentLoaded",
-    init
-  );
+    document
+      .getElementById(
+        'lang-toggle'
+      )
+      .addEventListener(
+        'click',
+        function() {
 
-}
-else{
+          S.lang =
+            S.lang === 'fr'
+              ? 'ar'
+              : 'fr';
 
-  init();
+          applyLanguage();
 
-}
+        }
+      );
 
-})();
-</script>
+
+    /*
+     * ============================================================
+     * INITIALISATION FIREBASE
+     * ============================================================
+     */
+
+    function init() {
+
+      renderProfile();
+
+      renderNews();
+
+      renderEvents();
+
+      renderReports();
+
+
+      if (!DATA.firebase) {
+
+        S.cloud =
+          'off';
+
+        return;
+
+      }
+
+
+      import('./cloud.js')
+
+        .then(
+          function(mod) {
+
+            return mod.init(
+              DATA.firebase,
+              window.UGTM
+            );
+
+          }
+        )
+
+        .then(
+          function() {
+
+            setupCloud();
+
+          }
+        )
+
+        .catch(
+          function(error) {
+
+            console.error(
+              'Initialisation Cloud impossible:',
+              error
+            );
+
+            window.UGTM.failed();
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * DOM READY
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function() {
+
+        applyLanguage();
+
+        init();
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
