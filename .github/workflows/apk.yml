@@ -298,32 +298,4 @@ jobs:
         with:
           name: UGTM-Android-APK
           path: android/app/build/outputs/apk/release/app-release.apk
-          if-no-files-found: error 
-      - name: Vérifier APK
-        run: |
-          set -e
-
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
-
-          if [ ! -f "$APK" ]; then
-            echo "ERREUR : APK introuvable."
-            exit 1
-          fi
-
-          ls -lh "$APK"
-
-          echo ""
-          echo "=========================================="
-          echo "CERTIFICAT REEL DE L'APK"
-          echo "=========================================="
-
-          $ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)/apksigner verify \
-            --print-certs \
-            "$APK"
-
-      - name: Publier APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: UGTM-Android-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
