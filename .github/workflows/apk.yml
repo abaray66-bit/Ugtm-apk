@@ -217,9 +217,10 @@ jobs:
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
-          # Ajoute signingConfigs juste après le premier android {
           if "signingConfigs {" not in s:
-              block = """android {
+              marker = "android {"
+
+              signing = """android {
               signingConfigs {
                   release {
                       storeFile file("../ugtm-release.keystore")
@@ -229,9 +230,8 @@ jobs:
                   }
               """
 
-              s = s.replace("android {", block, 1)
+              s = s.replace(marker, signing, 1)
 
-          # Ajoute la signature dans le build type release existant.
           if "signingConfig signingConfigs.release" not in s:
               pattern = r"(buildTypes\s*\{\s*release\s*\{)"
 
@@ -240,7 +240,12 @@ jobs:
                   r"        signingConfig signingConfigs.release"
               )
 
-              s, count = re.subn(pattern, replacement, s, count=1)
+              s, count = re.subn(
+                  pattern,
+                  replacement,
+                  s,
+                  count=1
+              )
 
               if count == 0:
                   raise SystemExit(
@@ -251,41 +256,43 @@ jobs:
           PY
 
           echo "=== Signature configurée ==="
-          grep -n "signingConfig\|storeFile\|storePassword\|keyAlias" \
+
+          grep -n \
+            "signingConfig\|storeFile\|storePassword\|keyAlias" \
             android/app/build.gradle || true
 
       - name: Vérifier les secrets de signature
         if: env.HAS_KEYSTORE == 'true'
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
 
           if [ -z "$KEYSTORE_PASSWORD" ]; then
-            echo "ERREUR : KEYSTORE_PASSWORD est vide."
+            echo "ERREUR : ANDROID_KEYSTORE_PASSWORD est vide."
             exit 1
           fi
 
           if [ -z "$KEY_ALIAS" ]; then
-            echo "ERREUR : KEY_ALIAS est vide."
+            echo "ERREUR : ANDROID_KEY_ALIAS est vide."
             exit 1
           fi
 
           if [ -z "$KEY_PASSWORD" ]; then
-            echo "ERREUR : KEY_PASSWORD est vide."
+            echo "ERREUR : ANDROID_KEY_PASSWORD est vide."
             exit 1
           fi
 
-          echo "Les trois paramètres de signature sont présents."
+          echo "Les paramètres de signature sont présents."
 
       - name: Build APK Release
         working-directory: android
         env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
 
