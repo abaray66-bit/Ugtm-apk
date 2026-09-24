@@ -103,27 +103,23 @@ jobs:
             --iconBackgroundColorDark "#FFFFFF"
 
       - name: Installer Google Services
+        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
         run: |
           set -e
 
-          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
-            mkdir -p android/app
+          mkdir -p android/app
 
-            echo '${{ secrets.GOOGLE_SERVICES_JSON }}' \
-              > android/app/google-services.json
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' \
+            > android/app/google-services.json
 
-            echo "google-services.json installé."
-          else
-            echo "GOOGLE_SERVICES_JSON non configuré."
-          fi
+          echo "google-services.json installé."
 
       - name: Configurer Google Services Gradle
+        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
         run: |
           set -e
 
-          if [ -f android/app/google-services.json ]; then
-
-            python3 - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
 
           p = Path("android/build.gradle")
@@ -151,10 +147,6 @@ jobs:
           p.write_text(s)
           PY
 
-          else
-            echo "Firebase non configuré, étape ignorée."
-          fi
-
       - name: Synchroniser Capacitor
         run: |
           set -e
@@ -176,20 +168,19 @@ jobs:
           find android/app/src/main -maxdepth 3 -type f | head -100
 
       - name: Configurer la signature APK
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
           set -e
 
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" \
+            | base64 --decode > android/ugtm-release.keystore
 
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" \
-              | base64 --decode > android/ugtm-release.keystore
+          test -s android/ugtm-release.keystore || {
+            echo "ERREUR : keystore invalide."
+            exit 1
+          }
 
-            test -s android/ugtm-release.keystore || {
-              echo "ERREUR : keystore invalide."
-              exit 1
-            }
-
-            python3 - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
 
           p = Path("android/app/build.gradle")
@@ -225,13 +216,6 @@ jobs:
           p.write_text(s)
           PY
 
-            echo "Signature release configurée."
-
-          else
-            echo "ANDROID_KEYSTORE_BASE64 non configuré."
-            echo "L'APK sera construit sans signature personnalisée."
-          fi
-
       - name: Build APK Release
         working-directory: android
         env:
@@ -251,15 +235,9 @@ jobs:
           set -e
 
           echo "=== APK générés ==="
+          find android/app/build/outputs/apk -type f -name "*.apk" -ls
 
-          find android/app/build/outputs/apk \
-            -type f \
-            -name "*.apk" \
-            -ls
-
-          APK=$(find android/app/build/outputs/apk/release \
-            -type f \
-            -name "*.apk" | head -1)
+          APK=$(find android/app/build/outputs/apk/release -type f -name "*.apk" | head -1)
 
           if [ -z "$APK" ]; then
             echo "ERREUR : aucun APK Release trouvé."
