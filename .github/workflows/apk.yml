@@ -15,14 +15,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ==========================================================
+      # CHECKOUT
+      # ==========================================================
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      # ==========================================================
+      # VERIFICATION PROJET
+      # ==========================================================
 
       - name: Vérifier le projet
         run: |
           set -e
 
-          echo "=== Contenu du projet ==="
+          echo "=== CONTENU DU PROJET ==="
           ls -la
 
           if [ ! -f package.json ]; then
@@ -42,10 +51,18 @@ jobs:
 
           echo "Projet UGTM valide."
 
+      # ==========================================================
+      # NODE
+      # ==========================================================
+
       - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # ==========================================================
+      # JAVA
+      # ==========================================================
 
       - name: Java 21
         uses: actions/setup-java@v4
@@ -53,24 +70,42 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # ==========================================================
+      # DEPENDANCES
+      # ==========================================================
+
       - name: Installer les dépendances
-        run: npm install
+        run: |
+          set -e
+          npm install
 
       - name: Installer Capacitor Android
-        run: npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: |
+          set -e
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
       - name: Vérifier Capacitor
-        run: npx cap --version
+        run: |
+          npx cap --version
+
+      # ==========================================================
+      # PROJET ANDROID
+      # ==========================================================
 
       - name: Générer le projet Android
         run: |
           set -e
 
           if [ ! -d android ]; then
+            echo "Projet Android absent : génération..."
             npx cap add android
           else
             echo "Projet Android déjà présent."
           fi
+
+      # ==========================================================
+      # FIREBASE
+      # ==========================================================
 
       - name: Installer google-services.json
         env:
@@ -85,9 +120,14 @@ jobs:
 
           mkdir -p android/app
 
-          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          printf '%s' "$GOOGLE_SERVICES_JSON" \
+            > android/app/google-services.json
 
           echo "google-services.json installé."
+
+      # ==========================================================
+      # GOOGLE SERVICES GRADLE
+      # ==========================================================
 
       - name: Configurer Google Services Gradle
         run: |
@@ -105,7 +145,8 @@ jobs:
                   text = (
                       "buildscript {\n"
                       "    dependencies {\n"
-                      "        classpath 'com.google.gms:google-services:4.4.2'\n"
+                      "        classpath "
+                      "'com.google.gms:google-services:4.4.2'\n"
                       "    }\n"
                       "}\n\n"
                       + text
@@ -119,10 +160,17 @@ jobs:
               text = app.read_text()
 
               if "com.google.gms.google-services" not in text:
-                  text += "\n\napply plugin: 'com.google.gms.google-services'\n"
+                  text += (
+                      "\n\n"
+                      "apply plugin: 'com.google.gms.google-services'\n"
+                  )
 
               app.write_text(text)
           PY
+
+      # ==========================================================
+      # CAPACITOR SYNC
+      # ==========================================================
 
       - name: Synchroniser Capacitor
         run: |
@@ -130,7 +178,7 @@ jobs:
           npx cap sync android
 
       # ==========================================================
-      # KEystore DE SIGNATURE STABLE
+      # INSTALLATION DU KEYSTORE
       # ==========================================================
 
       - name: Installer le keystore
@@ -144,7 +192,9 @@ jobs:
             exit 1
           fi
 
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/ugtm-release.keystore
+          echo "$ANDROID_KEYSTORE_BASE64" \
+            | base64 --decode \
+            > android/ugtm-release.keystore
 
           if [ ! -s android/ugtm-release.keystore ]; then
             echo "ERREUR : keystore vide ou invalide."
@@ -153,12 +203,36 @@ jobs:
 
           echo "Keystore installé."
 
+          ls -lh android/ugtm-release.keystore
+
+      # ==========================================================
+      # VERIFICATION KEYSTORE
+      # ==========================================================
+
       - name: Vérifier le keystore
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           set -e
+
+          echo "=== FICHIER KEYSTORE ==="
+
+          ls -lh android/ugtm-release.keystore
+
+          echo ""
+          echo "=== VERIFICATION KEYSTORE ==="
+
+          keytool -list \
+            -keystore android/ugtm-release.keystore \
+            -storetype PKCS12 \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD"
+
+          echo ""
+          echo "Keystore valide."
+
+          echo ""
+          echo "=== EMPREINTES ==="
 
           keytool -list \
             -v \
@@ -167,6 +241,10 @@ jobs:
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -alias "$ANDROID_KEY_ALIAS" \
             | grep -E "Alias name:|SHA1:|SHA256:"
+
+      # ==========================================================
+      # CONFIGURATION SIGNATURE GRADLE
+      # ==========================================================
 
       - name: Configurer la signature Gradle
         env:
@@ -182,8 +260,10 @@ jobs:
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
 
-          # Retirer d'anciennes configurations de signature
-          # ajoutées par d'anciens workflows.
+          # ------------------------------------------------------
+          # Supprimer une ancienne configuration signingConfigs
+          # ------------------------------------------------------
+
           start = text.find("signingConfigs {")
 
           if start != -1:
@@ -195,12 +275,17 @@ jobs:
                       depth += 1
                   elif text[i] == "}":
                       depth -= 1
+
                       if depth == 0:
                           end = i + 1
                           break
 
               if end:
                   text = text[:start] + text[end:]
+
+          # ------------------------------------------------------
+          # Ajouter la configuration PKCS12
+          # ------------------------------------------------------
 
           signing = """
               signingConfigs {
@@ -217,7 +302,9 @@ jobs:
           marker = "android {"
 
           if marker not in text:
-              raise SystemExit("ERREUR : bloc android introuvable.")
+              raise SystemExit(
+                  "ERREUR : bloc android introuvable."
+              )
 
           text = text.replace(
               marker,
@@ -225,69 +312,32 @@ jobs:
               1
           )
 
-          # Supprimer un ancien bloc release s'il existe
-          build_marker = "buildTypes {"
-          build_start = text.find(build_marker)
+          # ------------------------------------------------------
+          # Vérifier buildTypes
+          # ------------------------------------------------------
 
-          if build_start != -1:
-              brace = text.find("{", build_start)
-              depth = 0
-              end = None
+          if "buildTypes {" in text:
 
-              for i in range(brace, len(text)):
-                  if text[i] == "{":
-                      depth += 1
-                  elif text[i] == "}":
-                      depth -= 1
-                      if depth == 0:
-                          end = i + 1
-                          break
+              if "signingConfig signingConfigs.release" not in text:
 
-              if end:
-                  old_block = text[build_start:end]
+                  marker = "buildTypes {"
 
-                  release_start = old_block.find("release {")
+                  replacement = """buildTypes {
+                      release {
+                          signingConfig signingConfigs.release
+                          minifyEnabled false
+                          shrinkResources false
+                      }
+                  """
 
-                  if release_start != -1:
-                      release_brace = old_block.find("{", release_start)
-                      rdepth = 0
-                      release_end = None
-
-                      for i in range(release_brace, len(old_block)):
-                          if old_block[i] == "{":
-                              rdepth += 1
-                          elif old_block[i] == "}":
-                              rdepth -= 1
-                              if rdepth == 0:
-                                  release_end = i + 1
-                                  break
-
-                      if release_end:
-                          old_block = (
-                              old_block[:release_start]
-                              + old_block[release_end:]
-                          )
-
-                  new_block = old_block.rstrip()
-
-                  if not new_block.endswith("}"):
-                      new_block += "\n}"
-
-                  new_block = new_block[:-1] + """
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled false
-                      shrinkResources false
-                  }
-              }"""
-
-                  text = (
-                      text[:build_start]
-                      + new_block
-                      + text[end:]
+                  text = text.replace(
+                      marker,
+                      replacement,
+                      1
                   )
 
           else:
+
               text += """
 
           android {
@@ -304,16 +354,34 @@ jobs:
           gradle.write_text(text)
           PY
 
-          echo "Configuration de signature terminée."
+          echo "Signature Gradle configurée."
 
-      - name: Afficher la configuration Gradle
+      # ==========================================================
+      # AFFICHER CONFIGURATION
+      # ==========================================================
+
+      - name: Vérifier configuration Gradle
         run: |
-          echo "=== SIGNING CONFIG ==="
-          grep -n -A15 -B3 "signingConfigs" android/app/build.gradle || true
+          echo "======================================"
+          echo "SIGNING CONFIG"
+          echo "======================================"
+
+          grep -n -A15 -B3 \
+            "signingConfigs" \
+            android/app/build.gradle || true
 
           echo ""
-          echo "=== BUILD TYPES ==="
-          grep -n -A15 "buildTypes" android/app/build.gradle || true
+          echo "======================================"
+          echo "BUILD TYPES"
+          echo "======================================"
+
+          grep -n -A15 \
+            "buildTypes" \
+            android/app/build.gradle || true
+
+      # ==========================================================
+      # BUILD APK
+      # ==========================================================
 
       - name: Compiler APK Release
         working-directory: android
@@ -326,9 +394,15 @@ jobs:
 
           chmod +x gradlew
 
+          echo "Nettoyage Gradle..."
           ./gradlew clean
 
+          echo "Compilation APK Release..."
           ./gradlew assembleRelease
+
+      # ==========================================================
+      # VERIFICATION APK
+      # ==========================================================
 
       - name: Vérifier APK
         run: |
@@ -338,25 +412,39 @@ jobs:
 
           if [ ! -f "$APK" ]; then
             echo "ERREUR : APK introuvable."
+
             find android/app/build/outputs \
               -type f \
               -name "*.apk" \
               -print || true
+
             exit 1
           fi
 
-          echo "APK générée :"
+          echo ""
+          echo "======================================"
+          echo "APK GENEREE"
+          echo "======================================"
+
           ls -lh "$APK"
 
           echo ""
-          echo "=== SIGNATURE APK ==="
+          echo "======================================"
+          echo "SIGNATURE APK"
+          echo "======================================"
 
-          BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
+          BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" \
+            | sort -V \
+            | tail -1)
 
           "$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify \
             --verbose \
             --print-certs \
             "$APK"
+
+      # ==========================================================
+      # ARTIFACT
+      # ==========================================================
 
       - name: Publier APK
         uses: actions/upload-artifact@v4
