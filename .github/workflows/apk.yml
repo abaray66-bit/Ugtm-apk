@@ -21,7 +21,8 @@ jobs:
       - name: Vérifier le projet
         run: |
           set -e
-          echo "Contenu du projet :"
+
+          echo "=== Contenu du projet ==="
           ls -la
 
           if [ ! -f package.json ]; then
@@ -78,7 +79,7 @@ jobs:
           set -e
 
           if [ -z "$GOOGLE_SERVICES_JSON" ]; then
-            echo "ERREUR : le secret GOOGLE_SERVICES_JSON est absent."
+            echo "ERREUR : GOOGLE_SERVICES_JSON est absent."
             exit 1
           fi
 
@@ -129,19 +130,10 @@ jobs:
           npx cap sync android
 
       # ==========================================================
-      # SIGNATURE ANDROID STABLE
-      #
-      # Secrets GitHub nécessaires :
-      #
-      # ANDROID_KEYSTORE_BASE64
-      # ANDROID_KEYSTORE_PASSWORD
-      # ANDROID_KEY_ALIAS
-      # ANDROID_KEY_PASSWORD
-      #
-      # Le keystore doit rester identique entre les builds.
+      # KEystore DE SIGNATURE STABLE
       # ==========================================================
 
-      - name: Installer le keystore de signature
+      - name: Installer le keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
@@ -149,8 +141,6 @@ jobs:
 
           if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "ERREUR : ANDROID_KEYSTORE_BASE64 est absent."
-            echo ""
-            echo "Ajoute le keystore stable dans GitHub Secrets."
             exit 1
           fi
 
@@ -161,9 +151,9 @@ jobs:
             exit 1
           fi
 
-          echo "Keystore stable installé."
+          echo "Keystore installé."
 
-      - name: Afficher les empreintes du keystore
+      - name: Vérifier le keystore
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -173,6 +163,7 @@ jobs:
           keytool -list \
             -v \
             -keystore android/ugtm-release.keystore \
+            -storetype PKCS12 \
             -storepass "$ANDROID_KEYSTORE_PASSWORD" \
             -alias "$ANDROID_KEY_ALIAS" \
             | grep -E "Alias name:|SHA1:|SHA256:"
@@ -191,66 +182,138 @@ jobs:
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
 
-          # Supprimer d'éventuelles anciennes configurations générées
-          # par une précédente version du workflow.
-          if "signingConfigs {" not in text:
+          # Retirer d'anciennes configurations de signature
+          # ajoutées par d'anciens workflows.
+          start = text.find("signingConfigs {")
 
-              marker = "android {"
+          if start != -1:
+              depth = 0
+              end = None
 
-              signing = """
+              for i in range(start, len(text)):
+                  if text[i] == "{":
+                      depth += 1
+                  elif text[i] == "}":
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+
+              if end:
+                  text = text[:start] + text[end:]
+
+          signing = """
               signingConfigs {
                   release {
                       storeFile file("../ugtm-release.keystore")
+                      storeType "PKCS12"
                       storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
                       keyAlias System.getenv("ANDROID_KEY_ALIAS")
                       keyPassword System.getenv("ANDROID_KEY_PASSWORD")
                   }
               }
-              """
+          """
 
-              if marker in text:
-                  text = text.replace(
-                      marker,
-                      marker + signing,
-                      1
-                  )
+          marker = "android {"
 
-          # Ajouter la signature release
-          if "signingConfig signingConfigs.release" not in text:
+          if marker not in text:
+              raise SystemExit("ERREUR : bloc android introuvable.")
 
-              marker = "buildTypes {"
+          text = text.replace(
+              marker,
+              marker + signing,
+              1
+          )
 
-              replacement = """buildTypes {
+          # Supprimer un ancien bloc release s'il existe
+          build_marker = "buildTypes {"
+          build_start = text.find(build_marker)
+
+          if build_start != -1:
+              brace = text.find("{", build_start)
+              depth = 0
+              end = None
+
+              for i in range(brace, len(text)):
+                  if text[i] == "{":
+                      depth += 1
+                  elif text[i] == "}":
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+
+              if end:
+                  old_block = text[build_start:end]
+
+                  release_start = old_block.find("release {")
+
+                  if release_start != -1:
+                      release_brace = old_block.find("{", release_start)
+                      rdepth = 0
+                      release_end = None
+
+                      for i in range(release_brace, len(old_block)):
+                          if old_block[i] == "{":
+                              rdepth += 1
+                          elif old_block[i] == "}":
+                              rdepth -= 1
+                              if rdepth == 0:
+                                  release_end = i + 1
+                                  break
+
+                      if release_end:
+                          old_block = (
+                              old_block[:release_start]
+                              + old_block[release_end:]
+                          )
+
+                  new_block = old_block.rstrip()
+
+                  if not new_block.endswith("}"):
+                      new_block += "\n}"
+
+                  new_block = new_block[:-1] + """
                   release {
                       signingConfig signingConfigs.release
                       minifyEnabled false
                       shrinkResources false
                   }
-              """
+              }"""
 
-              if marker in text:
-                  text = text.replace(
-                      marker,
-                      replacement,
-                      1
+                  text = (
+                      text[:build_start]
+                      + new_block
+                      + text[end:]
                   )
+
+          else:
+              text += """
+
+          android {
+              buildTypes {
+                  release {
+                      signingConfig signingConfigs.release
+                      minifyEnabled false
+                      shrinkResources false
+                  }
+              }
+          }
+          """
 
           gradle.write_text(text)
           PY
 
           echo "Configuration de signature terminée."
 
-      - name: Vérifier la configuration Gradle
-        working-directory: android
+      - name: Afficher la configuration Gradle
         run: |
-          set -e
-
-          echo "=== android/app/build.gradle ==="
-          grep -n -A20 -B5 "signingConfigs" app/build.gradle || true
+          echo "=== SIGNING CONFIG ==="
+          grep -n -A15 -B3 "signingConfigs" android/app/build.gradle || true
 
           echo ""
-          echo "=== buildTypes ==="
-          grep -n -A15 "buildTypes" app/build.gradle || true
+          echo "=== BUILD TYPES ==="
+          grep -n -A15 "buildTypes" android/app/build.gradle || true
 
       - name: Compiler APK Release
         working-directory: android
@@ -275,7 +338,10 @@ jobs:
 
           if [ ! -f "$APK" ]; then
             echo "ERREUR : APK introuvable."
-            find android/app/build/outputs -type f -name "*.apk" -print || true
+            find android/app/build/outputs \
+              -type f \
+              -name "*.apk" \
+              -print || true
             exit 1
           fi
 
@@ -283,7 +349,7 @@ jobs:
           ls -lh "$APK"
 
           echo ""
-          echo "=== Signature APK ==="
+          echo "=== SIGNATURE APK ==="
 
           BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
 
