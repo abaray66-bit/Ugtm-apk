@@ -40,13 +40,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
+      - name: Préparer les variables des secrets
+        env:
+          GOOGLE_SERVICES_JSON_SECRET: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          ANDROID_KEYSTORE_BASE64_SECRET: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_SECRET" ]; then
+            echo "HAS_GOOGLE_SERVICES=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_GOOGLE_SERVICES=false" >> "$GITHUB_ENV"
+          fi
+
+          if [ -n "$ANDROID_KEYSTORE_BASE64_SECRET" ]; then
+            echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_KEYSTORE=false" >> "$GITHUB_ENV"
+          fi
+
+          echo "Google Services présent : $([ -n "$GOOGLE_SERVICES_JSON_SECRET" ] && echo oui || echo non)"
+          echo "Keystore présent : $([ -n "$ANDROID_KEYSTORE_BASE64_SECRET" ] && echo oui || echo non)"
 
       - name: Installer les dépendances
         run: |
@@ -103,46 +122,63 @@ jobs:
             --iconBackgroundColorDark "#FFFFFF"
 
       - name: Installer Google Services
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
+        if: env.HAS_GOOGLE_SERVICES == 'true'
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -e
 
           mkdir -p android/app
 
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' \
+          printf '%s' "$GOOGLE_SERVICES_JSON" \
             > android/app/google-services.json
+
+          test -s android/app/google-services.json
 
           echo "google-services.json installé."
 
       - name: Configurer Google Services Gradle
-        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
+        if: env.HAS_GOOGLE_SERVICES == 'true'
         run: |
           set -e
 
           python3 - <<'PY'
           from pathlib import Path
 
+          # android/build.gradle
           p = Path("android/build.gradle")
           s = p.read_text()
 
           if "com.google.gms:google-services" not in s:
-              s += """
-          buildscript {
+              if "buildscript {" not in s:
+                  s = """buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
               dependencies {
                   classpath 'com.google.gms:google-services:4.4.2'
               }
           }
-          """
+
+          """ + s
+              else:
+                  marker = "dependencies {"
+                  if marker in s:
+                      s = s.replace(
+                          marker,
+                          marker + "\n        classpath 'com.google.gms:google-services:4.4.2'",
+                          1
+                      )
 
           p.write_text(s)
 
+          # android/app/build.gradle
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
           if "com.google.gms.google-services" not in s:
-              s += """
-          apply plugin: 'com.google.gms.google-services'
-          """
+              s += "\napply plugin: 'com.google.gms.google-services'\n"
 
           p.write_text(s)
           PY
@@ -168,11 +204,13 @@ jobs:
           find android/app/src/main -maxdepth 3 -type f | head -100
 
       - name: Configurer la signature APK
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: env.HAS_KEYSTORE == 'true'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           set -e
 
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" \
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" \
             | base64 --decode > android/ugtm-release.keystore
 
           test -s android/ugtm-release.keystore || {
@@ -186,10 +224,11 @@ jobs:
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
-          if "signingConfigs" not in s:
+          # Ajouter signingConfigs juste après android {
+          if "signingConfigs {" not in s:
               marker = "android {"
 
-              signing = """
+              signing = """android {
               signingConfigs {
                   release {
                       storeFile file("../ugtm-release.keystore")
@@ -197,24 +236,29 @@ jobs:
                       keyAlias System.getenv("KEY_ALIAS")
                       keyPassword System.getenv("KEY_PASSWORD")
                   }
-              }
-
               """
 
-              s = s.replace(marker, marker + "\n" + signing)
+              s = s.replace(marker, signing, 1)
 
+          # Ajouter le signingConfig dans le release existant
           if "signingConfig signingConfigs.release" not in s:
-              s = s.replace(
-                  "buildTypes {",
-                  """buildTypes {
+              marker = "buildTypes {"
+
+              if marker in s:
+                  s = s.replace(
+                      marker,
+                      """buildTypes {
                   release {
                       signingConfig signingConfigs.release
                   }
-                  """
-              )
+                  """,
+                      1
+                  )
 
           p.write_text(s)
           PY
+
+          echo "Signature APK configurée."
 
       - name: Build APK Release
         working-directory: android
