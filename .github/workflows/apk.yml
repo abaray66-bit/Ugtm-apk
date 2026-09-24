@@ -18,9 +18,6 @@ jobs:
         run: |
           set -e
 
-          echo "=== Structure du projet ==="
-          ls -la
-
           test -f package.json || {
             echo "ERREUR : package.json introuvable"
             exit 1
@@ -35,6 +32,8 @@ jobs:
             echo "ERREUR : capacitor.config.json introuvable"
             exit 1
           }
+
+          echo "Projet vérifié."
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -90,11 +89,9 @@ jobs:
             "https://ugtm.ma/?wpdmdl=985" \
             -o resources/icon.png
 
-          test -s resources/icon.png || {
-            echo "ERREUR : logo UGTM introuvable."
-            exit 1
-          }
+          test -s resources/icon.png
 
+          echo "Logo téléchargé :"
           file resources/icon.png
           ls -lh resources/icon.png
 
@@ -104,6 +101,8 @@ jobs:
 
           if [ ! -d android ]; then
             npx cap add android
+          else
+            echo "Projet Android déjà présent."
           fi
 
       - name: Générer les icônes Android
@@ -145,6 +144,7 @@ jobs:
           if "com.google.gms:google-services" not in s:
               if "buildscript {" in s:
                   marker = "dependencies {"
+
                   if marker in s:
                       s = s.replace(
                           marker,
@@ -181,20 +181,6 @@ jobs:
 
           npx cap sync android
 
-      - name: Vérifier le projet Android
-        run: |
-          set -e
-
-          test -f android/gradlew || {
-            echo "ERREUR : android/gradlew introuvable."
-            exit 1
-          }
-
-          chmod +x android/gradlew
-
-          echo "=== Début de android/app/build.gradle ==="
-          sed -n '1,120p' android/app/build.gradle
-
       - name: Configurer la signature APK
         if: env.HAS_KEYSTORE == 'true'
         env:
@@ -217,10 +203,14 @@ jobs:
           p = Path("android/app/build.gradle")
           s = p.read_text()
 
+          # -------------------------------------------------
+          # 1. Ajouter signingConfigs DANS android {
+          # -------------------------------------------------
           if "signingConfigs {" not in s:
+
               marker = "android {"
 
-              signing = """android {
+              signing = """
               signingConfigs {
                   release {
                       storeFile file("../ugtm-release.keystore")
@@ -228,11 +218,27 @@ jobs:
                       keyAlias System.getenv("KEY_ALIAS")
                       keyPassword System.getenv("KEY_PASSWORD")
                   }
+              }
               """
 
-              s = s.replace(marker, signing, 1)
+              if marker not in s:
+                  raise SystemExit(
+                      "ERREUR : bloc android { introuvable."
+                  )
 
+              # IMPORTANT :
+              # On conserve le "android {" existant.
+              s = s.replace(
+                  marker,
+                  marker + signing,
+                  1
+              )
+
+          # -------------------------------------------------
+          # 2. Ajouter signingConfig dans release
+          # -------------------------------------------------
           if "signingConfig signingConfigs.release" not in s:
+
               pattern = r"(buildTypes\s*\{\s*release\s*\{)"
 
               replacement = (
@@ -249,17 +255,14 @@ jobs:
 
               if count == 0:
                   raise SystemExit(
-                      "ERREUR : bloc buildTypes/release introuvable."
+                      "ERREUR : bloc buildTypes { release { introuvable."
                   )
 
           p.write_text(s)
           PY
 
-          echo "=== Signature configurée ==="
-
-          grep -n \
-            "signingConfig\|storeFile\|storePassword\|keyAlias" \
-            android/app/build.gradle || true
+          echo "=== Vérification build.gradle ==="
+          sed -n '1,100p' android/app/build.gradle
 
       - name: Vérifier les secrets de signature
         if: env.HAS_KEYSTORE == 'true'
@@ -270,22 +273,22 @@ jobs:
         run: |
           set -e
 
-          if [ -z "$KEYSTORE_PASSWORD" ]; then
+          test -n "$KEYSTORE_PASSWORD" || {
             echo "ERREUR : ANDROID_KEYSTORE_PASSWORD est vide."
             exit 1
-          fi
+          }
 
-          if [ -z "$KEY_ALIAS" ]; then
+          test -n "$KEY_ALIAS" || {
             echo "ERREUR : ANDROID_KEY_ALIAS est vide."
             exit 1
-          fi
+          }
 
-          if [ -z "$KEY_PASSWORD" ]; then
+          test -n "$KEY_PASSWORD" || {
             echo "ERREUR : ANDROID_KEY_PASSWORD est vide."
             exit 1
-          fi
+          }
 
-          echo "Les paramètres de signature sont présents."
+          echo "Paramètres de signature présents."
 
       - name: Build APK Release
         working-directory: android
@@ -318,10 +321,10 @@ jobs:
             -name "*.apk" \
             | head -1)
 
-          if [ -z "$APK" ]; then
+          test -n "$APK" || {
             echo "ERREUR : aucun APK Release trouvé."
             exit 1
-          fi
+          }
 
           echo "APK trouvé : $APK"
 
