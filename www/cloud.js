@@ -93,6 +93,7 @@ function subscribeNews(){
             cat: x.cat,
             audience: x.audience,
             date: x.date,
+            image: x.image || '',
             fr: x.fr,
             ar: x.ar
           };
@@ -774,6 +775,9 @@ var admin = {
           serverTimestamp()
 
       };
+
+      if (o.image)
+        data.image = String(o.image).slice(0,400000);
 
       if (o.fr)
         data.fr = o.fr;
