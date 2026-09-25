@@ -456,6 +456,20 @@ main{
   border-top:1px solid var(--line)
 }
 
+.calendar{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0 22px}
+.calendar-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.calendar-head strong{font-family:var(--font-head);font-size:17px;text-transform:capitalize}
+.calnav{width:40px;height:40px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer;font-size:20px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.cal-weekday{font-size:11px;color:var(--muted);padding:4px 0;font-weight:600}
+.cal-day,.cal-blank{min-height:40px;border-radius:9px}
+.cal-day{position:relative;border:1px solid transparent;background:transparent;cursor:pointer}
+.cal-day[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.cal-day.today{border-color:var(--accent);font-weight:800}
+.cal-day.has-event::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.cal-day[aria-pressed="true"].has-event::after{background:var(--on-primary)}
+.calendar-note{margin:10px 0 0;color:var(--muted);font-size:13px}
+
 .date{
   flex:none;
   width:56px;
@@ -1077,7 +1091,7 @@ main{
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
 </ul><form id="reportForm" class="report-form">
-<fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="conditions" data-i18n="rCatConditions"></option><option value="safety" data-i18n="rCatSafety"></option><option value="rights" data-i18n="rCatRights"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
+<fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="abuse_of_power" data-i18n="rCatAbuse"></option><option value="assault" data-i18n="rCatAssault"></option><option value="administrative_situation" data-i18n="rCatAdmin"></option><option value="leave" data-i18n="rCatLeave"></option><option value="promotion_grade" data-i18n="rCatPromotion"></option><option value="disciplinary_case" data-i18n="rCatDiscipline"></option><option value="housing" data-i18n="rCatHousing"></option><option value="rating" data-i18n="rCatRating"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
@@ -1090,7 +1104,7 @@ main{
 
 <button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
 
-</div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row">
+</div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><div class="calendar"><div class="calendar-head"><button class="calnav" type="button" data-calnav="-1" aria-label="Mois précédent">‹</button><strong id="agendaMonth"></strong><button class="calnav" type="button" data-calnav="1" aria-label="Mois suivant">›</button></div><div class="calendar-grid" id="calendarGrid" role="grid"></div><p class="calendar-note" data-i18n="calNotice"></p></div><h2 class="h2" data-i18n="calEvents"></h2><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row">
 <div class="ico" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 <path d="M4 5h16v11H9l-5 4z"/>
@@ -1133,7 +1147,7 @@ main{
 </div><div class="rb">
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
-</div></div></div><div class="install" id="installCard"><h2 data-i18n="installT"></h2><p data-i18n="installP"></p><p class="ios" data-i18n="installIos"></p><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
+</div></div></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
@@ -1323,9 +1337,14 @@ r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
 r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
 
 rCategory:`Type de problème`,
-rCatConditions:`Conditions de travail`,
-rCatSafety:`Santé et sécurité`,
-rCatRights:`Droits et statut`,
+rCatAbuse:`Abus de pouvoir`,
+rCatAssault:`Agression`,
+rCatAdmin:`Situation administrative`,
+rCatLeave:`Congé`,
+rCatPromotion:`Avancement et grade`,
+rCatDiscipline:`Affaire disciplinaire`,
+rCatHousing:`Logement`,
+rCatRating:`Notation`,
 rCatOther:`Autre`,
 rDate:`Date des faits`,
 rLocation:`Lieu des faits`,
@@ -1348,6 +1367,10 @@ sendDocs:`Envoyer des pièces sur WhatsApp`,
 
 agendaT:`Agenda`,
 addCal:`Ajouter au calendrier`,
+calEvents:`Événements du mois`,
+calNotice:`Les jours avec un point doré ont un événement. Ajoutez-le à votre calendrier pour recevoir un rappel.`,
+calPrevious:`Mois précédent`,
+calNext:`Mois suivant`,
 
 contactT:`Nous joindre`,
 
@@ -1451,9 +1474,14 @@ r2:`اقتصروا على الوقائع: المكان والتاريخ والأ
 r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
 
 rCategory:`نوع المشكلة`,
-rCatConditions:`ظروف العمل`,
-rCatSafety:`الصحة والسلامة`,
-rCatRights:`الحقوق والوضعية`,
+rCatAbuse:`الشطط في استعمال السلطة`,
+rCatAssault:`اعتداء`,
+rCatAdmin:`الوضعية الإدارية`,
+rCatLeave:`رخصة`,
+rCatPromotion:`الترقية والدرجة`,
+rCatDiscipline:`قضية تأديبية`,
+rCatHousing:`السكن`,
+rCatRating:`التنقيط`,
 rCatOther:`أخرى`,
 rDate:`تاريخ الوقائع`,
 rLocation:`مكان الوقائع`,
@@ -1476,6 +1504,10 @@ sendDocs:`إرسال وثائق عبر واتساب`,
 
 agendaT:`الأجندة`,
 addCal:`إضافة إلى التقويم`,
+calEvents:`مواعيد الشهر`,
+calNotice:`الأيام التي تحمل نقطة ذهبية تتضمن موعدا. أضيفوا الموعد إلى تقويمكم لتلقي تذكير.`,
+calPrevious:`الشهر السابق`,
+calNext:`الشهر التالي`,
 
 contactT:`اتصلوا بنا`,
 
@@ -1573,6 +1605,9 @@ blocked:`Suspendu`
 var lang='fr';
 var filter='all';
 var openId=null;
+var agendaCursor=new Date();
+agendaCursor.setDate(1);
+var agendaSelectedDate='';
 var toastTimer=null;
 var deferredInstall=null;
 
@@ -1929,16 +1964,42 @@ t.share+
 :'<li class="empty">'+t.empty+'</li>';
 }
 
+function renderCalendar(){
+var y=agendaCursor.getFullYear();
+var m=agendaCursor.getMonth();
+var monthKey=y+'-'+pad(m+1);
+var days=DAYS[lang].slice(1).concat(DAYS[lang][0]);
+var first=(new Date(y,m,1).getDay()+6)%7;
+var count=new Date(y,m+1,0).getDate();
+var eventDates={};
+EVENTS.forEach(function(ev){
+if(String(ev.date||'').slice(0,7)===monthKey){
+eventDates[ev.date]=(eventDates[ev.date]||0)+1;
+}
+});
+$('agendaMonth').textContent=MONTHS[lang][m]+' '+y;
+var grid=days.map(function(d){return '<div class="cal-weekday" role="columnheader">'+esc(d.slice(0,2))+'</div>';}).join('');
+for(var i=0;i<first;i++)grid+='<span class="cal-blank" aria-hidden="true"></span>';
+var today=todayStr();
+for(var day=1;day<=count;day++){
+var date=y+'-'+pad(m+1)+'-'+pad(day);
+var n=eventDates[date]||0;
+var cls='cal-day'+(date===today?' today':'')+(n?' has-event':'');
+grid+='<button type="button" class="'+cls+'" role="gridcell" data-caldate="'+date+'" aria-pressed="'+(agendaSelectedDate===date)+'" aria-label="'+day+' '+esc(MONTHS[lang][m])+(n?' · '+n:'')+'">'+day+'</button>';
+}
+$('calendarGrid').innerHTML=grid;
+document.querySelector('[data-calnav="-1"]').setAttribute('aria-label',T().calPrevious);
+document.querySelector('[data-calnav="1"]').setAttribute('aria-label',T().calNext);
+}
+
 function renderAgenda(){
-
-var list=upcoming();
-
+renderCalendar();
+var monthKey=agendaCursor.getFullYear()+'-'+pad(agendaCursor.getMonth()+1);
+var list=EVENTS.filter(function(ev){
+return String(ev.date||'').slice(0,7)===monthKey&&(!agendaSelectedDate||ev.date===agendaSelectedDate);
+}).sort(function(a,b){return a.date===b.date?String(a.time||'').localeCompare(String(b.time||'')):a.date.localeCompare(b.date);});
 $('eventList').innerHTML=list.length
-
-?list.map(function(ev){
-return '<li>'+eventRow(ev,true)+'</li>';
-}).join('')
-
+?list.map(function(ev){return '<li>'+eventRow(ev,true)+'</li>';}).join('')
 :'<li class="empty">'+T().noEvent+'</li>';
 }
 
@@ -2419,21 +2480,29 @@ $('eDate').value=todayStr();
 function imageData(file){
 return new Promise(function(resolve,reject){
 if(!file){resolve('');return;}
-if(!/^image\/(jpeg|png|webp)$/.test(file.type)){reject(new Error(T().newsPhotoError));return;}
+if(!/^image\/(jpeg|png|webp)$/.test(file.type||'')&&!/\.(jpe?g|png|webp)$/i.test(file.name||'')){reject(new Error(T().newsPhotoError));return;}
+if(file.size>16000000){reject(new Error(T().newsPhotoError));return;}
 var reader=new FileReader();
 reader.onerror=function(){reject(new Error(T().newsPhotoError));};
 reader.onload=function(){
 var img=new Image();
 img.onerror=function(){reject(new Error(T().newsPhotoError));};
 img.onload=function(){
-var scale=Math.min(1,1200/Math.max(img.width,img.height));
+var scale=Math.min(1,1400/Math.max(img.width,img.height));
 var canvas=document.createElement('canvas');
+var quality=.82,data='';
+for(var attempt=0;attempt<20;attempt++){
 canvas.width=Math.max(1,Math.round(img.width*scale));
 canvas.height=Math.max(1,Math.round(img.height*scale));
-canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-var quality=.82,data=canvas.toDataURL('image/jpeg',quality);
-while(data.length>380000&&quality>.45){quality-=.08;data=canvas.toDataURL('image/jpeg',quality);}
-if(data.length>400000){reject(new Error(T().newsPhotoError));return;}
+var ctx=canvas.getContext('2d');
+ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.drawImage(img,0,0,canvas.width,canvas.height);
+data=canvas.toDataURL('image/jpeg',quality);
+if(data.length<=380000)break;
+if(quality>.4){quality=Math.max(.4,quality-.1);}
+else{scale*=.82;quality=.72;}
+}
+if(data.length>380000){reject(new Error(T().newsPhotoError));return;}
 resolve(data);
 };
 img.src=reader.result;
@@ -2730,7 +2799,7 @@ document.addEventListener('click',function(e){
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
 '[data-filter],[data-form],[data-link],[data-share],'+
-'[data-cal],[data-act],[data-adm],[data-adm-act],[data-memf],'+
+'[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn'
 );
 
@@ -2841,6 +2910,19 @@ addToCalendar(
 el.getAttribute('data-cal')
 );
 
+return;
+}
+
+if(el.hasAttribute('data-calnav')){
+agendaCursor.setMonth(agendaCursor.getMonth()+Number(el.getAttribute('data-calnav')));
+agendaSelectedDate='';
+renderAgenda();
+return;
+}
+
+if(el.hasAttribute('data-caldate')){
+agendaSelectedDate=el.getAttribute('data-caldate')===agendaSelectedDate?'':el.getAttribute('data-caldate');
+renderAgenda();
 return;
 }
 
