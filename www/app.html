@@ -410,6 +410,8 @@ main{
   color:var(--ink)
 }
 
+.news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin:0 0 12px}
+
 .filters{
   display:flex;
   gap:8px;
@@ -1063,7 +1065,7 @@ main{
 </header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="hero">
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
-<button class="btn gold" type="button" data-form="1" data-i18n="heroBtn"></button>
+<button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
 </div><div class="sechead">
 <h2 data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
@@ -1074,7 +1076,17 @@ main{
 <li data-i18n="r1"></li>
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
-</ul><div class="actions"><button class="btn primary block" type="button" data-form="1" data-i18n="openForm"></button>
+</ul><form id="reportForm" class="report-form">
+<fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="conditions" data-i18n="rCatConditions"></option><option value="safety" data-i18n="rCatSafety"></option><option value="rights" data-i18n="rCatRights"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
+<div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
+<div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
+<div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
+<div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" maxlength="4000" required></textarea></div>
+<label class="chip"><input id="rAnonymous" type="checkbox" checked><span data-i18n="rAnonymous"></span></label>
+<p class="hint" data-i18n="rAuthHint"></p>
+<button class="btn primary block" type="submit" data-i18n="rSubmit"></button>
+</form>
+<div class="actions">
 
 <button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
 
@@ -1151,7 +1163,7 @@ main{
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
 
 </div><div id="adm-members"><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
@@ -1171,6 +1183,10 @@ main{
 </div><div class="field">
 <label for="nDate">Date</label>
 <input id="nDate" type="date">
+</div><div class="field">
+<label for="nImage" data-i18n="newsPhoto"></label>
+<input id="nImage" type="file" accept="image/jpeg,image/png,image/webp">
+<p class="hint" data-i18n="newsPhotoHint"></p>
 </div><div class="field">
 <label for="nTFr">Titre (français)</label>
 <input id="nTFr" type="text">
@@ -1205,7 +1221,7 @@ main{
 <input id="ePAr" type="text" dir="rtl">
 </div><button class="btn primary block" type="button" data-adm-act="addEvent">Publier l'événement</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -1259,6 +1275,7 @@ member:null,
 isAdmin:false,
 members:[],
 memFilter:'pending',
+reports:[],
 admTab:'members',
 formDirty:false
 };
@@ -1294,6 +1311,9 @@ fEvents:`Rencontres`,
 
 share:`Partager sur WhatsApp`,
 aud:`Adhérents`,
+newsPhoto:`Photo (facultative)`,
+newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
+newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
 
 reportT:`Signaler un dysfonctionnement`,
 reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
@@ -1301,6 +1321,27 @@ reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester
 r1:`Les réponses sont réservées aux responsables désignés de la fédération.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
 r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
+
+rCategory:`Type de problème`,
+rCatConditions:`Conditions de travail`,
+rCatSafety:`Santé et sécurité`,
+rCatRights:`Droits et statut`,
+rCatOther:`Autre`,
+rDate:`Date des faits`,
+rLocation:`Lieu des faits`,
+rEtab:`Établissement (facultatif)`,
+rDescription:`Décrivez les faits`,
+rAnonymous:`Envoyer sans afficher mon nom`,
+rAuthHint:`La connexion est nécessaire pour envoyer le formulaire. Le mode anonyme masque votre identité dans le signalement.`,
+rSubmit:`Envoyer le signalement`,
+rNeedLogin:`Connectez-vous à votre espace avant d'envoyer un signalement.`,
+rSent:`Signalement envoyé. Merci.`,
+rAdminTab:`Signalements`,
+rNoReports:`Aucun signalement reçu.`,
+rStatusNew:`Nouveau`,
+rStatusClosed:`Traité`,
+rClose:`Marquer comme traité`,
+rAdminOnly:`Les signalements sont visibles uniquement par l’administration.`,
 
 openForm:`Ouvrir le formulaire`,
 sendDocs:`Envoyer des pièces sur WhatsApp`,
@@ -1398,6 +1439,9 @@ fEvents:`لقاءات`,
 
 share:`مشاركة عبر واتساب`,
 aud:`للمنخرطين`,
+newsPhoto:`صورة (اختياري)`,
+newsPhotoHint:`صورة JPG أو PNG أو WebP، سيتم تصغيرها تلقائيا.`,
+newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناسب.`,
 
 reportT:`التبليغ عن اختلال`,
 reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عدم الكشف عن هويتكم.`,
@@ -1405,6 +1449,27 @@ reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عد
 r1:`الإجابات مخصصة للمسؤولين المكلفين بالفيدرالية فقط.`,
 r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
 r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
+
+rCategory:`نوع المشكلة`,
+rCatConditions:`ظروف العمل`,
+rCatSafety:`الصحة والسلامة`,
+rCatRights:`الحقوق والوضعية`,
+rCatOther:`أخرى`,
+rDate:`تاريخ الوقائع`,
+rLocation:`مكان الوقائع`,
+rEtab:`المؤسسة (اختياري)`,
+rDescription:`صفوا الوقائع`,
+rAnonymous:`إرسال التبليغ دون إظهار اسمي`,
+rAuthHint:`يجب تسجيل الدخول لإرسال الاستمارة. الوضع المجهول يخفي هويتكم ضمن التبليغ.`,
+rSubmit:`إرسال التبليغ`,
+rNeedLogin:`يرجى تسجيل الدخول قبل إرسال التبليغ.`,
+rSent:`تم إرسال التبليغ. شكرا.`,
+rAdminTab:`التبليغات`,
+rNoReports:`لا توجد تبليغات.`,
+rStatusNew:`جديد`,
+rStatusClosed:`تمت المعالجة`,
+rClose:`تحديد كمُعالج`,
+rAdminOnly:`التبليغات مخصصة للإدارة.`,
 
 openForm:`فتح الاستمارة`,
 sendDocs:`إرسال وثائق عبر واتساب`,
@@ -1850,6 +1915,7 @@ CHEV+
 '</button>'+
 
 '<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
+(c.image?'<img class="news-photo" src="'+esc(c.image)+'" alt="">':'')+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -2237,6 +2303,14 @@ fmtDateFr(ev.date)+
 :'<li class="empty">Aucun événement.</li>';
 }
 
+function renderAdminReports(){
+var list=S.reports||[];
+$('admReportList').innerHTML=list.length?list.map(function(r){
+var status=r.status==='closed'?T().rStatusClosed:T().rStatusNew;
+return '<li class="mrow"><div class="mi"><strong>'+esc(r.category)+' · '+esc(status)+'</strong><span>'+esc(r.date)+' · '+esc(r.location)+'</span><span>'+esc(r.description)+'</span>'+(r.etab?'<span>'+esc(r.etab)+'</span>':'')+'<span>'+(r.anonymous?T().rAnonymous:esc(r.name||''))+'</span></div><div class="mact">'+(r.status==='closed'?'':'<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+T().rClose+'</button>')+'</div></li>';
+}).join(''):'<li class="empty">'+T().rNoReports+'</li>';
+}
+
 function fmtDateFr(str){
 
 var p=String(str).split('-');
@@ -2253,6 +2327,7 @@ function renderAdminAll(){
 renderAdminMembers();
 renderAdminNews();
 renderAdminEvents();
+renderAdminReports();
 
 }
 
@@ -2260,7 +2335,7 @@ function showAdmTab(name){
 
 S.admTab=name;
 
-['members','news','events'].forEach(function(n){
+['members','news','events','reports'].forEach(function(n){
 
 $('adm-'+n).hidden=n!==name;
 
@@ -2341,6 +2416,32 @@ $('eDate').value=todayStr();
 
 }
 
+function imageData(file){
+return new Promise(function(resolve,reject){
+if(!file){resolve('');return;}
+if(!/^image\/(jpeg|png|webp)$/.test(file.type)){reject(new Error(T().newsPhotoError));return;}
+var reader=new FileReader();
+reader.onerror=function(){reject(new Error(T().newsPhotoError));};
+reader.onload=function(){
+var img=new Image();
+img.onerror=function(){reject(new Error(T().newsPhotoError));};
+img.onload=function(){
+var scale=Math.min(1,1200/Math.max(img.width,img.height));
+var canvas=document.createElement('canvas');
+canvas.width=Math.max(1,Math.round(img.width*scale));
+canvas.height=Math.max(1,Math.round(img.height*scale));
+canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+var quality=.82,data=canvas.toDataURL('image/jpeg',quality);
+while(data.length>380000&&quality>.45){quality-=.08;data=canvas.toDataURL('image/jpeg',quality);}
+if(data.length>400000){reject(new Error(T().newsPhotoError));return;}
+resolve(data);
+};
+img.src=reader.result;
+};
+reader.readAsDataURL(file);
+});
+}
+
 function publishNews(){
 
 var c=cloud();
@@ -2377,13 +2478,18 @@ if(fr.t||fr.b)o.fr=fr;
 
 if(ar.t||ar.b)o.ar=ar;
 
-c.admin.addNews(o)
+imageData($('nImage').files[0]).then(function(image){
+if(image)o.image=image;
+return c.admin.addNews(o);
+})
 .then(function(){
 
 ['nTFr','nBFr','nTAr','nBAr']
 .forEach(function(id){
 $(id).value='';
 });
+
+$('nImage').value='';
 
 toast('Communiqué publié');
 
@@ -2953,6 +3059,11 @@ c.admin
 
 }
 
+else if(a==='closeReport'){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report)c.admin.updateReport(id,'closed',report.response||'').catch(showError);
+}
+
 else if(a==='delEvent'){
 
 if(window.confirm('Supprimer cet événement ?'))
@@ -2977,6 +3088,28 @@ return;
 /* =========================
    FORMULAIRE
    ========================= */
+
+$('reportForm').addEventListener('submit',function(e){
+e.preventDefault();
+if(!S.user){toast(T().rNeedLogin,4500);return;}
+var c=cloud();
+if(!c)return;
+c.addReport({
+anonymous:$('rAnonymous').checked,
+name:$('rAnonymous').checked?'':(S.user.name||''),
+etab:val('rEtab'),
+category:$('rCategory').value,
+description:val('rDescription'),
+date:$('rDate').value,
+location:val('rLocation')
+}).then(function(){
+$('rDescription').value='';
+$('rEtab').value='';
+toast(T().rSent,4500);
+}).catch(showError);
+});
+
+$('rDate').value=todayStr();
 
 ['pfName','pfEtab','pfProv','pfPhone']
 .forEach(function(id){
@@ -3039,6 +3172,11 @@ renderHome();
 renderAgenda();
 renderAdminEvents();
 
+},
+
+setReports:function(list){
+S.reports=list||[];
+renderAdminReports();
 },
 
 setSession:function(s){
@@ -3172,10 +3310,6 @@ window.UGTM.failed();
 
 })();
 </script>
-
-<div id="report-container"></div>
-
-<script type="module" src="./report.js"></script>
 
 </body>
 </html>
