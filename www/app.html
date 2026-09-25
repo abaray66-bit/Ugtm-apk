@@ -1,3179 +1,2094 @@
-<!DOCTYPE html><html lang="fr" dir="ltr">
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>UGTM Souss-Massa</title>
-<meta name="description" content="Application de la Fédération régionale UGTM Souss-Massa : communiqués, agenda, signalements et contacts.">
-<meta name="theme-color" content="#B83268">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="UGTM SM"><link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet"><style>
-:root{
-  --bg:#FFF7FA;
-  --surface:#FFFFFF;
-  --ink:#24191F;
-  --muted:#75656C;
-  --line:#EAD9E0;
-
-  --primary:#B83268;
-  --on-primary:#FFFFFF;
-  --link:#B83268;
-
-  --accent:#D7A72C;
-  --on-accent:#241C08;
-
-  --alert:#B51F2A;
-  --soft:#FCECF3;
-  --focus:#C94B7D;
-
-  --ok:#B83268;
-
-  --font-body:"IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
-  --font-head:"Cairo","IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
-
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#1A0D13;
-    --surface:#24121A;
-    --ink:#FFF0F5;
-    --muted:#C7AEB8;
-    --line:#432532;
-
-    --primary:#A92F60;
-    --on-primary:#FFFFFF;
-    --link:#F08BB2;
-
-    --accent:#E2B33B;
-    --on-accent:#211804;
-
-    --alert:#FF777D;
-    --soft:#351B27;
-    --focus:#F08BB2;
-
-    --ok:#F08BB2;
-  }
-}
-
-:root[data-theme="dark"]{
-  --bg:#1A0D13;
-  --surface:#24121A;
-  --ink:#FFF0F5;
-  --muted:#C7AEB8;
-  --line:#432532;
-
-  --primary:#A92F60;
-  --on-primary:#FFFFFF;
-  --link:#F08BB2;
-
-  --accent:#E2B33B;
-  --on-accent:#211804;
-
-  --alert:#FF777D;
-  --soft:#351B27;
-  --focus:#F08BB2;
-
-  --ok:#F08BB2;
-}
-
-*,*::before,*::after{
-  box-sizing:inherit
-}
-
-html{
-  height:100%;
-  background:var(--surface);
-  scroll-padding-top:env(safe-area-inset-top,0px)
-}
-
-body{
-  height:100%;
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family:var(--font-body);
-  font-size:16px;
-  line-height:1.6;
-  -webkit-text-size-adjust:100%
-}
-
-[dir="rtl"] body{
-  line-height:1.75
-}
-
-button,input,select,textarea{
-  font:inherit;
-  color:inherit
-}
-
-:focus-visible{
-  outline:3px solid var(--focus);
-  outline-offset:2px
-}
-
-[hidden]{
-  display:none!important
-}
-
-.app{
-  max-width:480px;
-  height:100%;
-  margin:0 auto;
-  display:flex;
-  flex-direction:column;
-  background:var(--bg)
-}
-
-@media (min-width:520px){
-  .app{
-    border-inline:1px solid var(--line)
-  }
-}
-
-/* =========================
-   EN-TÊTE
-   ========================= */
-
-.top{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px 16px;
-  background:var(--surface);
-  border-bottom:1px solid var(--line)
-}
-
-.mark{
-  width:40px;
-  height:40px;
-  border-radius:11px;
-  background:var(--primary);
-  display:grid;
-  place-items:center;
-  flex:none
-}
-
-.brand{
-  flex:1;
-  min-width:0
-}
-
-.brand b{
-  display:block;
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:15px;
-  line-height:1.3
-}
-
-.brand span{
-  display:block;
-  font-size:12.5px;
-  color:var(--muted);
-  line-height:1.4
-}
-
-.langbtn{
-  flex:none;
-  min-height:40px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:var(--bg);
-  font-weight:600;
-  font-size:14px;
-  cursor:pointer
-}
-
-.notice{
-  background:var(--soft);
-  color:var(--muted);
-  font-size:12.5px;
-  text-align:center;
-  padding:5px 16px
-}
-
-/* =========================
-   CONTENU
-   ========================= */
-
-main{
-  flex:1;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  padding:16px 16px 28px
-}
-
-.title{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:24px;
-  line-height:1.3;
-  margin:4px 0 12px
-}
-
-.lead{
-  margin:0 0 18px;
-  color:var(--muted)
-}
-
-.sechead{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:12px;
-  margin:26px 0 8px
-}
-
-.sechead h2{
-  font-family:var(--font-head);
-  font-weight:600;
-  font-size:18px;
-  margin:0
-}
-
-.link{
-  background:none;
-  border:0;
-  padding:6px 0;
-  color:var(--link);
-  font-weight:600;
-  font-size:14px;
-  cursor:pointer;
-  text-decoration:underline;
-  text-underline-offset:3px
-}
-
-/* =========================
-   HERO
-   ========================= */
-
-.hero{
-  background:var(--primary);
-  color:var(--on-primary);
-  border-radius:20px;
-  padding:22px 20px 20px;
-  border-inline-start:6px solid var(--accent)
-}
-
-.hero h1{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:24px;
-  line-height:1.3;
-  margin:0 0 8px
-}
-
-.hero p{
-  margin:0 0 18px;
-  color:rgba(255,255,255,.88)
-}
-
-/* =========================
-   BOUTONS
-   ========================= */
-
-.btn{
-  min-height:46px;
-  padding:0 20px;
-  border-radius:12px;
-  border:0;
-  font-weight:600;
-  font-size:15px;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px
-}
-
-.btn.gold{
-  background:var(--accent);
-  color:var(--on-accent)
-}
-
-.btn.primary{
-  background:var(--primary);
-  color:var(--on-primary)
-}
-
-.btn.ghost{
-  background:transparent;
-  border:1px solid var(--line);
-  color:var(--ink)
-}
-
-.btn.small{
-  min-height:38px;
-  padding:0 14px;
-  font-size:14px
-}
-
-.btn.block{
-  width:100%
-}
-
-/* =========================
-   LISTES
-   ========================= */
-
-.list{
-  list-style:none;
-  margin:0;
-  padding:0;
-  border-top:1px solid var(--line)
-}
-
-.item{
-  border-bottom:1px solid var(--line)
-}
-
-.item.urgent{
-  border-inline-start:3px solid var(--alert);
-  padding-inline-start:12px
-}
-
-.head{
-  width:100%;
-  background:none;
-  border:0;
-  padding:14px 0;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  text-align:start;
-  cursor:pointer
-}
-
-.ht{
-  flex:1;
-  min-width:0;
-  display:block
-}
-
-.meta{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:13px;
-  color:var(--muted);
-  margin-bottom:2px
-}
-
-.tt{
-  display:block;
-  font-weight:600;
-  font-size:16px;
-  line-height:1.45
-}
-
-.tag{
-  font-size:12px;
-  font-weight:600;
-  padding:1px 8px;
-  border-radius:4px;
-  background:var(--soft);
-  color:var(--ink)
-}
-
-.tag.urgent{
-  background:transparent;
-  color:var(--alert);
-  border:1px solid var(--alert)
-}
-
-.chev{
-  flex:none;
-  color:var(--muted);
-  transition:transform .2s
-}
-
-.head[aria-expanded="true"] .chev{
-  transform:rotate(180deg)
-}
-
-.panel{
-  padding:0 0 16px
-}
-
-.panel p{
-  margin:0 0 12px;
-  color:var(--ink)
-}
-
-.filters{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  padding-bottom:12px
-}
-
-.fbtn{
-  flex:none;
-  min-height:38px;
-  padding:0 16px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  font-weight:500;
-  font-size:14px;
-  cursor:pointer
-}
-
-.fbtn[aria-pressed="true"]{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:var(--on-primary)
-}
-
-/* =========================
-   AGENDA
-   ========================= */
-
-.ev{
-  display:flex;
-  gap:14px;
-  padding:14px 0;
-  border-bottom:1px solid var(--line);
-  align-items:flex-start
-}
-
-.events{
-  list-style:none;
-  margin:0;
-  padding:0;
-  border-top:1px solid var(--line)
-}
-
-.date{
-  flex:none;
-  width:56px;
-  text-align:center;
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:6px 0 5px
-}
-
-.date b{
-  display:block;
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:22px;
-  line-height:1.1
-}
-
-.date span{
-  display:block;
-  font-size:12px;
-  color:var(--muted)
-}
-
-.evb{
-  flex:1;
-  min-width:0
-}
-
-.evb strong{
-  display:block;
-  font-size:16px;
-  line-height:1.45
-}
-
-.evb p{
-  margin:2px 0 8px;
-  font-size:14px;
-  color:var(--muted)
-}
-
-.nextcard{
-  border-top:1px solid var(--line);
-  border-bottom:1px solid var(--line)
-}
-
-.nextcard .ev{
-  border-bottom:0
-}
-
-/* =========================
-   FORMULAIRE
-   ========================= */
-
-.field{
-  margin:0 0 18px;
-  padding:0;
-  border:0;
-  min-width:0
-}
-
-.field label,
-.field legend{
-  display:block;
-  font-weight:600;
-  font-size:14.5px;
-  margin-bottom:6px;
-  padding:0
-}
-
-.field input[type="text"],
-.field input[type="tel"],
-.field input[type="date"],
-.field input[type="time"],
-.field select,
-.field textarea{
-  width:100%;
-  min-height:46px;
-  padding:10px 12px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:var(--surface);
-  font-size:16px
-}
-
-.field textarea{
-  resize:vertical;
-  min-height:120px
-}
-
-.chips{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px
-}
-
-.chip{
-  position:relative
-}
-
-.chip input{
-  position:absolute;
-  opacity:0;
-  inset:0;
-  width:100%;
-  height:100%;
-  margin:0;
-  cursor:pointer
-}
-
-.chip span{
-  display:inline-flex;
-  align-items:center;
-  min-height:40px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:var(--surface);
-  font-size:14px
-}
-
-.chip input:checked + span{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:var(--on-primary);
-  font-weight:600
-}
-
-.chip input:focus-visible + span{
-  outline:3px solid var(--focus);
-  outline-offset:2px
-}
-
-.err{
-  color:var(--alert);
-  font-size:14px;
-  margin:6px 0 0;
-  font-weight:500
-}
-
-.switchrow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:14px;
-  margin:0 0 18px;
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:14px
-}
-
-.switchrow b{
-  display:block;
-  font-size:15px
-}
-
-.switchrow p{
-  margin:0;
-  font-size:13.5px;
-  color:var(--muted);
-  line-height:1.5
-}
-
-.sw{
-  position:relative;
-  flex:none;
-  width:52px;
-  height:30px;
-  border-radius:999px;
-  border:0;
-  background:var(--line);
-  cursor:pointer;
-  transition:background .2s
-}
-
-.sw::after{
-  content:"";
-  position:absolute;
-  top:3px;
-  inset-inline-start:3px;
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  background:#fff;
-  transition:inset-inline-start .2s
-}
-
-.sw[aria-checked="true"]{
-  background:var(--primary)
-}
-
-.sw[aria-checked="true"]::after{
-  inset-inline-start:25px
-}
-
-.hint{
-  font-size:13.5px;
-  color:var(--muted);
-  margin:0 0 16px
-}
-
-.done{
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-inline-start:6px solid var(--accent);
-  border-radius:16px;
-  padding:20px
-}
-
-.done h1{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:22px;
-  margin:0 0 8px
-}
-
-.done p{
-  margin:0 0 10px
-}
-
-.ref{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:22px;
-  letter-spacing:.04em;
-  direction:ltr;
-  unicode-bidi:isolate;
-  display:inline-block
-}
-
-/* =========================
-   CONTACT
-   ========================= */
-
-.row{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px 0;
-  border-bottom:1px solid var(--line)
-}
-
-.rows{
-  border-top:1px solid var(--line)
-}
-
-.ico{
-  flex:none;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:var(--soft);
-  color:var(--link);
-  display:grid;
-  place-items:center
-}
-
-.rb{
-  flex:1;
-  min-width:0
-}
-
-.rb strong{
-  display:block;
-  font-size:16px
-}
-
-.rb p{
-  margin:0;
-  font-size:13.5px;
-  color:var(--muted);
-  line-height:1.5
-}
-
-.install{
-  margin-top:24px;
-  padding:16px;
-  border-radius:14px;
-  background:var(--soft)
-}
-
-.install h2{
-  font-family:var(--font-head);
-  font-weight:600;
-  font-size:17px;
-  margin:0 0 6px
-}
-
-.install p{
-  margin:0;
-  font-size:14.5px
-}
-
-.install .ios{
-  margin-top:8px
-}
-
-.install .btn{
-  margin-top:14px
-}
-
-/* =========================
-   BARRE D'ONGLETS
-   ========================= */
-
-.tabs{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  background:var(--surface);
-  border-top:1px solid var(--line);
-  padding:4px 4px 6px;
-  position:relative;
-  z-index:2
-}
-
-.tab{
-  background:none;
-  border:0;
-  color:var(--muted);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-end;
-  gap:3px;
-  min-height:54px;
-  padding:4px 2px;
-  font-size:12px;
-  font-weight:500;
-  cursor:pointer
-}
-
-.tab[aria-selected="true"]{
-  color:var(--link);
-  font-weight:600
-}
-
-.tab .bubble{
-  width:50px;
-  height:50px;
-  border-radius:50%;
-  background:var(--accent);
-  color:var(--on-accent);
-  display:grid;
-  place-items:center;
-  margin-top:-22px;
-  box-shadow:0 0 0 5px var(--surface)
-}
-
-/* =========================
-   TOAST
-   ========================= */
-
-.toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:calc(92px + env(safe-area-inset-bottom,0px));
-  max-width:calc(100% - 32px);
-  background:var(--ink);
-  color:var(--bg);
-  padding:10px 16px;
-  border-radius:999px;
-  font-size:14px;
-  text-align:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .2s;
-  z-index:5
-}
-
-.toast.show{
-  opacity:1
-}
-
-/* =========================
-   AUTRES
-   ========================= */
-
-@media (prefers-reduced-motion:reduce){
-  *{
-    transition:none!important;
-    animation:none!important
-  }
-}
-
-.points{
-  margin:0 0 4px;
-  padding-inline-start:20px
-}
-
-.points li{
-  margin-bottom:8px
-}
-
-.actions{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin-top:22px
-}
-
-.empty{
-  padding:16px 0;
-  color:var(--muted);
-  list-style:none;
-  margin:0
-}
-
-.acctbtn{
-  flex:none;
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  border:1px solid var(--line);
-  background:var(--bg);
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-  overflow:hidden;
-  padding:0;
-  color:var(--ink)
-}
-
-.acctbtn img{
-  width:100%;
-  height:100%;
-  object-fit:cover
-}
-
-.h2{
-  font-family:var(--font-head);
-  font-weight:600;
-  font-size:18px;
-  margin:8px 0 12px
-}
-
-.danger{
-  color:var(--alert)
-}
-
-.link.danger{
-  margin-top:4px
-}
-
-.statusline{
-  padding:12px 14px;
-  border-radius:12px;
-  background:var(--soft);
-  font-weight:500;
-  margin:0 0 16px;
-  border-inline-start:4px solid var(--accent)
-}
-
-.statusline.active{
-  border-inline-start-color:var(--ok)
-}
-
-.statusline.blocked{
-  border-inline-start-color:var(--alert)
-}
-
-/* =========================
-   CARTE MEMBRE
-   ========================= */
-
-.mcard{
-  background:var(--primary);
-  color:#fff;
-  border-radius:18px;
-  padding:18px 18px 16px;
-  border-inline-start:6px solid var(--accent);
-  margin:0 0 22px
-}
-
-.mtop{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-family:var(--font-head);
-  font-weight:600;
-  font-size:14px
-}
-
-.mmark{
-  width:28px;
-  height:28px;
-  border-radius:8px;
-  background:rgba(255,255,255,.14);
-  display:grid;
-  place-items:center;
-  flex:none
-}
-
-.mname{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:22px;
-  line-height:1.3;
-  margin:16px 0 2px
-}
-
-.msub{
-  color:rgba(255,255,255,.84);
-  font-size:14.5px
-}
-
-.mfoot{
-  display:flex;
-  gap:28px;
-  margin-top:18px
-}
-
-.mfoot span{
-  display:block;
-  font-size:12.5px;
-  color:rgba(255,255,255,.74)
-}
-
-.mfoot b{
-  font-family:var(--font-head);
-  font-weight:800;
-  font-size:17px;
-  letter-spacing:.03em;
-  direction:ltr;
-  unicode-bidi:isolate;
-  display:inline-block
-}
-
-.tag.lock{
-  background:transparent;
-  border:1px solid var(--line);
-  color:var(--muted)
-}
-
-.tag.st-active{
-  background:transparent;
-  border:1px solid var(--ok);
-  color:var(--ok)
-}
-
-.tag.st-blocked{
-  background:transparent;
-  border:1px solid var(--alert);
-  color:var(--alert)
-}
-
-.mrow{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  justify-content:space-between;
-  padding:14px 0;
-  border-bottom:1px solid var(--line);
-  list-style:none
-}
-
-.mi{
-  flex:1;
-  min-width:0
-}
-
-.mi strong{
-  display:block;
-  font-size:16px;
-  line-height:1.45
-}
-
-.mi span{
-  display:block;
-  font-size:13.5px;
-  color:var(--muted);
-  overflow-wrap:anywhere
-}
-
-.mi strong .tag{
-  display:inline-block;
-  vertical-align:middle;
-  margin-inline-start:6px
-}
-
-.mact{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  flex:none
-}
-
-.adm{
-  direction:ltr
-}
-
-.adm *{
-  direction:ltr
-}
-</style></head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-<path d="M6 5v9a6 6 0 0 0 12 0V5"/>
-</svg>
-</div><div class="brand">
-<b data-i18n="brandName"></b>
-<span data-i18n="brandSub"></span>
-</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"></button>
-
-<button class="langbtn" id="langBtn" type="button"></button>
-
-</header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="hero">
-<h1 data-i18n="heroT"></h1>
-<p data-i18n="heroP"></p>
-<button class="btn gold" type="button" data-form="1" data-i18n="heroBtn"></button>
-</div><div class="sechead">
-<h2 data-i18n="nextT"></h2>
-<button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
-</div><div class="nextcard" id="nextEvent"></div><div class="sechead">
-<h2 data-i18n="recentT"></h2>
-<button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
-</div><ul class="list" id="recentList"></ul></section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><p class="lead" data-i18n="reportP"></p><ul class="points">
-<li data-i18n="r1"></li>
-<li data-i18n="r2"></li>
-<li data-i18n="r3"></li>
-</ul><div class="actions"><button class="btn primary block" type="button" data-form="1" data-i18n="openForm"></button>
-
-<button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
-
-</div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row">
-<div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M4 5h16v11H9l-5 4z"/>
-</svg>
-</div>
-<div class="rb">
-<strong data-i18n="cWa"></strong>
-<p data-i18n="cWaD"></p>
-</div>
-<button class="btn ghost small" type="button" data-link="wa" data-i18n="cWaB"></button>
-</div><div class="row">
-<div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M22 2L11 13"/>
-<path d="M22 2l-7 20-4-9-9-4z"/>
-</svg>
-</div>
-<div class="rb">
-<strong data-i18n="cTg"></strong>
-<p data-i18n="cTgD"></p>
-</div>
-<button class="btn ghost small" type="button" data-link="tg" data-i18n="cTgB"></button>
-</div><div class="row">
-<div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>
-</svg>
-</div>
-<div class="rb">
-<strong data-i18n="cNum"></strong>
-<p data-i18n="cNumD"></p>
-</div>
-<button class="btn ghost small" type="button" data-link="num" data-i18n="cNumB"></button>
-</div><div class="row">
-<div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/>
-<circle cx="12" cy="10" r="2.5"/>
-</svg>
-</div><div class="rb">
-<strong data-i18n="cPerm"></strong>
-<p id="permDesc"></p>
-</div></div></div><div class="install" id="installCard"><h2 data-i18n="installT"></h2><p data-i18n="installP"></p><p class="ios" data-i18n="installIos"></p><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
-
-</div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
-
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div id="meCard"></div><h2 class="h2" data-i18n="pfT"></h2><div class="field">
-<label for="pfName" data-i18n="lName"></label>
-<input id="pfName" type="text" autocomplete="name">
-</div><div class="field">
-<label for="pfEtab" data-i18n="lEtab"></label>
-<input id="pfEtab" type="text" autocomplete="off">
-</div><div class="field">
-<label for="pfProv" data-i18n="lProv"></label>
-<select id="pfProv"></select>
-</div><div class="field">
-<label for="pfPhone" data-i18n="lPhone"></label>
-<input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel">
-</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button>
-
-<div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
-
-<button class="btn ghost block" type="button" data-act="signout" data-i18n="signOut"></button>
-
-<button class="link danger" type="button" data-act="deldata" data-i18n="delData"></button>
-
-</div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
-
-<h1 class="title">Administration</h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
-
-<button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
-
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button>
-
-</div><div id="adm-members"><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
-<button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
-</p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
-<label for="nCat">Catégorie</label>
-<select id="nCat">
-<option value="urgent">Urgent</option>
-<option value="statut" selected>Statuts</option>
-<option value="events">Rencontres</option>
-</select>
-</div><div class="field">
-<label for="nAud">Qui peut le lire ?</label>
-<select id="nAud">
-<option value="public">Tout le monde</option>
-<option value="members">Adhérents validés seulement</option>
-</select>
-</div><div class="field">
-<label for="nDate">Date</label>
-<input id="nDate" type="date">
-</div><div class="field">
-<label for="nTFr">Titre (français)</label>
-<input id="nTFr" type="text">
-</div><div class="field">
-<label for="nBFr">Texte (français)</label>
-<textarea id="nBFr" rows="4"></textarea>
-</div><div class="field">
-<label for="nTAr">العنوان (بالعربية)</label>
-<input id="nTAr" type="text" dir="rtl">
-</div><div class="field">
-<label for="nBAr">النص (بالعربية)</label>
-<textarea id="nBAr" rows="4" dir="rtl"></textarea>
-</div><button class="btn primary block" type="button" data-adm-act="addNews">Publier le communiqué</button>
-
-<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" hidden><h2 class="h2">Nouvel événement</h2><div class="field">
-<label for="eDate">Date</label>
-<input id="eDate" type="date">
-</div><div class="field">
-<label for="eTime">Heure</label>
-<input id="eTime" type="time">
-</div><div class="field">
-<label for="eTFr">Titre (français)</label>
-<input id="eTFr" type="text">
-</div><div class="field">
-<label for="ePFr">Lieu (français)</label>
-<input id="ePFr" type="text">
-</div><div class="field">
-<label for="eTAr">العنوان (بالعربية)</label>
-<input id="eTAr" type="text" dir="rtl">
-</div><div class="field">
-<label for="ePAr">المكان (بالعربية)</label>
-<input id="ePAr" type="text" dir="rtl">
-</div><button class="btn primary block" type="button" data-adm-act="addEvent">Publier l'événement</button>
-
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M3 11l9-8 9 8"/>
-<path d="M5 10v10h14V10"/>
-</svg>
-<span data-i18n="tabHome"></span>
-</button><button class="tab" type="button" role="tab" aria-selected="false" data-tab="news">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M3 11v2a1 1 0 0 0 1 1h2l8 4V6L6 10H4a1 1 0 0 0-1 1z"/>
-<path d="M18 9a4 4 0 0 1 0 6"/>
-</svg>
-<span data-i18n="tabNews"></span>
-</button><button class="tab" type="button" role="tab" aria-selected="false" data-tab="report"><span class="bubble">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<path d="M5 21V4"/>
-<path d="M5 4h11l-2 4 2 4H5"/>
-</svg>
-</span><span data-i18n="tabReport"></span>
-
-</button><button class="tab" type="button" role="tab" aria-selected="false" data-tab="agenda"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<rect x="3" y="5" width="18" height="16" rx="2"/>
-<path d="M3 10h18M8 3v4M16 3v4"/>
-</svg><span data-i18n="tabAgenda"></span>
-
-</button><button class="tab" type="button" role="tab" aria-selected="false" data-tab="contact"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-<circle cx="12" cy="8" r="4"/>
-<path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
-</svg><span data-i18n="tabContact"></span>
-
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><script src="data.js"></script><script>
-/*
-==========================================================
-UGTM SOUSS-MASSA
-Thème rose + doré
-==========================================================
-*/
-
-(function(){
-
-var D = window.APP_DATA || {};
-var LINKS = D.links || {};
-var CONTACT = D.contact || [];
-var NEWS = D.news || [];
-var EVENTS = D.events || [];
-var PERM = D.permanence || {};
-var CLOUD_ON = !!(D.firebase && D.firebase.apiKey);
-
-var S = {
-cloud:CLOUD_ON ? 'loading' : 'off',
-user:null,
-member:null,
-isAdmin:false,
-members:[],
-memFilter:'pending',
-admTab:'members',
-formDirty:false
-};
-
-var I18N = {
-
-fr:{
-brandName:`UGTM Souss-Massa`,
-brandSub:`Fédération régionale`,
-langBtn:`العربية`,
-langAria:`Passer en arabe`,
-
-tabHome:`Accueil`,
-tabNews:`Communiqués`,
-tabReport:`Signaler`,
-tabAgenda:`Agenda`,
-tabContact:`Contact`,
-
-heroT:`Un dysfonctionnement à signaler ?`,
-heroP:`Décrivez les faits en deux minutes. Vous pouvez rester anonyme.`,
-heroBtn:`Faire un signalement`,
-
-nextT:`Prochain rendez-vous`,
-recentT:`Communiqués récents`,
-seeAll:`Tout voir`,
-seeAgenda:`Voir l'agenda`,
-
-newsT:`Communiqués`,
-fAll:`Tous`,
-fUrgent:`Urgent`,
-fStatut:`Statuts`,
-fEvents:`Rencontres`,
-
-share:`Partager sur WhatsApp`,
-aud:`Adhérents`,
-
-reportT:`Signaler un dysfonctionnement`,
-reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
-
-r1:`Les réponses sont réservées aux responsables désignés de la fédération.`,
-r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
-r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
-
-openForm:`Ouvrir le formulaire`,
-sendDocs:`Envoyer des pièces sur WhatsApp`,
-
-agendaT:`Agenda`,
-addCal:`Ajouter au calendrier`,
-
-contactT:`Nous joindre`,
-
-cWa:`Chaîne WhatsApp`,
-cWaD:`Communiqués de la fédération. Les numéros des abonnés restent privés.`,
-cWaB:`Rejoindre`,
-
-cTg:`Canal Telegram`,
-cTgD:`Les mêmes communiqués, en double.`,
-cTgB:`Rejoindre`,
-
-cNum:`Numéro dédié`,
-cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
-cNumB:`Écrire`,
-
-cPerm:`Permanence syndicale`,
-
-installT:`Installer l'application`,
-installP:`Sur Android, ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».`,
-installIos:`Sur iPhone, ouvrez le lien dans Safari, touchez Partager puis « Sur l'écran d'accueil ».`,
-installBtn:`Installer maintenant`,
-
-toastLink:`Lien bientôt disponible`,
-
-empty:`Rien pour le moment.`,
-noEvent:`Aucun rendez-vous prévu.`,
-
-meT:`Mon espace`,
-meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux communiqués réservés aux adhérents.`,
-meBtnIn:`Se connecter avec Google`,
-mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
-
-meLoading:`Chargement…`,
-meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
-
-st_pending:`Demande en cours de validation par la fédération.`,
-st_active:`Adhésion validée.`,
-st_blocked:`Compte suspendu. Contactez la fédération.`,
-
-cardNo:`N° d'adhérent`,
-cardSince:`Adhérent depuis`,
-
-pfT:`Mes informations`,
-lName:`Nom`,
-lEtab:`Établissement`,
-lProv:`Province ou préfecture`,
-lPhone:`Téléphone`,
-
-phSelect:`Choisir`,
-save:`Enregistrer`,
-saved:`Informations enregistrées`,
-
-signOut:`Se déconnecter`,
-delData:`Supprimer mes données`,
-delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive.`,
-
-deleted:`Données supprimées`,
-adminOpen:`Espace administrateur`,
-errPrefix:`Une erreur est survenue`
-},
-
-ar:{
-brandName:`الفيدرالية الجهوية سوس ماسة`,
-brandSub:`الاتحاد العام للشغالين بالمغرب`,
-
-langBtn:`Français`,
-langAria:`التبديل إلى الفرنسية`,
-
-tabHome:`الرئيسية`,
-tabNews:`البلاغات`,
-tabReport:`تبليغ`,
-tabAgenda:`الأجندة`,
-tabContact:`اتصال`,
-
-heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
-heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
-heroBtn:`تقديم تبليغ`,
-
-nextT:`الموعد القادم`,
-recentT:`أحدث البلاغات`,
-seeAll:`عرض الكل`,
-seeAgenda:`عرض الأجندة`,
-
-newsT:`البلاغات`,
-fAll:`الكل`,
-fUrgent:`عاجل`,
-fStatut:`نظامي`,
-fEvents:`لقاءات`,
-
-share:`مشاركة عبر واتساب`,
-aud:`للمنخرطين`,
-
-reportT:`التبليغ عن اختلال`,
-reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عدم الكشف عن هويتكم.`,
-
-r1:`الإجابات مخصصة للمسؤولين المكلفين بالفيدرالية فقط.`,
-r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
-r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
-
-openForm:`فتح الاستمارة`,
-sendDocs:`إرسال وثائق عبر واتساب`,
-
-agendaT:`الأجندة`,
-addCal:`إضافة إلى التقويم`,
-
-contactT:`اتصلوا بنا`,
-
-cWa:`قناة واتساب`,
-cWaD:`بلاغات الفيدرالية. أرقام المشتركين تبقى خاصة.`,
-cWaB:`انضمام`,
-
-cTg:`قناة تلغرام`,
-cTgD:`نفس البلاغات كنسخة موازية.`,
-cTgB:`انضمام`,
-
-cNum:`الرقم المخصص`,
-cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
-cNumB:`مراسلة`,
-
-cPerm:`المداومة النقابية`,
-
-installT:`تثبيت التطبيق`,
-installP:`على أندرويد: افتحوا قائمة ⋮ في Chrome ثم اختاروا «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».`,
-installIos:`على آيفون: افتحوا الرابط في Safari، ثم اضغطوا على «مشاركة» واختاروا «إضافة إلى الشاشة الرئيسية».`,
-installBtn:`التثبيت الآن`,
-
-toastLink:`الرابط متاح قريبا`,
-
-empty:`لا شيء حاليا.`,
-noEvent:`لا توجد مواعيد مبرمجة.`,
-
-meT:`فضائي`,
-meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والبلاغات المخصصة للمنخرطين.`,
-meBtnIn:`الدخول بحساب Google`,
-mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
-
-meLoading:`جار التحميل…`,
-meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
-
-st_pending:`طلبكم قيد المصادقة من طرف الفيدرالية.`,
-st_active:`تمت المصادقة على انخراطكم.`,
-st_blocked:`الحساب موقوف. تواصلوا مع الفيدرالية.`,
-
-cardNo:`رقم المنخرط`,
-cardSince:`منخرط منذ`,
-
-pfT:`معلوماتي`,
-lName:`الاسم`,
-lEtab:`المؤسسة`,
-lProv:`الإقليم أو العمالة`,
-lPhone:`رقم الهاتف`,
-
-phSelect:`اختر`,
-save:`حفظ`,
-saved:`تم حفظ المعلومات`,
-
-signOut:`تسجيل الخروج`,
-delData:`حذف بياناتي`,
-delConfirm:`حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي.`,
-
-deleted:`تم حذف البيانات`,
-adminOpen:`فضاء المسؤول`,
-errPrefix:`حدث خطأ`
-}
-
-};
-
-var MONTHS={
-fr:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
-ar:['يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر']
-};
-
-var DAYS={
-fr:['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
-ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
-};
-
-var CATS={
-urgent:{fr:`Urgent`,ar:`عاجل`},
-statut:{fr:`Statuts`,ar:`نظامي`},
-events:{fr:`Rencontres`,ar:`لقاءات`}
-};
-
-var PROVS=[
-{v:'agadir',fr:`Agadir Ida-Outanane`,ar:`أكادير إداوتنان`},
-{v:'inezgane',fr:`Inezgane-Aït Melloul`,ar:`إنزكان أيت ملول`},
-{v:'chtouka',fr:`Chtouka-Aït Baha`,ar:`اشتوكة أيت باها`},
-{v:'taroudant',fr:`Taroudant`,ar:`تارودانت`},
-{v:'tiznit',fr:`Tiznit`,ar:`تيزنيت`},
-{v:'tata',fr:`Tata`,ar:`طاطا`}
-];
-
-var STATUS_FR={
-pending:`En attente`,
-active:`Actif`,
-blocked:`Suspendu`
-};
-
-var lang='fr';
-var filter='all';
-var openId=null;
-var toastTimer=null;
-var deferredInstall=null;
-
-try{
-var saved=localStorage.getItem('ugtm-lang');
-
-if(saved==='fr'||saved==='ar'){
-lang=saved;
-}else if((navigator.language||'').toLowerCase().indexOf('ar')===0){
-lang='ar';
-}
-
-}catch(e){}
-
-function $(id){
-return document.getElementById(id);
-}
-
-function T(){
-return I18N[lang];
-}
-
-function esc(s){
-return String(s==null?'':s)
-.replace(/&/g,'&amp;')
-.replace(/</g,'&lt;')
-.replace(/>/g,'&gt;')
-.replace(/"/g,'&quot;')
-.replace(/'/g,'&#39;');
-}
-
-function L(o){
-return(o&&(o[lang]||o.fr||o.ar))||{};
-}
-
-function titleFr(o){
-return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
-}
-
-function paras(s){
-return String(s||'')
-.split(/\n{2,}/)
-.map(function(p){
-return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';
-})
-.join('');
-}
-
-function pad(n){
-return(n<10?'0':'')+n;
-}
-
-function todayStr(){
-var d=new Date();
-
-return d.getFullYear()+'-'+
-pad(d.getMonth()+1)+'-'+
-pad(d.getDate());
-}
-
-function fmtDate(str,withDay){
-var p=String(str).split('-');
-var d=new Date(+p[0],+p[1]-1,+p[2]);
-
-var s=d.getDate()+' '+MONTHS[lang][d.getMonth()];
-
-return withDay
-?DAYS[lang][d.getDay()]+' '+s
-:s;
-}
-
-function fmtTime(t){
-return lang==='fr'?String(t).replace(':','h'):t;
-}
-
-function provName(v,l){
-var f=PROVS.filter(function(p){
-return p.v===v;
-})[0];
-
-return f?f[l||lang]:(v||'');
-}
-
-function sortedNews(){
-return NEWS.slice().sort(function(a,b){
-return a.date<b.date?1:(a.date>b.date?-1:0);
-});
-}
-
-function upcoming(){
-var t=todayStr();
-
-return EVENTS
-.filter(function(e){
-return e.date>=t;
-})
-.sort(function(a,b){
-var x=a.date+(a.time||'');
-var y=b.date+(b.time||'');
-
-return x<y?-1:(x>y?1:0);
-});
-}
-
-function toast(msg,ms){
-var el=$('toast');
-
-el.textContent=msg;
-el.classList.add('show');
-
-clearTimeout(toastTimer);
-
-toastTimer=setTimeout(function(){
-el.classList.remove('show');
-},ms||2400);
-}
-
-function showError(err,quiet){
-try{
-console.error(err);
-}catch(e){}
-
-if(quiet)return;
-
-var code=(err&&(err.code||err.message))||'';
-
-toast(
-T().errPrefix+
-(code?' ('+code+')':''),
-6000
-);
-}
-
-function openUrl(url){
-if(!url){
-toast(T().toastLink);
-return;
-}
-
-window.open(url,'_blank','noopener');
-}
-
-function linkFor(key){
-
-if(key==='wa')
-return(CONTACT[0]&&CONTACT[0].url)||'';
-
-if(key==='tg')
-return(CONTACT[2]&&CONTACT[2].url)||'';
-
-if(key==='num')
-return(CONTACT[1]&&CONTACT[1].url)||
-((PERM.phone||'').replace(/\D/g,'')
-?'https://wa.me/'+String(PERM.phone).replace(/\D/g,'')
-:'');
-
-return '';
-}
-
-function download(name,type,text){
-
-var blob=new Blob([text],{type:type});
-
-var a=document.createElement('a');
-
-a.href=URL.createObjectURL(blob);
-a.download=name;
-
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-
-setTimeout(function(){
-URL.revokeObjectURL(a.href);
-},4000);
-}
-
-function cloud(){
-
-if(!window.CLOUD){
-toast(T().meOffline,4000);
-return null;
-}
-
-return window.CLOUD;
-}
-
-var CHEV=
-'<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
-'<path d="M6 9l6 6 6-6"/>'+
-'</svg>';
-
-var PERSON=
-'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
-'<circle cx="12" cy="8" r="4"/>'+
-'<path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'+
-'</svg>';
-
-var MARK=
-'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D7A72C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
-'<path d="M6 5v9a6 6 0 0 0 12 0V5"/>'+
-'</svg>';
-
-function tagHTML(c){
-
-var k=CATS[c.cat]?c.cat:'statut';
-
-return '<span class="tag '+k+'">'+
-CATS[k][lang]+
-'</span>';
-}
-
-function audTag(c){
-
-return c.audience==='members'
-?'<span class="tag lock">'+T().aud+'</span>'
-:'';
-}
-
-function eventRow(ev,withButton){
-
-var p=ev.date.split('-');
-var x=L(ev);
-
-return '<div class="ev">'+
-
-'<div class="date">'+
-'<b>'+(+p[2])+'</b>'+
-'<span>'+MONTHS[lang][+p[1]-1]+'</span>'+
-'</div>'+
-
-'<div class="evb">'+
-
-'<strong>'+esc(x.t)+'</strong>'+
-
-'<p>'+
-fmtDate(ev.date,true)+
-(ev.time?' – '+fmtTime(ev.time):'')+
-(x.p?'<br>'+esc(x.p):'')+
-'</p>'+
-
-(withButton
-?'<button type="button" class="btn ghost small" data-cal="'+esc(ev.id)+'">'+T().addCal+'</button>'
-:'')+
-
-'</div>'+
-'</div>';
-}
-
-function renderHome(){
-
-var next=upcoming()[0];
-
-$('nextEvent').innerHTML=next
-?eventRow(next,false)
-:'<p class="empty">'+T().noEvent+'</p>';
-
-var recent=sortedNews().slice(0,3);
-
-$('recentList').innerHTML=recent.length
-
-?recent.map(function(c){
-
-return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
-
-'<button type="button" class="head" data-open="'+esc(c.id)+'">'+
-
-'<span class="ht">'+
-
-'<span class="meta">'+
-tagHTML(c)+
-audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
-'</span>'+
-
-'<span class="tt">'+esc(L(c).t)+'</span>'+
-
-'</span>'+
-
-'</button>'+
-
-'</li>';
-
-}).join('')
-
-:'<li class="empty">'+T().empty+'</li>';
-}
-
-function renderFilters(){
-
-var t=T();
-
-var keys=[
-['all',t.fAll],
-['urgent',t.fUrgent],
-['statut',t.fStatut],
-['events',t.fEvents]
-];
-
-$('filters').innerHTML=keys.map(function(k){
-
-return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+k[1]+'</button>';
-
-}).join('');
-}
-
-function renderNews(){
-
-var t=T();
-
-var list=sortedNews().filter(function(c){
-return filter==='all'||c.cat===filter;
-});
-
-$('newsList').innerHTML=list.length
-
-?list.map(function(c){
-
-var open=openId===c.id;
-var id=esc(c.id);
-
-return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
-
-'<button type="button" class="head" data-item="'+id+'" aria-expanded="'+open+'" aria-controls="p-'+id+'">'+
-
-'<span class="ht">'+
-
-'<span class="meta">'+
-tagHTML(c)+
-audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
-'</span>'+
-
-'<span class="tt">'+esc(L(c).t)+'</span>'+
-
-'</span>'+
-
-CHEV+
-
-'</button>'+
-
-'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-paras(L(c).b)+
-'<button type="button" class="btn ghost small" data-share="'+id+'">'+
-t.share+
-'</button>'+
-'</div>'+
-
-'</li>';
-
-}).join('')
-
-:'<li class="empty">'+t.empty+'</li>';
-}
-
-function renderAgenda(){
-
-var list=upcoming();
-
-$('eventList').innerHTML=list.length
-
-?list.map(function(ev){
-return '<li>'+eventRow(ev,true)+'</li>';
-}).join('')
-
-:'<li class="empty">'+T().noEvent+'</li>';
-}
-
-/* =========================
-   MON ESPACE
-   ========================= */
-
-function monthYear(ms){
-
-var d=new Date(ms);
-
-return MONTHS[lang][d.getMonth()]+' '+d.getFullYear();
-}
-
-function cardHTML(m){
-
-var t=T();
-
-var name=m.name||(S.user&&S.user.name)||'';
-
-var sub=[
-m.etab,
-provName(m.prov)
-].filter(Boolean).join(' – ');
-
-return '<div class="mcard">'+
-
-'<div class="mtop">'+
-'<span class="mmark">'+MARK+'</span>'+
-'<span>'+esc(t.brandName)+'</span>'+
-'</div>'+
-
-'<div class="mname">'+esc(name)+'</div>'+
-
-(sub
-?'<div class="msub">'+esc(sub)+'</div>'
-:'')+
-
-'<div class="mfoot">'+
-
-'<div>'+
-'<span>'+t.cardNo+'</span>'+
-'<b>'+esc(m.memberNo||'—')+'</b>'+
-'</div>'+
-
-(m.activatedAt
-?'<div>'+
-'<span>'+t.cardSince+'</span>'+
-'<b>'+esc(monthYear(m.activatedAt))+'</b>'+
-'</div>'
-:'')+
-
-'</div>'+
-
-'</div>';
-}
-
-function renderProvOptions(){
-
-var sel=$('pfProv');
-
-var prev=sel.value;
-
-sel.innerHTML=
-'<option value="">'+T().phSelect+'</option>'+
-PROVS.map(function(o){
-
-return '<option value="'+o.v+'">'+
-o[lang]+
-'</option>';
-
-}).join('');
-
-sel.value=prev||'';
-}
-
-function fillForm(force){
-
-if(!S.user)return;
-
-if(S.formDirty&&!force)return;
-
-var m=S.member||{};
-
-$('pfName').value=m.name||S.user.name||'';
-$('pfEtab').value=m.etab||'';
-$('pfProv').value=m.prov||'';
-$('pfPhone').value=m.phone||'';
-}
-
-function renderMe(){
-
-var t=T();
-
-var msg=$('meMsg');
-var out=$('meOut');
-var inn=$('meIn');
-
-msg.hidden=out.hidden=inn.hidden=true;
-
-if(S.cloud==='loading'){
-msg.textContent=t.meLoading;
-msg.hidden=false;
-return;
-}
-
-if(S.cloud==='error'){
-msg.textContent=t.meOffline;
-msg.hidden=false;
-return;
-}
-
-if(!S.user){
-out.hidden=false;
-return;
-}
-
-inn.hidden=false;
-
-var m=S.member;
-var st=$('meStatus');
-
-if(m&&t['st_'+m.status]){
-
-st.hidden=false;
-st.className='statusline '+m.status;
-st.textContent=t['st_'+m.status];
-
-}else{
-
-st.hidden=true;
-
-}
-
-$('meCard').innerHTML=
-(m&&m.status==='active')
-?cardHTML(m)
-:'';
-
-fillForm(false);
-
-$('meAdminLink').hidden=!S.isAdmin;
-}
-
-function renderAccountButton(){
-
-var btn=$('meBtn');
-
-btn.hidden=!CLOUD_ON;
-
-if(!CLOUD_ON)return;
-
-btn.innerHTML=
-(S.user&&S.user.photo)
-
-?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
-
-:PERSON;
-}
-
-/* =========================
-   ADMINISTRATION
-   ========================= */
-
-function nextNo(){
-
-var max=0;
-
-S.members.forEach(function(m){
-
-var x=/(\d+)\s*$/.exec(m.memberNo||'');
-
-if(x)
-max=Math.max(max,+x[1]);
-
-});
-
-return 'SM-'+('000'+(max+1)).slice(-4);
-}
-
-function findMember(uid){
-
-return S.members.filter(function(m){
-return m.uid===uid;
-})[0];
-}
-
-function memberRow(m){
-
-var uid=esc(m.uid);
-
-var acts='';
-
-if(m.status==='pending')
-acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">Valider</button>';
-
-if(m.status==='active')
-acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">Suspendre</button>';
-
-if(m.status==='blocked')
-acts+='<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="'+uid+'">Réactiver</button>';
-
-acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">Supprimer</button>';
-
-var info=[
-m.etab,
-provName(m.prov,'fr'),
-m.phone
-].filter(Boolean).join(' – ');
-
-return '<li class="mrow">'+
-
-'<div class="mi">'+
-
-'<strong>'+
-esc(m.name||'(sans nom)')+
-' <span class="tag st-'+esc(m.status)+'">'+
-esc(STATUS_FR[m.status]||m.status)+
-'</span>'+
-'</strong>'+
-
-'<span>'+esc(m.email)+'</span>'+
-
-(info
-?'<span>'+esc(info)+'</span>'
-:'')+
-
-(m.memberNo
-?'<span>N° '+esc(m.memberNo)+'</span>'
-:'')+
-
-'</div>'+
-
-'<div class="mact">'+
-acts+
-'</div>'+
-
-'</li>';
-}
-
-function renderAdminMembers(){
-
-var c={
-pending:0,
-active:0,
-blocked:0,
-all:S.members.length
-};
-
-S.members.forEach(function(m){
-
-if(c[m.status]!=null)
-c[m.status]++;
-
-});
-
-var keys=[
-['pending','En attente'],
-['active','Actifs'],
-['blocked','Suspendus'],
-['all','Tous']
-];
-
-$('admMemFilters').innerHTML=keys.map(function(k){
-
-return '<button type="button" class="fbtn" data-memf="'+k[0]+'" aria-pressed="'+(S.memFilter===k[0])+'">'+
-k[1]+' ('+c[k[0]]+')'+
-'</button>';
-
-}).join('');
-
-var list=S.members
-.filter(function(m){
-return S.memFilter==='all'||m.status===S.memFilter;
-})
-.sort(function(a,b){
-return(b.createdAt||0)-(a.createdAt||0);
-});
-
-$('admMemList').innerHTML=list.length
-
-?list.map(memberRow).join('')
-
-:'<li class="empty">Aucun membre dans cette catégorie.</li>';
-}
-
-function renderAdminNews(){
-
-var list=sortedNews();
-
-$('admNewsList').innerHTML=list.length
-
-?list.map(function(c){
-
-var cat=CATS[c.cat]
-?CATS[c.cat].fr
-:c.cat;
-
-return '<li class="mrow">'+
-
-'<div class="mi">'+
-
-'<strong>'+esc(titleFr(c))+'</strong>'+
-
-'<span>'+
-fmtDateFr(c.date)+
-' – '+
-esc(cat)+
-(c.audience==='members'
-?' – réservé aux adhérents'
-:'')+
-'</span>'+
-
-'</div>'+
-
-'<div class="mact">'+
-
-'<button type="button" class="btn ghost small danger" data-adm-act="delNews" data-id="'+esc(c.id)+'">Supprimer</button>'+
-
-'</div>'+
-
-'</li>';
-
-}).join('')
-
-:'<li class="empty">Aucun communiqué.</li>';
-}
-
-function renderAdminEvents(){
-
-var list=EVENTS.slice().sort(function(a,b){
-return a.date<b.date?1:-1;
-});
-
-$('admEventList').innerHTML=list.length
-
-?list.map(function(ev){
-
-return '<li class="mrow">'+
-
-'<div class="mi">'+
-
-'<strong>'+esc(titleFr(ev))+'</strong>'+
-
-'<span>'+
-fmtDateFr(ev.date)+
-(ev.time?' – '+esc(ev.time):'')+
-'</span>'+
-
-'</div>'+
-
-'<div class="mact">'+
-
-'<button type="button" class="btn ghost small danger" data-adm-act="delEvent" data-id="'+esc(ev.id)+'">Supprimer</button>'+
-
-'</div>'+
-
-'</li>';
-
-}).join('')
-
-:'<li class="empty">Aucun événement.</li>';
-}
-
-function fmtDateFr(str){
-
-var p=String(str).split('-');
-
-return(+p[2])+
-' '+
-MONTHS.fr[+p[1]-1]+
-' '+
-p[0];
-}
-
-function renderAdminAll(){
-
-renderAdminMembers();
-renderAdminNews();
-renderAdminEvents();
-
-}
-
-function showAdmTab(name){
-
-S.admTab=name;
-
-['members','news','events'].forEach(function(n){
-
-$('adm-'+n).hidden=n!==name;
-
-});
-
-document.querySelectorAll('#admTabs .fbtn').forEach(function(b){
-
-b.setAttribute(
-'aria-pressed',
-String(b.getAttribute('data-adm')===name)
-);
-
-});
-}
-
-function csvCell(v){
-
-v=String(v==null?'':v);
-
-if(/^[=@]/.test(v)||
-(/^[+\-]/.test(v)&&
-!(/^[+\-][\d\s\-()]+$/.test(v))))
-v="'"+v;
-
-return '"'+v.replace(/"/g,'""')+'"';
-}
-
-function exportCsv(){
-
-var rows=[
-[
-'Nom',
-'E-mail',
-'Établissement',
-'Province',
-'Téléphone',
-'Statut',
-'N° adhérent'
-]
-];
-
-S.members.forEach(function(m){
-
-rows.push([
-m.name,
-m.email,
-m.etab,
-provName(m.prov,'fr'),
-m.phone,
-STATUS_FR[m.status]||m.status,
-m.memberNo
-]);
-
-});
-
-download(
-'membres-ugtm.csv',
-'text/csv;charset=utf-8',
-'\uFEFF'+
-rows.map(function(r){
-return r.map(csvCell).join(';');
-}).join('\r\n')
-);
-}
-
-function val(id){
-
-return($(id).value||'').trim();
-}
-
-function setAdminDates(){
-
-if(!$('nDate').value)
-$('nDate').value=todayStr();
-
-if(!$('eDate').value)
-$('eDate').value=todayStr();
-
-}
-
-function publishNews(){
-
-var c=cloud();
-
-if(!c)return;
-
-var o={
-cat:val('nCat'),
-audience:val('nAud'),
-date:val('nDate')
-};
-
-var fr={
-t:val('nTFr'),
-b:val('nBFr')
-};
-
-var ar={
-t:val('nTAr'),
-b:val('nBAr')
-};
-
-if(!o.date||!(fr.t||ar.t)){
-
-toast(
-'Indiquez une date et au moins un titre.',
-4000
-);
-
-return;
-}
-
-if(fr.t||fr.b)o.fr=fr;
-
-if(ar.t||ar.b)o.ar=ar;
-
-c.admin.addNews(o)
-.then(function(){
-
-['nTFr','nBFr','nTAr','nBAr']
-.forEach(function(id){
-$(id).value='';
-});
-
-toast('Communiqué publié');
-
-})
-.catch(showError);
-}
-
-function publishEvent(){
-
-var c=cloud();
-
-if(!c)return;
-
-var o={
-date:val('eDate'),
-time:val('eTime')
-};
-
-var fr={
-t:val('eTFr'),
-p:val('ePFr')
-};
-
-var ar={
-t:val('eTAr'),
-p:val('ePAr')
-};
-
-if(!o.date||!(fr.t||ar.t)){
-
-toast(
-'Indiquez une date et au moins un titre.',
-4000
-);
-
-return;
-}
-
-if(fr.t||fr.p)o.fr=fr;
-
-if(ar.t||ar.p)o.ar=ar;
-
-c.admin.addEvent(o)
-.then(function(){
-
-['eTime','eTFr','ePFr','eTAr','ePAr']
-.forEach(function(id){
-$(id).value='';
-});
-
-toast('Événement publié');
-
-})
-.catch(showError);
-}
-
-function applyI18n(){
-
-var t=T();
-
-document.documentElement.lang=lang;
-
-document.documentElement.dir=
-lang==='ar'?'rtl':'ltr';
-
-document.title=
-lang==='ar'
-?'الاتحاد العام للشغالين بالمغرب – سوس ماسة'
-:'UGTM Souss-Massa';
-
-$('langBtn').textContent=t.langBtn;
-
-$('langBtn').setAttribute(
-'aria-label',
-t.langAria
-);
-
-$('meBtn').setAttribute(
-'aria-label',
-t.meT
-);
-
-document
-.querySelectorAll('[data-i18n]')
-.forEach(function(el){
-
-el.textContent=
-t[el.getAttribute('data-i18n')];
-
-});
-
-$('permDesc').textContent=
-PERM[lang]||
-PERM.fr||
-PERM.ar||
-'';
-
-renderProvOptions();
-renderHome();
-renderFilters();
-renderNews();
-renderAgenda();
-renderAccountButton();
-renderMe();
-fillForm(false);
-
-}
-
-var SCREENS=[
-'home',
-'news',
-'report',
-'agenda',
-'contact',
-'me',
-'admin'
-];
-
-function go(name){
-
-if(name==='admin'&&!S.isAdmin)
-name='me';
-
-SCREENS.forEach(function(n){
-
-$('s-'+n).hidden=n!==name;
-
-});
-
-document
-.querySelectorAll('.tab')
-.forEach(function(b){
-
-b.setAttribute(
-'aria-selected',
-String(b.getAttribute('data-tab')===name)
-);
-
-});
-
-if(name==='admin'){
-
-setAdminDates();
-renderAdminAll();
-
-}
-
-$('main').scrollTop=0;
-
-}
-
-/* =========================
-   CALENDRIER
-   ========================= */
-
-function icsText(s){
-
-return String(s||'')
-.replace(/\\/g,'\\\\')
-.replace(/;/g,'\\;')
-.replace(/,/g,'\\,')
-.replace(/\n/g,'\\n');
-
-}
-
-function icsLocal(d){
-
-return d.getFullYear()+
-pad(d.getMonth()+1)+
-pad(d.getDate())+
-'T'+
-pad(d.getHours())+
-pad(d.getMinutes())+
-'00';
-
-}
-
-function addToCalendar(id){
-
-var ev=EVENTS.filter(function(e){
-return e.id===id;
-})[0];
-
-if(!ev)return;
-
-var p=ev.date.split('-');
-
-var tm=(ev.time||'09:00').split(':');
-
-var start=new Date(
-+p[0],
-+p[1]-1,
-+p[2],
-+tm[0],
-+tm[1]||0
-);
-
-var end=new Date(
-start.getTime()+2*3600000
-);
-
-var x=L(ev);
-
-var stamp=new Date()
-.toISOString()
-.replace(/[-:]/g,'')
-.replace(/\.\d{3}/,'');
-
-var ics=[
-'BEGIN:VCALENDAR',
-'VERSION:2.0',
-'PRODID:-//UGTM Souss-Massa//FR',
-'BEGIN:VEVENT',
-'UID:'+ev.id+'@ugtm-souss-massa',
-'DTSTAMP:'+stamp,
-'DTSTART:'+icsLocal(start),
-'DTEND:'+icsLocal(end),
-'SUMMARY:'+icsText(x.t),
-'LOCATION:'+icsText(x.p),
-'END:VEVENT',
-'END:VCALENDAR'
-].join('\r\n');
-
-download(
-'evenement-'+ev.id+'.ics',
-'text/calendar;charset=utf-8',
-ics
-);
-
-}
-
-/* =========================
-   CLICS
-   ========================= */
-
-document.addEventListener('click',function(e){
-
-var el=e.target.closest(
-'[data-go],[data-tab],[data-item],[data-open],'+
-'[data-filter],[data-form],[data-link],[data-share],'+
-'[data-cal],[data-act],[data-adm],[data-adm-act],[data-memf],'+
-'#installBtn,#langBtn'
-);
-
-if(!el)return;
-
-var c,uid,m,id;
-
-if(el.id==='langBtn'){
-
-lang=lang==='fr'?'ar':'fr';
-
-try{
-localStorage.setItem('ugtm-lang',lang);
-}catch(err){}
-
-applyI18n();
-
-return;
-}
-
-if(el.id==='installBtn'){
-
-if(deferredInstall){
-
-deferredInstall.prompt();
-
-deferredInstall=null;
-
-el.hidden=true;
-
-}
-
-return;
-}
-
-if(el.hasAttribute('data-go')){
-
-go(el.getAttribute('data-go'));
-
-return;
-}
-
-if(el.hasAttribute('data-tab')){
-
-go(el.getAttribute('data-tab'));
-
-return;
-}
-
-if(el.hasAttribute('data-form')){
-  go('report');
-  return;
-}
-
-if(el.hasAttribute('data-link')){
-
-openUrl(
-linkFor(
-el.getAttribute('data-link')
-)
-);
-
-return;
-}
-
-if(el.hasAttribute('data-open')){
-
-openId=el.getAttribute('data-open');
-
-filter='all';
-
-renderFilters();
-renderNews();
-
-go('news');
-
-return;
-}
-
-if(el.hasAttribute('data-item')){
-
-id=el.getAttribute('data-item');
-
-openId=(openId===id)?null:id;
-
-renderNews();
-
-return;
-}
-
-if(el.hasAttribute('data-filter')){
-
-filter=el.getAttribute('data-filter');
-
-openId=null;
-
-renderFilters();
-renderNews();
-
-return;
-}
-
-if(el.hasAttribute('data-cal')){
-
-addToCalendar(
-el.getAttribute('data-cal')
-);
-
-return;
-}
-
-if(el.hasAttribute('data-share')){
-
-var n=NEWS.filter(function(x){
-return x.id===el.getAttribute('data-share');
-})[0];
-
-if(n){
-
-openUrl(
-'https://wa.me/?text='+
-encodeURIComponent(
-L(n).t+
-'\n'+
-location.href.split('#')[0]
-)
-);
-
-}
-
-return;
-}
-
-/* =========================
-   ESPACE MEMBRE
-   ========================= */
-
-if(el.hasAttribute('data-act')){
-
-c=cloud();
-
-if(!c)return;
-
-var act=el.getAttribute('data-act');
-
-if(act==='signin'){
-
-c.signIn().catch(showError);
-
-}
-
-else if(act==='signout'){
-
-c.signOut().catch(showError);
-
-}
-
-else if(act==='save'){
-
-c.saveProfile({
-
-name:val('pfName'),
-etab:val('pfEtab'),
-prov:$('pfProv').value,
-phone:val('pfPhone')
-
-})
-
-.then(function(){
-
-S.formDirty=false;
-
-toast(T().saved);
-
-})
-
-.catch(showError);
-
-}
-
-else if(act==='deldata'){
-
-if(window.confirm(T().delConfirm)){
-
-c.deleteAccount()
-
-.then(function(){
-
-S.formDirty=false;
-
-toast(T().deleted);
-
-go('home');
-
-})
-
-.catch(showError);
-
-}
-
-}
-
-return;
-}
-
-/* =========================
-   ADMIN
-   ========================= */
-
-if(el.hasAttribute('data-adm')){
-
-showAdmTab(
-el.getAttribute('data-adm')
-);
-
-return;
-}
-
-if(el.hasAttribute('data-memf')){
-
-S.memFilter=
-el.getAttribute('data-memf');
-
-renderAdminMembers();
-
-return;
-}
-
-if(el.hasAttribute('data-adm-act')){
-
-if(!S.isAdmin)return;
-
-c=cloud();
-
-if(!c)return;
-
-var a=el.getAttribute('data-adm-act');
-
-uid=el.getAttribute('data-uid');
-
-id=el.getAttribute('data-id');
-
-m=uid?findMember(uid):null;
-
-if(a==='activate'&&m){
-
-var no=window.prompt(
-"Numéro d'adhérent pour "+
-(m.name||m.email)+" :",
-m.memberNo||nextNo()
-);
-
-if(no===null)return;
-
-no=no.trim();
-
-if(!no)return;
-
-c.admin.setStatus(
-uid,
-'active',
-no
-)
-.then(function(){
-toast('Adhérent validé');
-})
-.catch(showError);
-
-}
-
-else if(a==='block'&&m){
-
-if(window.confirm(
-'Suspendre '+(m.name||m.email)+' ?'
-))
-
-c.admin
-.setStatus(uid,'blocked')
-.catch(showError);
-
-}
-
-else if(a==='unblock'&&m){
-
-c.admin
-.setStatus(uid,'active')
-.catch(showError);
-
-}
-
-else if(a==='delMember'&&m){
-
-if(window.confirm(
-'Supprimer définitivement le profil de '+
-(m.name||m.email)+
-' ?'
-))
-
-c.admin
-.deleteMember(uid)
-.catch(showError);
-
-}
-
-else if(a==='addNews'){
-
-publishNews();
-
-}
-
-else if(a==='addEvent'){
-
-publishEvent();
-
-}
-
-else if(a==='delNews'){
-
-if(window.confirm('Supprimer ce communiqué ?'))
-
-c.admin
-.deleteNews(id)
-.catch(showError);
-
-}
-
-else if(a==='delEvent'){
-
-if(window.confirm('Supprimer cet événement ?'))
-
-c.admin
-.deleteEvent(id)
-.catch(showError);
-
-}
-
-else if(a==='csv'){
-
-exportCsv();
-
-}
-
-return;
-}
-
-});
-
-/* =========================
-   FORMULAIRE
-   ========================= */
-
-['pfName','pfEtab','pfProv','pfPhone']
-.forEach(function(id){
-
-$(id).addEventListener(
-'input',
-function(){
-S.formDirty=true;
-}
-);
-
-$(id).addEventListener(
-'change',
-function(){
-S.formDirty=true;
-}
-);
-
-});
-
-/* =========================
-   PONT CLOUD
-   ========================= */
-
-window.UGTM={
-
-adminEmails:D.adminEmails||[],
-
-ready:function(){
-
-S.cloud='ready';
-
-renderMe();
-
-},
-
-failed:function(){
-
-S.cloud='error';
-
-renderMe();
-
-},
-
-setNews:function(list){
-
-NEWS=list;
-
-renderHome();
-renderNews();
-renderAdminNews();
-
-},
-
-setEvents:function(list){
-
-EVENTS=list;
-
-renderHome();
-renderAgenda();
-renderAdminEvents();
-
-},
-
-setSession:function(s){
-
-var wasAdmin=S.isAdmin;
-
-S.user=s.user;
-S.member=s.member;
-S.isAdmin=!!s.isAdmin;
-
-if(!s.user){
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="theme-color" content="#B83268">
+  <meta name="description" content="Application officielle de l'UGTM Souss-Massa - Signalements et services aux professionnels de santé.">
+  <title>UGTM Souss-Massa — Santé</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    :root {
+      --primary: #B83268;
+      --primary-hover: #962654;
+      --primary-light: #FDF2F5;
+      --secondary: #D7A72C;
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --text: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --danger: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0F172A;
+        --surface: #1E293B;
+        --text: #F8FAFC;
+        --text-muted: #94A3B8;
+        --border: #334155;
+        --primary-light: #2A121D;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-title-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .app-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--surface);
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .h2 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .btn.block {
+      width: 100%;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn.primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn.secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status.success {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
+    }
+
+    .status.warning {
+      background: rgba(245, 158, 11, 0.12);
+      color: var(--warning);
+    }
+
+    .status.danger {
+      background: rgba(239, 68, 68, 0.12);
+      color: var(--danger);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--text-muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      z-index: 100;
+    }
+
+    .bottom-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 0.75rem;
+      gap: 4px;
+      cursor: pointer;
+      width: 20%;
+    }
+
+    .bottom-btn.active {
+      color: var(--primary);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1E293B;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-muted);
+    }
+
+    [dir="rtl"] {
+      text-align: right;
+    }
+
+    [dir="rtl"] .bottom-btn,
+    [dir="rtl"] .nav-tabs {
+      direction: rtl;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="header">
+    <div class="logo-group">
+      <div class="app-title-group">
+        <h1 class="app-title" data-i18n="appTitle">
+          UGTM Souss-Massa
+        </h1>
+        <p class="app-subtitle" data-i18n="appSubtitle">
+          Fédération Régionale de la Santé
+        </p>
+      </div>
+    </div>
+
+    <button class="btn ghost" id="lang-toggle">
+      عربي
+    </button>
+  </header>
+
+  <nav class="nav-tabs">
+
+    <button class="tab-btn active"
+            data-tab="s-report"
+            data-i18n="navReport">
+      Signalement
+    </button>
+
+    <button class="tab-btn"
+            data-tab="s-news"
+            data-i18n="navNews">
+      Actualités
+    </button>
+
+    <button class="tab-btn"
+            data-tab="s-events"
+            data-i18n="navEvents">
+      Événements
+    </button>
+
+    <button class="tab-btn"
+            data-tab="s-profile"
+            data-i18n="navProfile">
+      Mon Espace
+    </button>
+
+    <button class="tab-btn"
+            id="admin-tab"
+            data-tab="s-admin"
+            data-i18n="navAdmin"
+            hidden>
+      Administration
+    </button>
+
+  </nav>
+
+  <main class="container">
+
+    <!-- SIGNALEMENT -->
+
+    <section id="s-report" class="section active">
+
+      <div class="card">
+
+        <h2 class="h2" data-i18n="reportTitle">
+          Nouveau Signalement
+        </h2>
+
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:16px"
+           data-i18n="reportInfo">
+          Votre signalement sera transmis de manière sécurisée.
+        </p>
+
+        <form id="report-form">
+
+          <div class="form-group">
+
+            <label class="form-label"
+                   data-i18n="lblCategory">
+              Catégorie
+            </label>
+
+            <select class="form-control"
+                    name="category"
+                    required>
+
+              <option value="conditions"
+                      data-i18n="catConditions">
+                Conditions de travail
+              </option>
+
+              <option value="admin"
+                      data-i18n="catAdmin">
+                Administratif
+              </option>
+
+              <option value="affectation"
+                      data-i18n="catAffectation">
+                Affectation / Mutation
+              </option>
+
+              <option value="violence"
+                      data-i18n="catViolence">
+                Agression / Violence
+              </option>
+
+              <option value="other"
+                      data-i18n="catOther">
+                Autre
+              </option>
+
+            </select>
+
+          </div>
+
+          <div class="form-group">
+
+            <label class="form-label"
+                   data-i18n="lblMessage">
+              Description du problème
+            </label>
+
+            <textarea
+              class="form-control"
+              name="message"
+              required
+              maxlength="4000"></textarea>
+
+          </div>
+
+          <button type="submit"
+                  class="btn primary block"
+                  id="report-submit"
+                  data-i18n="btnSubmit">
+            Envoyer le signalement
+          </button>
+
+        </form>
+
+      </div>
+
+      <div id="my-reports"></div>
+
+    </section>
+
+
+    <!-- ACTUALITES -->
+
+    <section id="s-news" class="section">
+
+      <div id="news-list">
+        <div class="empty"
+             data-i18n="noNews">
+          Aucune actualité disponible.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- EVENEMENTS -->
+
+    <section id="s-events" class="section">
+
+      <div id="events-list">
+        <div class="empty"
+             data-i18n="noEvents">
+          Aucun événement disponible.
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- PROFIL -->
+
+    <section id="s-profile" class="section">
+
+      <div id="profile-box"></div>
+
+    </section>
+
+
+    <!-- ADMIN -->
+
+    <section id="s-admin" class="section">
+
+      <div id="admin-box">
+
+        <div class="card">
+
+          <h2 class="h2"
+              data-i18n="adminTitle">
+            Administration
+          </h2>
+
+          <p data-i18n="adminRequired">
+            Accès réservé aux administrateurs.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div id="toast" class="toast"></div>
+
+
+  <!-- NAVIGATION BAS -->
 
-S.formDirty=false;
-S.members=[];
+  <nav class="bottom-nav">
 
-}
+    <button class="bottom-btn active"
+            data-tab="s-report">
 
-renderAccountButton();
-renderMe();
+      <span data-i18n="navReport">
+        Signalement
+      </span>
 
-if(
-(wasAdmin&&!S.isAdmin)||
-!s.user
-){
+    </button>
 
-if(!$('s-admin').hidden)
-go('me');
+    <button class="bottom-btn"
+            data-tab="s-news">
 
-}
+      <span data-i18n="navNews">
+        Actualités
+      </span>
 
-},
+    </button>
 
-setMembers:function(list){
+    <button class="bottom-btn"
+            data-tab="s-events">
 
-S.members=list;
+      <span data-i18n="navEvents">
+        Événements
+      </span>
 
-renderAdminMembers();
+    </button>
 
-},
+    <button class="bottom-btn"
+            data-tab="s-profile">
 
-toast:toast,
-error:showError
+      <span data-i18n="navProfile">
+        Mon Espace
+      </span>
 
-};
+    </button>
 
-/* =========================
-   INSTALLATION PWA
-   ========================= */
+  </nav>
 
-window.addEventListener(
-'beforeinstallprompt',
-function(e){
 
-e.preventDefault();
+  <!-- IMPORTANT : data.js AVANT app.js -->
 
-deferredInstall=e;
+  <script src="data.js"></script>
 
-$('installBtn').hidden=false;
 
-});
+  <script>
 
-window.addEventListener(
-'appinstalled',
-function(){
+    /*
+     * ============================================================
+     * DONNEES
+     * ============================================================
+     */
 
-$('installCard').hidden=true;
+    var DATA = window.APP_DATA || {};
 
-});
+    var S = {
+      lang: 'fr',
+      user: null,
+      member: null,
+      isAdmin: false,
+      cloud: DATA.firebase ? 'loading' : 'off',
+      news: [],
+      events: [],
+      members: [],
+      reports: []
+    };
 
-if(
-(window.matchMedia&&
-window.matchMedia('(display-mode: standalone)').matches)||
-window.navigator.standalone
-){
 
-$('installCard').hidden=true;
+    /*
+     * ============================================================
+     * TRADUCTIONS
+     * ============================================================
+     */
 
-}
+    var T = function(key) {
 
-/* =========================
-   SERVICE WORKER
-   ========================= */
+      var dict = {
 
-if(
-'serviceWorker' in navigator&&
-location.protocol.indexOf('http')===0
-){
+        fr: {
 
-window.addEventListener(
-'load',
-function(){
+          appTitle: "UGTM Souss-Massa",
 
-navigator.serviceWorker
-.register('sw.js')
-.catch(function(){});
+          appSubtitle:
+            "Fédération Régionale de la Santé",
 
-});
+          navReport:
+            "Signalement",
 
-}
+          navNews:
+            "Actualités",
 
-/* =========================
-   INITIALISATION
-   ========================= */
+          navEvents:
+            "Événements",
 
-applyI18n();
+          navProfile:
+            "Mon Espace",
 
-go('home');
+          navAdmin:
+            "Administration",
 
-if(CLOUD_ON){
+          reportTitle:
+            "Nouveau Signalement",
 
-import('./cloud.js')
+          reportInfo:
+            "Votre signalement sera transmis de manière sécurisée.",
 
-.then(function(mod){
+          lblCategory:
+            "Catégorie",
 
-return mod.init(
-D.firebase,
-window.UGTM
-);
+          catConditions:
+            "Conditions de travail",
 
-})
+          catAdmin:
+            "Administratif",
 
-.catch(function(err){
+          catAffectation:
+            "Affectation / Mutation",
 
-showError(err,true);
+          catViolence:
+            "Agression / Violence",
 
-window.UGTM.failed();
+          catOther:
+            "Autre",
 
-});
+          lblMessage:
+            "Description du problème",
 
-}
+          btnSubmit:
+            "Envoyer le signalement",
 
-})();
-</script>
+          profileTitle:
+            "Mon Espace",
 
-<div id="report-container"></div>
+          loginRequired:
+            "Vous devez être connecté pour accéder à votre espace.",
 
-<script type="module" src="./report.js"></script>
+          signin:
+            "Se connecter avec Google",
+
+          signout:
+            "Se déconnecter",
+
+          connected:
+            "Connecté",
+
+          notConnected:
+            "Non connecté",
+
+          loginFirst:
+            "Veuillez vous connecter avant d'envoyer un signalement.",
+
+          sending:
+            "Envoi en cours...",
+
+          sent:
+            "Signalement envoyé avec succès.",
+
+          sendError:
+            "Impossible d'envoyer le signalement.",
+
+          connectionError:
+            "Le service de connexion n'est pas disponible.",
+
+          connectionFailed:
+            "Connexion impossible.",
+
+          logoutFailed:
+            "Déconnexion impossible.",
+
+          noNews:
+            "Aucune actualité disponible.",
+
+          noEvents:
+            "Aucun événement disponible.",
+
+          noReports:
+            "Aucun signalement personnel.",
+
+          adminTitle:
+            "Administration",
+
+          adminRequired:
+            "Accès réservé aux administrateurs."
+
+        },
+
+        ar: {
+
+          appTitle:
+            "الاتحاد العام للشغالين بالمغرب",
+
+          appSubtitle:
+            "الجامعة الوطنية للصحة - سوس ماسة",
+
+          navReport:
+            "تبليغ",
+
+          navNews:
+            "أخبار",
+
+          navEvents:
+            "أنشطة",
+
+          navProfile:
+            "حسابي",
+
+          navAdmin:
+            "الإدارة",
+
+          reportTitle:
+            "تبليغ جديد",
+
+          reportInfo:
+            "سيتم إرسال تبليغكم بطريقة آمنة.",
+
+          lblCategory:
+            "الصنف",
+
+          catConditions:
+            "ظروف العمل",
+
+          catAdmin:
+            "إداري",
+
+          catAffectation:
+            "تعيين / انتقال",
+
+          catViolence:
+            "اعتداء / عنف",
+
+          catOther:
+            "آخر",
+
+          lblMessage:
+            "وصف المشكل",
+
+          btnSubmit:
+            "إرسال التبليغ",
+
+          profileTitle:
+            "حسابي",
+
+          loginRequired:
+            "يجب تسجيل الدخول للوصول إلى حسابك.",
+
+          signin:
+            "تسجيل الدخول بواسطة Google",
+
+          signout:
+            "تسجيل الخروج",
+
+          connected:
+            "متصل",
+
+          notConnected:
+            "غير متصل",
+
+          loginFirst:
+            "يرجى تسجيل الدخول قبل إرسال التبليغ.",
+
+          sending:
+            "جاري الإرسال...",
+
+          sent:
+            "تم إرسال التبليغ بنجاح.",
+
+          sendError:
+            "تعذر إرسال التبليغ.",
+
+          connectionError:
+            "خدمة تسجيل الدخول غير متاحة.",
+
+          connectionFailed:
+            "تعذر تسجيل الدخول.",
+
+          logoutFailed:
+            "تعذر تسجيل الخروج.",
+
+          noNews:
+            "لا توجد أخبار حاليا.",
+
+          noEvents:
+            "لا توجد أنشطة حاليا.",
+
+          noReports:
+            "لا توجد تبليغات شخصية.",
+
+          adminTitle:
+            "الإدارة",
+
+          adminRequired:
+            "الوصول مخصص للمسؤولين."
+
+        }
+
+      };
+
+      return (
+        dict[S.lang] &&
+        dict[S.lang][key]
+      )
+        ? dict[S.lang][key]
+        : key;
+
+    };
+
+
+    /*
+     * ============================================================
+     * SECURITE HTML
+     * ============================================================
+     */
+
+    function esc(str) {
+
+      if (!str) {
+        return '';
+      }
+
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    }
+
+
+    /*
+     * ============================================================
+     * TOAST
+     * ============================================================
+     */
+
+    function toast(msg) {
+
+      var t =
+        document.getElementById('toast');
+
+      if (!t) {
+        return;
+      }
+
+      t.textContent = msg;
+
+      t.classList.add('show');
+
+      setTimeout(function() {
+
+        t.classList.remove('show');
+
+      }, 3000);
+
+    }
+
+
+    /*
+     * ============================================================
+     * CLOUD
+     * ============================================================
+     */
+
+    var CLOUD =
+      window.CLOUD || null;
+
+    var CLOUD_ON =
+      !!DATA.firebase;
+
+
+    /*
+     * ============================================================
+     * SESSION FIREBASE
+     * ============================================================
+     */
+
+    window.UGTM =
+      window.UGTM || {};
+
+
+    window.UGTM.ready =
+      function() {
+
+        CLOUD =
+          window.CLOUD || null;
+
+        S.cloud =
+          'ready';
+
+        renderProfile();
+
+        renderReports();
+
+      };
+
+
+    window.UGTM.failed =
+      function() {
+
+        S.cloud =
+          'error';
+
+        renderProfile();
+
+        renderReports();
+
+      };
+
+
+    window.UGTM.error =
+      function(error) {
+
+        console.error(
+          'UGTM Cloud:',
+          error
+        );
+
+      };
+
+
+    /*
+     * IMPORTANT :
+     * cloud.js envoie un objet session :
+     *
+     * {
+     *   user,
+     *   member,
+     *   isAdmin
+     * }
+     */
+
+    window.UGTM.setSession =
+      function(session) {
+
+        session =
+          session || {};
+
+        S.user =
+          session.user || null;
+
+        S.member =
+          session.member || null;
+
+        S.isAdmin =
+          !!session.isAdmin;
+
+        var adminTab =
+          document.getElementById('admin-tab');
+
+        if (adminTab) {
+
+          adminTab.hidden =
+            !S.isAdmin;
+
+        }
+
+        renderProfile();
+
+        renderReports();
+
+      };
+
+
+    window.UGTM.setNews =
+      function(news) {
+
+        S.news =
+          news || [];
+
+        renderNews();
+
+      };
+
+
+    window.UGTM.setEvents =
+      function(events) {
+
+        S.events =
+          events || [];
+
+        renderEvents();
+
+      };
+
+
+    window.UGTM.setMembers =
+      function(members) {
+
+        S.members =
+          members || [];
+
+      };
+
+
+    window.UGTM.setReports =
+      function(reports) {
+
+        S.reports =
+          reports || [];
+
+        renderReports();
+
+      };
+
+
+    /*
+     * ============================================================
+     * PROFIL
+     * ============================================================
+     */
+
+    function renderProfile() {
+
+      var box =
+        document.getElementById(
+          'profile-box'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.user) {
+
+        box.innerHTML =
+
+          '<div class="card">' +
+
+            '<h2 class="h2">' +
+
+              esc(
+                T('profileTitle')
+              ) +
+
+            '</h2>' +
+
+            '<p>' +
+
+              esc(
+                T('loginRequired')
+              ) +
+
+            '</p>' +
+
+            '<button ' +
+
+              'type="button" ' +
+
+              'class="btn primary block" ' +
+
+              'data-action="signin" ' +
+
+              'style="margin-top:12px">' +
+
+              esc(
+                T('signin')
+              ) +
+
+            '</button>' +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var name =
+        S.user.displayName ||
+        S.user.email ||
+        'Utilisateur';
+
+
+      var memberInfo = '';
+
+
+      if (S.member) {
+
+        if (S.member.name) {
+
+          memberInfo +=
+            '<p style="margin-top:8px">' +
+              '<strong>Nom :</strong> ' +
+              esc(S.member.name) +
+            '</p>';
+
+        }
+
+        if (S.member.etab) {
+
+          memberInfo +=
+            '<p>' +
+              '<strong>Établissement :</strong> ' +
+              esc(S.member.etab) +
+            '</p>';
+
+        }
+
+      }
+
+
+      box.innerHTML =
+
+        '<div class="card">' +
+
+          '<h2 class="h2">' +
+
+            esc(
+              T('profileTitle')
+            ) +
+
+          '</h2>' +
+
+          '<span class="status success">' +
+
+            esc(
+              T('connected')
+            ) +
+
+          '</span>' +
+
+          '<p style="margin-top:12px">' +
+
+            'Bonjour, <strong>' +
+
+              esc(name) +
+
+            '</strong>' +
+
+          '</p>' +
+
+          '<p style="color:var(--text-muted)">' +
+
+            esc(
+              S.user.email || ''
+            ) +
+
+          '</p>' +
+
+          memberInfo +
+
+          '<button ' +
+
+            'type="button" ' +
+
+            'class="btn ghost block" ' +
+
+            'data-action="signout" ' +
+
+            'style="margin-top:16px">' +
+
+            esc(
+              T('signout')
+            ) +
+
+          '</button>' +
+
+        '</div>';
+
+    }
+
+
+    /*
+     * ============================================================
+     * SIGNALEMENTS
+     * ============================================================
+     */
+
+    function renderReports() {
+
+      var box =
+        document.getElementById(
+          'my-reports'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.user) {
+
+        box.innerHTML = '';
+
+        return;
+
+      }
+
+
+      var mine =
+        (S.reports || []).filter(
+          function(report) {
+
+            return (
+              report &&
+              report.ownerUid ===
+              S.user.uid
+            );
+
+          }
+        );
+
+
+      if (!mine.length) {
+
+        box.innerHTML =
+
+          '<div class="card">' +
+
+            '<h2 class="h2">' +
+
+              'Mes signalements' +
+
+            '</h2>' +
+
+            '<div class="empty">' +
+
+              esc(
+                T('noReports')
+              ) +
+
+            '</div>' +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html =
+
+        '<div class="card">' +
+
+          '<h2 class="h2">' +
+
+            'Mes signalements' +
+
+          '</h2>';
+
+
+      mine.forEach(
+        function(report) {
+
+          html +=
+
+            '<div style="' +
+
+              'border-top:1px solid var(--border);' +
+
+              'padding:12px 0">' +
+
+              '<strong>' +
+
+                esc(
+                  report.category
+                ) +
+
+              '</strong>' +
+
+              '<p style="' +
+
+                'margin-top:6px;' +
+
+                'white-space:pre-wrap">' +
+
+                esc(
+                  report.description ||
+                  report.message ||
+                  ''
+                ) +
+
+              '</p>' +
+
+              '<small style="' +
+
+                'color:var(--text-muted)">' +
+
+                esc(
+                  report.status || 'new'
+                ) +
+
+              '</small>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      html +=
+        '</div>';
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * ACTUALITES
+     * ============================================================
+     */
+
+    function renderNews() {
+
+      var box =
+        document.getElementById(
+          'news-list'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.news.length) {
+
+        box.innerHTML =
+
+          '<div class="card empty">' +
+
+            esc(
+              T('noNews')
+            ) +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html = '';
+
+
+      S.news.forEach(
+        function(item) {
+
+          html +=
+
+            '<div class="card">' +
+
+              '<h2 class="h2">' +
+
+                esc(
+                  item.title ||
+                  ''
+                ) +
+
+              '</h2>' +
+
+              '<p style="white-space:pre-wrap">' +
+
+                esc(
+                  item.content ||
+                  item.description ||
+                  ''
+                ) +
+
+              '</p>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * EVENEMENTS
+     * ============================================================
+     */
+
+    function renderEvents() {
+
+      var box =
+        document.getElementById(
+          'events-list'
+        );
+
+      if (!box) {
+        return;
+      }
+
+
+      if (!S.events.length) {
+
+        box.innerHTML =
+
+          '<div class="card empty">' +
+
+            esc(
+              T('noEvents')
+            ) +
+
+          '</div>';
+
+        return;
+
+      }
+
+
+      var html = '';
+
+
+      S.events.forEach(
+        function(item) {
+
+          html +=
+
+            '<div class="card">' +
+
+              '<h2 class="h2">' +
+
+                esc(
+                  item.title ||
+                  ''
+                ) +
+
+              '</h2>' +
+
+              '<p>' +
+
+                esc(
+                  item.description ||
+                  item.content ||
+                  ''
+                ) +
+
+              '</p>' +
+
+            '</div>';
+
+        }
+      );
+
+
+      box.innerHTML =
+        html;
+
+    }
+
+
+    /*
+     * ============================================================
+     * SETUP CLOUD
+     * ============================================================
+     */
+
+    function setupCloud() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD) {
+
+        S.cloud =
+          'error';
+
+        renderProfile();
+
+        renderReports();
+
+        return;
+
+      }
+
+
+      S.cloud =
+        'ready';
+
+      renderProfile();
+
+      renderReports();
+
+    }
+
+
+    /*
+     * ============================================================
+     * ENVOI SIGNALEMENT
+     * ============================================================
+     */
+
+    async function submitReport(form) {
+
+      if (!CLOUD ||
+          !CLOUD.addReport) {
+
+        toast(
+          T('sendError')
+        );
+
+        return;
+
+      }
+
+
+      if (!S.user) {
+
+        toast(
+          T('loginFirst')
+        );
+
+        return;
+
+      }
+
+
+      var submit =
+        document.getElementById(
+          'report-submit'
+        );
+
+
+      if (submit) {
+
+        submit.disabled =
+          true;
+
+        submit.textContent =
+          T('sending');
+
+      }
+
+
+      var fd =
+        new FormData(form);
+
+
+      var category =
+        String(
+          fd.get('category') ||
+          ''
+        ).trim();
+
+
+      var message =
+        String(
+          fd.get('message') ||
+          ''
+        ).trim();
+
+
+      if (!message) {
+
+        if (submit) {
+
+          submit.disabled =
+            false;
+
+          submit.textContent =
+            T('btnSubmit');
+
+        }
+
+        return;
+
+      }
+
+
+      var payload = {
+
+        ownerUid:
+          S.user.uid || '',
+
+        anonymous:
+          false,
+
+        name:
+          S.user.displayName ||
+          S.user.email ||
+          '',
+
+        etab:
+          S.member &&
+          S.member.etab
+            ? S.member.etab
+            : '',
+
+        category:
+          category,
+
+        description:
+          message,
+
+        date:
+          new Date()
+            .toISOString()
+            .slice(0, 10),
+
+        location:
+          '',
+
+        attachmentName:
+          '',
+
+        attachmentType:
+          '',
+
+        attachmentData:
+          '',
+
+        status:
+          'new',
+
+        response:
+          ''
+
+      };
+
+
+      try {
+
+        await CLOUD.addReport(
+          payload
+        );
+
+
+        form.reset();
+
+
+        toast(
+          T('sent')
+        );
+
+
+      }
+      catch (error) {
+
+        console.error(
+          'Signalement:',
+          error
+        );
+
+        toast(
+          T('sendError')
+        );
+
+      }
+      finally {
+
+        if (submit) {
+
+          submit.disabled =
+            false;
+
+          submit.textContent =
+            T('btnSubmit');
+
+        }
+
+      }
+
+    }
+
+
+    /*
+     * ============================================================
+     * CONNEXION / DECONNEXION
+     * ============================================================
+     */
+
+    function signIn() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD ||
+          !CLOUD.signIn) {
+
+        toast(
+          T('connectionError')
+        );
+
+        return;
+
+      }
+
+
+      CLOUD.signIn()
+        .catch(
+          function(error) {
+
+            console.error(
+              'Connexion:',
+              error
+            );
+
+            toast(
+              T('connectionFailed')
+            );
+
+          }
+        );
+
+    }
+
+
+    function signOut() {
+
+      CLOUD =
+        window.CLOUD || null;
+
+
+      if (!CLOUD ||
+          !CLOUD.signOut) {
+
+        return;
+
+      }
+
+
+      CLOUD.signOut()
+        .catch(
+          function(error) {
+
+            console.error(
+              'Déconnexion:',
+              error
+            );
+
+            toast(
+              T('logoutFailed')
+            );
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * NAVIGATION
+     * ============================================================
+     */
+
+    function showTab(targetId) {
+
+      document
+        .querySelectorAll(
+          '.tab-btn, .bottom-btn'
+        )
+        .forEach(
+          function(button) {
+
+            button.classList.toggle(
+              'active',
+              button.getAttribute(
+                'data-tab'
+              ) === targetId
+            );
+
+          }
+        );
+
+
+      document
+        .querySelectorAll(
+          '.section'
+        )
+        .forEach(
+          function(section) {
+
+            section.classList.toggle(
+              'active',
+              section.id === targetId
+            );
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * CHANGEMENT LANGUE
+     * ============================================================
+     */
+
+    function applyLanguage() {
+
+      document.documentElement
+        .lang =
+          S.lang;
+
+      document.documentElement
+        .dir =
+          S.lang === 'ar'
+            ? 'rtl'
+            : 'ltr';
+
+
+      document
+        .querySelectorAll(
+          '[data-i18n]'
+        )
+        .forEach(
+          function(element) {
+
+            var key =
+              element.getAttribute(
+                'data-i18n'
+              );
+
+            element.textContent =
+              T(key);
+
+          }
+        );
+
+
+      var langButton =
+        document.getElementById(
+          'lang-toggle'
+        );
+
+
+      if (langButton) {
+
+        langButton.textContent =
+          S.lang === 'fr'
+            ? 'عربي'
+            : 'Français';
+
+      }
+
+
+      renderProfile();
+
+      renderReports();
+
+      renderNews();
+
+      renderEvents();
+
+    }
+
+
+    /*
+     * ============================================================
+     * EVENEMENTS
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'click',
+      function(e) {
+
+        var actionElement =
+          e.target.closest(
+            '[data-action]'
+          );
+
+
+        if (actionElement) {
+
+          var action =
+            actionElement.getAttribute(
+              'data-action'
+            );
+
+
+          if (action === 'signin') {
+
+            signIn();
+
+            return;
+
+          }
+
+
+          if (action === 'signout') {
+
+            signOut();
+
+            return;
+
+          }
+
+        }
+
+
+        var tabButton =
+          e.target.closest(
+            '[data-tab]'
+          );
+
+
+        if (tabButton) {
+
+          var targetId =
+            tabButton.getAttribute(
+              'data-tab'
+            );
+
+
+          if (
+            targetId === 's-admin' &&
+            !S.isAdmin
+          ) {
+
+            toast(
+              T('adminRequired')
+            );
+
+            return;
+
+          }
+
+
+          showTab(
+            targetId
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+     * ============================================================
+     * FORMULAIRE SIGNALEMENT
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'submit',
+      function(e) {
+
+        if (
+          e.target &&
+          e.target.id ===
+          'report-form'
+        ) {
+
+          e.preventDefault();
+
+          submitReport(
+            e.target
+          );
+
+        }
+
+      }
+    );
+
+
+    /*
+     * ============================================================
+     * LANGUE
+     * ============================================================
+     */
+
+    document
+      .getElementById(
+        'lang-toggle'
+      )
+      .addEventListener(
+        'click',
+        function() {
+
+          S.lang =
+            S.lang === 'fr'
+              ? 'ar'
+              : 'fr';
+
+          applyLanguage();
+
+        }
+      );
+
+
+    /*
+     * ============================================================
+     * INITIALISATION FIREBASE
+     * ============================================================
+     */
+
+    function init() {
+
+      renderProfile();
+
+      renderNews();
+
+      renderEvents();
+
+      renderReports();
+
+
+      if (!DATA.firebase) {
+
+        S.cloud =
+          'off';
+
+        return;
+
+      }
+
+
+      import('./cloud.js')
+
+        .then(
+          function(mod) {
+
+            return mod.init(
+              DATA.firebase,
+              window.UGTM
+            );
+
+          }
+        )
+
+        .then(
+          function() {
+
+            setupCloud();
+
+          }
+        )
+
+        .catch(
+          function(error) {
+
+            console.error(
+              'Initialisation Cloud impossible:',
+              error
+            );
+
+            window.UGTM.failed();
+
+          }
+        );
+
+    }
+
+
+    /*
+     * ============================================================
+     * DOM READY
+     * ============================================================
+     */
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      function() {
+
+        applyLanguage();
+
+        init();
+
+      }
+    );
+
+  </script>
 
 </body>
 </html>
