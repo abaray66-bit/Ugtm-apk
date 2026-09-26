@@ -414,9 +414,14 @@ main{
 .panel p{
   margin:0 0 12px;
   color:var(--ink)
-}
+}.news-photo{display:block;width:100%;max-width:100%;height:auto;max-height:none;object-fit:contain;object-position:top center;border-radius:12px;margin:0 0 12px}
+.news-photo-open{margin:0 0 12px}
+.news-image-modal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);display:flex;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);color:#fff}
+.news-image-modal[hidden]{display:none}
+.news-image-close{align-self:flex-end;min-height:44px;padding:8px 16px;border:0;border-radius:10px;background:#fff;color:#111;font:inherit;font-weight:600}
+.news-image-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;text-align:center;touch-action:pan-x pan-y pinch-zoom}
+.news-image-scroll img{display:block;width:auto;max-width:100%;height:auto;max-height:none;margin:0 auto;object-fit:contain}
 
-.news-photo{display:block;width:100%;height:auto;max-height:none;object-fit:contain;object-position:center;border-radius:12px;margin:0 0 12px}
 
 .filters{
   display:flex;
@@ -1987,8 +1992,7 @@ CHEV+
 
 '</button>'+
 
-'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-(c.image?'<img class="news-photo" src="'+esc(c.image)+'" alt="">':'')+
+'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+(c.image?'<img class="news-photo" data-news-zoom="'+id+'" role="button" tabindex="0" aria-label="Agrandir la photo du communiqué" src="'+esc(c.image)+'" alt="" loading="lazy">'+'<button type="button" class="btn ghost small news-photo-open" data-news-zoom="'+id+'">Voir la photo en grand</button>':'')+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -2830,7 +2834,29 @@ ics
 
 /* =========================
    CLICS
-   ========================= */
+   ========================= */document.addEventListener('click',function(e){
+var z=e.target.closest('[data-news-zoom]');
+if(!z)return;
+var source=document.querySelector('.news-photo[data-news-zoom="'+z.getAttribute('data-news-zoom')+'"]');
+if(!source)return;
+var modal=$('newsImageModal');
+if(!modal){
+modal=document.createElement('div');
+modal.id='newsImageModal';
+modal.className='news-image-modal';
+modal.setAttribute('role','dialog');
+modal.setAttribute('aria-modal','true');
+modal.setAttribute('aria-label','Photo du communiqué');
+modal.innerHTML='<button id="closeNewsImage" class="news-image-close" type="button">Fermer</button><div class="news-image-scroll"><img id="newsImageFull" alt="Photo du communiqué"></div>';
+document.body.appendChild(modal);
+modal.addEventListener('click',function(ev){if(ev.target===modal||ev.target.id==='closeNewsImage'){modal.hidden=true;$('newsImageFull').removeAttribute('src');document.body.style.overflow='';}});
+}
+$('newsImageFull').src=source.currentSrc||source.src;
+modal.hidden=false;
+document.body.style.overflow='hidden';
+});document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('.news-photo[data-news-zoom]')){e.preventDefault();e.target.click();return;}if(e.key==='Escape'){var modal=$('newsImageModal');if(modal){modal.hidden=true;$('newsImageFull').removeAttribute('src');document.body.style.overflow='';}}});
+
+
 
 document.addEventListener('click',function(e){
 
