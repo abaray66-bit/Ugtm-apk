@@ -46,6 +46,8 @@ function normalizeMember(d, uid){
     phone: d.phone || '',
     status: d.status || 'pending',
     memberNo: d.memberNo || '',
+    role: d.role || 'member',
+    adminProvince: d.adminProvince || '',
     createdAt: ms(d.createdAt),
     activatedAt: ms(d.activatedAt)
   };
@@ -144,6 +146,17 @@ function subscribeEvents(){
    SIGNALEMENTS
    ========================================================= */
 
+function subscribeMembers(){
+  unsub('members');
+  if (!session.user || !(session.isAdmin || session.isSubAdmin)) { hooks.setMembers([]); return; }
+  var membersQuery = session.isAdmin
+    ? collection(db, 'members')
+    : query(collection(db, 'members'), where('prov', '==', session.member.adminProvince));
+  unsubs.members = onSnapshot(membersQuery, function(snap){
+    hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
+  }, function(err){hooks.error(err);});
+}
+
 function subscribeReports(){
 
   unsub('reports');
@@ -160,7 +173,7 @@ function subscribeReports(){
 
     q = query(
       collection(db, 'reports'),
-      where('ownerUid', '==', session.user.uid)
+      where(session.isSubAdmin ? 'province' : 'ownerUid', '==', session.isSubAdmin ? session.member.adminProvince : session.user.uid)
     );
 
   }
@@ -190,6 +203,7 @@ function subscribeReports(){
             description: x.description || '',
             date: x.date || '',
             location: x.location || '',
+            province: x.province || '',
 
             attachmentName: x.attachmentName || '',
             attachmentType: x.attachmentType || '',
@@ -239,7 +253,8 @@ function onUser(user){
     session = {
       user: null,
       member: null,
-      isAdmin: false
+      isAdmin: false,
+      isSubAdmin: false
     };
 
     hooks.setSession(session);
@@ -277,7 +292,8 @@ function onUser(user){
 
     member: null,
 
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    isSubAdmin: false
 
   };
 
@@ -327,9 +343,10 @@ function onUser(user){
           snap.data(),
           user.uid
         );
-
+      session.isSubAdmin = session.member.status === 'active' && session.member.role === 'subadmin';
 
       hooks.setSession(session);
+      subscribeMembers();
 
       subscribeNews();
 
@@ -344,36 +361,7 @@ function onUser(user){
   );
 
 
-  if (isAdmin){
-
-    unsubs.members = onSnapshot(
-
-      collection(db, 'members'),
-
-      function(snap){
-
-        hooks.setMembers(
-
-          snap.docs.map(function(d){
-
-            return normalizeMember(
-              d.data(),
-              d.id
-            );
-
-          })
-
-        );
-
-      },
-
-      function(err){
-        hooks.error(err);
-      }
-
-    );
-
-  }
+  subscribeMembers();
 
 
   subscribeNews();
@@ -550,6 +538,9 @@ async function addReport(o){
     location:
       String(o.location || '').slice(0,160),
 
+    province:
+      session.member ? String(session.member.prov || '').slice(0,40) : '',
+
     attachmentName:
       String(o.attachmentName || '').slice(0,120),
 
@@ -658,6 +649,11 @@ async function saveProfile(p){
       )
 
     );
+    if (snap.data().role === 'subadmin' && snap.data().adminProvince){
+      await setDoc(doc(db, 'provinceContacts', snap.data().adminProvince), {
+        uid: u.uid, name: fields.name, phone: fields.phone, province: snap.data().adminProvince
+      });
+    }
 
   }
 
@@ -725,38 +721,89 @@ async function deleteAccount(){
 
 var admin = {
 
+  setSubAdmin:
+    function(uid, province){
+      var assigned = String(province || '').slice(0,40);
+      return getDoc(doc(db, 'members', uid)).then(function(snap){
+        if (!snap.exists()) throw new Error('Membre introuvable');
+        var member = snap.data();
+        if (member.status !== 'active') throw new Error('Seul un adhérent actif peut devenir sous-admin.');
+        var old = member.adminProvince || '';
+        return getDoc(doc(db, 'provinceContacts', assigned)).then(function(existing){
+          if (existing.exists() && existing.data().uid !== uid)
+            throw new Error('Un sous-admin est déjà affecté à ce secteur. Retirez son rôle avant de le remplacer.');
+          return updateDoc(doc(db, 'members', uid), {role: 'subadmin', adminProvince: assigned});
+        }).then(function(){
+          return old && old !== assigned ? getDoc(doc(db, 'provinceContacts', old)) : null;
+        }).then(function(oldContact){
+          var clearOld = oldContact && oldContact.exists() && oldContact.data().uid === uid
+            ? deleteDoc(doc(db, 'provinceContacts', old)) : Promise.resolve();
+          return clearOld.then(function(){return setDoc(doc(db, 'provinceContacts', assigned), {
+            uid: uid,
+            name: String(member.name || '').slice(0,120),
+            phone: String(member.phone || '').slice(0,30),
+            province: assigned
+          });});
+        });
+      });
+    },
+
+  removeSubAdmin:
+    function(uid){
+      return getDoc(doc(db, 'members', uid)).then(function(memberSnap){
+        var old = memberSnap.exists() ? memberSnap.data().adminProvince : '';
+        var clear = updateDoc(doc(db, 'members', uid), {role: 'member', adminProvince: ''});
+        if (!old) return clear;
+        return clear.then(function(){
+          return getDoc(doc(db, 'provinceContacts', old));
+        }).then(function(contact){
+          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', old));
+        });
+      });
+    },
+
+  getSubAdminContact:
+    function(province){
+      return getDoc(doc(db, 'provinceContacts', province)).then(function(snap){
+        return snap.exists() ? snap.data() : null;
+      });
+    },
+
   setStatus:
     function(uid, status, memberNo){
-
-      var data = {
-        status: status
-      };
-
-      if (memberNo){
-
-        data.memberNo =
-          String(memberNo).slice(0,30);
-
-        data.activatedAt =
-          serverTimestamp();
-
-      }
-
-      return updateDoc(
-        doc(db, 'members', uid),
-        data
-      );
-
+      var ref = doc(db, 'members', uid);
+      return getDoc(ref).then(function(snap){
+        var prior = snap.exists() ? snap.data() : {};
+        var data = {status: status};
+        if (memberNo){
+          data.memberNo = String(memberNo).slice(0,30);
+          data.activatedAt = serverTimestamp();
+        }
+        if (status !== 'active' && prior.role === 'subadmin'){
+          data.role = 'member';
+          data.adminProvince = '';
+        }
+        return updateDoc(ref, data).then(function(){
+          if (status === 'active' || !prior.adminProvince) return;
+          return getDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(contact){
+            if (contact.exists() && contact.data().uid === uid)
+              return deleteDoc(doc(db, 'provinceContacts', prior.adminProvince));
+          });
+        });
+      });
     },
 
 
   deleteMember:
     function(uid){
-
-      return deleteDoc(
-        doc(db, 'members', uid)
-      );
-
+      var ref = doc(db, 'members', uid);
+      return getDoc(ref).then(function(snap){
+        var province = snap.exists() ? snap.data().adminProvince : '';
+        var removeContact = province ? getDoc(doc(db, 'provinceContacts', province)).then(function(contact){
+          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', province));
+        }) : Promise.resolve();
+        return removeContact.then(function(){return deleteDoc(ref);});
+      });
     },
 
 
@@ -1032,3 +1079,4 @@ export async function init(config, h){
   hooks.ready();
 
 }
+
