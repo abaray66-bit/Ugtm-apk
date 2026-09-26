@@ -85,8 +85,9 @@ window.APP_DATA = {
     "Agadir-Ida-Outanane",
     "Chtouka Ait Baha",
     "Inezgane-Ait Melloul",
-    "Ouarzazate",
+    "Tata",
     "Taroudant",
     "Tiznit"
   ]
 };
+
