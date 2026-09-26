@@ -14,23 +14,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extraire le zip si présent
-        run: |
-          ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
-          if [ -n "$ZIP" ]; then
-            echo "Archive trouvée : $ZIP"
-            mkdir -p app
-            unzip -o "$ZIP" -d app
-            echo "TARGET_DIR=app" >> "$GITHUB_ENV"
-          else
-            echo "TARGET_DIR=." >> "$GITHUB_ENV"
-          fi
+      - name: Installer Firebase CLI
+        run: npm install --global firebase-tools
 
-      - name: Déployer sur Firebase Hosting
+      - name: Déployer les règles Firestore
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -e
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "ERREUR : le secret FIREBASE_SERVICE_ACCOUNT est manquant."
+            exit 1
+          fi
+          SERVICE_ACCOUNT_FILE="$RUNNER_TEMP/firebase-service-account.json"
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$SERVICE_ACCOUNT_FILE"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$SERVICE_ACCOUNT_FILE" >> "$GITHUB_ENV"
+          firebase deploy --only firestore:rules --project ugtm-fns-souss-massa --non-interactive
+
+      - name: Déployer le site sur Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: ugtm-fns-souss-massa
           channelId: live
-          entryPoint: ${{ env.TARGET_DIR }}
+          entryPoint: .
+
