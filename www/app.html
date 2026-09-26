@@ -414,14 +414,15 @@ main{
 .panel p{
   margin:0 0 12px;
   color:var(--ink)
-}.news-photo{display:block;width:100%;max-width:100%;height:auto;max-height:none;object-fit:contain;object-position:top center;border-radius:12px;margin:0 0 12px}
+}
+
+.news-photo{display:block;width:100%;max-width:100%;height:auto;max-height:none;object-fit:contain;object-position:top center;border-radius:12px;margin:0 0 12px}
 .news-photo-open{margin:0 0 12px}
 .news-image-modal{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);display:flex;flex-direction:column;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);color:#fff}
 .news-image-modal[hidden]{display:none}
 .news-image-close{align-self:flex-end;min-height:44px;padding:8px 16px;border:0;border-radius:10px;background:#fff;color:#111;font:inherit;font-weight:600}
 .news-image-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;text-align:center;touch-action:pan-x pan-y pinch-zoom}
 .news-image-scroll img{display:block;width:auto;max-width:100%;height:auto;max-height:none;margin:0 auto;object-fit:contain}
-
 
 .filters{
   display:flex;
@@ -1107,6 +1108,8 @@ main{
 <div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" maxlength="4000" required></textarea></div>
+<div class="field"><label for="rFiles">Photo ou pièce jointe (facultatif)</label><input id="rFiles" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"><p class="hint">Image compressée automatiquement. La pièce restera consultable dans l’application.</p></div>
+<div id="rDeliveryActions" class="actions" hidden></div>
 <label class="chip"><input id="rAnonymous" type="checkbox" checked><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" data-i18n="rSubmit"></button>
@@ -1191,7 +1194,7 @@ main{
 <button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
 
 </div><div id="adm-members"><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
-<button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
+<button class="btn ghost small" type="button" id="admCsvBtn" data-adm-act="csv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
 <label for="nCat">Catégorie</label>
 <select id="nCat">
@@ -1246,7 +1249,8 @@ main{
 <input id="ePAr" type="text" dir="rtl">
 </div><button class="btn primary block" type="button" data-adm-act="addEvent">Publier l'événement</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main>
+<!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -1298,6 +1302,7 @@ cloud:CLOUD_ON ? 'loading' : 'off',
 user:null,
 member:null,
 isAdmin:false,
+isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
@@ -1339,14 +1344,14 @@ shareApp:`Partager l’application sur WhatsApp`,
 aud:`Adhérents`,
 newsPhoto:`Photo (facultative)`,
 newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
-newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
+newsPhotoError:`Image trop volumineuse ou illisible (limite 40 Mo avant compression). Choisissez une autre photo.`,
 
 reportT:`Signaler un dysfonctionnement`,
 reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
 
 r1:`Les réponses sont réservées aux responsables désignés de la fédération.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
-r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
+r3:`Le signalement est enregistré dans l’application, avec ses photos compressées. L’administration générale et le sous-admin du secteur le voient dans l’application. Vous pourrez ensuite ouvrir WhatsApp pour prévenir les deux responsables ; l’envoi final se confirme dans WhatsApp.`,
 
 rCategory:`Type de problème`,
 rCatAbuse:`Abus de pouvoir`,
@@ -1372,7 +1377,7 @@ rNoReports:`Aucun signalement reçu.`,
 rStatusNew:`Nouveau`,
 rStatusClosed:`Traité`,
 rClose:`Marquer comme traité`,
-rAdminOnly:`Les signalements sont visibles uniquement par l’administration.`,
+rAdminOnly:`Les signalements sont visibles par l’administration générale et le sous-admin du secteur.`,
 
 openForm:`Ouvrir le formulaire`,
 sendDocs:`Envoyer des pièces sur WhatsApp`,
@@ -1743,30 +1748,24 @@ el.classList.remove('show');
 },ms||2400);
 }
 
-function showError(err,quiet){
-try{
-console.error(err);
-}catch(e){}
+var reportDeliveryData=null;
 
-if(quiet)return;
-
-var code=(err&&(err.code||err.message))||'';
-
-if(String(code).indexOf('permission-denied')>=0||String(code).indexOf('unauthorized')>=0){
-toast(T().errReportPermission,7000);
-return;
+function phoneWa(phone){
+var n=String(phone||'').replace(/\D/g,'');
+if(n.charAt(0)==='0')n='212'+n.slice(1);
+return n;
 }
 
-if(String(code).indexOf('unauthenticated')>=0){
-toast(T().rNeedLogin,6000);
-return;
+function reportWhatsAppText(r,id){
+var description=String(r.description||'');
+if(description.length>900)description=description.slice(0,897)+'…';
+return 'Signalement UGTM #'+id+'\nSecteur : '+provName((S.member&&S.member.prov)||'','fr')+'\nType : '+(r.category||'')+'\nDate : '+(r.date||'')+'\nLieu : '+(r.location||'')+'\n\n'+description+'\n\nVoir la pièce jointe et le suivi dans l’application : '+publicAppUrl();
 }
 
-toast(
-T().errPrefix+
-(code?' ('+code+')':''),
-6000
-);
+function showReportDelivery(){
+var box=$('rDeliveryActions');
+box.hidden=false;
+box.innerHTML='<p class="hint">Signalement enregistré dans l’application. Prévenez chaque responsable dans WhatsApp (appuyez sur Envoyer dans WhatsApp).</p><button class="btn ghost" type="button" data-report-wa="admin">Prévenir l’administration générale</button><button class="btn ghost" type="button" data-report-wa="province">Prévenir le sous-admin du secteur</button>';
 }
 
 function openUrl(url){
@@ -1992,7 +1991,8 @@ CHEV+
 
 '</button>'+
 
-'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+(c.image?'<img class="news-photo" data-news-zoom="'+id+'" role="button" tabindex="0" aria-label="Agrandir la photo du communiqué" src="'+esc(c.image)+'" alt="" loading="lazy">'+'<button type="button" class="btn ghost small news-photo-open" data-news-zoom="'+id+'">Voir la photo en grand</button>':'')+
+'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
+(c.image?'<img class="news-photo" data-news-zoom="'+id+'" role="button" tabindex="0" aria-label="Agrandir la photo du communiqué" src="'+esc(c.image)+'" alt="" loading="lazy">'+'<button type="button" class="btn ghost small news-photo-open" data-news-zoom="'+id+'">Voir la photo en grand</button>':'')+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -2183,7 +2183,7 @@ $('meCard').innerHTML=
 
 fillForm(false);
 
-$('meAdminLink').hidden=!S.isAdmin;
+$('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 }
 
 function renderAccountButton(){
@@ -2238,13 +2238,18 @@ var acts='';
 if(m.status==='pending')
 acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">Valider</button>';
 
-if(m.status==='active')
+if(S.isAdmin&&m.status==='active')
 acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">Suspendre</button>';
 
-if(m.status==='blocked')
+if(S.isAdmin&&m.status==='blocked')
 acts+='<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="'+uid+'">Réactiver</button>';
 
-acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">Supprimer</button>';
+if(S.isAdmin&&m.status==='active'){
+var selected=m.adminProvince||m.prov||PROVS[0].v;
+acts+='<div class="subadmin-control"><select aria-label="Secteur du sous-admin" data-subprov="'+uid+'">'+PROVS.map(function(p){return '<option value="'+esc(p.v)+'" '+(p.v===selected?'selected':'')+'>'+esc(p.fr)+'</option>';}).join('')+'</select><button type="button" class="btn ghost small" data-adm-act="'+(m.role==='subadmin'?'removeSubAdmin':'setSubAdmin')+'" data-uid="'+uid+'">'+(m.role==='subadmin'?'Retirer le rôle':'Nommer sous-admin')+'</button></div>';
+}
+
+if(S.isAdmin)acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">Supprimer</button>';
 
 var info=[
 m.etab,
@@ -2410,7 +2415,7 @@ function renderAdminReports(){
 var list=S.reports||[];
 $('admReportList').innerHTML=list.length?list.map(function(r){
 var status=r.status==='closed'?T().rStatusClosed:T().rStatusNew;
-return '<li class="mrow"><div class="mi"><strong>'+esc(r.category)+' · '+esc(status)+'</strong><span>'+esc(r.date)+' · '+esc(r.location)+'</span><span>'+esc(r.description)+'</span>'+(r.etab?'<span>'+esc(r.etab)+'</span>':'')+'<span>'+(r.anonymous?T().rAnonymous:esc(r.name||''))+'</span></div><div class="mact">'+(r.status==='closed'?'':'<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+T().rClose+'</button>')+'</div></li>';
+return '<li class="mrow"><div class="mi"><strong>'+esc(r.category)+' · '+esc(status)+'</strong><span>'+esc(r.date)+' · '+esc(r.location)+' · '+esc(provName(r.province,'fr'))+'</span><span>'+esc(r.description)+'</span>'+(r.attachmentData?'<a class="btn ghost small" href="'+esc(r.attachmentData)+'" target="_blank" rel="noopener">Ouvrir la pièce jointe</a>':'')+(r.etab?'<span>'+esc(r.etab)+'</span>':'')+'<span>'+(r.anonymous?T().rAnonymous:esc(r.name||''))+'</span></div><div class="mact">'+(r.status==='closed'?'':'<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+T().rClose+'</button>')+'</div></li>';
 }).join(''):'<li class="empty">'+T().rNoReports+'</li>';
 }
 
@@ -2436,6 +2441,7 @@ renderAdminReports();
 
 function showAdmTab(name){
 
+if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
 S.admTab=name;
 
 ['members','news','events','reports'].forEach(function(n){
@@ -2523,7 +2529,7 @@ function imageData(file){
 return new Promise(function(resolve,reject){
 if(!file){resolve('');return;}
 if(!/^image\/(jpeg|png|webp)$/.test(file.type||'')&&!/\.(jpe?g|png|webp)$/i.test(file.name||'')){reject(new Error(T().newsPhotoError));return;}
-if(file.size>16000000){reject(new Error(T().newsPhotoError));return;}
+if(file.size>40000000){reject(new Error(T().newsPhotoError));return;}
 var reader=new FileReader();
 reader.onerror=function(){reject(new Error(T().newsPhotoError));};
 reader.onload=function(){
@@ -2721,7 +2727,7 @@ var SCREENS=[
 
 function go(name){
 
-if(name==='admin'&&!S.isAdmin)
+if(name==='admin'&&!(S.isAdmin||S.isSubAdmin))
 name='me';
 
 SCREENS.forEach(function(n){
@@ -2856,14 +2862,14 @@ modal.hidden=false;
 document.body.style.overflow='hidden';
 });document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('.news-photo[data-news-zoom]')){e.preventDefault();e.target.click();return;}if(e.key==='Escape'){var modal=$('newsImageModal');if(modal){modal.hidden=true;$('newsImageFull').removeAttribute('src');document.body.style.overflow='';}}});
 
-
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target&&e.target.hasAttribute&&e.target.hasAttribute('data-news-zoom')){e.preventDefault();e.target.click();return;}if(e.key==='Escape'&&!$('newsImageModal').hidden){$('newsImageModal').hidden=true;$('newsImageFull').removeAttribute('src');document.body.style.overflow='';}});
 
 document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
 '[data-filter],[data-form],[data-link],[data-share],'+
-'[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
+'[data-cal],[data-calnav],[data-caldate],[data-act],[data-news-zoom],[data-adm],[data-adm-act],[data-memf],[data-report-wa],'+
 '#installBtn,#langBtn'
 );
 
@@ -2944,6 +2950,14 @@ go('news');
 
 return;
 }
+
+if(el.hasAttribute('data-news-zoom')){
+var imageNews=NEWS.filter(function(n){return String(n.id)===el.getAttribute('data-news-zoom');})[0];
+if(imageNews&&imageNews.image){$('newsImageFull').src=imageNews.image;$('newsImageModal').hidden=false;document.body.style.overflow='hidden';$('closeNewsImage').focus();}
+return;
+}
+
+if(el.id==='closeNewsImage'||el.id==='newsImageModal'){$('newsImageModal').hidden=true;$('newsImageFull').removeAttribute('src');document.body.style.overflow='';return;}
 
 if(el.hasAttribute('data-item')){
 
@@ -3103,9 +3117,20 @@ renderAdminMembers();
 return;
 }
 
+if(el.hasAttribute('data-report-wa')){
+if(!reportDeliveryData)return;
+var c=cloud();if(!c)return;
+var target=el.getAttribute('data-report-wa');
+var phone=target==='admin'?PERM.phone:reportDeliveryData.provincePhone;
+var n=phoneWa(phone);if(!n){toast('Aucun numéro WhatsApp responsable enregistré pour ce secteur.',4500);return;}
+var msg=reportWhatsAppText(reportDeliveryData.report,reportDeliveryData.id);
+window.location.href='https://wa.me/'+n+'?text='+encodeURIComponent(msg);
+return;
+}
+
 if(el.hasAttribute('data-adm-act')){
 
-if(!S.isAdmin)return;
+if(!S.isAdmin&&!S.isSubAdmin)return;
 
 c=cloud();
 
@@ -3145,7 +3170,17 @@ toast('Adhérent validé');
 
 }
 
-else if(a==='block'&&m){
+else if(a==='setSubAdmin'&&m&&S.isAdmin){
+var selector=document.querySelector('[data-subprov="'+CSS.escape(uid)+'"]');
+var assigned=selector?selector.value:(m.prov||'');
+c.admin.setSubAdmin(uid,assigned).then(function(){toast('Sous-admin nommé pour '+provName(assigned,'fr'));}).catch(showError);
+}
+
+else if(a==='removeSubAdmin'&&m&&S.isAdmin){
+c.admin.removeSubAdmin(uid).then(function(){toast('Rôle de sous-admin retiré');}).catch(showError);
+}
+
+else if(a==='block'&&m&&S.isAdmin){
 
 if(window.confirm(
 'Suspendre '+(m.name||m.email)+' ?'
@@ -3157,7 +3192,7 @@ c.admin
 
 }
 
-else if(a==='unblock'&&m){
+else if(a==='unblock'&&m&&S.isAdmin){
 
 c.admin
 .setStatus(uid,'active')
@@ -3165,7 +3200,7 @@ c.admin
 
 }
 
-else if(a==='delMember'&&m){
+else if(a==='delMember'&&m&&S.isAdmin){
 
 if(window.confirm(
 'Supprimer définitivement le profil de '+
@@ -3179,19 +3214,19 @@ c.admin
 
 }
 
-else if(a==='addNews'){
+else if(a==='addNews'&&S.isAdmin){
 
 publishNews();
 
 }
 
-else if(a==='addEvent'){
+else if(a==='addEvent'&&S.isAdmin){
 
 publishEvent();
 
 }
 
-else if(a==='delNews'){
+else if(a==='delNews'&&S.isAdmin){
 
 if(window.confirm('Supprimer ce communiqué ?'))
 
@@ -3206,7 +3241,7 @@ var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report)c.admin.updateReport(id,'closed',report.response||'').catch(showError);
 }
 
-else if(a==='delEvent'){
+else if(a==='delEvent'&&S.isAdmin){
 
 if(window.confirm('Supprimer cet événement ?'))
 
@@ -3216,7 +3251,7 @@ c.admin
 
 }
 
-else if(a==='csv'){
+else if(a==='csv'&&S.isAdmin){
 
 exportCsv();
 
@@ -3236,7 +3271,8 @@ e.preventDefault();
 if(!S.user){toast(T().rNeedLogin,4500);return;}
 var c=cloud();
 if(!c)return;
-c.addReport({
+var file=$('rFiles').files[0];
+var payload={
 anonymous:$('rAnonymous').checked,
 name:$('rAnonymous').checked?'':(S.user.name||''),
 etab:val('rEtab'),
@@ -3244,10 +3280,16 @@ category:$('rCategory').value,
 description:val('rDescription'),
 date:$('rDate').value,
 location:val('rLocation')
-}).then(function(){
-$('rDescription').value='';
-$('rEtab').value='';
-toast(T().rSent,4500);
+};
+imageData(file).then(function(image){
+if(image){payload.attachmentName=String(file.name||'photo.jpg').slice(0,120);payload.attachmentType='image/jpeg';payload.attachmentData=image;}
+return c.addReport(payload);
+}).then(function(ref){
+return c.admin.getSubAdminContact((S.member&&S.member.prov)||'').catch(function(){return null;}).then(function(contact){return {ref:ref,contact:contact};});
+}).then(function(result){
+reportDeliveryData={report:payload,id:result.ref.id,provincePhone:result.contact&&result.contact.phone||''};
+showReportDelivery();
+$('rDescription').value='';$('rEtab').value='';$('rFiles').value='';
 }).catch(showError);
 });
 
@@ -3329,11 +3371,15 @@ renderAdminReports();
 
 setSession:function(s){
 
-var wasAdmin=S.isAdmin;
+var wasManager=S.isAdmin||S.isSubAdmin;
 
 S.user=s.user;
 S.member=s.member;
 S.isAdmin=!!s.isAdmin;
+S.isSubAdmin=!!s.isSubAdmin;
+var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
+tabs.forEach(function(b){b.hidden=!S.isAdmin;});
+if($('admCsvBtn'))$('admCsvBtn').hidden=!S.isAdmin;
 
 if(!s.user){
 
@@ -3346,7 +3392,7 @@ renderAccountButton();
 renderMe();
 
 if(
-(wasAdmin&&!S.isAdmin)||
+(wasManager&&!S.isAdmin&&!S.isSubAdmin)||
 !s.user
 ){
 
@@ -3461,3 +3507,4 @@ window.UGTM.failed();
 
 </body>
 </html>
+
