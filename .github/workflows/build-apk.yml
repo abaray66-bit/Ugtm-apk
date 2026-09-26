@@ -28,6 +28,7 @@ jobs:
           fi
           SERVICE_ACCOUNT_FILE="$RUNNER_TEMP/firebase-service-account.json"
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$SERVICE_ACCOUNT_FILE"
+          export GOOGLE_APPLICATION_CREDENTIALS="$SERVICE_ACCOUNT_FILE"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$SERVICE_ACCOUNT_FILE" >> "$GITHUB_ENV"
           firebase deploy --only firestore:rules --project ugtm-fns-souss-massa --non-interactive
 
@@ -39,4 +40,3 @@ jobs:
           projectId: ugtm-fns-souss-massa
           channelId: live
           entryPoint: .
-
