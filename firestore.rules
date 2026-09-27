@@ -13,6 +13,17 @@ service cloud.firestore {
         && request.auth.token.email in ['abaray66@gmail.com'];
     }
 
+    function isSubAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.status == 'active'
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'subadmin';
+    }
+
+    function assignedProvince() {
+      return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.adminProvince;
+    }
+
     function isActive() {
       return signedIn()
         && exists(/databases/$(database)/documents/members/$(request.auth.uid))
@@ -24,7 +35,9 @@ service cloud.firestore {
     }
 
     match /members/{uid} {
-      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || (isSubAdmin() && resource.data.prov == assignedProvince());
 
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.status == 'pending'
@@ -39,6 +52,12 @@ service cloud.firestore {
         && okText(request.resource.data.phone, 30);
 
       allow update: if isAdmin()
+        || (isSubAdmin() && resource.data.prov == assignedProvince()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'memberNo', 'activatedAt'])
+            && okText(request.resource.data.memberNo, 30))
         || (signedIn() && request.auth.uid == uid
             && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['name', 'etab', 'prov', 'phone', 'updatedAt'])
@@ -48,7 +67,20 @@ service cloud.firestore {
             && okText(request.resource.data.phone, 30));
 
       allow delete: if isAdmin()
-        || (signedIn() && request.auth.uid == uid);
+        || (signedIn() && request.auth.uid == uid && resource.data.role != 'subadmin');
+    }
+
+    match /provinceContacts/{province} {
+      // Le numéro du responsable est partagé uniquement avec les adhérents actifs de son secteur.
+      allow read: if isAdmin() || (isActive()
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.prov == province);
+      allow write: if isAdmin()
+        || (isSubAdmin() && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.province == province
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone'])
+          && okText(request.resource.data.name, 120)
+          && okText(request.resource.data.phone, 30));
     }
 
     match /news/{id} {
@@ -73,6 +105,7 @@ service cloud.firestore {
       // Un membre peut lire uniquement ses propres signalements.
       // L'administrateur peut tous les lire.
       allow read: if isAdmin()
+        || (isSubAdmin() && resource.data.province == assignedProvince())
         || (
           signedIn()
           && resource.data.anonymous == false
@@ -91,6 +124,7 @@ service cloud.firestore {
           'description',
           'date',
           'location',
+          'province',
           'attachmentName',
           'attachmentType',
           'attachmentData',
@@ -114,6 +148,8 @@ service cloud.firestore {
         && request.resource.data.description is string
         && request.resource.data.date is string
         && request.resource.data.location is string
+        && request.resource.data.province is string
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.prov == request.resource.data.province
 
         && request.resource.data.attachmentName is string
         && request.resource.data.attachmentType is string
@@ -149,8 +185,14 @@ service cloud.firestore {
           )
         );
 
-      // Seul l'administrateur peut modifier le statut ou répondre.
-      allow update: if isAdmin();
+      // L'administrateur général voit tout ; le sous-admin gère son secteur.
+      allow update: if isAdmin()
+        || (isSubAdmin()
+          && resource.data.province == assignedProvince()
+          && request.resource.data.status in ['new', 'closed']
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'response', 'updatedAt'])
+          && okText(request.resource.data.response, 3000));
 
       // Seul l'administrateur peut supprimer un signalement.
       allow delete: if isAdmin();
