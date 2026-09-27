@@ -210,7 +210,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       <div class="hero">
         <h1 data-i18n="heroT"></h1>
         <p data-i18n="heroP"></p>
-        <button class="btn gold" type="button" data-form="1" data-i18n="heroBtn"></button>
+        <button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
       </div>
       <div class="sechead"><h2 data-i18n="nextT"></h2><button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button></div>
       <div class="nextcard" id="nextEvent"></div>
@@ -234,9 +234,22 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
         <li data-i18n="r2"></li>
         <li data-i18n="r3"></li>
       </ul>
-      <div class="actions">
-        <button class="btn primary block" type="button" data-form="1" data-i18n="openForm"></button>
-        <button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
+      <div id="repNeedAuth">
+        <div class="actions">
+          <button class="btn primary block" type="button" data-go="me" data-i18n="repSignIn"></button>
+          <button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
+        </div>
+      </div>
+      <div id="repForm" hidden>
+        <div class="field"><label for="dTitle" data-i18n="dTitle"></label><input id="dTitle" type="text"></div>
+        <div class="field"><label for="dCat" data-i18n="dCat"></label><select id="dCat"></select></div>
+        <div class="field"><label for="dDesc" data-i18n="dDesc"></label><textarea id="dDesc" rows="6"></textarea></div>
+        <div class="switchrow">
+          <div><b data-i18n="dAnonT"></b><p data-i18n="dAnonP"></p></div>
+          <button type="button" class="sw" id="dAnon" role="switch" aria-checked="false"></button>
+        </div>
+        <button class="btn primary block" type="button" data-act="sendDossier" data-i18n="dSend"></button>
+        <button class="btn ghost block" type="button" style="margin-top:10px" data-link="num" data-i18n="sendDocs"></button>
       </div>
     </section>
 
@@ -293,6 +306,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
         <div class="field"><label for="pfName" data-i18n="lName"></label><input id="pfName" type="text" autocomplete="name"></div>
         <div class="field"><label for="pfEtab" data-i18n="lEtab"></label><input id="pfEtab" type="text" autocomplete="off"></div>
         <div class="field"><label for="pfProv" data-i18n="lProv"></label><select id="pfProv"></select></div>
+        <div class="field"><label for="pfLocal" data-i18n="lLocal"></label><input id="pfLocal" type="text" list="localsList" autocomplete="off"><datalist id="localsList"></datalist></div>
         <div class="field"><label for="pfPhone" data-i18n="lPhone"></label><input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel"></div>
         <button class="btn primary block" type="button" data-act="save" data-i18n="save"></button>
         <div class="actions">
@@ -308,15 +322,47 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       <button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
       <h1 class="title">Administration</h1>
       <div class="filters" id="admTabs" role="group">
-        <button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
+        <button type="button" class="fbtn" data-adm="dossiers" aria-pressed="true">Dossiers</button>
+        <button type="button" class="fbtn" data-adm="reunions" aria-pressed="false">Réunions</button>
+        <button type="button" class="fbtn" data-adm="members" aria-pressed="false">Membres</button>
+        <button type="button" class="fbtn" data-adm="bureaux" aria-pressed="false">Bureaux</button>
         <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
         <button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button>
       </div>
 
-      <div id="adm-members">
+      <div id="adm-dossiers" hidden>
+        <div class="filters" id="admDosFilters" role="group"></div>
+        <ul class="list" id="admDosList"></ul>
+      </div>
+
+      <div id="adm-reunions" hidden>
+        <h2 class="h2">Nouvelle réunion</h2>
+        <div class="field"><label for="rTitre">Titre</label><input id="rTitre" type="text"></div>
+        <div class="field"><label for="rDate">Date</label><input id="rDate" type="date"></div>
+        <div class="field"><label for="rHeure">Heure</label><input id="rHeure" type="time"></div>
+        <div class="field"><label for="rLieu">Lieu</label><input id="rLieu" type="text"></div>
+        <div class="field"><label for="rProv">Province</label><select id="rProv"></select></div>
+        <div class="field"><label for="rLocal">Bureau local (facultatif — vide = toute la province)</label><input id="rLocal" type="text" list="localsList"></div>
+        <div class="field"><label for="rOdj">Ordre du jour</label><textarea id="rOdj" rows="4"></textarea></div>
+        <button class="btn primary block" type="button" data-adm-act="addReunion">Planifier la réunion</button>
+        <h2 class="h2" style="margin-top:28px">Réunions</h2>
+        <ul class="list" id="admReunionList"></ul>
+      </div>
+
+      <div id="adm-members" hidden>
         <div class="filters" id="admMemFilters" role="group"></div>
         <ul class="list" id="admMemList"></ul>
         <p style="margin-top:16px"><button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button></p>
+      </div>
+
+      <div id="adm-bureaux" hidden>
+        <h2 class="h2">Ajouter un bureau local</h2>
+        <div class="field"><label for="bNom">Nom (établissement ou ville)</label><input id="bNom" type="text"></div>
+        <div class="field"><label for="bType">Type</label><select id="bType"><option value="ville">Ville / commune</option><option value="etablissement">Établissement</option></select></div>
+        <div class="field"><label for="bProv">Province</label><select id="bProv"></select></div>
+        <button class="btn primary block" type="button" data-adm-act="addLocal">Ajouter</button>
+        <h2 class="h2" style="margin-top:28px">Bureaux locaux</h2>
+        <ul class="list" id="admLocalList"></ul>
       </div>
 
       <div id="adm-news" hidden>
@@ -389,9 +435,11 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
   /* État de la partie « comptes » */
   var S = {
     cloud: CLOUD_ON ? 'loading' : 'off',   // off | loading | ready | error
-    user: null, member: null, isAdmin: false,
-    members: [], memFilter: 'pending', admTab: 'members', formDirty: false
+    user: null, member: null, isAdmin: false, isRespProv: false, isRespLocal: false,
+    members: [], memFilter: 'pending', admTab: 'dossiers', formDirty: false,
+    locaux: [], dossiers: [], reunions: [], dosFilter: 'nouveau'
   };
+  function canManage(){ return S.isAdmin || S.isRespProv || S.isRespLocal; }
 
   var I18N = {
     fr: {
@@ -410,6 +458,11 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       r2: `Ne mentionnez que des faits : lieu, date, personnes concernées.`,
       r3: `Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
       openForm: `Ouvrir le formulaire`, sendDocs: `Envoyer des pièces sur WhatsApp`,
+      repSignIn: `Se connecter pour envoyer un dossier`,
+      dTitle: `Résumé en quelques mots`, dCat: `Catégorie`, dDesc: `Description des faits`,
+      dAnonT: `Rester anonyme`, dAnonP: `Votre identité ne sera pas enregistrée avec ce dossier.`,
+      dSend: `Envoyer le dossier`, dSent: `Dossier envoyé`, dMissing: `Indiquez au moins une description.`,
+      dNeedProfile: `Complétez d'abord votre province et votre bureau local dans « Mon espace ».`,
       agendaT: `Agenda`, addCal: `Ajouter au calendrier`,
       contactT: `Nous joindre`,
       cWa: `Chaîne WhatsApp`, cWaD: `Communiqués de la fédération. Les numéros des abonnés restent privés.`, cWaB: `Rejoindre`,
@@ -433,7 +486,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       st_active: `Adhésion validée.`,
       st_blocked: `Compte suspendu. Contactez la fédération.`,
       cardNo: `N° d'adhérent`, cardSince: `Adhérent depuis`,
-      pfT: `Mes informations`, lName: `Nom`, lEtab: `Établissement`, lProv: `Province ou préfecture`, lPhone: `Téléphone`,
+      pfT: `Mes informations`, lName: `Nom`, lEtab: `Établissement`, lProv: `Province ou préfecture`, lLocal: `Bureau local (ville ou établissement)`, lPhone: `Téléphone`,
       phSelect: `Choisir`, save: `Enregistrer`, saved: `Informations enregistrées`,
       signOut: `Se déconnecter`, delData: `Supprimer mes données`,
       delConfirm: `Supprimer votre profil et vous déconnecter ? Cette action est définitive.`,
@@ -456,6 +509,11 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       r2: `اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
       r3: `لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
       openForm: `فتح الاستمارة`, sendDocs: `إرسال وثائق عبر واتساب`,
+      repSignIn: `سجلوا الدخول لإرسال ملف`,
+      dTitle: `ملخص في كلمات قليلة`, dCat: `الفئة`, dDesc: `وصف الوقائع`,
+      dAnonT: `البقاء مجهولا`, dAnonP: `لن يتم تسجيل هويتكم مع هذا الملف.`,
+      dSend: `إرسال الملف`, dSent: `تم إرسال الملف`, dMissing: `يرجى كتابة وصف على الأقل.`,
+      dNeedProfile: `أكملوا أولا الإقليم والمكتب المحلي في «فضائي».`,
       agendaT: `الأجندة`, addCal: `إضافة إلى التقويم`,
       contactT: `اتصلوا بنا`,
       cWa: `قناة واتساب`, cWaD: `بلاغات الفيدرالية. أرقام المشتركين تبقى خاصة.`, cWaB: `انضمام`,
@@ -478,7 +536,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       st_active: `تمت المصادقة على انخراطكم.`,
       st_blocked: `الحساب موقوف. تواصلوا مع الفيدرالية.`,
       cardNo: `رقم المنخرط`, cardSince: `منخرط منذ`,
-      pfT: `معلوماتي`, lName: `الاسم`, lEtab: `المؤسسة`, lProv: `الإقليم أو العمالة`, lPhone: `رقم الهاتف`,
+      pfT: `معلوماتي`, lName: `الاسم`, lEtab: `المؤسسة`, lProv: `الإقليم أو العمالة`, lLocal: `المكتب المحلي (مدينة أو مؤسسة)`, lPhone: `رقم الهاتف`,
       phSelect: `اختر`, save: `حفظ`, saved: `تم حفظ المعلومات`,
       signOut: `تسجيل الخروج`, delData: `حذف بياناتي`,
       delConfirm: `حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي.`,
@@ -640,11 +698,18 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
   }
 
   function renderProvOptions(){
-    var sel = $('pfProv'), prev = sel.value;
-    sel.innerHTML = '<option value="">' + T().phSelect + '</option>' + PROVS.map(function(o){
-      return '<option value="' + o.v + '">' + o[lang] + '</option>';
-    }).join('');
-    sel.value = prev || '';
+    var opts = PROVS.map(function(o){ return '<option value="' + o.v + '">' + o[lang] + '</option>'; }).join('');
+    ['pfProv', 'rProv', 'bProv'].forEach(function(id){
+      var sel = $(id); if (!sel) return;
+      var prev = sel.value;
+      sel.innerHTML = (id === 'pfProv' ? '<option value="">' + T().phSelect + '</option>' : '') + opts;
+      sel.value = prev || '';
+    });
+  }
+
+  function renderLocalsDatalist(){
+    var dl = $('localsList'); if (!dl) return;
+    dl.innerHTML = S.locaux.map(function(l){ return '<option value="' + esc(l.name) + '">'; }).join('');
   }
 
   function fillForm(force){
@@ -654,6 +719,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     $('pfName').value = m.name || S.user.name || '';
     $('pfEtab').value = m.etab || '';
     $('pfProv').value = m.prov || '';
+    $('pfLocal').value = m.local || '';
     $('pfPhone').value = m.phone || '';
   }
 
@@ -669,7 +735,21 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     else { st.hidden = true; }
     $('meCard').innerHTML = (m && m.status === 'active') ? cardHTML(m) : '';
     fillForm(false);
-    $('meAdminLink').hidden = !S.isAdmin;
+    $('meAdminLink').hidden = !canManage();
+  }
+
+  var DOSSIER_CATS = D.dossierCategories || [];
+  function renderDossierCatOptions(){
+    var sel = $('dCat'); if (!sel || sel.options.length) return;
+    sel.innerHTML = DOSSIER_CATS.map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+  }
+  function renderReportForm(){
+    var needAuth = $('repNeedAuth'), form = $('repForm');
+    if (!needAuth || !form) return;
+    var signedIn = !!S.user;
+    needAuth.hidden = signedIn;
+    form.hidden = !signedIn;
+    if (signedIn) renderDossierCatOptions();
   }
 
   function renderAccountButton(){
@@ -688,15 +768,22 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
   }
   function findMember(uid){ return S.members.filter(function(m){ return m.uid === uid; })[0]; }
 
+  var ROLE_FR = { member: '', resp_provincial: 'Responsable provincial', resp_local: 'Responsable local' };
   function memberRow(m){
     var uid = esc(m.uid), acts = '';
     if (m.status === 'pending') acts += '<button type="button" class="btn primary small" data-adm-act="activate" data-uid="' + uid + '">Valider</button>';
     if (m.status === 'active') acts += '<button type="button" class="btn ghost small" data-adm-act="block" data-uid="' + uid + '">Suspendre</button>';
     if (m.status === 'blocked') acts += '<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="' + uid + '">Réactiver</button>';
+    if (m.status === 'active' && S.isAdmin){
+      if (m.role !== 'resp_provincial') acts += '<button type="button" class="btn ghost small" data-adm-act="setRespProv" data-uid="' + uid + '">Resp. provincial</button>';
+      if (m.role !== 'resp_local') acts += '<button type="button" class="btn ghost small" data-adm-act="setRespLocal" data-uid="' + uid + '">Resp. local</button>';
+      if (m.role === 'resp_provincial' || m.role === 'resp_local') acts += '<button type="button" class="btn ghost small" data-adm-act="removeResp" data-uid="' + uid + '">Retirer resp.</button>';
+    }
     acts += '<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="' + uid + '">Supprimer</button>';
-    var info = [m.etab, provName(m.prov, 'fr'), m.phone].filter(Boolean).join(' – ');
+    var roleTag = ROLE_FR[m.role] ? (' – ' + ROLE_FR[m.role] + (m.role === 'resp_local' ? ' (' + esc(m.adminLocal) + ')' : (m.role === 'resp_provincial' ? ' (' + provName(m.adminProvince, 'fr') + ')' : ''))) : '';
+    var info = [m.etab, provName(m.prov, 'fr'), m.local, m.phone].filter(Boolean).join(' – ');
     return '<li class="mrow"><div class="mi"><strong>' + esc(m.name || '(sans nom)') + ' <span class="tag st-' + esc(m.status) + '">' + esc(STATUS_FR[m.status] || m.status) + '</span></strong>' +
-      '<span>' + esc(m.email) + '</span>' + (info ? '<span>' + esc(info) + '</span>' : '') +
+      '<span>' + esc(m.email) + roleTag + '</span>' + (info ? '<span>' + esc(info) + '</span>' : '') +
       (m.memberNo ? '<span>N° ' + esc(m.memberNo) + '</span>' : '') + '</div><div class="mact">' + acts + '</div></li>';
   }
 
@@ -731,11 +818,74 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
   }
   function fmtDateFr(str){ var p = String(str).split('-'); return (+p[2]) + ' ' + MONTHS.fr[+p[1] - 1] + ' ' + p[0]; }
 
-  function renderAdminAll(){ renderAdminMembers(); renderAdminNews(); renderAdminEvents(); }
+  var DOS_STATUS = { nouveau: 'Nouveau', en_cours: 'En cours', traite: 'Traité', clos: 'Clos' };
+
+  function dossierRow(d){
+    var id = esc(d.id);
+    var who = d.anonymous ? 'Anonyme' : (esc(d.name) || '—');
+    var meta = [provName(d.province, 'fr'), d.local, d.category].filter(Boolean).join(' – ');
+    var histHtml = (d.history || []).slice(-4).map(function(h){
+      return '<p style="margin:2px 0;font-size:13px;color:var(--muted)">' + esc(h.action) + (h.by ? ' — ' + esc(h.by) : '') + '</p>';
+    }).join('');
+    var canAct = S.isAdmin || S.isRespProv || S.isRespLocal;
+    var actionsHtml = canAct ? (
+      '<div class="field"><label>Statut</label><select data-dos-status="' + id + '">' +
+      Object.keys(DOS_STATUS).map(function(k){ return '<option value="' + k + '"' + (d.status === k ? ' selected' : '') + '>' + DOS_STATUS[k] + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="field"><label>Réponse / note interne</label><textarea rows="3" data-dos-response="' + id + '">' + esc(d.response) + '</textarea></div>' +
+      '<button type="button" class="btn primary small" data-adm-act="dosSave" data-id="' + id + '">Enregistrer</button>'
+    ) : '';
+    return '<li class="mrow" style="flex-direction:column;align-items:stretch">' +
+      '<div class="mi"><strong>' + esc(d.title || d.category || 'Dossier') + ' <span class="tag">' + DOS_STATUS[d.status] + '</span></strong>' +
+      '<span>' + who + (meta ? ' – ' + esc(meta) : '') + '</span>' +
+      '<p style="margin:8px 0">' + esc(d.description) + '</p>' + histHtml + '</div>' +
+      (actionsHtml ? '<div style="margin-top:10px">' + actionsHtml + '</div>' : '') + '</li>';
+  }
+
+  function renderAdminDossiers(){
+    var c = { nouveau: 0, en_cours: 0, traite: 0, clos: 0, all: S.dossiers.length };
+    S.dossiers.forEach(function(d){ if (c[d.status] != null) c[d.status]++; });
+    var keys = [['nouveau','Nouveau'],['en_cours','En cours'],['traite','Traité'],['clos','Clos'],['all','Tous']];
+    $('admDosFilters').innerHTML = keys.map(function(k){
+      return '<button type="button" class="fbtn" data-dosf="' + k[0] + '" aria-pressed="' + (S.dosFilter === k[0]) + '">' + k[1] + ' (' + c[k[0]] + ')</button>';
+    }).join('');
+    var list = S.dossiers.filter(function(d){ return S.dosFilter === 'all' || d.status === S.dosFilter; });
+    $('admDosList').innerHTML = list.length ? list.map(dossierRow).join('') : '<li class="empty">Aucun dossier dans cette catégorie.</li>';
+  }
+
+  function reunionRow(r){
+    var id = esc(r.id);
+    var meta = [provName(r.province, 'fr'), r.local, r.lieu].filter(Boolean).join(' – ');
+    return '<li class="mrow" style="flex-direction:column;align-items:stretch">' +
+      '<div class="mi"><strong>' + esc(r.title) + '</strong>' +
+      '<span>' + fmtDateFr(r.date) + (r.time ? ' – ' + esc(r.time) : '') + (meta ? ' – ' + esc(meta) : '') + '</span>' +
+      (r.ordreDuJour ? '<p style="margin:6px 0">' + esc(r.ordreDuJour) + '</p>' : '') +
+      '<div class="field"><label>Compte-rendu</label><textarea rows="3" data-reu-cr="' + id + '">' + esc(r.compteRendu) + '</textarea></div>' +
+      '<button type="button" class="btn primary small" data-adm-act="reuSaveCr" data-id="' + id + '">Enregistrer le compte-rendu</button> ' +
+      '<button type="button" class="btn ghost small danger" data-adm-act="delReunion" data-id="' + id + '">Supprimer</button>' +
+      '</div></li>';
+  }
+
+  function renderAdminReunions(){
+    $('admReunionList').innerHTML = S.reunions.length ? S.reunions.map(reunionRow).join('') : '<li class="empty">Aucune réunion planifiée.</li>';
+  }
+
+  function localRow(l){
+    return '<li class="mrow"><div class="mi"><strong>' + esc(l.name) + '</strong><span>' + (l.type === 'etablissement' ? 'Établissement' : 'Ville/commune') + ' – ' + provName(l.province, 'fr') + '</span></div>' +
+      '<div class="mact"><button type="button" class="btn ghost small danger" data-adm-act="delLocal" data-id="' + esc(l.id) + '">Supprimer</button></div></li>';
+  }
+
+  function renderAdminLocaux(){
+    $('admLocalList').innerHTML = S.locaux.length ? S.locaux.map(localRow).join('') : '<li class="empty">Aucun bureau local enregistré.</li>';
+  }
+
+  function renderAdminAll(){
+    renderAdminDossiers(); renderAdminReunions(); renderAdminMembers(); renderAdminLocaux(); renderAdminNews(); renderAdminEvents(); renderLocalsDatalist();
+  }
 
   function showAdmTab(name){
     S.admTab = name;
-    ['members', 'news', 'events'].forEach(function(n){ $('adm-' + n).hidden = (n !== name); });
+    ['dossiers', 'reunions', 'members', 'bureaux', 'news', 'events'].forEach(function(n){ $('adm-' + n).hidden = (n !== name); });
     document.querySelectorAll('#admTabs .fbtn').forEach(function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-adm') === name)); });
   }
 
@@ -754,6 +904,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
   function setAdminDates(){
     if (!$('nDate').value) $('nDate').value = todayStr();
     if (!$('eDate').value) $('eDate').value = todayStr();
+    if (!$('rDate').value) $('rDate').value = todayStr();
   }
 
   function publishNews(){
@@ -792,13 +943,13 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     document.querySelectorAll('[data-i18n]').forEach(function(el){ el.textContent = t[el.getAttribute('data-i18n')]; });
     $('permDesc').textContent = PERM[lang] || PERM.fr || PERM.ar || '';
     renderProvOptions();
-    renderHome(); renderFilters(); renderNews(); renderAgenda(); renderAccountButton(); renderMe();
+    renderHome(); renderFilters(); renderNews(); renderAgenda(); renderAccountButton(); renderMe(); renderReportForm();
     fillForm(false);
   }
 
   var SCREENS = ['home','news','report','agenda','contact','me','admin'];
   function go(name){
-    if (name === 'admin' && !S.isAdmin) name = 'me';
+    if (name === 'admin' && !canManage()) name = 'me';
     SCREENS.forEach(function(n){ $('s-' + n).hidden = (n !== name); });
     document.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-selected', String(b.getAttribute('data-tab') === name)); });
     if (name === 'admin'){ setAdminDates(); renderAdminAll(); }
@@ -825,7 +976,7 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
 
   /* ---------- Clics ---------- */
   document.addEventListener('click', function(e){
-    var el = e.target.closest('[data-go],[data-tab],[data-item],[data-open],[data-filter],[data-form],[data-link],[data-share],[data-cal],[data-act],[data-adm],[data-adm-act],[data-memf],#installBtn,#langBtn');
+    var el = e.target.closest('[data-go],[data-tab],[data-item],[data-open],[data-filter],[data-link],[data-share],[data-cal],[data-act],[data-adm],[data-adm-act],[data-memf],[data-dosf],#installBtn,#langBtn');
     if (!el) return;
     var c, uid, m, id;
     if (el.id === 'langBtn'){
@@ -839,7 +990,6 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     }
     if (el.hasAttribute('data-go')){ go(el.getAttribute('data-go')); return; }
     if (el.hasAttribute('data-tab')){ go(el.getAttribute('data-tab')); return; }
-    if (el.hasAttribute('data-form')){ openUrl(LINKS.form); return; }
     if (el.hasAttribute('data-link')){ openUrl(linkFor(el.getAttribute('data-link'))); return; }
     if (el.hasAttribute('data-open')){ openId = el.getAttribute('data-open'); filter = 'all'; renderFilters(); renderNews(); go('news'); return; }
     if (el.hasAttribute('data-item')){ id = el.getAttribute('data-item'); openId = (openId === id) ? null : id; renderNews(); return; }
@@ -858,8 +1008,22 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       if (act === 'signin'){ c.signIn().catch(showError); }
       else if (act === 'signout'){ c.signOut().catch(showError); }
       else if (act === 'save'){
-        c.saveProfile({ name: val('pfName'), etab: val('pfEtab'), prov: $('pfProv').value, phone: val('pfPhone') })
+        c.saveProfile({ name: val('pfName'), etab: val('pfEtab'), prov: $('pfProv').value, local: val('pfLocal'), phone: val('pfPhone') })
           .then(function(){ S.formDirty = false; toast(T().saved); }).catch(showError);
+      }
+      else if (act === 'sendDossier'){
+        var desc = val('dDesc');
+        if (!desc){ toast(T().dMissing, 3000); return; }
+        if (!S.member || !S.member.prov || !S.member.local){ toast(T().dNeedProfile, 5000); return; }
+        var anon = $('dAnon').getAttribute('aria-checked') === 'true';
+        c.addDossier({
+          title: val('dTitle'), category: $('dCat').value, description: desc,
+          anonymous: anon, name: S.member.name, etab: S.member.etab
+        }).then(function(){
+          ['dTitle','dDesc'].forEach(function(x){ $(x).value = ''; });
+          $('dAnon').setAttribute('aria-checked', 'false');
+          toast(T().dSent);
+        }).catch(showError);
       }
       else if (act === 'deldata'){
         if (window.confirm(T().delConfirm)){
@@ -872,11 +1036,13 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     /* Administration */
     if (el.hasAttribute('data-adm')){ showAdmTab(el.getAttribute('data-adm')); return; }
     if (el.hasAttribute('data-memf')){ S.memFilter = el.getAttribute('data-memf'); renderAdminMembers(); return; }
+    if (el.hasAttribute('data-dosf')){ S.dosFilter = el.getAttribute('data-dosf'); renderAdminDossiers(); return; }
     if (el.hasAttribute('data-adm-act')){
-      if (!S.isAdmin) return;
+      if (!canManage()) return;
       c = cloud(); if (!c) return;
       var a = el.getAttribute('data-adm-act');
       uid = el.getAttribute('data-uid'); id = el.getAttribute('data-id'); m = uid ? findMember(uid) : null;
+      var actorName = (S.member && S.member.name) || (S.user && S.user.name) || '';
       if (a === 'activate' && m){
         var no = window.prompt("Numéro d'adhérent pour " + (m.name || m.email) + " :", m.memberNo || nextNo());
         if (no === null) return;
@@ -886,16 +1052,66 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
       else if (a === 'block' && m){ if (window.confirm('Suspendre ' + (m.name || m.email) + ' ?')) c.admin.setStatus(uid, 'blocked').catch(showError); }
       else if (a === 'unblock' && m){ c.admin.setStatus(uid, 'active').catch(showError); }
       else if (a === 'delMember' && m){ if (window.confirm('Supprimer définitivement le profil de ' + (m.name || m.email) + ' ?')) c.admin.deleteMember(uid).catch(showError); }
+      else if (a === 'setRespProv' && m){
+        var pv = window.prompt('Code province pour ' + (m.name || m.email) + ' (' + PROVS.map(function(p){return p.v;}).join(', ') + ') :', m.prov || '');
+        if (pv === null) return;
+        pv = pv.trim(); if (!pv) return;
+        c.admin.setRespProvincial(uid, pv).then(function(){ toast('Responsable provincial désigné'); }).catch(showError);
+      }
+      else if (a === 'setRespLocal' && m){
+        var lv = window.prompt('Nom du bureau local pour ' + (m.name || m.email) + ' :', m.local || '');
+        if (lv === null) return;
+        lv = lv.trim(); if (!lv) return;
+        var pv2 = window.prompt('Code province pour ce bureau (' + PROVS.map(function(p){return p.v;}).join(', ') + ') :', m.prov || '');
+        if (pv2 === null) return;
+        pv2 = pv2.trim(); if (!pv2) return;
+        c.admin.setRespLocal(uid, pv2, lv).then(function(){ toast('Responsable local désigné'); }).catch(showError);
+      }
+      else if (a === 'removeResp' && m){ if (window.confirm('Retirer la responsabilité de ' + (m.name || m.email) + ' ?')) c.admin.removeResp(uid).catch(showError); }
       else if (a === 'addNews'){ publishNews(); }
       else if (a === 'addEvent'){ publishEvent(); }
       else if (a === 'delNews'){ if (window.confirm('Supprimer ce communiqué ?')) c.admin.deleteNews(id).catch(showError); }
       else if (a === 'delEvent'){ if (window.confirm('Supprimer cet événement ?')) c.admin.deleteEvent(id).catch(showError); }
       else if (a === 'csv'){ exportCsv(); }
+      else if (a === 'addLocal'){
+        var ln = val('bNom'); if (!ln){ toast('Indiquez un nom.', 3000); return; }
+        c.admin.addLocal(ln, $('bType').value, $('bProv').value).then(function(){
+          $('bNom').value = ''; toast('Bureau local ajouté');
+        }).catch(showError);
+      }
+      else if (a === 'delLocal'){ if (window.confirm('Supprimer ce bureau local ?')) c.admin.deleteLocal(id).catch(showError); }
+      else if (a === 'addReunion'){
+        var rt = val('rTitre'), rd = val('rDate');
+        if (!rt || !rd){ toast('Indiquez au moins un titre et une date.', 4000); return; }
+        c.admin.addReunion({
+          title: rt, date: rd, time: val('rHeure'), lieu: val('rLieu'),
+          province: $('rProv').value, local: val('rLocal'), ordreDuJour: val('rOdj')
+        }).then(function(){
+          ['rTitre','rHeure','rLieu','rLocal','rOdj'].forEach(function(x){ $(x).value = ''; });
+          toast('Réunion planifiée');
+        }).catch(showError);
+      }
+      else if (a === 'delReunion'){ if (window.confirm('Supprimer cette réunion ?')) c.admin.deleteReunion(id).catch(showError); }
+      else if (a === 'reuSaveCr'){
+        var cr = document.querySelector('[data-reu-cr="' + id + '"]');
+        c.admin.updateReunion(id, { compteRendu: cr ? cr.value : '', status: 'terminee' }).then(function(){ toast('Compte-rendu enregistré'); }).catch(showError);
+      }
+      else if (a === 'dosSave'){
+        var stSel = document.querySelector('[data-dos-status="' + id + '"]');
+        var respBox = document.querySelector('[data-dos-response="' + id + '"]');
+        c.admin.updateDossierStatus(id, stSel ? stSel.value : 'nouveau', respBox ? respBox.value : '', actorName)
+          .then(function(){ toast('Dossier mis à jour'); }).catch(showError);
+      }
       return;
     }
   });
 
-  ['pfName', 'pfEtab', 'pfProv', 'pfPhone'].forEach(function(id){
+  $('dAnon').addEventListener('click', function(){
+    var on = $('dAnon').getAttribute('aria-checked') === 'true';
+    $('dAnon').setAttribute('aria-checked', String(!on));
+  });
+
+  ['pfName', 'pfEtab', 'pfProv', 'pfLocal', 'pfPhone'].forEach(function(id){
     $(id).addEventListener('input', function(){ S.formDirty = true; });
     $(id).addEventListener('change', function(){ S.formDirty = true; });
   });
@@ -908,13 +1124,17 @@ main{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 28px}
     setNews: function(list){ NEWS = list; renderHome(); renderNews(); renderAdminNews(); },
     setEvents: function(list){ EVENTS = list; renderHome(); renderAgenda(); renderAdminEvents(); },
     setSession: function(s){
-      var wasAdmin = S.isAdmin;
+      var could = canManage();
       S.user = s.user; S.member = s.member; S.isAdmin = !!s.isAdmin;
+      S.isRespProv = !!s.isRespProv; S.isRespLocal = !!s.isRespLocal;
       if (!s.user){ S.formDirty = false; S.members = []; }
-      renderAccountButton(); renderMe();
-      if ((wasAdmin && !S.isAdmin) || !s.user){ if (!$('s-admin').hidden) go('me'); }
+      renderAccountButton(); renderMe(); renderReportForm();
+      if ((could && !canManage()) || !s.user){ if (!$('s-admin').hidden) go('me'); }
     },
     setMembers: function(list){ S.members = list; renderAdminMembers(); },
+    setDossiers: function(list){ S.dossiers = list; renderAdminDossiers(); },
+    setReunions: function(list){ S.reunions = list; renderAdminReunions(); },
+    setLocaux: function(list){ S.locaux = list; renderAdminLocaux(); renderLocalsDatalist(); },
     toast: toast,
     error: showError
   };
