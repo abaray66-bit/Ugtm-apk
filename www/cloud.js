@@ -106,6 +106,7 @@ async function signIn(){
       }
 
       var result = await nativeAuth.signInWithGoogle({
+        serverClientId: '313270677240-qj5nkj8cgm22cl9kkh0fnckeerfdh7sj.apps.googleusercontent.com',
         useCredentialManager: true,
         skipNativeAuth: true
       });
@@ -140,9 +141,6 @@ async function saveProfile(p){
   var u = auth.currentUser;
   if (!u) throw new Error('Non connecté');
 
-  // Le profil peut ne pas encore exister si l'utilisateur vient juste de
-  // terminer sa connexion Google. On vérifie donc son existence avant de
-  // choisir entre create et update, afin d'éviter updateDoc + permission-denied.
   var ref = doc(db, 'members', u.uid);
   var snap = await getDoc(ref);
   var fields = {
@@ -171,7 +169,7 @@ async function saveProfile(p){
 async function deleteAccount(){
   var u = auth.currentUser;
   if (!u) throw new Error('Non connecté');
-  unsub('member'); unsub('members');           // évite que le profil soit recréé aussitôt
+  unsub('member'); unsub('members');
   await deleteDoc(doc(db, 'members', u.uid));
   try {
     await deleteUser(u);
