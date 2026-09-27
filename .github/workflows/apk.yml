@@ -34,6 +34,15 @@ jobs:
             npx cap add android
           fi
 
+      - name: Ajouter la configuration Firebase Android
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          mkdir -p android/app
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          test -s android/app/google-services.json
+          echo "google-services.json installé."
+
       - name: Synchroniser Capacitor
         run: npx cap sync android
 
