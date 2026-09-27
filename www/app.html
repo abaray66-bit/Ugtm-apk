@@ -1287,6 +1287,7 @@ cloud:CLOUD_ON ? 'loading' : 'off',
 user:null,
 member:null,
 isAdmin:false,
+isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
@@ -2141,7 +2142,7 @@ $('meCard').innerHTML=
 
 fillForm(false);
 
-$('meAdminLink').hidden=!S.isAdmin;
+$('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 }
 
 function renderAccountButton(){
@@ -2193,15 +2194,30 @@ var uid=esc(m.uid);
 
 var acts='';
 
-if(m.status==='pending')
+if(m.status==='pending'&&S.isAdmin)
 acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">Valider</button>';
 
-if(m.status==='active')
+if(S.isAdmin&&m.status==='active')
 acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">Suspendre</button>';
 
-if(m.status==='blocked')
+if(S.isAdmin&&m.status==='blocked')
 acts+='<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="'+uid+'">Réactiver</button>';
 
+if(S.isAdmin&&m.status==='active'){
+var selected=m.adminProvince||m.prov||PROVS[0].v;
+
+acts+='<div class="subadmin-control"><select aria-label="Secteur du sous-admin" data-subprov="'+uid+'">'+
+PROVS.map(function(pr){
+return '<option value="'+esc(pr.v)+'" '+(pr.v===selected?'selected':'')+'>'+esc(pr.fr)+'</option>';
+}).join('')+
+'</select><button type="button" class="btn ghost small" data-adm-act="'+
+(m.role==='subadmin'?'removeSubAdmin':'setSubAdmin')+
+'" data-uid="'+uid+'">'+
+(m.role==='subadmin'?'Retirer le rôle':'Nommer sous-admin')+
+'</button></div>';
+}
+
+if(S.isAdmin)
 acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">Supprimer</button>';
 
 var info=[
@@ -2393,6 +2409,8 @@ renderAdminReports();
 }
 
 function showAdmTab(name){
+if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
+if(!S.isAdmin&&!S.isSubAdmin&&name==='reports')name='members';
 
 S.admTab=name;
 
@@ -2679,7 +2697,7 @@ var SCREENS=[
 
 function go(name){
 
-if(name==='admin'&&!S.isAdmin)
+if(name==='admin'&&!(S.isAdmin||S.isSubAdmin))
 name='me';
 
 SCREENS.forEach(function(n){
@@ -3045,7 +3063,7 @@ return;
 
 if(el.hasAttribute('data-adm-act')){
 
-if(!S.isAdmin)return;
+if(!S.isAdmin&&!S.isSubAdmin)return;
 
 c=cloud();
 
@@ -3059,7 +3077,30 @@ id=el.getAttribute('data-id');
 
 m=uid?findMember(uid):null;
 
-if(a==='activate'&&m){
+if(a==='setSubAdmin'&&m&&S.isAdmin){
+
+var selector=document.querySelector('[data-subprov="'+CSS.escape(uid)+'"]');
+var assigned=selector?selector.value:(m.prov||'');
+
+c.admin.setSubAdmin(uid,assigned)
+.then(function(){
+toast('Sous-admin nommé pour '+provName(assigned,'fr'));
+})
+.catch(showError);
+
+}
+
+else if(a==='removeSubAdmin'&&m&&S.isAdmin){
+
+c.admin.removeSubAdmin(uid)
+.then(function(){
+toast('Rôle de sous-admin retiré');
+})
+.catch(showError);
+
+}
+
+else if(a==='activate'&&S.isAdmin&&m){
 
 var no=window.prompt(
 "Numéro d'adhérent pour "+
@@ -3085,7 +3126,7 @@ toast('Adhérent validé');
 
 }
 
-else if(a==='block'&&m){
+else if(a==='block'&&S.isAdmin&&m){
 
 if(window.confirm(
 'Suspendre '+(m.name||m.email)+' ?'
@@ -3097,7 +3138,7 @@ c.admin
 
 }
 
-else if(a==='unblock'&&m){
+else if(a==='unblock'&&S.isAdmin&&m){
 
 c.admin
 .setStatus(uid,'active')
@@ -3105,7 +3146,7 @@ c.admin
 
 }
 
-else if(a==='delMember'&&m){
+else if(a==='delMember'&&S.isAdmin&&m){
 
 if(window.confirm(
 'Supprimer définitivement le profil de '+
@@ -3119,19 +3160,19 @@ c.admin
 
 }
 
-else if(a==='addNews'){
+else if(a==='addNews'&&S.isAdmin){
 
 publishNews();
 
 }
 
-else if(a==='addEvent'){
+else if(a==='addEvent'&&S.isAdmin){
 
 publishEvent();
 
 }
 
-else if(a==='delNews'){
+else if(a==='delNews'&&S.isAdmin){
 
 if(window.confirm('Supprimer ce communiqué ?'))
 
@@ -3146,7 +3187,7 @@ var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report)c.admin.updateReport(id,'closed',report.response||'').catch(showError);
 }
 
-else if(a==='delEvent'){
+else if(a==='delEvent'&&S.isAdmin){
 
 if(window.confirm('Supprimer cet événement ?'))
 
@@ -3263,11 +3304,25 @@ renderAdminReports();
 
 setSession:function(s){
 
-var wasAdmin=S.isAdmin;
+var wasManager=S.isAdmin||S.isSubAdmin;
 
 S.user=s.user;
 S.member=s.member;
 S.isAdmin=!!s.isAdmin;
+S.isSubAdmin=!!s.isSubAdmin;
+
+var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
+tabs.forEach(function(b){b.hidden=!S.isAdmin;});
+
+var csv=document.querySelector('#adm-members [data-adm-act="csv"]');
+if(csv)csv.hidden=!S.isAdmin;
+
+var reports=document.querySelector('#admTabs button[data-adm="reports"]');
+if(reports)reports.hidden=!(S.isAdmin||S.isSubAdmin);
+
+if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'){
+showAdmTab('members');
+}
 
 if(!s.user){
 
@@ -3280,7 +3335,7 @@ renderAccountButton();
 renderMe();
 
 if(
-(wasAdmin&&!S.isAdmin)||
+(wasManager&&!S.isAdmin&&!S.isSubAdmin)||
 !s.user
 ){
 
