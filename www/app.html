@@ -1092,10 +1092,23 @@ main{
 <li data-i18n="r3"></li>
 </ul><form id="reportForm" class="report-form">
 <fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="abuse_of_power" data-i18n="rCatAbuse"></option><option value="assault" data-i18n="rCatAssault"></option><option value="administrative_situation" data-i18n="rCatAdmin"></option><option value="leave" data-i18n="rCatLeave"></option><option value="promotion_grade" data-i18n="rCatPromotion"></option><option value="disciplinary_case" data-i18n="rCatDiscipline"></option><option value="housing" data-i18n="rCatHousing"></option><option value="rating" data-i18n="rCatRating"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
+<div class="field"><label for="rProvince">Province / préfecture concernée</label>
+<select id="rProvince" required>
+<option value="">Sélectionner la province</option>
+<option value="Agadir Ida-Outanane">Agadir Ida-Outanane</option>
+<option value="Inezgane-Aït Melloul">Inezgane-Aït Melloul</option>
+<option value="Chtouka-Aït Baha">Chtouka-Aït Baha</option>
+<option value="Taroudant">Taroudant</option>
+<option value="Tiznit">Tiznit</option>
+<option value="Tata">Tata</option>
+</select></div>
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" maxlength="4000" required></textarea></div>
+<div class="field"><label for="rAttachment">Pièce jointe (facultatif)</label>
+<input id="rAttachment" type="file" accept="image/*,.pdf">
+<p class="hint">Image ou PDF, taille maximale 300 Ko.</p></div>
 <label class="chip"><input id="rAnonymous" type="checkbox" checked><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" data-i18n="rSubmit"></button>
@@ -2194,7 +2207,7 @@ var uid=esc(m.uid);
 
 var acts='';
 
-if(m.status==='pending'&&S.isAdmin)
+if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin))
 acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">Valider</button>';
 
 if(S.isAdmin&&m.status==='active')
@@ -2382,9 +2395,34 @@ fmtDateFr(ev.date)+
 
 function renderAdminReports(){
 var list=S.reports||[];
+
+function reportStatusLabel(status){
+if(status==='in_progress')return 'En cours';
+if(status==='closed')return 'Clos';
+return 'Nouveau';
+}
+
 $('admReportList').innerHTML=list.length?list.map(function(r){
-var status=r.status==='closed'?T().rStatusClosed:T().rStatusNew;
-return '<li class="mrow"><div class="mi"><strong>'+esc(r.category)+' · '+esc(status)+'</strong><span>'+esc(r.date)+' · '+esc(r.location)+'</span><span>'+esc(r.description)+'</span>'+(r.etab?'<span>'+esc(r.etab)+'</span>':'')+'<span>'+(r.anonymous?T().rAnonymous:esc(r.name||''))+'</span></div><div class="mact">'+(r.status==='closed'?'':'<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+T().rClose+'</button>')+'</div></li>';
+var status=reportStatusLabel(r.status);
+var actions='';
+
+if(r.status!=='closed'){
+actions+='<button type="button" class="btn ghost small" data-adm-act="startReport" data-id="'+esc(r.id)+'">En cours</button>';
+actions+='<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">Clore / répondre</button>';
+}
+
+actions+='<button type="button" class="btn ghost small" data-adm-act="shareReport" data-id="'+esc(r.id)+'">WhatsApp</button>';
+
+return '<li class="mrow"><div class="mi">'+
+'<strong>'+esc(r.category)+' · '+esc(status)+'</strong>'+
+'<span>'+esc(r.province||'')+' · '+esc(r.date)+' · '+esc(r.location)+'</span>'+
+(r.etab?'<span>Établissement : '+esc(r.etab)+'</span>':'')+
+'<span>'+esc(r.description)+'</span>'+
+(r.attachmentName?'<span>📎 '+esc(r.attachmentName)+'</span>':'')+
+'<span>'+(r.anonymous?'Signalement anonyme':esc(r.name||''))+'</span>'+
+(r.response?'<span><strong>Réponse :</strong> '+esc(r.response)+'</span>':'')+
+'</div><div class="mact">'+actions+'</div></li>';
+
 }).join(''):'<li class="empty">'+T().rNoReports+'</li>';
 }
 
@@ -3100,7 +3138,7 @@ toast('Rôle de sous-admin retiré');
 
 }
 
-else if(a==='activate'&&S.isAdmin&&m){
+else if(a==='activate'&&(S.isAdmin||S.isSubAdmin)&&m){
 
 var no=window.prompt(
 "Numéro d'adhérent pour "+
@@ -3182,9 +3220,50 @@ c.admin
 
 }
 
+else if(a==='startReport'){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report){
+c.admin.updateReport(id,'in_progress',report.response||'').catch(showError);
+}
+}
+
 else if(a==='closeReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
-if(report)c.admin.updateReport(id,'closed',report.response||'').catch(showError);
+if(report){
+var response=window.prompt(
+'Réponse / compte rendu du traitement :',
+report.response||''
+);
+if(response===null)return;
+c.admin.updateReport(id,'closed',response).catch(showError);
+}
+}
+
+else if(a==='shareReport'){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report){
+var text=
+'UGTM Souss-Massa - Signalement\n'+
+'Province : '+(report.province||'')+'\n'+
+'Catégorie : '+(report.category||'')+'\n'+
+'Établissement : '+(report.etab||'')+'\n'+
+'Date : '+(report.date||'')+'\n'+
+'Lieu : '+(report.location||'')+'\n'+
+'Statut : '+(report.status==='closed'?'Clos':(report.status==='in_progress'?'En cours':'Nouveau'))+'\n'+
+'Résumé : '+String(report.description||'').slice(0,500);
+
+if(navigator.share){
+navigator.share({
+title:'Signalement UGTM',
+text:text
+}).catch(function(){});
+}else{
+window.open(
+'https://wa.me/?text='+encodeURIComponent(text),
+'_blank'
+);
+}
+}
 }
 
 else if(a==='delEvent'&&S.isAdmin){
@@ -3214,25 +3293,84 @@ return;
 
 $('reportForm').addEventListener('submit',function(e){
 e.preventDefault();
-if(!S.user){toast(T().rNeedLogin,4500);return;}
+
+if(!S.user){
+toast(T().rNeedLogin,4500);
+return;
+}
+
 var c=cloud();
 if(!c)return;
+
+var province=val('rProvince');
+if(!province){
+toast('Sélectionnez la province concernée.',4000);
+return;
+}
+
+var file=$('rAttachment').files&&$('rAttachment').files[0];
+var anonymous=$('rAnonymous').checked;
+
+function sendReport(attachment){
 c.addReport({
-anonymous:$('rAnonymous').checked,
-name:$('rAnonymous').checked?'':(S.user.name||''),
+anonymous:anonymous,
+name:anonymous?'':(S.user.name||''),
 etab:val('rEtab'),
 category:$('rCategory').value,
 description:val('rDescription'),
 date:$('rDate').value,
-location:val('rLocation')
+location:val('rLocation'),
+province:province,
+attachmentName:attachment?attachment.name:'',
+attachmentType:attachment?attachment.type:'',
+attachmentData:attachment?attachment.data:''
 }).then(function(){
 $('rDescription').value='';
 $('rEtab').value='';
+$('rAttachment').value='';
 toast(T().rSent,4500);
 }).catch(showError);
+}
+
+if(file){
+if(file.size>300*1024){
+toast('La pièce jointe dépasse 300 Ko.',5000);
+return;
+}
+
+var reader=new FileReader();
+
+reader.onload=function(){
+sendReport({
+name:file.name,
+type:file.type||'application/octet-stream',
+data:String(reader.result||'')
+});
+};
+
+reader.onerror=function(){
+toast('Impossible de lire la pièce jointe.',4500);
+};
+
+reader.readAsDataURL(file);
+}else{
+sendReport(null);
+}
 });
 
 $('rDate').value=todayStr();
+
+function syncReportProvince(){
+var p=$('rProvince');
+if(!p||!S.member)return;
+var memberProvince=S.member.prov||'';
+if(memberProvince){
+p.value=memberProvince;
+}
+}
+
+syncReportProvince();
+
 
 ['pfName','pfEtab','pfProv','pfPhone']
 .forEach(function(id){

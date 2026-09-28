@@ -539,7 +539,10 @@ async function addReport(o){
       String(o.location || '').slice(0,160),
 
     province:
-      session.member ? String(session.member.prov || '').slice(0,40) : '',
+      String(
+        o.province ||
+        (session.member ? session.member.prov || '' : '')
+      ).slice(0,40),
 
     attachmentName:
       String(o.attachmentName || '').slice(0,120),
