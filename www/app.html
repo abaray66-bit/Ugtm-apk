@@ -1066,6 +1066,180 @@ main{
   direction:ltr
 }
 </style>
+
+<style id="admin-dashboard-style">
+
+.admin-dashboard-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:16px;
+margin:8px 0 18px;
+}
+
+.admin-dashboard-head h2{
+margin:0;
+font-size:1.35rem;
+}
+
+.admin-dashboard-head p{
+margin:5px 0 0;
+opacity:.7;
+}
+
+.admin-kpis{
+display:grid;
+grid-template-columns:repeat(5,minmax(0,1fr));
+gap:12px;
+margin-bottom:18px;
+}
+
+.admin-kpi{
+min-height:88px;
+padding:14px;
+border:1px solid rgba(127,127,127,.18);
+border-radius:14px;
+background:var(--card,#fff);
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+}
+
+.admin-kpi span{
+font-size:.82rem;
+opacity:.7;
+}
+
+.admin-kpi strong{
+font-size:1.7rem;
+}
+
+.admin-kpi strong.ok{
+color:#16834b;
+}
+
+.admin-kpi strong.warn{
+color:#c47b00;
+}
+
+.admin-dashboard-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:16px;
+}
+
+.admin-panel{
+border:1px solid rgba(127,127,127,.18);
+border-radius:16px;
+padding:16px;
+background:var(--card,#fff);
+}
+
+.admin-panel h3{
+margin:0 0 16px;
+font-size:1rem;
+}
+
+.admin-prov{
+margin:0 0 13px;
+}
+
+.admin-prov>div:first-child{
+display:flex;
+justify-content:space-between;
+gap:10px;
+margin-bottom:6px;
+font-size:.9rem;
+}
+
+.admin-prov b{
+font-weight:700;
+}
+
+.admin-bar{
+height:7px;
+border-radius:99px;
+background:rgba(127,127,127,.16);
+overflow:hidden;
+}
+
+.admin-bar i{
+display:block;
+height:100%;
+border-radius:99px;
+background:var(--primary,#B83268);
+}
+
+.admin-todo{
+width:100%;
+display:grid;
+grid-template-columns:auto 1fr auto;
+align-items:center;
+gap:10px;
+text-align:left;
+padding:12px;
+margin-bottom:8px;
+border:1px solid rgba(127,127,127,.16);
+border-radius:12px;
+background:transparent;
+color:inherit;
+cursor:pointer;
+}
+
+.admin-todo b{
+min-width:30px;
+text-align:center;
+font-size:1.15rem;
+}
+
+.admin-todo span{
+font-size:.9rem;
+}
+
+.admin-todo em{
+font-style:normal;
+color:var(--primary,#B83268);
+font-weight:700;
+font-size:.82rem;
+}
+
+.admin-todo.empty{
+display:block;
+cursor:default;
+opacity:.65;
+}
+
+@media(max-width:800px){
+
+.admin-kpis{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.admin-dashboard-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+@media(max-width:430px){
+
+.admin-kpis{
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+.admin-kpi{
+min-height:76px;
+padding:11px;
+}
+
+.admin-kpi strong{
+font-size:1.4rem;
+}
+
+}
+
+</style>
 <style id="admin-members-mobile-fix">
 #adm-members .mrow{
   display:flex !important;
@@ -1264,12 +1438,35 @@ main{
 
 </div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
 
-<h1 class="title">Administration</h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
+<h1 class="title">Administration</h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false">Tableau de bord</button><button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
 
 <button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
 
+</div><div id="adm-dashboard" hidden>
+<div class="admin-dashboard-head">
+<div>
+<h2>Tableau de bord</h2>
+<p>Vue d'ensemble de la gestion de la fédération</p>
+</div>
+</div>
+
+<div class="admin-kpis" id="admDashKpis"></div>
+
+<div class="admin-dashboard-grid">
+
+<div class="admin-panel">
+<h3>Répartition des adhérents</h3>
+<div id="admDashProvs"></div>
+</div>
+
+<div class="admin-panel">
+<h3>À traiter</h3>
+<div id="admDashTodo"></div>
+</div>
+
+</div>
 </div><div id="adm-members"><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
@@ -2517,6 +2714,7 @@ p[0];
 
 function renderAdminAll(){
 
+renderAdminDashboard();
 renderAdminMembers();
 renderAdminNews();
 renderAdminEvents();
@@ -2524,15 +2722,153 @@ renderAdminReports();
 
 }
 
+
+function renderAdminDashboard(){
+
+if(!$('admDashKpis'))return;
+
+var members=S.members||[];
+var reports=S.reports||[];
+
+var active=members.filter(function(m){
+return m.status==='active';
+}).length;
+
+var pending=members.filter(function(m){
+return m.status==='pending';
+}).length;
+
+var blocked=members.filter(function(m){
+return m.status==='blocked';
+}).length;
+
+var newReports=reports.filter(function(r){
+return !r.status||r.status==='new';
+}).length;
+
+var inProgress=reports.filter(function(r){
+return r.status==='in_progress';
+}).length;
+
+var closed=reports.filter(function(r){
+return r.status==='closed';
+}).length;
+
+function kpi(label,value,cls){
+
+return '<div class="admin-kpi">'+
+'<span>'+label+'</span>'+
+'<strong class="'+(cls||'')+'">'+value+'</strong>'+
+'</div>';
+
+}
+
+$('admDashKpis').innerHTML=
+
+kpi('Adhérents',members.length)+
+kpi('Actifs',active,'ok')+
+kpi('En attente',pending,'warn')+
+kpi('Suspendus',blocked)+
+kpi('Signalements',reports.length)+
+kpi('Nouveaux dossiers',newReports,'warn')+
+kpi('En cours',inProgress)+
+kpi('Clôturés',closed,'ok')+
+kpi('Communiqués',NEWS.length)+
+kpi('Événements',EVENTS.length);
+
+var counts={};
+
+PROVS.forEach(function(p){
+counts[p.v]=0;
+});
+
+members.forEach(function(m){
+
+if(m.prov){
+counts[m.prov]=(counts[m.prov]||0)+1;
+}
+
+});
+
+$('admDashProvs').innerHTML=PROVS.map(function(p){
+
+var n=counts[p.v]||0;
+
+var pct=members.length?
+Math.round(n*100/members.length):0;
+
+return '<div class="admin-prov">'+
+'<div><span>'+esc(p.fr)+'</span><b>'+n+'</b></div>'+
+'<div class="admin-bar"><i style="width:'+pct+'%"></i></div>'+
+'</div>';
+
+}).join('');
+
+var todo=[];
+
+if(pending){
+
+todo.push(
+'<button type="button" class="admin-todo" data-adm="members">'+
+'<b>'+pending+'</b>'+
+'<span>adhésion(s) en attente</span>'+
+'<em>Voir</em>'+
+'</button>'
+);
+
+}
+
+if(newReports){
+
+todo.push(
+'<button type="button" class="admin-todo" data-adm="reports">'+
+'<b>'+newReports+'</b>'+
+'<span>signalement(s) nouveau(x)</span>'+
+'<em>Traiter</em>'+
+'</button>'
+);
+
+}
+
+if(inProgress){
+
+todo.push(
+'<button type="button" class="admin-todo" data-adm="reports">'+
+'<b>'+inProgress+'</b>'+
+'<span>dossier(s) en cours</span>'+
+'<em>Ouvrir</em>'+
+'</button>'
+);
+
+}
+
+if(!todo.length){
+
+todo.push(
+'<div class="admin-todo empty">'+
+'<span>Aucun élément urgent à traiter.</span>'+
+'</div>'
+);
+
+}
+
+$('admDashTodo').innerHTML=todo.join('');
+
+}
+
 function showAdmTab(name){
+
+if(!S.isAdmin&&!S.isSubAdmin)name='members';
+
 if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
-if(!S.isAdmin&&!S.isSubAdmin&&name==='reports')name='members';
 
 S.admTab=name;
 
-['members','news','events','reports'].forEach(function(n){
+['dashboard','members','news','events','reports'].forEach(function(n){
 
-$('adm-'+n).hidden=n!==name;
+var el=$('adm-'+n);
+
+if(el)el.hidden=n!==name;
 
 });
 
@@ -2544,6 +2880,9 @@ String(b.getAttribute('data-adm')===name)
 );
 
 });
+
+if(name==='dashboard')renderAdminDashboard();
+
 }
 
 function csvCell(v){
