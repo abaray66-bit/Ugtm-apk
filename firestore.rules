@@ -24,6 +24,16 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.adminProvince;
     }
 
+    function assignedProvinceLabel() {
+      return assignedProvince() == 'agadir' ? 'Agadir Ida-Outanane' :
+             assignedProvince() == 'inezgane' ? 'Inezgane-Aït Melloul' :
+             assignedProvince() == 'chtouka' ? 'Chtouka-Aït Baha' :
+             assignedProvince() == 'taroudant' ? 'Taroudant' :
+             assignedProvince() == 'tiznit' ? 'Tiznit' :
+             assignedProvince() == 'tata' ? 'Tata' :
+             assignedProvince();
+    }
+
     function isActive() {
       return signedIn()
         && exists(/databases/$(database)/documents/members/$(request.auth.uid))
@@ -105,7 +115,7 @@ service cloud.firestore {
       // Un membre peut lire uniquement ses propres signalements.
       // L'administrateur peut tous les lire.
       allow read: if isAdmin()
-        || (isSubAdmin() && resource.data.province == assignedProvince())
+        || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
         || (
           signedIn()
           && resource.data.anonymous == false
@@ -120,6 +130,8 @@ service cloud.firestore {
           'anonymous',
           'name',
           'etab',
+          'age',
+          'da',
           'category',
           'description',
           'date',
@@ -144,6 +156,8 @@ service cloud.firestore {
 
         && request.resource.data.name is string
         && request.resource.data.etab is string
+        && request.resource.data.age is string
+        && request.resource.data.da is string
         && request.resource.data.category is string
         && request.resource.data.description is string
         && request.resource.data.date is string
@@ -164,6 +178,8 @@ service cloud.firestore {
 
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)
+        && okText(request.resource.data.age, 3)
+        && okText(request.resource.data.da, 80)
         && okText(request.resource.data.category, 60)
         && okText(request.resource.data.description, 4000)
         && okText(request.resource.data.date, 20)
@@ -195,7 +211,7 @@ service cloud.firestore {
       // L'administrateur général voit tout ; le sous-admin gère son secteur.
       allow update: if isAdmin()
         || (isSubAdmin()
-          && resource.data.province == assignedProvince()
+          && resource.data.province == assignedProvinceLabel()
           && request.resource.data.status in ['new', 'in_progress', 'closed']
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'response', 'updatedAt'])

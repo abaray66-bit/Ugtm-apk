@@ -1367,6 +1367,8 @@ font-size:1.4rem;
 <option value="Tiznit">Tiznit</option>
 <option value="Tata">Tata</option>
 </select></div>
+<div class="field"><label for="rAge" data-i18n="rAge"></label><input id="rAge" type="number" min="0" max="120" inputmode="numeric" required></div>
+<div class="field"><label for="rDA" data-i18n="rDA"></label><input id="rDA" type="text" maxlength="80"></div>
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
@@ -1648,6 +1650,8 @@ rCatDiscipline:`Affaire disciplinaire`,
 rCatHousing:`Logement`,
 rCatRating:`Notation`,
 rCatOther:`Autre`,
+rAge:`Âge`,
+rDA:`DA`,
 rDate:`Date des faits`,
 rLocation:`Lieu des faits`,
 rEtab:`Établissement (facultatif)`,
@@ -1785,6 +1789,8 @@ rCatDiscipline:`قضية تأديبية`,
 rCatHousing:`السكن`,
 rCatRating:`التنقيط`,
 rCatOther:`أخرى`,
+rAge:`السن`,
+rDA:`DA`,
 rDate:`تاريخ الوقائع`,
 rLocation:`مكان الوقائع`,
 rEtab:`المؤسسة (اختياري)`,
@@ -2705,6 +2711,7 @@ return '<li class="mrow"><div class="mi">'+
 '<strong>'+esc(r.category)+' · '+esc(status)+'</strong>'+
 '<span>'+esc(r.province||'')+' · '+esc(r.date)+' · '+esc(r.location)+'</span>'+
 (r.etab?'<span>Établissement : '+esc(r.etab)+'</span>':'')+
+((r.age!=='' || r.da)?'<span>'+(r.age!==''?'Âge : '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?'DA : '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
 (r.attachmentName?'<span>📎 '+esc(r.attachmentName)+'</span>':'')+
 '<span>'+(r.anonymous?'Signalement anonyme':esc(r.name||''))+'</span>'+
@@ -3746,6 +3753,8 @@ c.addReport({
 anonymous:anonymous,
 name:anonymous?'':(S.user.name||''),
 etab:val('rEtab'),
+age:val('rAge'),
+da:val('rDA'),
 category:$('rCategory').value,
 description:val('rDescription'),
 date:$('rDate').value,
@@ -3757,6 +3766,8 @@ attachmentData:attachment?attachment.data:''
 }).then(function(){
 $('rDescription').value='';
 $('rEtab').value='';
+$('rAge').value='';
+$('rDA').value='';
 $('rAttachment').value='';
 toast(T().rSent,4500);
 }).catch(showError);

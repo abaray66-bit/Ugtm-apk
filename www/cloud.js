@@ -157,6 +157,20 @@ function subscribeMembers(){
   }, function(err){hooks.error(err);});
 }
 
+function reportProvinceLabel(code){
+
+  var map = {
+    agadir: 'Agadir Ida-Outanane',
+    inezgane: 'Inezgane-Aït Melloul',
+    chtouka: 'Chtouka-Aït Baha',
+    taroudant: 'Taroudant',
+    tiznit: 'Tiznit',
+    tata: 'Tata'
+  };
+
+  return map[String(code || '')] || String(code || '');
+}
+
 function subscribeReports(){
 
   unsub('reports');
@@ -173,7 +187,7 @@ function subscribeReports(){
 
     q = query(
       collection(db, 'reports'),
-      where(session.isSubAdmin ? 'province' : 'ownerUid', '==', session.isSubAdmin ? session.member.adminProvince : session.user.uid)
+      where(session.isSubAdmin ? 'province' : 'ownerUid', '==', session.isSubAdmin ? reportProvinceLabel(session.member.adminProvince) : session.user.uid)
     );
 
   }
@@ -199,6 +213,8 @@ function subscribeReports(){
 
             name: x.name || '',
             etab: x.etab || '',
+            age: x.age || '',
+            da: x.da || '',
             category: x.category || '',
             description: x.description || '',
             date: x.date || '',
@@ -526,6 +542,12 @@ async function addReport(o){
     etab:
       String(o.etab || '').slice(0,160),
 
+    age:
+      String(o.age || '').slice(0,3),
+
+    da:
+      String(o.da || '').slice(0,80),
+
     category:
       String(o.category || '').slice(0,60),
 
@@ -653,9 +675,14 @@ async function saveProfile(p){
 
     );
     if (snap.data().role === 'subadmin' && snap.data().adminProvince){
-      await setDoc(doc(db, 'provinceContacts', snap.data().adminProvince), {
-        uid: u.uid, name: fields.name, phone: fields.phone, province: snap.data().adminProvince
-      });
+      var contactRef = doc(db, 'provinceContacts', snap.data().adminProvince);
+      var contactSnap = await getDoc(contactRef);
+      if (contactSnap.exists() && contactSnap.data().uid === u.uid){
+        await updateDoc(contactRef, {
+          name: fields.name,
+          phone: fields.phone
+        });
+      }
     }
 
   }
