@@ -1065,7 +1065,85 @@ main{
 .adm *{
   direction:ltr
 }
-</style></head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
+</style>
+<style id="admin-members-mobile-fix">
+#adm-members .mrow{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:stretch !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  gap:10px !important;
+}
+
+#adm-members .mrow .mi{
+  min-width:0 !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+
+#adm-members .mrow .mi strong,
+#adm-members .mrow .mi span{
+  display:block !important;
+  max-width:100% !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+}
+
+#adm-members .mrow .mact{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:8px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+}
+
+#adm-members .mrow .mact button,
+#adm-members .mrow .mact select{
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+
+#adm-members .subadmin-control{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:8px !important;
+  max-width:100% !important;
+}
+
+#adm-members .subadmin-control select{
+  min-width:180px !important;
+  flex:1 1 220px !important;
+}
+
+@media(max-width:600px){
+  #adm-members .mrow{
+    padding:12px !important;
+  }
+
+  #adm-members .mrow .mact{
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+
+  #adm-members .mrow .mact button,
+  #adm-members .subadmin-control,
+  #adm-members .subadmin-control select{
+    width:100% !important;
+  }
+
+  #adm-members .subadmin-control{
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+}
+</style>
+
+</head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
 <path d="M6 5v9a6 6 0 0 0 12 0V5"/>
 </svg>
