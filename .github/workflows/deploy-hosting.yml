@@ -14,18 +14,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extraire le zip si présent
-        run: |
-          ZIP=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
-          if [ -n "$ZIP" ]; then
-            echo "Archive trouvée : $ZIP"
-            mkdir -p app
-            unzip -o "$ZIP" -d app
-            echo "TARGET_DIR=app" >> "$GITHUB_ENV"
-          else
-            echo "TARGET_DIR=." >> "$GITHUB_ENV"
-          fi
-
       - name: Déployer sur Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -33,4 +21,4 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           projectId: ugtm-fns-souss-massa
           channelId: live
-          entryPoint: ${{ env.TARGET_DIR }}
+          entryPoint: .
