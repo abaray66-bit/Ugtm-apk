@@ -135,7 +135,6 @@ service cloud.firestore {
           'category',
           'description',
           'date',
-          'location',
           'province',
           'attachmentName',
           'attachmentType',
@@ -161,7 +160,6 @@ service cloud.firestore {
         && request.resource.data.category is string
         && request.resource.data.description is string
         && request.resource.data.date is string
-        && request.resource.data.location is string
         && request.resource.data.province is string
         && request.resource.data.province in [
           'Agadir Ida-Outanane',
@@ -183,7 +181,6 @@ service cloud.firestore {
         && okText(request.resource.data.category, 60)
         && okText(request.resource.data.description, 4000)
         && okText(request.resource.data.date, 20)
-        && okText(request.resource.data.location, 160)
 
         && okText(request.resource.data.attachmentName, 120)
         && okText(request.resource.data.attachmentType, 80)

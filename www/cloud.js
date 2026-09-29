@@ -557,8 +557,7 @@ async function addReport(o){
     date:
       String(o.date || '').slice(0,20),
 
-    location:
-      String(o.location || '').slice(0,160),
+
 
     province:
       String(

@@ -1367,10 +1367,9 @@ font-size:1.4rem;
 <option value="Tiznit">Tiznit</option>
 <option value="Tata">Tata</option>
 </select></div>
-<div class="field"><label for="rAge" data-i18n="rAge"></label><input id="rAge" type="number" min="0" max="120" inputmode="numeric" required></div>
-<div class="field"><label for="rDA" data-i18n="rDA"></label><input id="rDA" type="text" maxlength="80"></div>
+<div class="field"><label for="rAge" data-i18n="rAge"></label><input id="rAge" type="text" maxlength="30" required></div>
+<div class="field"><label for="rDA" data-i18n="rDA"></label><select id="rDA" required><option value="" data-i18n="rSpecChoose"></option><option value="Médecin" data-i18n="rSpecDoctor"></option><option value="ITS" data-i18n="rSpecITS"></option><option value="Aide soignant" data-i18n="rSpecNurse"></option><option value="Personnel administratif" data-i18n="rSpecAdmin"></option><option value="Autre à préciser" data-i18n="rSpecOther"></option></select></div>
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
-<div class="field"><label for="rLocation" data-i18n="rLocation"></label><input id="rLocation" type="text" maxlength="160" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" maxlength="4000" required></textarea></div>
 <div class="field"><label for="rAttachment">Pièce jointe (facultatif)</label>
@@ -1650,10 +1649,15 @@ rCatDiscipline:`Affaire disciplinaire`,
 rCatHousing:`Logement`,
 rCatRating:`Notation`,
 rCatOther:`Autre`,
-rAge:`Âge`,
-rDA:`DA`,
+rAge:`PPR`,
+rDA:`Spécialité`,
+rSpecChoose:`Choisir une spécialité`,
+rSpecDoctor:`Médecin`,
+rSpecITS:`ITS`,
+rSpecNurse:`Aide soignant`,
+rSpecAdmin:`Personnel administratif`,
+rSpecOther:`Autre à préciser`,
 rDate:`Date des faits`,
-rLocation:`Lieu des faits`,
 rEtab:`Établissement (facultatif)`,
 rDescription:`Décrivez les faits`,
 rAnonymous:`Envoyer sans afficher mon nom`,
@@ -1789,10 +1793,15 @@ rCatDiscipline:`قضية تأديبية`,
 rCatHousing:`السكن`,
 rCatRating:`التنقيط`,
 rCatOther:`أخرى`,
-rAge:`السن`,
-rDA:`DA`,
+rAge:`PPR`,
+rDA:`التخصص`,
+rSpecChoose:`اختر التخصص`,
+rSpecDoctor:`طبيب`,
+rSpecITS:`ITS`,
+rSpecNurse:`ممرض/مساعد صحي`,
+rSpecAdmin:`الموظفون الإداريون`,
+rSpecOther:`أخرى تحدد`,
 rDate:`تاريخ الوقائع`,
-rLocation:`مكان الوقائع`,
 rEtab:`المؤسسة (اختياري)`,
 rDescription:`صفوا الوقائع`,
 rAnonymous:`إرسال التبليغ دون إظهار اسمي`,
@@ -2709,9 +2718,9 @@ actions+='<button type="button" class="btn ghost small" data-adm-act="shareRepor
 
 return '<li class="mrow"><div class="mi">'+
 '<strong>'+esc(r.category)+' · '+esc(status)+'</strong>'+
-'<span>'+esc(r.province||'')+' · '+esc(r.date)+' · '+esc(r.location)+'</span>'+
+'<span>'+esc(r.province||'')+' · '+esc(r.date)+'</span>'+
 (r.etab?'<span>Établissement : '+esc(r.etab)+'</span>':'')+
-((r.age!=='' || r.da)?'<span>'+(r.age!==''?'Âge : '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?'DA : '+esc(r.da):'')+'</span>':'')+
+((r.age!=='' || r.da)?'<span>'+(r.age!==''?'PPR : '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?'Spécialité : '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
 (r.attachmentName?'<span>📎 '+esc(r.attachmentName)+'</span>':'')+
 '<span>'+(r.anonymous?'Signalement anonyme':esc(r.name||''))+'</span>'+
@@ -3685,7 +3694,6 @@ var text=
 'Catégorie : '+(report.category||'')+'\n'+
 'Établissement : '+(report.etab||'')+'\n'+
 'Date : '+(report.date||'')+'\n'+
-'Lieu : '+(report.location||'')+'\n'+
 'Statut : '+(report.status==='closed'?'Clos':(report.status==='in_progress'?'En cours':'Nouveau'))+'\n'+
 'Résumé : '+String(report.description||'').slice(0,500);
 
@@ -3758,7 +3766,6 @@ da:val('rDA'),
 category:$('rCategory').value,
 description:val('rDescription'),
 date:$('rDate').value,
-location:val('rLocation'),
 province:province,
 attachmentName:attachment?attachment.name:'',
 attachmentType:attachment?attachment.type:'',
