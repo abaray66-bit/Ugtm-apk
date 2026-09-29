@@ -513,16 +513,15 @@ async function signOut(){
 
 async function addReport(o){
 
-  if (!auth.currentUser){
+  var anonymous = !!o.anonymous;
+
+  if (!auth.currentUser && !anonymous){
 
     throw new Error(
       'Non connecté'
     );
 
   }
-
-
-  var anonymous = !!o.anonymous;
 
 
   var data = {

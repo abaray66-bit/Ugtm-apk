@@ -135,9 +135,7 @@ service cloud.firestore {
         );
 
       // Création d'un signalement
-      allow create: if signedIn()
-
-        && request.resource.data.keys().hasOnly([
+      allow create: if request.resource.data.keys().hasOnly([
           'ownerUid',
           'anonymous',
           'name',
@@ -212,7 +210,8 @@ service cloud.firestore {
           // Signalement identifié :
           // il est lié au compte de l'utilisateur.
           (
-            request.resource.data.anonymous == false
+            signedIn()
+            && request.resource.data.anonymous == false
             && request.resource.data.ownerUid == request.auth.uid
           )
         );

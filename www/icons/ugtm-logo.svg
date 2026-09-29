@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">UGTM</title>
+  <desc id="desc">Logo monogramme UGTM</desc>
+  <rect width="64" height="64" rx="16" fill="#B83268"/>
+  <path d="M17 15v19a15 15 0 0 0 30 0V15" fill="none" stroke="#D7A72C" stroke-width="6" stroke-linecap="round"/>
+  <path d="M16 51h32" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".95"/>
+</svg>
