@@ -542,7 +542,7 @@ async function addReport(o){
       String(o.etab || '').slice(0,160),
 
     age:
-      String(o.age || '').slice(0,6),
+      String(o.age || '').slice(0,10),
 
     da:
       String(o.da || '').slice(0,80),

@@ -186,7 +186,7 @@ service cloud.firestore {
 
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)
-        && okText(request.resource.data.age, 6)
+        && okText(request.resource.data.age, 10)
         && okText(request.resource.data.da, 80)
         && okText(request.resource.data.category, 60)
         && okText(request.resource.data.description, 4000)
