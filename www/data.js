@@ -80,11 +80,11 @@ window.APP_DATA = {
     }
   ],
 
-  // Provinces de Souss-Massa (à ne pas modifier)
+  // Provinces de Souss-Massa (libellés identiques à firestore.rules et aux signalements)
   provinces: [
-    "Agadir-Ida-Outanane",
-    "Chtouka Ait Baha",
-    "Inezgane-Ait Melloul",
+    "Agadir Ida-Outanane",
+    "Chtouka-Aït Baha",
+    "Inezgane-Aït Melloul",
     "Tata",
     "Taroudant",
     "Tiznit"
