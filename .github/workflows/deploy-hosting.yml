@@ -20,7 +20,7 @@ jobs:
           node-version: 20
 
       - name: Installer la CLI Firebase
-        run: npm install -g firebase-tools
+        run: npm install -g firebase-tools@13.29.1
 
       - name: Préparer le compte de service
         env:
