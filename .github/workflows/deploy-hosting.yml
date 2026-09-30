@@ -23,7 +23,30 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Préparer le compte de service
-        run: echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > sa.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -e
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > sa.json
+          python3 - <<'PY'
+          import json
+
+          raw = open('sa.json', encoding='utf-8').read().strip()
+
+          try:
+              data = json.loads(raw)
+          except Exception:
+              # secret collé avec des \n littéraux : on les transforme
+              data = json.loads(raw.replace('\\r\\n', '\\n').replace('\\n', '\\n'))
+
+          if not data.get('client_email') or not data.get('private_key'):
+              raise SystemExit('secret FIREBASE_SERVICE_ACCOUNT invalide (client_email/private_key absents)')
+
+          with open('sa.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f)
+
+          print('compte de service OK :', data['client_email'])
+          PY
 
       - name: Publier les règles Firestore
         run: firebase deploy --only firestore:rules --project ugtm-fns-souss-massa --force
