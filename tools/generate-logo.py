@@ -24,6 +24,8 @@ Et dans android-icons/ :
 
 Usage : python3 tools/generate-logo.py
 """
+import base64
+import io
 import math
 import os
 
@@ -32,6 +34,48 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ICONS = os.path.join(ROOT, "www", "icons")
 os.makedirs(ICONS, exist_ok=True)
+
+# ------------------------------------------------------------------
+# Logo SOURCE (image réelle fournie par l'administrateur)
+# ------------------------------------------------------------------
+# Déposer le fichier officiel à la racine du projet sous l'un de ces noms :
+SOURCE_CANDIDATES = [
+    "logo-source.png", "logo-source.jpg", "logo-source.jpeg",
+    "logo-ugtm.png", "logo.png", "logo.jpg",
+]
+
+
+def load_source():
+    """Charge le logo officiel fourni (fichier présent à la racine).
+    Retourne (image 512×512 carrée, nom du fichier) ou (None, None)."""
+    for name in SOURCE_CANDIDATES:
+        p = os.path.join(ROOT, name)
+        if os.path.exists(p):
+            im = Image.open(p).convert("RGBA")
+            w, h = im.size
+            side = min(w, h)
+            im = im.crop(
+                ((w - side) // 2, (h - side) // 2,
+                 (w + side) // 2, (h + side) // 2)
+            )
+            return im.resize((512, 512), Image.LANCZOS), name
+    return None, None
+
+
+def svg_from_image(master, mark=False):
+    """SVG encapsulant l'image réelle (base64) — utilisé quand le logo
+    officiel est fourni, pour ne JAMAIS redessiner l'emblème."""
+    buf = io.BytesIO()
+    master.save(buf, "PNG", optimize=True)
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    vb = "0 0 512 512" if not mark else "0 0 512 512"
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb + '" '
+        'role="img" aria-labelledby="t"><title id="t">UGTM</title>'
+        '<image width="512" height="512" '
+        'href="data:image/png;base64,' + b64 + '"/></svg>\n'
+    )
+
 
 # ------------------------------------------------------------------
 # Palette du logo officiel (échantillonnée sur l'image fournie)
@@ -390,7 +434,14 @@ def write_android(master):
 
 
 def main():
-    master = render_master()
+    master, src_name = load_source()
+
+    if master is not None:
+        print("logo source officiel utilisé :", src_name)
+    else:
+        print("AUCUN logo source à la racine (logo-source.png) — dessin de remplacement.")
+        print("Déposez votre image officielle sous le nom logo-source.png puis relancez.")
+        master = render_master()
 
     save(master, os.path.join(ICONS, "icon-512.png"), 512)
     save(master, os.path.join(ICONS, "icon-192.png"), 192)
@@ -400,29 +451,42 @@ def main():
     save(master, os.path.join(ICONS, "apple-touch-icon.png"),
          180, scale=0.92, background=BLACK)
 
-    with open(os.path.join(ICONS, "ugtm-logo.svg"), "w", encoding="utf-8") as f:
-        f.write(svg_logo())
-    print("écrit www/icons/ugtm-logo.svg")
+    if master is not None and src_name is not None:
+        # Logo réel fourni : les SVG encapsulent l'image, aucune redessin.
+        with open(os.path.join(ICONS, "ugtm-logo.svg"), "w", encoding="utf-8") as f:
+            f.write(svg_from_image(master))
+        print("écrit www/icons/ugtm-logo.svg (image réelle)")
 
-    with open(os.path.join(ICONS, "ugtm-mark.svg"), "w", encoding="utf-8") as f:
-        f.write(svg_mark())
-    print("écrit www/icons/ugtm-mark.svg")
+        with open(os.path.join(ICONS, "ugtm-mark.svg"), "w", encoding="utf-8") as f:
+            f.write(svg_from_image(master, mark=True))
+        print("écrit www/icons/ugtm-mark.svg (image réelle)")
+    else:
+        with open(os.path.join(ICONS, "ugtm-logo.svg"), "w", encoding="utf-8") as f:
+            f.write(svg_logo())
+        print("écrit www/icons/ugtm-logo.svg (dessin de remplacement)")
+
+        with open(os.path.join(ICONS, "ugtm-mark.svg"), "w", encoding="utf-8") as f:
+            f.write(svg_mark())
+        print("écrit www/icons/ugtm-mark.svg (dessin de remplacement)")
 
     write_android(master)
 
-    # ---- Validation pixel ------------------------------------------------
-    px = master.load()
-    checks = {
-        "fond noir (10,10)": px[10, 10][:3] == (5, 5, 5),
-        "flamme orange (256,60)": px[256, 60][0] > 180 and px[256, 60][1] < 160,
-        "disque blanc (256,276)": px[256, 276][:3] == (250, 250, 248),
-        "couronne dorée (57,276)": px[57, 276][0] > 150 and px[57, 276][2] < 120,
-        "étoile verte (~256,176)": px[256, 176][1] >= px[256, 176][0],
-    }
-    for name, ok in checks.items():
-        print(("OK  " if ok else "ECHEC "), name)
-    if not all(checks.values()):
-        raise SystemExit(1)
+    # ---- Validation pixel (uniquement pour le dessin de remplacement) ----
+    if src_name is None:
+        px = master.load()
+        checks = {
+            "fond noir (10,10)": px[10, 10][:3] == (5, 5, 5),
+            "flamme orange (256,60)": px[256, 60][0] > 180 and px[256, 60][1] < 160,
+            "disque blanc (256,276)": px[256, 276][:3] == (250, 250, 248),
+            "couronne dorée (57,276)": px[57, 276][0] > 150 and px[57, 276][2] < 120,
+            "étoile verte (~256,176)": px[256, 176][1] >= px[256, 176][0],
+        }
+        for name, ok in checks.items():
+            print(("OK  " if ok else "ECHEC "), name)
+        if not all(checks.values()):
+            raise SystemExit(1)
+    else:
+        print("validations pixel ignorées (logo officiel fourni)")
 
 
 if __name__ == "__main__":
