@@ -1,16 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Générateur du logo officiel UGTM pour l'application Souss-Massa.
+Générateur des icônes UGTM Souss-Massa, d'après le logo officiel fourni
+(fond noir, engrenage doré, torche à flamme orange, poignée de main,
+disque blanc, rameaux d'olivier, étoile verte entrelacée, lettres arabes,
+UGTM).
 
 Produit dans www/icons/ :
-  - ugtm-logo.svg         logo vectoriel complet (fond transparent)
-  - ugtm-mark.svg         version simplifiée pour l'en-tête de l'app
-  - icon-512.png          icône PWA 512
-  - icon-192.png          icône PWA 192
-  - icon-maskable-512.png variante « maskable » (zone sûre)
+  - ugtm-logo.svg         logo vectoriel complet (fond noir)
+  - ugtm-mark.svg         version réduite pour l'en-tête de l'app
+  - icon-512.png          icône PWA 512 (fond noir)
+  - icon-192.png          icône PWA 192 (fond noir)
+  - icon-maskable-512.png variante « maskable » (logo réduit sur fond noir)
   - favicon-32.png        favicon 32
-  - apple-touch-icon.png  180 (fond blanc, iOS)
+  - apple-touch-icon.png  180 (iOS, fond noir)
+
+Et dans android-icons/ :
+  - mipmap-{mdpi..xxxhdpi}/ic_launcher.png           fond noir, logo à 74 %
+  - mipmap-{mdpi..xxxhdpi}/ic_launcher_round.png     idem (masque circulaire)
+  - mipmap-{mdpi..xxxhdpi}/ic_launcher_foreground.png logo à 52 % sur fond
+    TRANSPARENT (le fond noir est fourni par ic_launcher_background.xml)
+  - ic_launcher_background.xml                       couleur #000000
 
 Usage : python3 tools/generate-logo.py
 """
@@ -24,40 +34,39 @@ ICONS = os.path.join(ROOT, "www", "icons")
 os.makedirs(ICONS, exist_ok=True)
 
 # ------------------------------------------------------------------
-# Palette officielle
+# Palette du logo officiel (échantillonnée sur l'image fournie)
 # ------------------------------------------------------------------
-GOLD = (176, 138, 53, 255)
+BLACK = (5, 5, 5, 255)
+WHITE = (250, 250, 248, 255)
+GOLD = (196, 158, 74, 255)
+GOLD_LIGHT = (224, 190, 110, 255)
 GOLD_DARK = (140, 106, 34, 255)
-GOLD_LIGHT = (205, 168, 84, 255)
-FLAME = (242, 128, 24, 255)
-FLAME_IN = (255, 179, 71, 255)
-GREEN = (74, 124, 47, 255)
-GREEN_LEAF = (62, 107, 36, 255)
-RED_DARK = (139, 26, 26, 255)
-INK = (31, 58, 31, 255)
-WHITE = (255, 255, 255, 255)
+FLAME = (239, 108, 0, 255)
+FLAME_MID = (247, 148, 29, 255)
+FLAME_IN = (255, 196, 87, 255)
+GREEN = (106, 133, 44, 255)
+GREEN_DARK = (74, 100, 32, 255)
+RED = (148, 34, 28, 255)
+INK = (43, 41, 38, 255)
 CLEAR = (0, 0, 0, 0)
 
 # ------------------------------------------------------------------
-# Géométrie (canvas 512×512, surn-échantillonnage ×2)
+# Géométrie (canvas maître 512, sur-échantillonnage ×2)
 # ------------------------------------------------------------------
 SS = 2
-SIZE = 512 * SS
+S = 512 * SS
 CX = 256 * SS
-GY = 292 * SS          # centre de l'engrenage / du disque
-R_BASE = 185 * SS      # rayon externe de la couronne
-R_IN = 165 * SS        # rayon interne de la couronne
-R_TOOTH = 208 * SS     # pointe des dents
-R_DISC = 148 * SS      # disque blanc
-R_LEAF = 124 * SS      # arc des rameaux
-STAR_CX, STAR_CY = 256 * SS, 290 * SS
-STAR_R = 92 * SS
-STAR_r = 40 * SS
+CY = 276 * SS              # centre de l'engrenage
+R_GEAR_IN = 172 * SS       # rayon interne de la couronne dentée
+R_GEAR_OUT = 206 * SS      # pointe des dents
+R_DISC = 150 * SS          # disque blanc
+R_LEAF = 126 * SS          # rayon des rameaux
+SX, SY = 256 * SS, 272 * SS
+STAR_R = 96 * SS
+STAR_r = 42 * SS
 
-FONTS = {
-    "ar": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-    "latin": "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-}
+F_AR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+F_LAT = "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"
 
 
 def polar(cx, cy, r, deg):
@@ -65,281 +74,268 @@ def polar(cx, cy, r, deg):
     return (cx + r * math.cos(a), cy + r * math.sin(a))
 
 
-def gear_path(cx, cy, r_base, r_tooth, teeth=10, half=11.0):
-    """Polygone de l'engrenage (dents trapézoïdales)."""
-    pts = []
+def gear_pts(cx, cy, r_in, r_out, teeth=12, tooth_deg=15.0, base_deg=8.0):
+    """Polygone de la couronne dentée (dents carrées, creux larges)."""
     step = 360.0 / teeth
+    pts = []
     for i in range(teeth):
-        a0 = i * step
-        pts.append(polar(cx, cy, r_base, a0 - half - 6))
-        pts.append(polar(cx, cy, r_tooth, a0 - half))
-        pts.append(polar(cx, cy, r_tooth, a0 + half))
-        pts.append(polar(cx, cy, r_base, a0 + half + 6))
+        a = i * step
+        pts += [
+            polar(cx, cy, r_in, a - base_deg),
+            polar(cx, cy, r_out, a - tooth_deg),
+            polar(cx, cy, r_out, a + tooth_deg),
+            polar(cx, cy, r_in, a + base_deg),
+        ]
     return pts
 
 
-def star_points(cx, cy, r_out, r_in, points=5, rot=-90):
+def star_pts(cx, cy, r_out, r_in, rot=-90):
     pts = []
-    for i in range(points * 2):
+    for i in range(10):
         r = r_out if i % 2 == 0 else r_in
-        pts.append(polar(cx, cy, r, rot + i * 180.0 / points))
+        pts.append(polar(cx, cy, r, rot + i * 36))
     return pts
 
 
-def leaf(img, cx, cy, r, deg, length, width, color):
-    """Feuille d'olivier : losange effilé orienté tangentiellement."""
-    px, py = polar(cx, cy, r, deg)
-    t = deg + 90  # direction tangentielle
-    tx, ty = math.cos(math.radians(t)), math.sin(math.radians(t))
-    nx, ny = -ty, tx
-    hl, hw = length / 2.0, width / 2.0
-    pts = [
-        (px + tx * hl, py + ty * hl),
-        (px + nx * hw, py + ny * hw),
-        (px - tx * hl, py - ty * hl),
-        (px - nx * hw, py + ny * hw),
-    ]
-    img.polygon(pts, fill=color)
-
-
-def draw_flame(img, cx, top, w, h, color):
-    """Flamme goutte d'eau inversée."""
-    pts = []
-    n = 24
+def flame_layer(d, cx, top, w, h, color, lean=0.0):
+    """Une langue de flamme (goutte inversée, légèrement inclinée)."""
+    n = 22
+    left, right = [], []
     for i in range(n + 1):
-        t = i / n                       # 0 = pointe, 1 = base
-        y = top + h * t
-        half = (w / 2) * math.sin(math.pi * min(1, t * 1.15)) ** 0.8
-        pts.append((cx - half, y))
-    for i in range(n, -1, -1):
         t = i / n
         y = top + h * t
-        half = (w / 2) * math.sin(math.pi * min(1, t * 1.15)) ** 0.8
-        pts.append((cx + half, y))
-    img.polygon(pts, fill=color)
+        half = (w / 2) * math.sin(math.pi * min(1.0, t * 1.12)) ** 0.85
+        dx = lean * h * t * t
+        left.append((cx + dx - half, y))
+        right.append((cx + dx + half, y))
+    d.polygon(left + right[::-1], fill=color)
 
 
-def draw_logo(draw):
-    # ---- Engrenage doré -------------------------------------------------
-    draw.polygon(gear_path(CX, GY, R_BASE, R_TOOTH), fill=GOLD)
-    # couronne creuse : on perce le centre avec un anneau transparent
-    hole = Image.new("RGBA", (SIZE, SIZE), CLEAR)
-    hd = ImageDraw.Draw(hole)
-    hd.ellipse(
-        [CX - R_IN, GY - R_IN, CX + R_IN, GY + R_IN], fill=(0, 0, 0, 255)
+def leaf(d, cx, cy, r, deg, ln, wd, color):
+    px, py = polar(cx, cy, r, deg)
+    t = math.radians(deg + 90)
+    tx, ty = math.cos(t), math.sin(t)
+    nx, ny = -ty, tx
+    d.polygon(
+        [
+            (px + tx * ln / 2, py + ty * ln / 2),
+            (px + nx * wd / 2, py + ny * wd / 2),
+            (px - tx * ln / 2, py - ty * ln / 2),
+            (px - nx * wd / 2, py + ny * wd / 2),
+        ],
+        fill=color,
     )
-    base = Image.new("RGBA", (SIZE, SIZE), CLEAR)
-    bd = ImageDraw.Draw(base)
-    bd.polygon(gear_path(CX, GY, R_BASE, R_TOOTH), fill=GOLD)
-    base.putalpha(
-        Image.composite(
-            Image.new("L", (SIZE, SIZE), 0),
-            base.split()[3],
-            hole.split()[3],
+
+
+def draw_torch(d):
+    """Torche : manche doré sous la poignée de main."""
+    d.polygon(
+        [
+            (CX - 12 * SS, 108 * SS), (CX + 12 * SS, 108 * SS),
+            (CX + 16 * SS, 132 * SS), (CX - 16 * SS, 132 * SS),
+        ],
+        fill=GOLD,
+    )
+    d.polygon(
+        [
+            (CX - 20 * SS, 132 * SS), (CX + 20 * SS, 132 * SS),
+            (CX + 14 * SS, 146 * SS), (CX - 14 * SS, 146 * SS),
+        ],
+        fill=GOLD_LIGHT,
+    )
+
+
+def draw_hands(d):
+    """Poignée de main stylisée au-dessus de l'engrenage."""
+    # bras gauche (venant de la gauche)
+    d.polygon(
+        [
+            (CX - 58 * SS, 168 * SS), (CX - 6 * SS, 156 * SS),
+            (CX - 2 * SS, 174 * SS), (CX - 54 * SS, 184 * SS),
+        ],
+        fill=GOLD,
+    )
+    # bras droit (venant de la droite)
+    d.polygon(
+        [
+            (CX + 58 * SS, 168 * SS), (CX + 6 * SS, 156 * SS),
+            (CX + 2 * SS, 174 * SS), (CX + 54 * SS, 184 * SS),
+        ],
+        fill=GOLD_LIGHT,
+    )
+    # mains serrées
+    d.ellipse(
+        [CX - 16 * SS, 154 * SS, CX + 16 * SS, 184 * SS],
+        fill=GOLD_LIGHT, outline=GOLD_DARK, width=2 * SS,
+    )
+    # doigts
+    for k in range(3):
+        x = CX - 8 * SS + k * 8 * SS
+        d.line(
+            [(x, 158 * SS), (x, 180 * SS)],
+            fill=GOLD_DARK, width=2 * SS,
         )
-    )
-    # (rebuilt below to keep alpha math simple)
-    ring = Image.new("L", (SIZE, SIZE), 0)
+
+
+def draw_logo(d):
+    # ---- Fond noir -------------------------------------------------------
+    d.rectangle([0, 0, S, S], fill=BLACK)
+
+    # ---- Flamme à trois langues ------------------------------------------
+    flame_layer(d, CX, 22 * SS, 34 * SS, 74 * SS, FLAME, lean=0.42)
+    flame_layer(d, CX - 16 * SS, 46 * SS, 26 * SS, 52 * SS, FLAME_MID, lean=-0.30)
+    flame_layer(d, CX + 14 * SS, 44 * SS, 26 * SS, 54 * SS, FLAME_IN, lean=0.30)
+
+    # ---- Torche -----------------------------------------------------------
+    draw_torch(d)
+
+    # ---- Poignée de main ---------------------------------------------------
+    draw_hands(d)
+
+    # ---- Couronne dentée (anneau creux) ------------------------------------
+    ring = Image.new("L", (S, S), 0)
     rd = ImageDraw.Draw(ring)
-    rd.polygon(gear_path(CX, GY, R_BASE, R_TOOTH), fill=255)
-    rd.ellipse(
-        [CX - R_IN, GY - R_IN, CX + R_IN, GY + R_IN], fill=0
-    )
-    gold_layer = Image.new("RGBA", (SIZE, SIZE), GOLD)
-    gold_layer.putalpha(ring)
-    draw._image.alpha_composite(gold_layer)
+    rd.polygon(gear_pts(CX, CY, R_GEAR_IN, R_GEAR_OUT), fill=255)
+    rd.ellipse([CX - R_GEAR_IN, CY - R_GEAR_IN, CX + R_GEAR_IN, CY + R_GEAR_IN], fill=0)
+    gold = Image.new("RGBA", (S, S), GOLD)
+    gold.putalpha(ring)
+    d._image.alpha_composite(gold)
 
-    # contour interne discret
-    draw.arc(
-        [CX - R_IN, GY - R_IN, CX + R_IN, GY + R_IN],
-        0, 360, fill=GOLD_DARK, width=2 * SS,
+    # ---- Disque blanc -------------------------------------------------------
+    d.ellipse(
+        [CX - R_DISC, CY - R_DISC, CX + R_DISC, CY + R_DISC],
+        fill=WHITE, outline=GOLD_DARK, width=2 * SS,
     )
 
-    # ---- Disque blanc ---------------------------------------------------
-    draw.ellipse(
-        [CX - R_DISC, GY - R_DISC, CX + R_DISC, GY + R_DISC],
-        fill=WHITE, outline=GOLD_DARK, width=3 * SS,
-    )
-
-    # ---- Rameaux d'olivier ----------------------------------------------
+    # ---- Rameaux d'olivier ----------------------------------------------------
     for side in (-1, 1):
-        for k in range(9):
-            deg = 90 + side * (26 + k * 27)
-            leaf(
-                draw, CX, GY, R_LEAF, deg,
-                length=34 * SS, width=15 * SS, color=GREEN_LEAF,
-            )
-        # tige
-        draw.arc(
-            [CX - R_LEAF, GY - R_LEAF, CX + R_LEAF, GY + R_LEAF],
-            start=90 if side < 0 else 270 - 154,
-            end=(90 + 154) if side < 0 else 270,
-            fill=GREEN_LEAF, width=3 * SS,
+        for k in range(8):
+            deg = 96 + side * (24 + k * 24)
+            leaf(d, CX, CY, R_LEAF, deg, 30 * SS, 13 * SS, GREEN_DARK)
+        d.arc(
+            [CX - R_LEAF, CY - R_LEAF, CX + R_LEAF, CY + R_LEAF],
+            start=(96 if side < 0 else 264),
+            end=(264 if side < 0 else 456),
+            fill=GREEN_DARK, width=3 * SS,
         )
 
-    # ---- Étoile entrelacée verte ----------------------------------------
-    pts = star_points(STAR_CX, STAR_CY, STAR_R, STAR_r)
-    closed = pts + [pts[0]]
-    draw.line(closed, fill=GREEN, width=13 * SS, joint="curve")
-    inner = star_points(STAR_CX, STAR_CY, STAR_r * 1.35, STAR_r * 0.55)
-    draw.line(inner + [inner[0]], fill=GREEN, width=4 * SS, joint="curve")
+    # ---- Étoile verte entrelacée -----------------------------------------------
+    outer = star_pts(SX, SY, STAR_R, STAR_r)
+    d.line(outer + [outer[0]], fill=GREEN, width=12 * SS, joint="curve")
+    # entrelacs : second tracé légèrement tourné, sous l'étoile
+    weave = star_pts(SX, SY, STAR_R * 0.96, STAR_r * 1.15, rot=-90 + 36)
+    d.line(weave + [weave[0]], fill=GREEN_DARK, width=5 * SS, joint="curve")
 
-    # ---- Lettres arabes (formes isolées, comme sur le logo) --------------
+    # ---- Lettres arabes aux quatre points -----------------------------------------
     try:
-        far = ImageFont.truetype(FONTS["ar"], 46 * SS)
+        far = ImageFont.truetype(F_AR, 40 * SS)
     except OSError:
         far = None
-    if far is not None:
+    if far:
         for ch, (x, y) in {
-            "ع": (196, 262),
-            "أ": (288, 240),
-            "م": (204, 336),
-            "ت": (292, 342),
+            "ع": (200, 250), "أ": (296, 236),
+            "م": (208, 322), "ت": (300, 328),
         }.items():
             if far.getmask(ch).getbbox():
-                draw.text((x * SS, y * SS), ch, font=far, fill=RED_DARK)
+                d.text((x * SS, y * SS), ch, font=far, fill=RED)
 
-    # ---- UGTM -------------------------------------------------------------
+    # ---- UGTM ------------------------------------------------------------------------
     try:
-        lat = ImageFont.truetype(FONTS["latin"], 42 * SS)
+        lat = ImageFont.truetype(F_LAT, 34 * SS)
     except OSError:
         lat = None
-    if lat is not None:
+    if lat:
         txt = "UGTM"
-        box = draw.textbbox((0, 0), txt, font=lat)
-        tw = box[2] - box[0]
-        draw.text(
-            (CX - tw / 2 - box[0], 352 * SS),
+        box = d.textbbox((0, 0), txt, font=lat)
+        d.text(
+            (CX - (box[2] - box[0]) / 2 - box[0], 348 * SS),
             txt, font=lat, fill=INK,
         )
 
-    # ---- Poignée de main dorée -------------------------------------------
-    draw.polygon(
-        [
-            (CX - 22 * SS, 128 * SS), (CX + 22 * SS, 128 * SS),
-            (CX + 30 * SS, 150 * SS), (CX, 162 * SS),
-            (CX - 30 * SS, 150 * SS),
-        ],
-        fill=GOLD_LIGHT, outline=GOLD_DARK,
-    )
-    draw.ellipse(
-        [CX - 13 * SS, 112 * SS, CX + 13 * SS, 140 * SS],
-        fill=GOLD_LIGHT, outline=GOLD_DARK, width=2 * SS,
-    )
-
-    # ---- Flamme ------------------------------------------------------------
-    draw_flame(draw, CX, 30 * SS, 46 * SS, 66 * SS, FLAME)
-    draw_flame(draw, CX, 52 * SS, 22 * SS, 36 * SS, FLAME_IN)
-
 
 def render_master():
-    img = Image.new("RGBA", (SIZE, SIZE), CLEAR)
+    img = Image.new("RGBA", (S, S), CLEAR)
     d = ImageDraw.Draw(img)
     draw_logo(d)
     return img.resize((512, 512), Image.LANCZOS)
 
 
 # ------------------------------------------------------------------
-# SVG vectoriel (même géométrie que le PNG)
+# SVG vectoriel (fond noir, mêmes formes que le PNG)
 # ------------------------------------------------------------------
 def svg_logo():
-    def pt(p):
-        return f"{p[0]:.1f},{p[1]:.1f}"
+    def path(pts, fill, extra=""):
+        return (
+            '<path d="M'
+            + " L".join(f"{p[0]/SS:.1f},{p[1]/SS:.1f}" for p in pts)
+            + ' Z" fill="' + fill + '"' + extra + "/>"
+        )
 
-    gear = " ".join(
-        pt(polar(256, 292, R_BASE / SS, a)) for a in []
-    )
-    # dents
-    teeth = []
-    step = 36.0
-    for i in range(10):
-        a0 = i * step
-        seq = [
-            polar(256, 292, R_BASE / SS, a0 - 17),
-            polar(256, 292, R_TOOTH / SS, a0 - 11),
-            polar(256, 292, R_TOOTH / SS, a0 + 11),
-            polar(256, 292, R_BASE / SS, a0 + 17),
-        ]
-        teeth.append("M" + " L".join(pt(p) for p in seq) + " Z")
-    star = " ".join(
-        pt(p) for p in star_points(256, 290, STAR_R / SS, STAR_r / SS)
-    )
+    teeth = gear_pts(256, 276, R_GEAR_IN / SS, R_GEAR_OUT / SS)
+    star = star_pts(256, 272, STAR_R / SS, STAR_r / SS)
+    weave = star_pts(256, 272, STAR_R * 0.96 / SS, STAR_r * 1.15 / SS, rot=-54)
+
     leaves = []
     for side in (-1, 1):
-        for k in range(9):
-            deg = 90 + side * (26 + k * 27)
-            px, py = polar(256, 292, R_LEAF / SS, deg)
+        for k in range(8):
+            deg = 96 + side * (24 + k * 24)
+            px, py = polar(256, 276, R_LEAF / SS, deg)
             leaves.append(
-                f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="17" ry="7.5" '
-                f'fill="#3E6B24" transform="rotate({deg + 90:.1f} '
-                f'{px:.1f} {py:.1f})"/>'
+                f'<ellipse cx="{px:.1f}" cy="{py:.1f}" rx="15" ry="6.5" '
+                f'fill="#4A6420" transform="rotate({deg + 90:.1f} {px:.1f} {py:.1f})"/>'
             )
-    arabic = [
-        ("ع", 196, 262),
-        ("أ", 288, 240),
-        ("م", 204, 336),
-        ("ت", 292, 342),
-    ]
+
+    arabic = [("ع", 200, 250), ("أ", 296, 236), ("م", 208, 322), ("ت", 300, 328)]
     letters = "".join(
-        f'<text x="{x}" y="{y}" font-family="\'DejaVu Sans\','
-        f"'Noto Sans Arabic',sans-serif\" font-size=\"46\" "
-        f'font-weight="bold" fill="#8B1A1A" text-anchor="middle">{c}</text>'
+        f'<text x="{x}" y="{y}" font-size="40" font-weight="bold" fill="#94221C" '
+        f'text-anchor="middle" font-family="\'DejaVu Sans\',\'Noto Sans Arabic\',sans-serif">{c}</text>'
         for c, x, y in arabic
     )
+
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t d">
 <title id="t">UGTM</title>
-<desc id="d">Logo officiel de l'UGTM : engrenage doré, flamme, étoile verte entrelacée et rameaux d'olivier</desc>
-{''.join(f'<path d="{p}" fill="#B08A35"/>' for p in teeth)}
-<circle cx="256" cy="292" r="175" fill="none" stroke="#B08A35" stroke-width="20"/>
-<circle cx="256" cy="292" r="165" fill="none" stroke="#8C6A22" stroke-width="2"/>
-<circle cx="256" cy="292" r="148" fill="#FFFFFF" stroke="#8C6A22" stroke-width="3"/>
-<path d="M 136 350 A 124 124 0 0 1 150 216" fill="none" stroke="#3E6B24" stroke-width="3"/>
-<path d="M 376 350 A 124 124 0 0 0 362 216" fill="none" stroke="#3E6B24" stroke-width="3"/>
+<desc id="d">Logo officiel de l'UGTM sur fond noir : torche à flamme, poignée de main, couronne dentée, rameaux d'olivier, étoile verte entrelacée</desc>
+<rect width="512" height="512" fill="#050505"/>
+<path d="M256 22 C 272 44 280 62 276 84 L 262 96 L 244 92 C 236 66 242 44 256 22 Z" fill="#EF6C00"/>
+<path d="M240 46 C 232 62 230 76 240 92 L 252 96 C 244 78 244 62 240 46 Z" fill="#F7941D"/>
+<path d="M272 44 C 282 60 284 76 274 94 L 262 96 C 272 78 274 60 272 44 Z" fill="#FFC457"/>
+<path d="M244 108 L268 108 L272 132 L240 132 Z" fill="#C49E4A"/>
+<path d="M236 132 L276 132 L270 146 L242 146 Z" fill="#E0BE6E"/>
+{path([(198,168),(250,156),(254,174),(202,184)], "#C49E4A")}
+{path([(314,168),(262,156),(258,174),(310,184)], "#E0BE6E")}
+<ellipse cx="256" cy="169" rx="16" ry="15" fill="#E0BE6E" stroke="#8C6A22" stroke-width="2"/>
+{path(teeth, "#C49E4A")}
+<circle cx="256" cy="276" r="172" fill="#050505"/>
+<circle cx="256" cy="276" r="150" fill="#FAFAF8" stroke="#8C6A22" stroke-width="2"/>
+<path d="M136 330 A 126 126 0 0 1 148 208" fill="none" stroke="#4A6420" stroke-width="3"/>
+<path d="M376 330 A 126 126 0 0 0 364 208" fill="none" stroke="#4A6420" stroke-width="3"/>
 {''.join(leaves)}
-<polygon points="{star}" fill="none" stroke="#4A7C2F" stroke-width="13" stroke-linejoin="round"/>
+<polygon points="{' '.join(f'{p[0]/SS:.1f},{p[1]/SS:.1f}' for p in star)}" fill="none" stroke="#6A852C" stroke-width="12" stroke-linejoin="round"/>
+<polygon points="{' '.join(f'{p[0]/SS:.1f},{p[1]/SS:.1f}' for p in weave)}" fill="none" stroke="#4A6420" stroke-width="5" stroke-linejoin="round"/>
 {letters}
-<text x="256" y="384" font-family="'DejaVu Serif',Georgia,serif" font-size="42" font-weight="bold" fill="#1F3A1F" text-anchor="middle" letter-spacing="4">UGTM</text>
-<path d="M234 128 L278 128 L286 150 L256 162 L226 150 Z" fill="#CDA854" stroke="#8C6A22" stroke-width="2"/>
-<circle cx="256" cy="126" r="14" fill="#CDA854" stroke="#8C6A22" stroke-width="2"/>
-<path d="M256 30 C 270 48 279 62 279 78 C 279 94 269 104 256 108 C 243 104 233 94 233 78 C 233 62 242 48 256 30 Z" fill="#F28018"/>
-<path d="M256 52 C 263 62 267 70 267 80 C 267 90 262 96 256 98 C 250 96 245 90 245 80 C 245 70 249 62 256 52 Z" fill="#FFB347"/>
+<text x="256" y="382" font-size="34" font-weight="bold" fill="#2B2926" text-anchor="middle" letter-spacing="5" font-family="'DejaVu Serif',Georgia,serif">UGTM</text>
 </svg>
 """
 
 
-# ------------------------------------------------------------------
-# Marque réduite pour l'en-tête (64×64)
-# ------------------------------------------------------------------
 def svg_mark():
-    teeth = []
-    step = 45.0
-    for i in range(8):
-        a0 = i * step
-        seq = [
-            polar(32, 36, 24, a0 - 10),
-            polar(32, 36, 29, a0 - 6),
-            polar(32, 36, 29, a0 + 6),
-            polar(32, 36, 24, a0 + 10),
-        ]
-        teeth.append(
-            "M" + " L".join(f"{p[0]:.1f},{p[1]:.1f}" for p in seq) + " Z"
-        )
-    star = " ".join(
-        f"{p[0]:.1f},{p[1]:.1f}"
-        for p in star_points(32, 36, 14, 6)
-    )
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+    star = star_pts(32, 38, 15, 6.5)
+    return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
 <title id="t">UGTM</title>
-{''.join(f'<path d="{p}" fill="#B08A35"/>' for p in teeth)}
-<circle cx="32" cy="36" r="24" fill="none" stroke="#B08A35" stroke-width="6"/>
-<circle cx="32" cy="36" r="20" fill="#FFFFFF"/>
-<polygon points="{star}" fill="none" stroke="#4A7C2F" stroke-width="3.5" stroke-linejoin="round"/>
-<path d="M32 4 C 36 9 38 13 38 17 C 38 21 35 24 32 25 C 29 24 26 21 26 17 C 26 13 28 9 32 4 Z" fill="#F28018"/>
+<rect width="64" height="64" rx="12" fill="#050505"/>
+<path d="M32 6 C 34.5 10 35.5 13 34.5 16.5 L 29.5 16.5 C 28.5 13 29.5 10 32 6 Z" fill="#EF6C00"/>
+<circle cx="32" cy="38" r="20" fill="none" stroke="#C49E4A" stroke-width="5"/>
+<circle cx="32" cy="38" r="16" fill="#FAFAF8"/>
+<polygon points="%(star)s" fill="none" stroke="#6A852C" stroke-width="3.4" stroke-linejoin="round"/>
+<text x="32" y="59" font-size="9" font-weight="bold" fill="#C49E4A" text-anchor="middle" font-family="'DejaVu Serif',Georgia,serif">UGTM</text>
 </svg>
-"""
+""" % {"star": " ".join(f"{p[0]/SS:.1f},{p[1]/SS:.1f}" for p in star)}
 
 
-def save_png(master, path, size, scale=1.0, background=None):
+# ------------------------------------------------------------------
+# Export
+# ------------------------------------------------------------------
+def save(master, path, size, scale=1.0, background=None):
     if scale != 1.0:
         s = int(512 * scale)
         im = master.resize((s, s), Image.LANCZOS)
@@ -358,70 +354,51 @@ def save_png(master, path, size, scale=1.0, background=None):
     print("écrit", os.path.relpath(path, ROOT), im.size)
 
 
-# ------------------------------------------------------------------
-# Icônes lanceur Android (densités mdpi→xxxhdpi)
-# ------------------------------------------------------------------
-DENSITIES = {
-    "mdpi": 48,
-    "hdpi": 72,
-    "xhdpi": 96,
-    "xxhdpi": 144,
-    "xxxhdpi": 192,
-}
-# Contenu au centre, marges de sécurité adaptatif (cercle central ~66 %)
-ANDROID_BG = (255, 255, 255, 255)
-ANDROID_SCALE_SQUARE = 0.74   # fond / launcher (zone visible ~72 dp)
-ANDROID_SCALE_FORE = 0.52     # foreground (safe zone circulaire)
+DENSITIES = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 ANDROID_DIR = os.path.join(ROOT, "android-icons")
 
 
-def android_master(scale):
-    s = int(432 * scale)
-    im = master_logo.resize((s, s), Image.LANCZOS)
-    canvas = Image.new("RGBA", (432, 432), ANDROID_BG)
-    canvas.alpha_composite(im, ((432 - s) // 2, (432 - s) // 2))
-    return canvas
-
-
-def write_android_icons():
+def write_android(master):
     os.makedirs(ANDROID_DIR, exist_ok=True)
-    square = android_master(ANDROID_SCALE_SQUARE)
-    fore = android_master(ANDROID_SCALE_FORE)
+
+    # launcher (fond noir visible) : logo à 74 % du canevas
+    sq_src = master.resize((int(512 * 0.74), int(512 * 0.74)), Image.LANCZOS)
+    square = Image.new("RGBA", (432, 432), BLACK)
+    square.alpha_composite(sq_src, ((432 - sq_src.width) // 2,) * 2)
+
+    # foreground adaptatif : logo à 52 % sur fond TRANSPARENT
+    fg_src = master.resize((int(512 * 0.52), int(512 * 0.52)), Image.LANCZOS)
+    fore = Image.new("RGBA", (432, 432), CLEAR)
+    fore.alpha_composite(fg_src, ((432 - fg_src.width) // 2,) * 2)
 
     for dens, px in DENSITIES.items():
         d = os.path.join(ANDROID_DIR, f"mipmap-{dens}")
         os.makedirs(d, exist_ok=True)
-        for name, src in (
-            ("ic_launcher.png", square),
-            ("ic_launcher_round.png", square),
-            ("ic_launcher_foreground.png", fore),
-
-        ):
-            src.resize((px, px), Image.LANCZOS).save(os.path.join(d, name))
+        square.resize((px, px), Image.LANCZOS).save(os.path.join(d, "ic_launcher.png"))
+        square.resize((px, px), Image.LANCZOS).save(os.path.join(d, "ic_launcher_round.png"))
+        fore.resize((px, px), Image.LANCZOS).save(os.path.join(d, "ic_launcher_foreground.png"))
         print(f"écrit android-icons/mipmap-{dens}/ (3 icônes {px}×{px})")
 
     with open(os.path.join(ANDROID_DIR, "ic_launcher_background.xml"), "w") as f:
         f.write(
             '<?xml version="1.0" encoding="utf-8"?>\n'
-            '<resources>\n'
-            '  <color name="ic_launcher_background">#FFFFFF</color>\n'
-            '</resources>\n'
+            "<resources>\n"
+            '  <color name="ic_launcher_background">#000000</color>\n'
+            "</resources>\n"
         )
-    print("écrit android-icons/ic_launcher_background.xml")
+    print("écrit android-icons/ic_launcher_background.xml (#000000)")
 
 
 def main():
-    global master_logo
-    master_logo = render_master()
-    master = master_logo
+    master = render_master()
 
-    save_png(master, os.path.join(ICONS, "icon-512.png"), 512)
-    save_png(master, os.path.join(ICONS, "icon-192.png"), 192)
-    save_png(master, os.path.join(ICONS, "icon-maskable-512.png"),
-             512, scale=0.78, background=(255, 255, 255, 255))
-    save_png(master, os.path.join(ICONS, "favicon-32.png"), 32)
-    save_png(master, os.path.join(ICONS, "apple-touch-icon.png"),
-             180, scale=0.92, background=(255, 255, 255, 255))
+    save(master, os.path.join(ICONS, "icon-512.png"), 512)
+    save(master, os.path.join(ICONS, "icon-192.png"), 192)
+    save(master, os.path.join(ICONS, "icon-maskable-512.png"),
+         512, scale=0.78, background=BLACK)
+    save(master, os.path.join(ICONS, "favicon-32.png"), 32)
+    save(master, os.path.join(ICONS, "apple-touch-icon.png"),
+         180, scale=0.92, background=BLACK)
 
     with open(os.path.join(ICONS, "ugtm-logo.svg"), "w", encoding="utf-8") as f:
         f.write(svg_logo())
@@ -431,15 +408,16 @@ def main():
         f.write(svg_mark())
     print("écrit www/icons/ugtm-mark.svg")
 
-    write_android_icons()
+    write_android(master)
 
-    # Validation pixel : disque blanc, couronne dorée, flamme orange
+    # ---- Validation pixel ------------------------------------------------
     px = master.load()
     checks = {
-        "disque blanc (256,292)": px[256, 292][:3] == (255, 255, 255),
-        "couronne dorée (81,292)": px[81, 292][0] > 140 and px[81, 292][2] < 120,
-        "flamme orange (256,70)": px[256, 70][0] > 200 and px[256, 70][1] < 190,
-        "étoile verte (~256,198)": px[256, 198][1] > px[256, 198][0],
+        "fond noir (10,10)": px[10, 10][:3] == (5, 5, 5),
+        "flamme orange (256,60)": px[256, 60][0] > 180 and px[256, 60][1] < 160,
+        "disque blanc (256,276)": px[256, 276][:3] == (250, 250, 248),
+        "couronne dorée (57,276)": px[57, 276][0] > 150 and px[57, 276][2] < 120,
+        "étoile verte (~256,176)": px[256, 176][1] >= px[256, 176][0],
     }
     for name, ok in checks.items():
         print(("OK  " if ok else "ECHEC "), name)
