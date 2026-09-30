@@ -3845,7 +3845,7 @@ function sendReport(attachment){
 
 c.addReport({
 anonymous:anonymous,
-name:anonymous?'':(S.user.name||''),
+name:anonymous?'':((S.user&&S.user.name)||''),
 etab:val('rEtab'),
 age:val('rAge'),
 da:val('rDA'),
