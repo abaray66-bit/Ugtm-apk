@@ -4,7 +4,7 @@
 window.APP_DATA = {
   // Titres et informations générales
   appTitle: "UGTM Souss-Massa",
-  appSubtitle: "Université nationale de la santé",
+  appSubtitle: "Fédération régionale de la Santé",
   appDescription: "Plateforme de communication pour les adhérents et militants",
 
   // Firebase - Activé pour les comptes et administration
@@ -19,19 +19,10 @@ window.APP_DATA = {
   adminEmails: ["abaray66@gmail.com"],
 
   // Liens utiles
-  links: [
-    {
-      title: "Site UGTM",
-      url: "https://www.ugtm.ma",
-      icon: "🌐"
-    },
-    {
-      title: "Signaler",
-      url: "#",
-      action: "showForm",
-      icon: "⚠️"
-    }
-  ],
+  links: {
+    site: "https://www.ugtm.ma",
+    form: "#report"
+  },
 
   // Communiqués (gérés via l'espace admin après configuration)
   news: [],
@@ -41,7 +32,7 @@ window.APP_DATA = {
 
   // Permanence
   permanence: {
-    title: "Permanence de l'Université nationale de la santé",
+    title: "Permanence de la Fédération régionale de la Santé",
     address: "Agadir, Souss-Massa",
     phone: "06 61 38 62 47",
     email: "abaray66@gmail.com",
@@ -52,7 +43,7 @@ window.APP_DATA = {
   contact: [
     {
       title: "Chaîne WhatsApp",
-      description: "Communiqués de l'Université nationale de la santé. Les numéros des abonnés restent privés.",
+      description: "Communiqués de la Fédération régionale de la Santé. Les numéros des abonnés restent privés.",
       icon: "💬",
       url: "https://wa.me/212661386247",
       action: "openUrl"
@@ -73,7 +64,7 @@ window.APP_DATA = {
     },
     {
       title: "Appeler",
-      description: "Permanence de l'Université nationale de la santé",
+      description: "Permanence de la Fédération régionale de la Santé",
       icon: "☎️",
       url: "tel:+212661386247",
       action: "openUrl"

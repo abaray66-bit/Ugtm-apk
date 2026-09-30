@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
+<title id="t">UGTM</title>
+<path d="M55.6,31.8 L60.8,33.0 L60.8,39.0 L55.6,40.2 Z" fill="#B08A35"/><path d="M51.7,49.8 L54.5,54.3 L50.3,58.5 L45.8,55.7 Z" fill="#B08A35"/><path d="M36.2,59.6 L35.0,64.8 L29.0,64.8 L27.8,59.6 Z" fill="#B08A35"/><path d="M18.2,55.7 L13.7,58.5 L9.5,54.3 L12.3,49.8 Z" fill="#B08A35"/><path d="M8.4,40.2 L3.2,39.0 L3.2,33.0 L8.4,31.8 Z" fill="#B08A35"/><path d="M12.3,22.2 L9.5,17.7 L13.7,13.5 L18.2,16.3 Z" fill="#B08A35"/><path d="M27.8,12.4 L29.0,7.2 L35.0,7.2 L36.2,12.4 Z" fill="#B08A35"/><path d="M45.8,16.3 L50.3,13.5 L54.5,17.7 L51.7,22.2 Z" fill="#B08A35"/>
+<circle cx="32" cy="36" r="24" fill="none" stroke="#B08A35" stroke-width="6"/>
+<circle cx="32" cy="36" r="20" fill="#FFFFFF"/>
+<polygon points="32.0,22.0 35.5,31.1 45.3,31.7 37.7,37.9 40.2,47.3 32.0,42.0 23.8,47.3 26.3,37.9 18.7,31.7 28.5,31.1" fill="none" stroke="#4A7C2F" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M32 4 C 36 9 38 13 38 17 C 38 21 35 24 32 25 C 29 24 26 21 26 17 C 26 13 28 9 32 4 Z" fill="#F28018"/>
+</svg>

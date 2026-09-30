@@ -169,6 +169,34 @@ jobs:
           PY
 
       # ==========================================================
+      # ICÔNES UGTM (lanceur Android)
+      # ==========================================================
+
+      - name: Installer les icônes UGTM
+        run: |
+          set -e
+
+          if [ ! -d android-icons ]; then
+            echo "ERREUR : dossier android-icons introuvable."
+            exit 1
+          fi
+
+          RES="android/app/src/main/res"
+
+          for dens in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            mkdir -p "$RES/mipmap-$dens"
+            cp "android-icons/mipmap-$dens/"*.png "$RES/mipmap-$dens/"
+          done
+
+          # Fond de l'icône adaptative (blanc)
+          VALUES="android/app/src/main/res/values"
+          mkdir -p "$VALUES"
+          cp android-icons/ic_launcher_background.xml "$VALUES/"
+
+          echo "Icônes UGTM installées :"
+          ls "$RES"/mipmap-*/ic_launcher.png
+
+      # ==========================================================
       # CAPACITOR SYNC
       # ==========================================================
 

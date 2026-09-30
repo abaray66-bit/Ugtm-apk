@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UGTM Souss-Massa</title>
-<meta name="description" content="Application de l'Université nationale de la santé UGTM Souss-Massa : communiqués, agenda, signalements et contacts.">
+<meta name="description" content="Application de la Fédération régionale de la Santé UGTM Souss-Massa : communiqués, agenda, signalements et contacts.">
 <meta name="theme-color" content="#B83268">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/ugtm-logo.svg">
@@ -154,13 +154,18 @@ button,input,select,textarea{
 }
 
 .mark{
-  width:40px;
-  height:40px;
+  width:44px;
+  height:44px;
   border-radius:11px;
-  background:var(--primary);
+  background:#FFFFFF;
+  border:1px solid var(--line);
   display:grid;
   place-items:center;
   flex:none
+}
+
+.mark img{
+  display:block
 }
 
 .brand{
@@ -846,6 +851,21 @@ main{
   opacity:1
 }
 
+.fb-ok{
+  color:#1a7a3c;
+  font-weight:600
+}
+
+@media (prefers-color-scheme: dark){
+  .fb-ok{
+    color:#6fdc9a
+  }
+}
+
+:root[data-theme="dark"] .fb-ok{
+  color:#6fdc9a
+}
+
 /* =========================
    AUTRES
    ========================= */
@@ -1332,9 +1352,7 @@ font-size:1.4rem;
 </style>
 
 </head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-<path d="M6 5v9a6 6 0 0 0 12 0V5"/>
-</svg>
+<img src="icons/ugtm-mark.svg" alt="" width="30" height="30">
 </div><div class="brand">
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
@@ -1378,7 +1396,8 @@ font-size:1.4rem;
 <p class="hint">Image ou PDF, taille maximale 300 Ko.</p></div>
 <label class="chip"><input id="rAnonymous" type="checkbox"><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
-<button class="btn primary block" type="submit" data-i18n="rSubmit"></button>
+<button class="btn primary block" type="submit" id="rSubmitBtn" data-i18n="rSubmit"></button>
+<p class="hint" id="rFeedback" role="status" aria-live="polite" hidden></p>
 </form>
 <div class="actions">
 
@@ -1463,7 +1482,7 @@ font-size:1.4rem;
 <div class="admin-dashboard-head">
 <div>
 <h2>Tableau de bord</h2>
-<p>Vue d'ensemble de la gestion de l'Université nationale de la santé</p>
+<p>Vue d'ensemble de la gestion de la Fédération régionale de la Santé</p>
 </div>
 </div>
 
@@ -1602,7 +1621,7 @@ var I18N = {
 
 fr:{
 brandName:`UGTM Souss-Massa`,
-brandSub:`Université nationale de la santé`,
+brandSub:`Fédération régionale de la Santé`,
 langBtn:`العربية`,
 langAria:`Passer en arabe`,
 
@@ -1636,7 +1655,7 @@ newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
 reportT:`Signaler un dysfonctionnement`,
 reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
 
-r1:`Les réponses sont réservées aux responsables désignés de l'Université nationale de la santé.`,
+r1:`Les réponses sont réservées aux responsables désignés de la Fédération régionale de la Santé.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
 r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
 
@@ -1664,6 +1683,7 @@ rDescription:`Décrivez les faits`,
 rAnonymous:`Envoyer sans afficher mon nom`,
 rAuthHint:`La connexion est nécessaire pour un signalement identifié. Le mode anonyme peut être envoyé sans afficher votre identité.`,
 rSubmit:`Envoyer le signalement`,
+rSending:`Envoi en cours…`,
 rNeedLogin:`Connectez-vous à votre espace avant d'envoyer un signalement.`,
 rSent:`Signalement envoyé. Merci.`,
 rAdminTab:`Signalements`,
@@ -1686,7 +1706,7 @@ calNext:`Mois suivant`,
 contactT:`Nous joindre`,
 
 cWa:`Chaîne WhatsApp`,
-cWaD:`Communiqués de l'Université nationale de la santé. Les numéros des abonnés restent privés.`,
+cWaD:`Communiqués de la Fédération régionale de la Santé. Les numéros des abonnés restent privés.`,
 cWaB:`Rejoindre`,
 
 cTg:`Canal Telegram`,
@@ -1717,9 +1737,9 @@ mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votr
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
 
-st_pending:`Demande en cours de validation par l'Université nationale de la santé.`,
+st_pending:`Demande en cours de validation par la Fédération régionale de la Santé.`,
 st_active:`Adhésion validée.`,
-st_blocked:`Compte suspendu. Contactez l'Université nationale de la santé.`,
+st_blocked:`Compte suspendu. Contactez la Fédération régionale de la Santé.`,
 
 cardNo:`N° d'adhérent`,
 cardSince:`Adhérent depuis`,
@@ -1744,7 +1764,7 @@ errPrefix:`Une erreur est survenue`
 },
 
 ar:{
-brandName:`الجامعة الوطنية للصحة سوس ماسة`,
+brandName:`الاتحاد الجهوي للصحة سوس ماسة`,
 brandSub:`الاتحاد العام للشغالين بالمغرب`,
 
 langBtn:`Français`,
@@ -1780,7 +1800,7 @@ newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناس
 reportT:`التبليغ عن اختلال`,
 reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عدم الكشف عن هويتكم.`,
 
-r1:`الإجابات مخصصة للمسؤولين المكلفين بالجامعة الوطنية للصحة فقط.`,
+r1:`الإجابات مخصصة للمسؤولين المكلفين بالاتحاد الجهوي للصحة فقط.`,
 r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
 r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
 
@@ -1808,6 +1828,7 @@ rDescription:`صفوا الوقائع`,
 rAnonymous:`إرسال التبليغ دون إظهار اسمي`,
 rAuthHint:`يجب تسجيل الدخول لإرسال تبليغ باسمكم. يمكن إرسال التبليغ المجهول دون إظهار هويتكم.`,
 rSubmit:`إرسال التبليغ`,
+rSending:`جارٍ الإرسال…`,
 rNeedLogin:`يرجى تسجيل الدخول قبل إرسال التبليغ.`,
 rSent:`تم إرسال التبليغ. شكرا.`,
 rAdminTab:`التبليغات`,
@@ -1830,7 +1851,7 @@ calNext:`الشهر التالي`,
 contactT:`اتصلوا بنا`,
 
 cWa:`قناة واتساب`,
-cWaD:`بلاغات الجامعة الوطنية للصحة. أرقام المشتركين تبقى خاصة.`,
+cWaD:`بلاغات الاتحاد الجهوي للصحة. أرقام المشتركين تبقى خاصة.`,
 cWaB:`انضمام`,
 
 cTg:`قناة تلغرام`,
@@ -1861,9 +1882,9 @@ mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤس�
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
 
-st_pending:`طلبكم قيد المصادقة من طرف الجامعة الوطنية للصحة.`,
+st_pending:`طلبكم قيد المصادقة من طرف الاتحاد الجهوي للصحة.`,
 st_active:`تمت المصادقة على انخراطكم.`,
-st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوطنية للصحة.`,
+st_blocked:`الحساب موقوف. تواصلوا مع الاتحاد الجهوي للصحة.`,
 
 cardNo:`رقم المنخرط`,
 cardSince:`منخرط منذ`,
@@ -2041,6 +2062,17 @@ clearTimeout(toastTimer);
 toastTimer=setTimeout(function(){
 el.classList.remove('show');
 },ms||2400);
+}
+
+function feedback(msg,ok){
+
+var el=$('rFeedback');
+
+if(!el||!msg)return;
+
+el.textContent=msg;
+el.classList.toggle('fb-ok',!!ok);
+el.hidden=false;
 }
 
 function showError(err,quiet){
@@ -3351,7 +3383,23 @@ return;
 
 if(el.hasAttribute('data-form')){
 
-openUrl(LINKS.form);
+var formTarget=String(LINKS.form||'');
+
+if(formTarget.charAt(0)==='#'){
+
+go(formTarget.slice(1));
+
+}
+else if(formTarget){
+
+openUrl(formTarget);
+
+}
+else{
+
+go('report');
+
+}
 
 return;
 }
@@ -3737,25 +3785,64 @@ return;
 $('reportForm').addEventListener('submit',function(e){
 e.preventDefault();
 
+var btn=$('rSubmitBtn');
+
+if(btn.disabled)return;
+
 var anonymous=$('rAnonymous').checked;
 
 if(!S.user && !anonymous){
 toast(T().rNeedLogin,4500);
+feedback(T().rNeedLogin);
 return;
 }
 
 var c=cloud();
-if(!c)return;
+
+if(!c){
+feedback(T().meOffline);
+return;
+}
 
 var province=val('rProvince');
+
 if(!province){
 toast('Sélectionnez la province concernée.',4000);
+feedback('Sélectionnez la province concernée.');
 return;
 }
 
 var file=$('rAttachment').files&&$('rAttachment').files[0];
 
+function setSending(on){
+
+btn.disabled=on;
+
+if(on){
+btn.dataset.label=btn.textContent;
+btn.textContent=T().rSending||'Envoi…';
+btn.setAttribute('aria-busy','true');
+}
+else{
+
+if(btn.dataset.label)
+btn.textContent=btn.dataset.label;
+
+btn.removeAttribute('aria-busy');
+}
+}
+
+function done(ok,msg){
+
+setSending(false);
+feedback(msg,ok);
+
+if(ok)
+toast(msg,6000);
+}
+
 function sendReport(attachment){
+
 c.addReport({
 anonymous:anonymous,
 name:anonymous?'':(S.user.name||''),
@@ -3769,18 +3856,35 @@ province:province,
 attachmentName:attachment?attachment.name:'',
 attachmentType:attachment?attachment.type:'',
 attachmentData:attachment?attachment.data:''
-}).then(function(){
+})
+.then(function(){
+
 $('rDescription').value='';
 $('rEtab').value='';
 $('rAge').value='';
 $('rDA').value='';
 $('rAttachment').value='';
-toast(T().rSent,4500);
-}).catch(showError);
+$('rAnonymous').checked=false;
+
+done(true,T().rSent);
+
+})
+.catch(function(err){
+
+done(false,T().errPrefix+' ('+((err&&(err.code||err.message))||'erreur')+').');
+showError(err,true);
+
+});
 }
 
+setSending(true);
+feedback(T().rSending||'Envoi…');
+
 if(file){
+
 if(file.size>300*1024){
+
+done(false,'La pièce jointe dépasse 300 Ko.');
 toast('La pièce jointe dépasse 300 Ko.',5000);
 return;
 }
@@ -3796,10 +3900,12 @@ data:String(reader.result||'')
 };
 
 reader.onerror=function(){
+done(false,'Impossible de lire la pièce jointe.');
 toast('Impossible de lire la pièce jointe.',4500);
 };
 
 reader.readAsDataURL(file);
+
 }else{
 sendReport(null);
 }
