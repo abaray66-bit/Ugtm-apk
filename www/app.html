@@ -1569,7 +1569,9 @@ font-size:1.4rem;
 </div><div class="field">
 <label for="nBAr">النص (بالعربية)</label>
 <textarea id="nBAr" rows="4" dir="rtl"></textarea>
-</div><button class="btn primary block" type="button" data-adm-act="addNews">Publier le communiqué</button>
+</div><button class="btn primary block" type="button" data-adm-act="addNews" id="nSubmitBtn">Publier le communiqué</button>
+<p class="hint" id="nEditHint" hidden></p>
+<button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden>Annuler la modification</button>
 
 <h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" hidden><h2 class="h2">Nouvel événement</h2><div class="field">
 <label for="eDate">Date</label>
@@ -1589,7 +1591,9 @@ font-size:1.4rem;
 </div><div class="field">
 <label for="ePAr">المكان (بالعربية)</label>
 <input id="ePAr" type="text" dir="rtl">
-</div><button class="btn primary block" type="button" data-adm-act="addEvent">Publier l'événement</button>
+</div><button class="btn primary block" type="button" data-adm-act="addEvent" id="eSubmitBtn">Publier l'événement</button>
+<p class="hint" id="eEditHint" hidden></p>
+<button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
 <h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1648,6 +1652,8 @@ members:[],
 memFilter:'pending',
 reports:[],
 admTab:'members',
+editNewsId:null,
+editEventId:null,
 formDirty:false
 };
 
@@ -2753,6 +2759,8 @@ esc(cat)+
 
 '<div class="mact">'+
 
+'<button type="button" class="btn ghost small" data-adm-act="editNews" data-id="'+esc(c.id)+'">Modifier</button>'+
+
 '<button type="button" class="btn ghost small danger" data-adm-act="delNews" data-id="'+esc(c.id)+'">Supprimer</button>'+
 
 '</div>'+
@@ -2789,6 +2797,8 @@ fmtDateFr(ev.date)+
 
 '<div class="mact">'+
 
+'<button type="button" class="btn ghost small" data-adm-act="editEvent" data-id="'+esc(ev.id)+'">Modifier</button>'+
+
 '<button type="button" class="btn ghost small danger" data-adm-act="delEvent" data-id="'+esc(ev.id)+'">Supprimer</button>'+
 
 '</div>'+
@@ -2819,6 +2829,10 @@ actions+='<button type="button" class="btn ghost small" data-adm-act="closeRepor
 }
 
 actions+='<button type="button" class="btn ghost small" data-adm-act="shareReport" data-id="'+esc(r.id)+'">WhatsApp</button>';
+
+if(S.isAdmin){
+actions+='<button type="button" class="btn ghost small danger" data-adm-act="delReport" data-id="'+esc(r.id)+'">Supprimer</button>';
+}
 
 return '<li class="mrow"><div class="mi">'+
 '<strong>'+esc(r.category)+' · '+esc(status)+'</strong>'+
@@ -3153,11 +3167,21 @@ if(fr.t||fr.b)o.fr=fr;
 
 if(ar.t||ar.b)o.ar=ar;
 
+var editing=S.editNewsId;
+
 imageData($('nImage').files[0]).then(function(image){
 if(image)o.image=image;
-return c.admin.addNews(o);
+return editing
+?c.admin.updateNews(editing,o)
+:c.admin.addNews(o);
 })
 .then(function(){
+
+if(editing){
+endEditNews();
+toast('Communiqué modifié');
+return;
+}
 
 ['nTFr','nBFr','nTAr','nBAr']
 .forEach(function(id){
@@ -3207,8 +3231,18 @@ if(fr.t||fr.p)o.fr=fr;
 
 if(ar.t||ar.p)o.ar=ar;
 
-c.admin.addEvent(o)
+var editing=S.editEventId;
+
+(editing
+?c.admin.updateEvent(editing,o)
+:c.admin.addEvent(o))
 .then(function(){
+
+if(editing){
+endEditEvent();
+toast('Événement modifié');
+return;
+}
 
 ['eTime','eTFr','ePFr','eTAr','ePAr']
 .forEach(function(id){
@@ -3219,6 +3253,110 @@ toast('Événement publié');
 
 })
 .catch(showError);
+}
+
+/* =========================
+   MODIFICATION APRÈS PUBLICATION
+   (réservé à l'administrateur principal)
+   ========================= */
+
+function newsEditState(){
+
+var editing=!!S.editNewsId;
+
+$('nSubmitBtn').textContent=editing
+?'Enregistrer les modifications'
+:'Publier le communiqué';
+
+$('nCancelEdit').hidden=!editing;
+$('nEditHint').hidden=!editing;
+
+if(editing)
+$('nEditHint').textContent='Modification d\'un communiqué publié : corrigez les champs puis enregistrez.';
+
+}
+
+function startEditNews(item){
+
+S.editNewsId=item.id;
+
+$('nCat').value=item.cat||'statut';
+$('nAud').value=item.audience||'public';
+$('nDate').value=item.date||todayStr();
+$('nTFr').value=(item.fr&&item.fr.t)||'';
+$('nBFr').value=(item.fr&&item.fr.b)||'';
+$('nTAr').value=(item.ar&&item.ar.t)||'';
+$('nBAr').value=(item.ar&&item.ar.b)||'';
+$('nImage').value='';
+
+newsEditState();
+showAdmTab('news');
+
+if($('nSubmitBtn').scrollIntoView)
+$('nSubmitBtn').scrollIntoView({block:'center'});
+
+}
+
+function endEditNews(){
+
+S.editNewsId=null;
+
+['nTFr','nBFr','nTAr','nBAr']
+.forEach(function(id){$(id).value='';});
+
+$('nImage').value='';
+$('nDate').value=todayStr();
+
+newsEditState();
+
+}
+
+function eventEditState(){
+
+var editing=!!S.editEventId;
+
+$('eSubmitBtn').textContent=editing
+?'Enregistrer les modifications'
+:"Publier l'événement";
+
+$('eCancelEdit').hidden=!editing;
+$('eEditHint').hidden=!editing;
+
+if(editing)
+$('eEditHint').textContent='Modification d\'un événement publié : corrigez les champs puis enregistrez.';
+
+}
+
+function startEditEvent(item){
+
+S.editEventId=item.id;
+
+$('eDate').value=item.date||todayStr();
+$('eTime').value=item.time||'';
+$('eTFr').value=(item.fr&&item.fr.t)||'';
+$('ePFr').value=(item.fr&&item.fr.p)||'';
+$('eTAr').value=(item.ar&&item.ar.t)||'';
+$('ePAr').value=(item.ar&&item.ar.p)||'';
+
+eventEditState();
+showAdmTab('events');
+
+if($('eSubmitBtn').scrollIntoView)
+$('eSubmitBtn').scrollIntoView({block:'center'});
+
+}
+
+function endEditEvent(){
+
+S.editEventId=null;
+
+['eTime','eTFr','ePFr','eTAr','ePAr']
+.forEach(function(id){$(id).value='';});
+
+$('eDate').value=todayStr();
+
+eventEditState();
+
 }
 
 function applyI18n(){
@@ -3786,6 +3924,15 @@ c.admin
 
 }
 
+else if(a==='editNews'&&S.isAdmin){
+var newsItem=sortedNews().filter(function(x){return x.id===id;})[0];
+if(newsItem)startEditNews(newsItem);
+}
+
+else if(a==='cancelNews'&&S.isAdmin){
+endEditNews();
+}
+
 else if(a==='startReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
@@ -3831,6 +3978,13 @@ window.open(
 }
 }
 
+else if(a==='delReport'&&S.isAdmin){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report&&window.confirm('Supprimer définitivement ce signalement ?')){
+c.admin.deleteReport(id).catch(showError);
+}
+}
+
 else if(a==='delEvent'&&S.isAdmin){
 
 if(window.confirm('Supprimer cet événement ?'))
@@ -3839,6 +3993,15 @@ c.admin
 .deleteEvent(id)
 .catch(showError);
 
+}
+
+else if(a==='editEvent'&&S.isAdmin){
+var eventItem=EVENTS.filter(function(x){return x.id===id;})[0];
+if(eventItem)startEditEvent(eventItem);
+}
+
+else if(a==='cancelEvent'&&S.isAdmin){
+endEditEvent();
 }
 
 else if(a==='csv'){

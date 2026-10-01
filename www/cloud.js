@@ -878,6 +878,39 @@ var admin = {
     },
 
 
+  updateNews:
+    function(id, o){
+
+      var data = {
+
+        cat: o.cat,
+
+        audience: o.audience,
+
+        date: o.date,
+
+        updatedAt:
+          serverTimestamp()
+
+      };
+
+      if (o.image)
+        data.image = String(o.image).slice(0,400000);
+
+      if (o.fr)
+        data.fr = o.fr;
+
+      if (o.ar)
+        data.ar = o.ar;
+
+      return updateDoc(
+        doc(db, 'news', id),
+        data
+      );
+
+    },
+
+
   addEvent:
     function(o){
 
@@ -911,6 +944,44 @@ var admin = {
 
       return deleteDoc(
         doc(db, 'events', id)
+      );
+
+    },
+
+
+  updateEvent:
+    function(id, o){
+
+      var data = {
+
+        date: o.date,
+
+        time: o.time || '',
+
+        updatedAt:
+          serverTimestamp()
+
+      };
+
+      if (o.fr)
+        data.fr = o.fr;
+
+      if (o.ar)
+        data.ar = o.ar;
+
+      return updateDoc(
+        doc(db, 'events', id),
+        data
+      );
+
+    },
+
+
+  deleteReport:
+    function(id){
+
+      return deleteDoc(
+        doc(db, 'reports', id)
       );
 
     },
