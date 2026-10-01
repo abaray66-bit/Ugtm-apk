@@ -9,7 +9,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
-  collection, doc, getDoc, setDoc, updateDoc, deleteDoc, addDoc,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
   onSnapshot, query, where, serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
@@ -20,7 +20,8 @@ var unsubs = {
   member: null,
   members: null,
   news: null,
-  reports: null
+  reports: null,
+  publicProvinceContacts: null
 };
 
 var newsMode = null;
@@ -141,6 +142,27 @@ function subscribeEvents(){
   );
 }
 
+
+function subscribePublicProvinceContacts(){
+
+  unsub('publicProvinceContacts');
+
+  unsubs.publicProvinceContacts = onSnapshot(
+    collection(db, 'publicProvinceContacts'),
+    function(snap){
+      hooks.setProvinceContacts(snap.docs.map(function(d){
+        var x = d.data();
+        return {
+          province: x.province || d.id,
+          name: x.name || '',
+          phone: x.phone || ''
+        };
+      }));
+    },
+    function(err){ hooks.error(err, true); }
+  );
+
+}
 
 /* =========================================================
    SIGNALEMENTS
@@ -296,6 +318,7 @@ function onUser(user){
       (user.email || '').toLowerCase()
     ) >= 0;
 
+  if (isAdmin) syncPublicProvinceContacts();
 
   session = {
 
@@ -680,6 +703,7 @@ async function saveProfile(p){
           name: fields.name,
           phone: fields.phone
         });
+        await savePublicProvinceContact(snap.data().adminProvince, fields.name, fields.phone);
       }
     }
 
@@ -747,6 +771,34 @@ async function deleteAccount(){
    ADMINISTRATION
    ========================================================= */
 
+function savePublicProvinceContact(province, name, phone){
+  return setDoc(doc(db, 'publicProvinceContacts', province), {
+    province: String(province || '').slice(0,40),
+    name: String(name || '').slice(0,120),
+    phone: String(phone || '').slice(0,30)
+  });
+}
+
+function deletePublicProvinceContact(province){
+  return deleteDoc(doc(db, 'publicProvinceContacts', province));
+}
+
+function syncPublicProvinceContacts(){
+  return getDocs(collection(db, 'provinceContacts')).then(function(privateSnap){
+    var active = {};
+    var writes = privateSnap.docs.map(function(d){
+      var x = d.data();
+      active[d.id] = true;
+      return savePublicProvinceContact(d.id, x.name, x.phone);
+    });
+    return Promise.all(writes).then(function(){
+      return getDocs(collection(db, 'publicProvinceContacts'));
+    }).then(function(publicSnap){
+      var removals = publicSnap.docs.filter(function(d){return !active[d.id];}).map(function(d){return deletePublicProvinceContact(d.id);});
+      return Promise.all(removals);
+    });
+  }).catch(function(e){hooks.error(e, true);});
+}
 var admin = {
 
   setSubAdmin:
@@ -764,14 +816,20 @@ var admin = {
         }).then(function(){
           return old && old !== assigned ? getDoc(doc(db, 'provinceContacts', old)) : null;
         }).then(function(oldContact){
-          var clearOld = oldContact && oldContact.exists() && oldContact.data().uid === uid
-            ? deleteDoc(doc(db, 'provinceContacts', old)) : Promise.resolve();
-          return clearOld.then(function(){return setDoc(doc(db, 'provinceContacts', assigned), {
-            uid: uid,
-            name: String(member.name || '').slice(0,120),
-            phone: String(member.phone || '').slice(0,30),
-            province: assigned
-          });});
+          var ownsOld = oldContact && oldContact.exists() && oldContact.data().uid === uid;
+          var clearOld = ownsOld ? deleteDoc(doc(db, 'provinceContacts', old)) : Promise.resolve();
+          return clearOld.then(function(){
+            if (ownsOld && old && old !== assigned) return deletePublicProvinceContact(old);
+          }).then(function(){
+            return setDoc(doc(db, 'provinceContacts', assigned), {
+              uid: uid,
+              name: String(member.name || '').slice(0,120),
+              phone: String(member.phone || '').slice(0,30),
+              province: assigned
+            });
+          }).then(function(){
+            return savePublicProvinceContact(assigned, member.name, member.phone);
+          });
         });
       });
     },
@@ -785,7 +843,7 @@ var admin = {
         return clear.then(function(){
           return getDoc(doc(db, 'provinceContacts', old));
         }).then(function(contact){
-          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', old));
+          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', old)).then(function(){return deletePublicProvinceContact(old);});
         });
       });
     },
@@ -815,7 +873,7 @@ var admin = {
           if (status === 'active' || !prior.adminProvince) return;
           return getDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(contact){
             if (contact.exists() && contact.data().uid === uid)
-              return deleteDoc(doc(db, 'provinceContacts', prior.adminProvince));
+              return deleteDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(){return deletePublicProvinceContact(prior.adminProvince);});
           });
         });
       });
@@ -828,7 +886,7 @@ var admin = {
       return getDoc(ref).then(function(snap){
         var province = snap.exists() ? snap.data().adminProvince : '';
         var removeContact = province ? getDoc(doc(db, 'provinceContacts', province)).then(function(contact){
-          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', province));
+          if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', province)).then(function(){return deletePublicProvinceContact(province);});
         }) : Promise.resolve();
         return removeContact.then(function(){return deleteDoc(ref);});
       });
@@ -1165,6 +1223,8 @@ export async function init(config, h){
 
   };
 
+
+  subscribePublicProvinceContacts();
 
   subscribeEvents();
 
