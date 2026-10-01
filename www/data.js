@@ -49,7 +49,7 @@ window.APP_DATA = {
       action: "openUrl"
     },
     {
-      title: "Numéro dédié WhatsApp",
+      title: "Numéro du secrétaire régional sur WhatsApp",
       description: "Échanges directs et envoi de pièces, sur WhatsApp.",
       icon: "📱",
       url: "https://wa.me/212661386247",
