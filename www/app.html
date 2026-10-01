@@ -785,6 +785,12 @@ main{
   line-height:1.5
 }
 
+.province-leaders{margin-top:22px}
+.province-leaders .h2{margin-top:0}
+.province-contact .mi{width:100%;display:grid;gap:5px}
+.province-contact .mi span{font-size:14px;color:var(--muted)}
+.province-contact .mi a{font-size:14px;direction:ltr;unicode-bidi:plaintext}
+
 .install{
   margin-top:24px;
   padding:16px;
@@ -1477,7 +1483,7 @@ font-size:1.4rem;
 </div><div class="rb">
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
-</div></div></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
+</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
@@ -1648,6 +1654,7 @@ isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
+provinceContacts:[],
 admTab:'members',
 editNewsId:null,
 editEventId:null,
@@ -1758,6 +1765,8 @@ cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
 cNumB:`Écrire`,
 
 cPerm:`Permanence syndicale`,
+provinceContactsTitle:`Responsables syndicaux des provinces`,
+provinceContactsEmpty:`Aucun responsable provincial n’est désigné actuellement.`,
 
 installT:`Installer l'application`,
 installP:`Sur Android, ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».`,
@@ -1906,6 +1915,8 @@ cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
 cNumB:`مراسلة`,
 
 cPerm:`المداومة النقابية`,
+provinceContactsTitle:`المسؤولون النقابيون بالأقاليم`,
+provinceContactsEmpty:`لا يوجد مسؤول نقابي معيّن حالياً.`,
 
 installT:`تثبيت التطبيق`,
 installP:`على أندرويد: افتحوا قائمة ⋮ في Chrome ثم اختاروا «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».`,
@@ -2073,6 +2084,21 @@ return p.v===v;
 return f?f[l||lang]:(v||'');
 }
 
+function renderProvinceContacts(){
+var box=$('provinceLeaders');
+if(!box)return;
+var contacts=(S.provinceContacts||[]).filter(function(c){return c&&(c.name||c.phone);}).sort(function(a,b){return provName(a.province,lang).localeCompare(provName(b.province,lang),lang);});
+var html="<h2 class=\"h2\">"+esc(T().provinceContactsTitle)+"</h2>";
+if(!contacts.length){box.innerHTML=html+"<p class=\"hint\">"+esc(T().provinceContactsEmpty)+"</p>";return;}
+html+="<ul class=\"list province-contact-list\">";
+contacts.forEach(function(c){
+var phone=String(c.phone||'').trim();
+var tel=phone.replace(/[^0-9+]/g,'');
+html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"tel:"+esc(tel)+"\">"+esc(phone)+"</a>":"")+"</div></li>";
+});
+html+="</ul>";
+box.innerHTML=html;
+}
 function sortedNews(){
 return NEWS.slice().sort(function(a,b){
 return a.date<b.date?1:(a.date>b.date?-1:0);
@@ -3397,6 +3423,7 @@ PERM.fr||
 PERM.ar||
 '';
 
+renderProvinceContacts();
 renderProvOptions();
 renderHome();
 renderFilters();
@@ -4229,6 +4256,11 @@ renderHome();
 renderAgenda();
 renderAdminEvents();
 
+},
+
+setProvinceContacts:function(list){
+S.provinceContacts=list||[];
+renderProvinceContacts();
 },
 
 setReports:function(list){
