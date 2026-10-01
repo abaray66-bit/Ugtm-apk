@@ -1450,16 +1450,13 @@ font-size:1.4rem;
 <button class="btn ghost small" type="button" data-link="wa" data-i18n="cWaB"></button>
 </div><div class="row">
 <div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M22 2L11 13"/>
-<path d="M22 2l-7 20-4-9-9-4z"/>
-</svg>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.35 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5h1.6V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.2v2.2H7v3.1h2.85V21h3.5z"/></svg>
 </div>
 <div class="rb">
-<strong data-i18n="cTg"></strong>
-<p data-i18n="cTgD"></p>
+<strong data-i18n="cFb"></strong>
+<p data-i18n="cFbD"></p>
 </div>
-<button class="btn ghost small" type="button" data-link="tg" data-i18n="cTgB"></button>
+<button class="btn ghost small" type="button" data-link="fb" data-i18n="cFbB"></button>
 </div><div class="row">
 <div class="ico" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1748,13 +1745,13 @@ calNext:`Mois suivant`,
 
 contactT:`Nous joindre`,
 
-cWa:`Chaîne WhatsApp`,
-cWaD:`Communiqués de la Fédération régionale de la Santé. Les numéros des abonnés restent privés.`,
-cWaB:`Rejoindre`,
+cWa:`Groupe de communication régional`,
+cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.`,
+cWaB:`Rejoindre le groupe`,
 
-cTg:`Canal Telegram`,
-cTgD:`Les mêmes communiqués, en double.`,
-cTgB:`Rejoindre`,
+cFb:`Page officielle Facebook`,
+cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
+cFbB:`Voir la page`,
 
 cNum:`Numéro dédié`,
 cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
@@ -1896,13 +1893,13 @@ calNext:`الشهر التالي`,
 
 contactT:`اتصلوا بنا`,
 
-cWa:`قناة واتساب`,
-cWaD:`بلاغات الاتحاد الجهوي للصحة. أرقام المشتركين تبقى خاصة.`,
-cWaB:`انضمام`,
+cWa:`مجموعة التواصل الجهوية`,
+cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاصة بالجامعة الوطنية للصحة.`,
+cWaB:`انضموا إلى المجموعة`,
 
-cTg:`قناة تلغرام`,
-cTgD:`نفس البلاغات كنسخة موازية.`,
-cTgB:`انضمام`,
+cFb:`الصفحة الرسمية على فيسبوك`,
+cFbD:`تابعوا الصفحة الرسمية لفيدرالية الصحة الجهوية على فيسبوك.`,
+cFbB:`زيارة الصفحة`,
 
 cNum:`الرقم المخصص`,
 cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
@@ -2185,7 +2182,7 @@ function linkFor(key){
 if(key==='wa')
 return(CONTACT[0]&&CONTACT[0].url)||'';
 
-if(key==='tg')
+if(key==='fb')
 return(CONTACT[2]&&CONTACT[2].url)||'';
 
 if(key==='num')
