@@ -416,7 +416,36 @@ main{
   color:var(--ink)
 }
 
-.news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin:0 0 12px}
+.news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin:0 0 12px;cursor:zoom-in}
+
+.lightbox{
+  position:fixed;
+  inset:0;
+  z-index:60;
+  background:rgba(0,0,0,.93);
+  display:grid;
+  place-items:center;
+  padding:16px;
+  cursor:zoom-out
+}
+
+.lightbox img{
+  max-width:100%;
+  max-height:calc(100% - 56px);
+  object-fit:contain;
+  border-radius:8px
+}
+
+.lightbox .lb-hint{
+  position:absolute;
+  bottom:18px;
+  left:0;
+  right:0;
+  text-align:center;
+  color:#fff;
+  font-size:13px;
+  opacity:.75
+}
 
 .filters{
   display:flex;
@@ -602,6 +631,11 @@ main{
   border-color:var(--primary);
   color:var(--on-primary);
   font-weight:600
+}
+
+.chip input:checked + span::before{
+  content:'\2713\00a0\00a0';
+  font-weight:800
 }
 
 .chip input:focus-visible + span{
@@ -1586,7 +1620,7 @@ font-size:1.4rem;
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -1686,6 +1720,9 @@ rSubmit:`Envoyer le signalement`,
 rSending:`Envoi en cours…`,
 rNeedLogin:`Connectez-vous à votre espace avant d'envoyer un signalement.`,
 rSent:`Signalement envoyé. Merci.`,
+rSentAnon:`Signalement anonyme envoyé. Merci. Aucune réponse ne pourra vous être adressée.`,
+rDenied:`Envoi refusé par le serveur (permission-denied). Fermez et rouvrez l'application pour charger la dernière version, puis réessayez.`,
+lbClose:`Touchez l'image pour fermer`,
 rAdminTab:`Signalements`,
 rNoReports:`Aucun signalement reçu.`,
 rStatusNew:`Nouveau`,
@@ -1831,6 +1868,9 @@ rSubmit:`إرسال التبليغ`,
 rSending:`جارٍ الإرسال…`,
 rNeedLogin:`يرجى تسجيل الدخول قبل إرسال التبليغ.`,
 rSent:`تم إرسال التبليغ. شكرا.`,
+rSentAnon:`تم إرسال التبليغ المجهول. شكرا. لن يمكن إرسال أي رد إليكم.`,
+rDenied:`رفض الإرسال من الخادم (permission-denied). أغلقوا التطبيق وأعيدوا فتحه لتحميل النسخة الأخيرة ثم أعدوا المحاولة.`,
+lbClose:`المسوا الصورة للإغلاق`,
 rAdminTab:`التبليغات`,
 rNoReports:`لا توجد تبليغات.`,
 rStatusNew:`جديد`,
@@ -2063,6 +2103,40 @@ toastTimer=setTimeout(function(){
 el.classList.remove('show');
 },ms||2400);
 }
+
+function openLightbox(src){
+
+$('lightboxImg').src=src;
+$('lightbox').hidden=false;
+}
+
+function closeLightbox(){
+
+$('lightbox').hidden=true;
+$('lightboxImg').src='';
+}
+
+(function(){
+
+var lb=$('lightbox');
+
+lb.addEventListener('click',closeLightbox);
+
+document.addEventListener('keydown',function(e){
+
+if(e.key==='Escape'&&!lb.hidden)closeLightbox();
+
+});
+
+document.addEventListener('click',function(e){
+
+var img=e.target.closest('img.news-photo');
+
+if(img)openLightbox(img.src);
+
+});
+
+})();
 
 function feedback(msg,ok){
 
@@ -3866,13 +3940,20 @@ $('rDA').value='';
 $('rAttachment').value='';
 $('rAnonymous').checked=false;
 
-done(true,T().rSent);
+done(true,anonymous?T().rSentAnon:T().rSent);
 
 })
 .catch(function(err){
 
-done(false,T().errPrefix+' ('+((err&&(err.code||err.message))||'erreur')+').');
+var code=String((err&&(err.code||err.message))||'');
+
+done(false,
+code.indexOf('permission-denied')>-1
+?T().rDenied
+:T().errPrefix+' ('+(code||'erreur')+').');
+
 showError(err,true);
+
 
 });
 }
