@@ -5,7 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential,
-  reauthenticateWithPopup, onAuthStateChanged, signOut as fbSignOut, deleteUser
+  reauthenticateWithPopup, reauthenticateWithCredential, onAuthStateChanged, signOut as fbSignOut, deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
@@ -606,7 +606,9 @@ async function addReport(o){
       String(o.etab || '').slice(0,160),
 
     age:
-      String(o.age || '').slice(0,10),
+      anonymous
+        ? ''
+        : String(o.age || '').slice(0,10),
 
     da:
       String(o.da || '').slice(0,80),
@@ -757,61 +759,73 @@ async function saveProfile(p){
    SUPPRESSION COMPTE
    ========================================================= */
 
+async function reauthenticateForAccountDeletion(u){
+
+  if (
+    window.Capacitor &&
+    window.Capacitor.isNativePlatform &&
+    window.Capacitor.isNativePlatform()
+  ){
+
+    if (!nativeAuth){
+      throw new Error(
+        "Le module FirebaseAuthentication n'est pas disponible dans l'APK."
+      );
+    }
+
+    var result = await nativeAuth.signInWithGoogle({
+      useCredentialManager: true,
+      skipNativeAuth: true
+    });
+
+    var idToken = result && result.credential && result.credential.idToken;
+    if (!idToken){
+      throw new Error("Google n'a pas fourni de jeton d'authentification.");
+    }
+
+    await reauthenticateWithCredential(
+      u,
+      GoogleAuthProvider.credential(idToken)
+    );
+    return;
+  }
+
+  var provider = new GoogleAuthProvider();
+  provider.setCustomParameters({prompt: 'select_account'});
+  await reauthenticateWithPopup(u, provider);
+}
+
+
 async function deleteAccount(){
 
   var u = auth.currentUser;
+  if (!u) throw new Error('Non connecté');
 
-  if (!u)
-    throw new Error('Non connecté');
+  // Réauthentifier avant toute suppression de données, pour éviter de laisser
+  // un compte actif sans profil si Firebase exige une connexion récente.
+  await reauthenticateForAccountDeletion(u);
 
+  var memberRef = doc(db, 'members', u.uid);
+  var memberSnap = await getDoc(memberRef);
+  var member = memberSnap.exists() ? memberSnap.data() : {};
 
   unsub('member');
   unsub('members');
   unsub('reports');
 
-
-  await deleteDoc(
-    doc(db, 'members', u.uid)
-  );
-
-
-  // Nettoyage : on ne reste pas dans la liste publique des responsables.
-  try {
-    await deleteDoc(doc(db, 'responsables', u.uid));
-  }
-  catch(e) {}
-
-
-  try {
-
-    await deleteUser(u);
-
+  // Retirer les coordonnées rattachées au rôle de sous-admin tant que ses droits existent.
+  if (member.status === 'active' && member.role === 'subadmin' && member.adminProvince){
+    var province = String(member.adminProvince).slice(0,40);
+    await deleteDoc(doc(db, 'provinceContacts', province));
+    await deletePublicProvinceContact(province);
   }
 
-  catch(e){
+  // Les signalements soumis ne sont pas supprimés par la suppression du compte.
+  await deleteDoc(doc(db, 'responsables', u.uid));
+  if (memberSnap.exists()) await deleteDoc(memberRef);
 
-    if (
-      e.code ===
-      'auth/requires-recent-login'
-    ){
-
-      await reauthenticateWithPopup(
-        u,
-        new GoogleAuthProvider()
-      );
-
-      await deleteUser(u);
-
-    }
-
-    else {
-
-      await fbSignOut(auth);
-
-    }
-
-  }
-
+  // Ne pas masquer les erreurs : l'interface doit distinguer une suppression réussie d'un échec.
+  await deleteUser(u);
 }
 
 

@@ -1823,7 +1823,7 @@ rDate:`Date des faits`,
 rEtab:`Établissement (facultatif)`,
 rDescription:`Décrivez les faits`,
 rAnonymous:`Envoyer sans afficher mon nom`,
-rAuthHint:`La connexion est nécessaire pour un signalement identifié. Le mode anonyme peut être envoyé sans afficher votre identité.`,
+rAuthHint:`Le PPR n'est pas enregistré en mode anonyme. Le lieu, l'établissement, la spécialité, la date, le récit ou une pièce jointe peuvent quand même vous identifier. N'indiquez pas votre nom ni vos coordonnées ; aucune réponse ne pourra vous être envoyée.`,
 rSubmit:`Envoyer le signalement`,
 rSending:`Envoi en cours…`,
 rNeedLogin:`Connectez-vous à votre espace avant d'envoyer un signalement.`,
@@ -1903,7 +1903,7 @@ saved:`Informations enregistrées`,
 
 signOut:`Se déconnecter`,
 delData:`Supprimer mes données`,
-delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive.`,
+delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive. Les signalements déjà envoyés restent conservés et peuvent contenir des éléments permettant de vous identifier.`,
 
 deleted:`Données supprimées`,
 adminOpen:`Espace administrateur`,
@@ -1985,7 +1985,7 @@ rDate:`تاريخ الوقائع`,
 rEtab:`المؤسسة (اختياري)`,
 rDescription:`صفوا الوقائع`,
 rAnonymous:`إرسال التبليغ دون إظهار اسمي`,
-rAuthHint:`يجب تسجيل الدخول لإرسال تبليغ باسمكم. يمكن إرسال التبليغ المجهول دون إظهار هويتكم.`,
+rAuthHint:`لا يُحفظ رقم PPR عند اختيار التبليغ المجهول. ومع ذلك، قد يكشف المكان أو المؤسسة أو التخصص أو التاريخ أو وصف الوقائع أو المرفقات هويتكم. لا تذكروا اسمكم أو بيانات الاتصال؛ لن يمكن إرسال رد إليكم.`,
 rSubmit:`إرسال التبليغ`,
 rSending:`جارٍ الإرسال…`,
 rNeedLogin:`يرجى تسجيل الدخول قبل إرسال التبليغ.`,
@@ -2065,7 +2065,7 @@ saved:`تم حفظ المعلومات`,
 
 signOut:`تسجيل الخروج`,
 delData:`حذف بياناتي`,
-delConfirm:`حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي.`,
+delConfirm:`هل تريدون حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي. ستظل التبليغات المرسلة محفوظة، وقد يتضمن محتواها معلومات تكشف هويتكم.`,
 
 deleted:`تم حذف البيانات`,
 adminOpen:`فضاء المسؤول`,
@@ -4361,6 +4361,16 @@ return;
    FORMULAIRE
    ========================= */
 
+function syncAnonymousReportFields(){
+var anonymous=$('rAnonymous').checked;
+var ppr=$('rAge');
+ppr.required=!anonymous;
+if(anonymous)ppr.value='';
+}
+
+$('rAnonymous').addEventListener('change',syncAnonymousReportFields);
+syncAnonymousReportFields();
+
 $('reportForm').addEventListener('submit',function(e){
 e.preventDefault();
 
@@ -4426,7 +4436,7 @@ c.addReport({
 anonymous:anonymous,
 name:anonymous?'':((S.user&&S.user.name)||''),
 etab:val('rEtab'),
-age:val('rAge'),
+age:anonymous?'':val('rAge'),
 da:val('rDA'),
 category:$('rCategory').value,
 description:val('rDescription'),
@@ -4444,6 +4454,7 @@ $('rAge').value='';
 $('rDA').value='';
 $('rAttachment').value='';
 $('rAnonymous').checked=false;
+syncAnonymousReportFields();
 
 done(true,anonymous?T().rSentAnon:T().rSent);
 

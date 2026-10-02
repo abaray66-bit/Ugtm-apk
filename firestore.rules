@@ -77,8 +77,7 @@ service cloud.firestore {
             && okText(request.resource.data.phone, 30));
 
       allow delete: if isAdmin()
-        || (signedIn() && request.auth.uid == uid
-            && resource.data.get('role', 'member') != 'subadmin');
+        || (signedIn() && request.auth.uid == uid);
     }
 
     match /provinceContacts/{province} {
@@ -94,7 +93,11 @@ service cloud.firestore {
           && okText(request.resource.data.name, 120)
           && okText(request.resource.data.phone, 30));
 
-      allow delete: if isAdmin();
+      allow delete: if isAdmin()
+        || (isSubAdmin()
+          && province == assignedProvince()
+          && (!exists(/databases/$(database)/documents/provinceContacts/$(province))
+            || resource.data.uid == request.auth.uid));
 
       allow update: if isAdmin()
         || (isSubAdmin() && resource.data.uid == request.auth.uid
@@ -237,6 +240,7 @@ service cloud.firestore {
             request.resource.data.anonymous == true
             && request.resource.data.ownerUid == ''
             && request.resource.data.name == ''
+            && request.resource.data.age == ''
           )
 
           ||
