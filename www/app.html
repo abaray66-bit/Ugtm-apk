@@ -338,6 +338,58 @@ main{
   margin:12px 0 0
 }
 
+    /* Accueil : adhésion à gauche, signalement à droite */
+    .home-actions{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-areas:"membership report";
+    gap:12px;
+    align-items:stretch;
+    direction:ltr
+    }
+
+    .home-actions > .hero{
+    grid-area:report;
+    min-width:0
+    }
+
+    .home-actions > .adh{
+    grid-area:membership;
+    min-width:0;
+    margin-top:0
+    }
+
+    [dir="rtl"] .home-actions > .hero,
+    [dir="rtl"] .home-actions > .adh{
+    direction:rtl
+    }
+
+    .home-actions .adhbtns{
+    flex-direction:column
+    }
+
+    .home-actions .adhbtns .btn,
+    .home-actions .hero .btn{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    padding-inline:10px;
+    text-align:center;
+    white-space:normal
+    }
+
+    .home-actions .adhbtns .btn{
+    flex:1 1 100%
+    }
+
+    @media(max-width:359px){
+    .home-actions{
+      grid-template-columns:minmax(0,1fr);
+      grid-template-areas:"report" "membership"
+    }
+    }
+    
+
 /* =========================
    BOUTONS
    ========================= */
@@ -1474,7 +1526,7 @@ font-size:1.4rem;
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
-</header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="hero">
+</header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="home-actions"><div class="hero">
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
 <button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
@@ -1487,6 +1539,7 @@ font-size:1.4rem;
 <button class="btn ghost" type="button" data-adh="send" data-i18n="adhSend"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
+</div>
 </div>
 <input id="adhFile" type="file" accept="image/*,.pdf" hidden><div class="sechead">
 <h2 data-i18n="nextT"></h2>
