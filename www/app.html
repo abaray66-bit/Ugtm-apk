@@ -285,6 +285,60 @@ main{
 }
 
 /* =========================
+   ESPACE ADHÉRENT
+   ========================= */
+
+.adh{
+  margin-top:14px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:20px;
+  border-inline-start:6px solid var(--accent);
+  padding:18px 18px 16px
+}
+
+.adhtag{
+  display:inline-block;
+  background:var(--accent);
+  color:var(--on-accent);
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border-radius:999px
+}
+
+.adh h2{
+  font-family:var(--font-head);
+  font-weight:800;
+  font-size:20px;
+  line-height:1.35;
+  margin:10px 0 6px;
+  color:var(--primary)
+}
+
+.adh > p:not(.hint){
+  margin:0 0 14px;
+  font-size:14.5px;
+  color:var(--muted)
+}
+
+.adhbtns{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px
+}
+
+.adhbtns .btn{
+  flex:1 1 180px
+}
+
+.adh .hint{
+  margin:12px 0 0
+}
+
+/* =========================
    BOUTONS
    ========================= */
 
@@ -783,6 +837,25 @@ main{
   font-size:13.5px;
   color:var(--muted);
   line-height:1.5
+}
+
+/* Responsables syndicaux : sous-éléments de la permanence */
+.resp{
+  margin:8px 0 0;
+  padding:8px 0 0 16px;
+  border-top:1px dashed var(--line);
+  list-style:disc
+}
+
+.resp li{
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.6;
+  padding-inline-start:2px
+}
+
+.resp li::marker{
+  color:var(--accent)
 }
 
 .install{
@@ -1390,6 +1463,7 @@ font-size:1.4rem;
 </div><div class="brand">
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
+<span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"></button>
 
 <button class="langbtn" id="langBtn" type="button"></button>
@@ -1398,7 +1472,17 @@ font-size:1.4rem;
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
 <button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
-</div><div class="sechead">
+</div><div class="adh">
+<span class="adhtag" data-i18n="adhLabel"></span>
+<h2 data-i18n="adhT"></h2>
+<p data-i18n="adhP"></p>
+<div class="adhbtns">
+<button class="btn gold" type="button" data-adh="dl" data-i18n="adhDownload"></button>
+<button class="btn ghost" type="button" data-adh="send" data-i18n="adhSend"></button>
+</div>
+<p class="hint" data-i18n="adhHint"></p>
+</div>
+<input id="adhFile" type="file" accept="image/*,.pdf" hidden><div class="sechead">
 <h2 data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
@@ -1480,6 +1564,7 @@ font-size:1.4rem;
 </div><div class="rb">
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
+<ul class="resp" id="permResp" hidden></ul>
 </div></div></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
@@ -1540,8 +1625,8 @@ font-size:1.4rem;
 </p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
 <label for="nCat">Catégorie</label>
 <select id="nCat">
-<option value="urgent">Urgent</option>
-<option value="statut" selected>Statuts</option>
+<option value="urgent">Communiqué</option>
+<option value="statut" selected>Actualité</option>
 <option value="events">Rencontres</option>
 </select>
 </div><div class="field">
@@ -1654,6 +1739,7 @@ reports:[],
 admTab:'members',
 editNewsId:null,
 editEventId:null,
+responsables:[],
 formDirty:false
 };
 
@@ -1662,6 +1748,8 @@ var I18N = {
 fr:{
 brandName:`UGTM Souss-Massa`,
 brandSub:`Fédération régionale de la Santé`,
+brandL3:``,
+brandShort:`UGTM Souss-Massa`,
 langBtn:`العربية`,
 langAria:`Passer en arabe`,
 
@@ -1675,6 +1763,16 @@ heroT:`Un dysfonctionnement à signaler ?`,
 heroP:`Décrivez les faits en deux minutes. Vous pouvez rester anonyme.`,
 heroBtn:`Faire un signalement`,
 
+adhLabel:`Espace adhérent`,
+adhT:`Adhérez maintenant`,
+adhP:`Téléchargez la demande d'adhésion, remplissez-la et signez-la, puis renvoyez-la depuis votre téléphone.`,
+adhDownload:`Télécharger la demande d'adhésion`,
+adhSend:`Envoyer la demande remplie`,
+adhHint:`Les images volumineuses sont réduites automatiquement avant l'envoi.`,
+adhReady:`Fichier prêt. Choisissez WhatsApp pour l'envoyer.`,
+adhSaved:`Fichier enregistré sur l'appareil : ajoutez-le au message WhatsApp.`,
+adhErr:`Impossible de préparer ce fichier. Reprenez avec une image plus petite.`,
+
 nextT:`Prochain rendez-vous`,
 recentT:`Communiqués récents`,
 seeAll:`Tout voir`,
@@ -1682,8 +1780,8 @@ seeAgenda:`Voir l'agenda`,
 
 newsT:`Communiqués`,
 fAll:`Tous`,
-fUrgent:`Urgent`,
-fStatut:`Statuts`,
+fUrgent:`Communiqué`,
+fStatut:`Actualité`,
 fEvents:`Rencontres`,
 
 share:`Partager sur WhatsApp`,
@@ -1807,8 +1905,10 @@ errPrefix:`Une erreur est survenue`
 },
 
 ar:{
-brandName:`الاتحاد الجهوي للصحة سوس ماسة`,
-brandSub:`الاتحاد العام للشغالين بالمغرب`,
+brandName:`الاتحاد العام للشغالين بالمغرب`,
+brandSub:`الجامعة الوطنية للصحة`,
+brandL3:`جهة سوس ماسة`,
+brandShort:`UGTM سوس ماسة`,
 
 langBtn:`Français`,
 langAria:`التبديل إلى الفرنسية`,
@@ -1823,6 +1923,16 @@ heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
 heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
 heroBtn:`تقديم تبليغ`,
 
+adhLabel:`فضاء المنخرطين`,
+adhT:`انخرط معنا الآن`,
+adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
+adhDownload:`تحميل استمارة الانخراط`,
+adhSend:`إرسال الاستمارة بعد التوقيع`,
+adhHint:`تم تصغير الصور الكبيرة تلقائيا قبل الإرسال.`,
+adhReady:`الملف جاهز. اختاروا واتساب للإرسال.`,
+adhSaved:`تم حفظ الملف بالهاتف : أرسلوه ضمن رسالة واتساب.`,
+adhErr:`تعذر تحضير هذا الملف. أعيدوا المحاولة بصورة أصغر.`,
+
 nextT:`الموعد القادم`,
 recentT:`أحدث البلاغات`,
 seeAll:`عرض الكل`,
@@ -1830,8 +1940,8 @@ seeAgenda:`عرض الأجندة`,
 
 newsT:`البلاغات`,
 fAll:`الكل`,
-fUrgent:`عاجل`,
-fStatut:`نظامي`,
+fUrgent:`بيانات`,
+fStatut:`مستجدات`,
 fEvents:`لقاءات`,
 
 share:`مشاركة عبر واتساب`,
@@ -1843,7 +1953,7 @@ newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناس
 reportT:`التبليغ عن اختلال`,
 reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عدم الكشف عن هويتكم.`,
 
-r1:`الإجابات مخصصة للمسؤولين المكلفين بالاتحاد الجهوي للصحة فقط.`,
+r1:`الإجابات مخصصة للمسؤولين المكلفين بالجامعة الوطنية للصحة بجهة سوس ماسة فقط.`,
 r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
 r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
 
@@ -1897,7 +2007,7 @@ calNext:`الشهر التالي`,
 contactT:`اتصلوا بنا`,
 
 cWa:`قناة واتساب`,
-cWaD:`بلاغات الاتحاد الجهوي للصحة. أرقام المشتركين تبقى خاصة.`,
+cWaD:`بلاغات الجامعة الوطنية للصحة – جهة سوس ماسة. أرقام المشتركين تبقى خاصة.`,
 cWaB:`انضمام`,
 
 cTg:`قناة تلغرام`,
@@ -1928,9 +2038,9 @@ mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤس�
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
 
-st_pending:`طلبكم قيد المصادقة من طرف الاتحاد الجهوي للصحة.`,
+st_pending:`طلبكم قيد المصادقة من طرف الجامعة الوطنية للصحة.`,
 st_active:`تمت المصادقة على انخراطكم.`,
-st_blocked:`الحساب موقوف. تواصلوا مع الاتحاد الجهوي للصحة.`,
+st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوطنية للصحة.`,
 
 cardNo:`رقم المنخرط`,
 cardSince:`منخرط منذ`,
@@ -1967,8 +2077,8 @@ ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخ�
 };
 
 var CATS={
-urgent:{fr:`Urgent`,ar:`عاجل`},
-statut:{fr:`Statuts`,ar:`نظامي`},
+urgent:{fr:`Communiqué`,ar:`بيانات`},
+statut:{fr:`Actualité`,ar:`مستجدات`},
 events:{fr:`Rencontres`,ar:`لقاءات`}
 };
 
@@ -2196,6 +2306,122 @@ return(CONTACT[1]&&CONTACT[1].url)||
 
 return '';
 }
+
+/* =========================
+   ESPACE ADHÉRENT : téléversement de la demande signée
+   ========================= */
+
+function saveFile(file){
+
+var a=document.createElement('a');
+
+a.href=URL.createObjectURL(file);
+
+a.download=file.name||'adhesion';
+
+document.body.appendChild(a);
+
+a.click();
+
+document.body.removeChild(a);
+
+setTimeout(function(){
+URL.revokeObjectURL(a.href);
+},4000);
+
+}
+
+function dataURLFile(data,name){
+
+var parts=String(data).split(',');
+
+var mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg';
+
+var bin=atob(parts[1]||'');
+
+var arr=new Uint8Array(bin.length);
+
+for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+
+return new File([arr],name,{type:mime});
+
+}
+
+function adhShare(file,msg){
+
+var wa=linkFor('num');
+
+var fallback=function(){
+
+try{saveFile(file);}catch(e){}
+
+toast(msg,4500);
+
+if(wa)openUrl(wa);
+
+};
+
+try{
+
+if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+
+navigator.share({files:[file]})
+
+.then(function(){toast(T().adhReady,3500);})
+
+.catch(function(err){
+
+if(err&&err.name==='AbortError')return;
+
+fallback();
+
+});
+
+return;
+
+}
+
+}catch(e){}
+
+fallback();
+
+}
+
+function adhPrepare(file){
+
+if(!file)return;
+
+if(/^image\//.test(file.type||'')){
+
+var base=(file.name||'adhesion').replace(/\.[^.]+$/,'');
+
+imageData(file)
+
+.then(function(data){
+
+adhShare(dataURLFile(data,base+'.jpg'),T().adhSaved);
+
+})
+
+.catch(function(){toast(T().adhErr,4000);});
+
+return;
+
+}
+
+adhShare(file,T().adhSaved);
+
+}
+
+$('adhFile').addEventListener('change',function(){
+
+var f=this.files&&this.files[0];
+
+this.value='';
+
+adhPrepare(f);
+
+});
 
 function download(name,type,text){
 
@@ -2456,7 +2682,7 @@ return '<div class="mcard">'+
 
 '<div class="mtop">'+
 '<span class="mmark">'+MARK+'</span>'+
-'<span>'+esc(t.brandName)+'</span>'+
+'<span>'+esc(t.brandShort||t.brandName)+'</span>'+
 '</div>'+
 
 '<div class="mname">'+esc(name)+'</div>'+
@@ -2641,6 +2867,19 @@ return '<option value="'+esc(pr.v)+'" '+(pr.v===selected?'selected':'')+'>'+esc(
 '" data-uid="'+uid+'">'+
 (m.role==='subadmin'?'Retirer le rôle':'Nommer sous-admin')+
 '</button></div>';
+}
+
+if(S.isAdmin&&m.status==='active'){
+
+var isResp=(S.responsables||[]).some(function(r){
+return r&&r.uid===m.uid;
+});
+
+acts+='<button type="button" class="btn ghost small" data-adm-act="'+
+(isResp?'delResp':'setResp')+
+'" data-uid="'+uid+'">'+
+(isResp?'Retirer responsable':'Désigner responsable')+
+'</button>';
 }
 
 if(S.isAdmin)
@@ -3359,6 +3598,29 @@ eventEditState();
 
 }
 
+/* Liste des responsables syndicaux : sous-éléments de la permanence */
+function renderResponsables(){
+
+var list=(S.responsables||[])
+.filter(function(r){
+return r&&(r.name||r.title);
+})
+.sort(function(a,b){
+return String(a.name||'').localeCompare(String(b.name||''));
+});
+
+$('permResp').innerHTML=list.map(function(r){
+
+var nom=r.name||'';
+var role=r.title||'';
+
+return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+'</li>';
+
+}).join('');
+
+$('permResp').hidden=!$('permResp').innerHTML;
+}
+
 function applyI18n(){
 
 var t=T();
@@ -3370,7 +3632,7 @@ lang==='ar'?'rtl':'ltr';
 
 document.title=
 lang==='ar'
-?'الاتحاد العام للشغالين بالمغرب – سوس ماسة'
+?'الاتحاد العام للشغالين بالمغرب – الجامعة الوطنية للصحة – جهة سوس ماسة'
 :'UGTM Souss-Massa';
 
 $('langBtn').textContent=t.langBtn;
@@ -3395,10 +3657,13 @@ t[el.getAttribute('data-i18n')];
 });
 
 $('permDesc').textContent=
-PERM[lang]||
-PERM.fr||
-PERM.ar||
-'';
+[PERM.hours,PERM.address,PERM.phone]
+.filter(Boolean)
+.join(' · ');
+
+$('permResp').innerHTML='';
+
+renderResponsables();
 
 renderProvOptions();
 renderHome();
@@ -3541,7 +3806,7 @@ ics
 document.addEventListener('click',function(e){
 
 var el=e.target.closest(
-'[data-go],[data-tab],[data-item],[data-open],'+
+'[data-go],[data-tab],[data-item],[data-open],[data-adh],'+
 '[data-filter],[data-form],[data-link],[data-share],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn'
@@ -3610,6 +3875,31 @@ openUrl(formTarget);
 else{
 
 go('report');
+
+}
+
+return;
+}
+
+if(el.hasAttribute('data-adh')){
+
+var adhAct=el.getAttribute('data-adh');
+
+if(adhAct==='dl'){
+
+var adhUrl=String(LINKS.adhesion||'');
+
+if(adhUrl){
+openUrl(adhUrl);
+}
+else{
+toast(T().toastLink);
+}
+
+}
+else{
+
+$('adhFile').click();
 
 }
 
@@ -3838,6 +4128,34 @@ c.admin.removeSubAdmin(uid)
 .then(function(){
 toast('Rôle de sous-admin retiré');
 })
+.catch(showError);
+
+}
+
+else if(a==='setResp'&&S.isAdmin&&m){
+
+var respTitle=window.prompt(
+'Fonction du responsable (facultatif), par exemple Secrétaire :',
+''
+);
+
+if(respTitle===null)return;
+
+c.admin.setResponsable(uid,respTitle.trim())
+.then(function(){
+toast('Responsable désigné : il apparaît sous la permanence syndicale');
+})
+.catch(showError);
+
+}
+
+else if(a==='delResp'&&S.isAdmin&&m){
+
+if(window.confirm(
+'Retirer '+(m.name||m.email)+' de la liste des responsables ?'
+))
+c.admin.removeResponsable(uid)
+.then(function(){toast('Responsable retiré');})
 .catch(showError);
 
 }
@@ -4237,6 +4555,12 @@ renderAdminEvents();
 setReports:function(list){
 S.reports=list||[];
 renderAdminReports();
+},
+
+setResponsables:function(list){
+S.responsables=list||[];
+renderResponsables();
+renderAdminMembers();
 },
 
 setSession:function(s){

@@ -20,7 +20,8 @@ var unsubs = {
   member: null,
   members: null,
   news: null,
-  reports: null
+  reports: null,
+  responsables: null
 };
 
 var newsMode = null;
@@ -139,6 +140,46 @@ function subscribeEvents(){
       hooks.error(err, true);
     }
   );
+}
+
+
+/* =========================================================
+   RESPONSABLES SYNDICAUX (permanence syndicale)
+   La liste est publique : elle est affichée dans l'onglet Contact,
+   sous « Permanence syndicale ». Seul l'admin peut désigner / retirer.
+   ========================================================= */
+
+function subscribeResponsables(){
+
+  unsub('responsables');
+
+  unsubs.responsables = onSnapshot(
+    collection(db, 'responsables'),
+
+    function(snap){
+
+      hooks.setResponsables(
+        snap.docs.map(function(d){
+
+          var x = d.data() || {};
+
+          return {
+            uid: d.id,
+            name: String(x.name || '').slice(0,120),
+            title: String(x.title || '').slice(0,60)
+          };
+
+        })
+      );
+
+    },
+
+    function(){
+      // Lecture publique indisponible (règles non publiées, hors ligne) : on masque la liste.
+      hooks.setResponsables([]);
+    }
+  );
+
 }
 
 
@@ -710,6 +751,13 @@ async function deleteAccount(){
   );
 
 
+  // Nettoyage : on ne reste pas dans la liste publique des responsables.
+  try {
+    await deleteDoc(doc(db, 'responsables', u.uid));
+  }
+  catch(e) {}
+
+
   try {
 
     await deleteUser(u);
@@ -797,6 +845,28 @@ var admin = {
       });
     },
 
+  setResponsable:
+    function(uid, title){
+      return getDoc(doc(db, 'members', uid)).then(function(snap){
+        if (!snap.exists()) throw new Error('Membre introuvable');
+        var member = snap.data();
+        if (member.status !== 'active')
+          throw new Error('Seul un adhérent actif peut être désigné responsable.');
+        return setDoc(doc(db, 'responsables', uid), {
+          uid: uid,
+          name: String(member.name || member.email || '').slice(0,120),
+          title: String(title || '').slice(0,60),
+          createdAt: serverTimestamp()
+        });
+      });
+    },
+
+  removeResponsable:
+    function(uid){
+      return deleteDoc(doc(db, 'responsables', uid));
+    },
+
+
   setStatus:
     function(uid, status, memberNo){
       var ref = doc(db, 'members', uid);
@@ -830,7 +900,10 @@ var admin = {
         var removeContact = province ? getDoc(doc(db, 'provinceContacts', province)).then(function(contact){
           if (contact.exists() && contact.data().uid === uid) return deleteDoc(doc(db, 'provinceContacts', province));
         }) : Promise.resolve();
-        return removeContact.then(function(){return deleteDoc(ref);});
+        return removeContact.then(function(){return deleteDoc(ref);}).then(function(){
+          // Nettoyage : un membre supprimé ne reste pas dans la liste des responsables.
+          return deleteDoc(doc(db, 'responsables', uid)).catch(function(){});
+        });
       });
     },
 
@@ -1167,6 +1240,8 @@ export async function init(config, h){
 
 
   subscribeEvents();
+
+  subscribeResponsables();
 
 
   onAuthStateChanged(

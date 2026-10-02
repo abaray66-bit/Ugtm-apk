@@ -21,7 +21,10 @@ window.APP_DATA = {
   // Liens utiles
   links: {
     site: "https://www.ugtm.ma",
-    form: "#report"
+    form: "#report",
+    // Lien de téléchargement de la demande d'adhésion (Google Drive, Dropbox, site…)
+    // Laissez vide : le bouton affiche « Lien bientôt disponible ».
+    adhesion: ""
   },
 
   // Communiqués (gérés via l'espace admin après configuration)
@@ -37,6 +40,9 @@ window.APP_DATA = {
     phone: "06 61 38 62 47",
     email: "abaray66@gmail.com",
     hours: "Lundi - Vendredi, 09:00 - 17:00"
+    // Les responsables syndicaux ne se saisissent pas ici :
+    // l'admin les désigne depuis l'espace administrateur (onglet Membres) et
+    // ils apparaissent aussitôt sous « Permanence syndicale » (onglet Contact).
   },
 
   // Section Contact - affichée dans l'onglet Contact
