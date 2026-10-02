@@ -830,8 +830,8 @@ async function deleteAccount(){
 
 
 /* =========================================================
-   ADMINISTRATION
-   ========================================================= */
+    ADMINISTRATION
+    ========================================================= */
 
 function savePublicProvinceContact(province, name, phone){
   return setDoc(doc(db, 'publicProvinceContacts', province), {
@@ -1160,8 +1160,8 @@ var admin = {
 
 
 /* =========================================================
-   FIREBASE AUTHENTICATION NATIVE
-   ========================================================= */
+    FIREBASE AUTHENTICATION NATIVE
+    ========================================================= */
 
 async function loadNativeAuth(){
 
@@ -1306,7 +1306,55 @@ export async function init(config, h){
 
     addReport: addReport,
 
-    admin: admin
+    admin: admin,
+
+    downloadAdhesionForm: function(){
+      var adhUrl = String((window.APP_DATA && window.APP_DATA.links && window.APP_DATA.links.adhesion) || '');
+
+      if (!adhUrl) {
+        if (typeof toast === 'function') toast('Lien bientôt disponible', 3500);
+        return;
+      }
+
+      var openTarget = function(url){
+        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+          if (typeof window.open === 'function') {
+            window.open(url, '_system', 'noopener');
+            return;
+          }
+        }
+
+        if (typeof openUrl === 'function') {
+          openUrl(url);
+          return;
+        }
+
+        window.open(url, '_blank', 'noopener');
+      };
+
+      if (/^(https?:|mailto:|tel:)/i.test(adhUrl)) {
+        openTarget(adhUrl);
+        return;
+      }
+
+      var cleanUrl = adhUrl;
+      if (cleanUrl.charAt(0) !== '/') {
+        var base = window.location.pathname || '/';
+        cleanUrl = (base.endsWith('/') ? base : base.replace(/\/[^/]*$/, '/')) + cleanUrl;
+      }
+
+      if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+        openTarget(cleanUrl);
+        return;
+      }
+
+      var link = document.createElement('a');
+      link.href = cleanUrl;
+      link.download = 'demande-adhesion.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
   };
 
