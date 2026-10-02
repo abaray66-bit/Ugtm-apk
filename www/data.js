@@ -48,24 +48,24 @@ window.APP_DATA = {
   // Section Contact - affichée dans l'onglet Contact
   contact: [
     {
-      title: "Chaîne WhatsApp",
-      description: "Communiqués de la Fédération régionale de la Santé. Les numéros des abonnés restent privés.",
+      title: "Groupe de communication régional",
+      description: "Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.",
       icon: "💬",
-      url: "https://wa.me/212661386247",
+      url: "https://chat.whatsapp.com/HohMZIZCxylJFk3ugYUsfM?s=cl&p=a&ilr=4&iam=0",
       action: "openUrl"
     },
     {
-      title: "Numéro dédié WhatsApp",
+      title: "Numéro du secrétaire régional sur WhatsApp",
       description: "Échanges directs et envoi de pièces, sur WhatsApp.",
       icon: "📱",
       url: "https://wa.me/212661386247",
       action: "openUrl"
     },
     {
-      title: "Canal Telegram",
-      description: "Les mêmes communiqués, en double.",
-      icon: "✈️",
-      url: "https://t.me/ugtmsoussmasaa",
+      title: "Page officielle Facebook",
+      description: "Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.",
+      icon: "f",
+      url: "https://www.facebook.com/share/1DKBvHZqsN/",
       action: "openUrl"
     },
     {

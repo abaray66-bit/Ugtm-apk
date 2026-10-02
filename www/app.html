@@ -858,6 +858,12 @@ main{
   color:var(--accent)
 }
 
+.province-leaders{margin-top:22px}
+.province-leaders .h2{margin-top:0}
+.province-contact .mi{width:100%;display:grid;gap:5px}
+.province-contact .mi span{font-size:14px;color:var(--muted)}
+.province-contact .mi a{font-size:14px;direction:ltr;unicode-bidi:plaintext}
+
 .install{
   margin-top:24px;
   padding:16px;
@@ -1534,16 +1540,13 @@ font-size:1.4rem;
 <button class="btn ghost small" type="button" data-link="wa" data-i18n="cWaB"></button>
 </div><div class="row">
 <div class="ico" aria-hidden="true">
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M22 2L11 13"/>
-<path d="M22 2l-7 20-4-9-9-4z"/>
-</svg>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.35 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5h1.6V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.2v2.2H7v3.1h2.85V21h3.5z"/></svg>
 </div>
 <div class="rb">
-<strong data-i18n="cTg"></strong>
-<p data-i18n="cTgD"></p>
+<strong data-i18n="cFb"></strong>
+<p data-i18n="cFbD"></p>
 </div>
-<button class="btn ghost small" type="button" data-link="tg" data-i18n="cTgB"></button>
+<button class="btn ghost small" type="button" data-link="fb" data-i18n="cFbB"></button>
 </div><div class="row">
 <div class="ico" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1565,7 +1568,7 @@ font-size:1.4rem;
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
 <ul class="resp" id="permResp" hidden></ul>
-</div></div></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
+</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
@@ -1736,6 +1739,7 @@ isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
+provinceContacts:[],
 admTab:'members',
 editNewsId:null,
 editEventId:null,
@@ -1795,7 +1799,7 @@ reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester
 
 r1:`Les réponses sont réservées aux responsables désignés de la Fédération régionale de la Santé.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
-r3:`Pour envoyer des photos ou des documents, écrivez au numéro dédié sur WhatsApp.`,
+r3:`Pour envoyer des photos ou des documents, écrivez au numéro du secrétaire régional sur WhatsApp.`,
 
 rCategory:`Type de problème`,
 rCatAbuse:`Abus de pouvoir`,
@@ -1846,19 +1850,21 @@ calNext:`Mois suivant`,
 
 contactT:`Nous joindre`,
 
-cWa:`Chaîne WhatsApp`,
-cWaD:`Communiqués de la Fédération régionale de la Santé. Les numéros des abonnés restent privés.`,
-cWaB:`Rejoindre`,
+cWa:`Groupe de communication régional`,
+cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.`,
+cWaB:`Rejoindre le groupe`,
 
-cTg:`Canal Telegram`,
-cTgD:`Les mêmes communiqués, en double.`,
-cTgB:`Rejoindre`,
+cFb:`Page officielle Facebook`,
+cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
+cFbB:`Voir la page`,
 
-cNum:`Numéro dédié`,
+cNum:`Numéro du secrétaire régional`,
 cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
 cNumB:`Écrire`,
 
 cPerm:`Permanence syndicale`,
+provinceContactsTitle:`Responsables syndicaux des provinces`,
+provinceContactsEmpty:`Aucun responsable provincial n’est désigné actuellement.`,
 
 installT:`Installer l'application`,
 installP:`Sur Android, ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».`,
@@ -1955,7 +1961,7 @@ reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عد
 
 r1:`الإجابات مخصصة للمسؤولين المكلفين بالجامعة الوطنية للصحة بجهة سوس ماسة فقط.`,
 r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
-r3:`لإرسال صور أو وثائق، راسلوا الرقم المخصص عبر واتساب.`,
+r3:`لإرسال صور أو وثائق، راسلوا رقم الكاتب الجهوي عبر واتساب.`,
 
 rCategory:`نوع المشكلة`,
 rCatAbuse:`الشطط في استعمال السلطة`,
@@ -2006,19 +2012,21 @@ calNext:`الشهر التالي`,
 
 contactT:`اتصلوا بنا`,
 
-cWa:`قناة واتساب`,
-cWaD:`بلاغات الجامعة الوطنية للصحة – جهة سوس ماسة. أرقام المشتركين تبقى خاصة.`,
-cWaB:`انضمام`,
+cWa:`مجموعة التواصل الجهوية`,
+cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاصة بالجامعة الوطنية للصحة.`,
+cWaB:`انضموا إلى المجموعة`,
 
-cTg:`قناة تلغرام`,
-cTgD:`نفس البلاغات كنسخة موازية.`,
-cTgB:`انضمام`,
+cFb:`الصفحة الرسمية على فيسبوك`,
+cFbD:`تابعوا الصفحة الرسمية لفيدرالية الصحة الجهوية على فيسبوك.`,
+cFbB:`زيارة الصفحة`,
 
-cNum:`الرقم المخصص`,
+cNum:`رقم الكاتب الجهوي`,
 cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
 cNumB:`مراسلة`,
 
 cPerm:`المداومة النقابية`,
+provinceContactsTitle:`المسؤولون النقابيون بالأقاليم`,
+provinceContactsEmpty:`لا يوجد مسؤول نقابي معيّن حالياً.`,
 
 installT:`تثبيت التطبيق`,
 installP:`على أندرويد: افتحوا قائمة ⋮ في Chrome ثم اختاروا «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».`,
@@ -2186,6 +2194,21 @@ return p.v===v;
 return f?f[l||lang]:(v||'');
 }
 
+function renderProvinceContacts(){
+var box=$('provinceLeaders');
+if(!box)return;
+var contacts=(S.provinceContacts||[]).filter(function(c){return c&&(c.name||c.phone);}).sort(function(a,b){return provName(a.province,lang).localeCompare(provName(b.province,lang),lang);});
+var html="<h2 class=\"h2\">"+esc(T().provinceContactsTitle)+"</h2>";
+if(!contacts.length){box.innerHTML=html+"<p class=\"hint\">"+esc(T().provinceContactsEmpty)+"</p>";return;}
+html+="<ul class=\"list province-contact-list\">";
+contacts.forEach(function(c){
+var phone=String(c.phone||'').trim();
+var tel=phone.replace(/[^0-9+]/g,'');
+html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"tel:"+esc(tel)+"\">"+esc(phone)+"</a>":"")+"</div></li>";
+});
+html+="</ul>";
+box.innerHTML=html;
+}
 function sortedNews(){
 return NEWS.slice().sort(function(a,b){
 return a.date<b.date?1:(a.date>b.date?-1:0);
@@ -2295,7 +2318,7 @@ function linkFor(key){
 if(key==='wa')
 return(CONTACT[0]&&CONTACT[0].url)||'';
 
-if(key==='tg')
+if(key==='fb')
 return(CONTACT[2]&&CONTACT[2].url)||'';
 
 if(key==='num')
@@ -3665,6 +3688,7 @@ $('permResp').innerHTML='';
 
 renderResponsables();
 
+renderProvinceContacts();
 renderProvOptions();
 renderHome();
 renderFilters();
@@ -4550,6 +4574,11 @@ renderHome();
 renderAgenda();
 renderAdminEvents();
 
+},
+
+setProvinceContacts:function(list){
+S.provinceContacts=list||[];
+renderProvinceContacts();
 },
 
 setReports:function(list){
