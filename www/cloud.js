@@ -15,6 +15,7 @@ import {
 
 var auth, db, hooks;
 var nativeAuth = null;
+var capBrowser = null;
 
 var unsubs = {
   member: null,
@@ -1242,6 +1243,75 @@ async function loadNativeAuth(){
 
 }
 
+/* =========================================================
+    CAPACITOR BROWSER PLUGIN
+    ========================================================= */
+
+async function loadCapacitorBrowser(){
+
+  if (
+    !(
+      window.Capacitor &&
+      window.Capacitor.isNativePlatform &&
+      window.Capacitor.isNativePlatform()
+    )
+  ){
+    return;
+  }
+
+  try {
+
+    if (
+      window.Capacitor.Plugins &&
+      window.Capacitor.Plugins.Browser
+    ){
+
+      capBrowser =
+        window.Capacitor.Plugins.Browser;
+
+      return;
+
+    }
+
+    var mod =
+      await import(
+        'https://cdn.jsdelivr.net/npm/@capacitor/browser@7/dist/esm/index.js'
+      );
+
+    capBrowser =
+      mod.Browser ||
+      (
+        mod.default &&
+        mod.default.Browser
+      ) ||
+      mod.default ||
+      null;
+
+    if (
+      !capBrowser &&
+      window.Capacitor.Plugins
+    ){
+
+      capBrowser =
+        window.Capacitor.Plugins.Browser || null;
+
+    }
+
+  }
+
+  catch(e){
+
+    console.error(
+      "Chargement Capacitor Browser:",
+      e
+    );
+
+    capBrowser = null;
+
+  }
+
+}
+
 
 /* =========================================================
    INITIALISATION
@@ -1253,6 +1323,7 @@ export async function init(config, h){
 
 
   await loadNativeAuth();
+  await loadCapacitorBrowser();
 
 
   var app =
@@ -1316,44 +1387,42 @@ export async function init(config, h){
         return;
       }
 
-      var openTarget = function(url){
-        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-          if (typeof window.open === 'function') {
-            window.open(url, '_system', 'noopener');
+      async function openUrl(url){
+        if (capBrowser && capBrowser.open){
+          try {
+            await capBrowser.open({url: url});
             return;
+          } catch(e){
+            console.error('Capacitor Browser failed:', e);
           }
         }
 
-        if (typeof openUrl === 'function') {
-          openUrl(url);
+        if (/^(https?:|mailto:|tel:)/i.test(url)) {
+          window.open(url, '_system', 'noopener');
           return;
         }
 
-        window.open(url, '_blank', 'noopener');
-      };
-
-      if (/^(https?:|mailto:|tel:)/i.test(adhUrl)) {
-        openTarget(adhUrl);
-        return;
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = 'demande-adhesion.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
 
       var cleanUrl = adhUrl;
-      if (cleanUrl.charAt(0) !== '/') {
-        var base = window.location.pathname || '/';
-        cleanUrl = (base.endsWith('/') ? base : base.replace(/\/[^/]*$/, '/')) + cleanUrl;
+
+      if (!(/^(https?:|mailto:|tel:)/i.test(adhUrl))) {
+        if (cleanUrl.charAt(0) !== '/') {
+          var base = window.location.pathname || '/';
+          cleanUrl = (base.endsWith('/') ? base : base.replace(/\/[^\/]*$/, '/')) + cleanUrl;
+        }
       }
 
-      if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
-        openTarget(cleanUrl);
-        return;
-      }
-
-      var link = document.createElement('a');
-      link.href = cleanUrl;
-      link.download = 'demande-adhesion.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      openUrl(cleanUrl).catch(function(e){
+        console.error('Error opening URL:', e);
+        if (typeof toast === 'function') toast('Erreur lors de l\'ouverture du fichier', 3500);
+      });
     }
 
   };
