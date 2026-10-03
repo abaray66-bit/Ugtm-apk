@@ -37,6 +37,7 @@
   --font-body:"IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
   --font-head:"Cairo","IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
 
+  color-scheme:light;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
@@ -44,6 +45,7 @@
 
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
+    color-scheme:dark;
     --bg:#1A0D13;
     --surface:#24121A;
     --ink:#FFF0F5;
@@ -66,6 +68,7 @@
 }
 
 :root[data-theme="dark"]{
+  color-scheme:dark;
   --bg:#1A0D13;
   --surface:#24121A;
   --ink:#FFF0F5;
@@ -216,7 +219,7 @@ main{
   flex:1;
   overflow-y:auto;
   overscroll-behavior:contain;
-  padding:16px 16px 28px
+  padding:12px 16px 28px
 }
 
 .title{
@@ -237,7 +240,7 @@ main{
   align-items:baseline;
   justify-content:space-between;
   gap:12px;
-  margin:26px 0 8px
+  margin:18px 0 8px
 }
 
 .sechead h2{
@@ -266,22 +269,31 @@ main{
 .hero{
   background:var(--primary);
   color:var(--on-primary);
-  border-radius:20px;
-  padding:22px 20px 20px;
-  border-inline-start:6px solid var(--accent)
+  border-radius:16px;
+  padding:14px 16px;
+  border-inline-start:5px solid var(--accent)
 }
 
 .hero h1{
   font-family:var(--font-head);
   font-weight:800;
-  font-size:24px;
+  font-size:18px;
   line-height:1.3;
-  margin:0 0 8px
+  margin:0 0 4px
 }
 
 .hero p{
-  margin:0 0 18px;
+  margin:0 0 12px;
+  font-size:13.5px;
+  line-height:1.5;
   color:rgba(255,255,255,.88)
+}
+
+.hero .btn{
+  min-height:40px;
+  padding:0 16px;
+  font-size:14px;
+  border-radius:10px
 }
 
 /* =========================
@@ -289,53 +301,67 @@ main{
    ========================= */
 
 .adh{
-  margin-top:14px;
+  margin-top:10px;
   background:var(--surface);
   border:1px solid var(--line);
-  border-radius:20px;
-  border-inline-start:6px solid var(--accent);
-  padding:18px 18px 16px
+  border-radius:16px;
+  border-inline-start:5px solid var(--accent);
+  padding:12px 14px
+}
+
+.adhhead{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px
 }
 
 .adhtag{
   display:inline-block;
   background:var(--accent);
   color:var(--on-accent);
-  font-size:11.5px;
+  font-size:10.5px;
   font-weight:700;
   letter-spacing:.03em;
   text-transform:uppercase;
-  padding:3px 10px;
+  padding:2px 9px;
   border-radius:999px
 }
 
 .adh h2{
   font-family:var(--font-head);
   font-weight:800;
-  font-size:20px;
-  line-height:1.35;
-  margin:10px 0 6px;
+  font-size:16.5px;
+  line-height:1.3;
+  margin:0;
   color:var(--primary)
 }
 
 .adh > p:not(.hint){
-  margin:0 0 14px;
-  font-size:14.5px;
+  margin:8px 0 10px;
+  font-size:13px;
+  line-height:1.5;
   color:var(--muted)
 }
 
 .adhbtns{
   display:flex;
   flex-wrap:wrap;
-  gap:10px
+  gap:8px
 }
 
 .adhbtns .btn{
-  flex:1 1 180px
+  flex:1 1 140px;
+  min-height:40px;
+  padding:0 8px;
+  font-size:13px;
+  border-radius:10px
 }
 
 .adh .hint{
-  margin:12px 0 0
+  margin:8px 0 0;
+  font-size:11.5px;
+  line-height:1.45
 }
 
 /* =========================
@@ -353,7 +379,12 @@ main{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:8px
+  gap:8px;
+  transition:transform .12s ease,filter .15s ease
+}
+
+.btn:active{
+  transform:scale(.97)
 }
 
 .btn.gold{
@@ -800,22 +831,30 @@ main{
    ========================= */
 
 .row{
-  display:flex;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
   align-items:center;
-  gap:12px;
-  padding:14px 0;
-  border-bottom:1px solid var(--line)
+  gap:8px 12px;
+  padding:12px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 1px 3px rgba(36,25,31,.05)
+}
+
+.row + .row{
+  margin-top:10px
 }
 
 .rows{
-  border-top:1px solid var(--line)
+  border-top:0
 }
 
 .ico{
   flex:none;
-  width:42px;
-  height:42px;
-  border-radius:50%;
+  width:40px;
+  height:40px;
+  border-radius:12px;
   background:var(--soft);
   color:var(--link);
   display:grid;
@@ -829,14 +868,26 @@ main{
 
 .rb strong{
   display:block;
-  font-size:16px
+  font-size:15.5px;
+  line-height:1.4
 }
 
 .rb p{
-  margin:0;
-  font-size:13.5px;
+  margin:2px 0 0;
+  font-size:13px;
   color:var(--muted);
   line-height:1.5
+}
+
+.row .btn{
+  grid-column:1 / -1;
+  width:100%;
+  min-height:42px;
+  background:var(--soft);
+  border:1px solid var(--line);
+  color:var(--link);
+  border-radius:10px;
+  font-size:14px
 }
 
 /* Responsables syndicaux : sous-éléments de la permanence */
@@ -902,7 +953,8 @@ main{
   border-top:1px solid var(--line);
   padding:4px 4px 6px;
   position:relative;
-  z-index:2
+  z-index:2;
+  box-shadow:0 -4px 14px rgba(36,25,31,.06)
 }
 
 .tab{
@@ -990,13 +1042,71 @@ main{
   }
 }
 
+.rpintro{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-inline-start:4px solid var(--accent);
+  border-radius:14px;
+  padding:14px;
+  margin:0 0 18px;
+  box-shadow:0 1px 3px rgba(36,25,31,.05)
+}
+
+.rplead{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:10px
+}
+
+.rpdot{
+  flex:none;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:var(--soft);
+  color:var(--link);
+  display:grid;
+  place-items:center
+}
+
+.rplead strong{
+  font-family:var(--font-head);
+  font-weight:600;
+  font-size:14.5px;
+  line-height:1.5;
+  color:var(--ink)
+}
+
 .points{
-  margin:0 0 4px;
-  padding-inline-start:20px
+  list-style:none;
+  margin:0;
+  padding:10px 0 0;
+  border-top:1px dashed var(--line)
 }
 
 .points li{
-  margin-bottom:8px
+  position:relative;
+  margin:0 0 7px;
+  padding-inline-start:18px;
+  font-size:13px;
+  line-height:1.55;
+  color:var(--muted)
+}
+
+.points li:last-child{
+  margin-bottom:0
+}
+
+.points li::before{
+  content:"";
+  position:absolute;
+  inset-inline-start:2px;
+  top:.6em;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--accent)
 }
 
 .actions{
@@ -1479,8 +1589,7 @@ font-size:1.4rem;
 <p data-i18n="heroP"></p>
 <button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
 </div><div class="adh">
-<span class="adhtag" data-i18n="adhLabel"></span>
-<h2 data-i18n="adhT"></h2>
+<div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
 <div class="adhbtns">
 <button class="btn gold" type="button" data-adh="dl" data-i18n="adhDownload"></button>
@@ -1494,11 +1603,11 @@ font-size:1.4rem;
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
 <h2 data-i18n="recentT"></h2>
 <button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
-</div><ul class="list" id="recentList"></ul></section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><p class="lead" data-i18n="reportP"></p><ul class="points">
+</div><ul class="list" id="recentList"></ul></section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
 <li data-i18n="r1"></li>
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
-</ul><form id="reportForm" class="report-form">
+</ul></div><form id="reportForm" class="report-form">
 <fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="abuse_of_power" data-i18n="rCatAbuse"></option><option value="assault" data-i18n="rCatAssault"></option><option value="administrative_situation" data-i18n="rCatAdmin"></option><option value="leave" data-i18n="rCatLeave"></option><option value="promotion_grade" data-i18n="rCatPromotion"></option><option value="disciplinary_case" data-i18n="rCatDiscipline"></option><option value="housing" data-i18n="rCatHousing"></option><option value="rating" data-i18n="rCatRating"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
 <div class="field"><label for="rProvince">Province / préfecture concernée</label>
 <select id="rProvince" required>
@@ -1764,15 +1873,15 @@ tabAgenda:`Agenda`,
 tabContact:`Contact`,
 
 heroT:`Un dysfonctionnement à signaler ?`,
-heroP:`Décrivez les faits en deux minutes. Vous pouvez rester anonyme.`,
+heroP:`Décrivez les faits en 2 minutes, anonymement.`,
 heroBtn:`Faire un signalement`,
 
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
-adhP:`Téléchargez la demande d'adhésion, remplissez-la et signez-la, puis renvoyez-la depuis votre téléphone.`,
-adhDownload:`Télécharger la demande d'adhésion`,
-adhSend:`Envoyer la demande remplie`,
-adhHint:`Les images volumineuses sont réduites automatiquement avant l'envoi.`,
+adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
+adhDownload:`Télécharger la demande`,
+adhSend:`Envoyer la demande`,
+adhHint:`Images volumineuses réduites automatiquement.`,
 adhReady:`Fichier prêt. Choisissez WhatsApp pour l'envoyer.`,
 adhSaved:`Fichier enregistré sur l'appareil : ajoutez-le au message WhatsApp.`,
 adhErr:`Impossible de préparer ce fichier. Reprenez avec une image plus petite.`,
@@ -1932,9 +2041,9 @@ heroBtn:`تقديم تبليغ`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
-adhDownload:`تحميل استمارة الانخراط`,
-adhSend:`إرسال الاستمارة بعد التوقيع`,
-adhHint:`تم تصغير الصور الكبيرة تلقائيا قبل الإرسال.`,
+adhDownload:`تحميل الاستمارة`,
+adhSend:`إرسال الاستمارة`,
+adhHint:`تم تصغير الصور الكبيرة تلقائيا.`,
 adhReady:`الملف جاهز. اختاروا واتساب للإرسال.`,
 adhSaved:`تم حفظ الملف بالهاتف : أرسلوه ضمن رسالة واتساب.`,
 adhErr:`تعذر تحضير هذا الملف. أعيدوا المحاولة بصورة أصغر.`,
