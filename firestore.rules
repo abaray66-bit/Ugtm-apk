@@ -7,10 +7,14 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function adminEmails() {
+      return ['abaray66@gmail.com'];
+    }
+
     function isAdmin() {
       return signedIn()
         && request.auth.token.email_verified == true
-        && request.auth.token.email in ['abaray66@gmail.com'];
+        && request.auth.token.email in adminEmails();
     }
 
     function isSubAdmin() {
@@ -81,9 +85,9 @@ service cloud.firestore {
     }
 
     match /provinceContacts/{province} {
-      // Le numéro du responsable est partagé uniquement avec les adhérents actifs de son secteur.
       allow read: if isAdmin() || (isActive()
         && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.prov == province);
+
       allow create: if isAdmin()
         || (isSubAdmin()
           && province == assignedProvince()
@@ -108,11 +112,6 @@ service cloud.firestore {
           && okText(request.resource.data.phone, 30));
     }
 
-    // =========================
-    // RESPONSABLES SYNDICAUX
-    // Liste publique affichée sous « Permanence syndicale » (onglet Contact).
-    // Le responsable apparaît dès qu'il est désigné par l'admin.
-    // =========================
     match /responsables/{respId} {
       allow read: if true;
       allow create, update: if isAdmin()
@@ -125,28 +124,14 @@ service cloud.firestore {
     }
 
     match /publicProvinceContacts/{province} {
-      // Seuls la province, le nom et le téléphone sont publics ; aucun UID n’est exposé.
       allow read: if true;
-      allow create, update: if isAdmin() || (
-        isSubAdmin()
-        && province == assignedProvince()
-        && request.resource.data.keys().hasOnly(['province', 'name', 'phone'])
-        && request.resource.data.province == province
-        && request.resource.data.name is string
-        && request.resource.data.phone is string
-        && request.resource.data.name == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.name
-        && request.resource.data.phone == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.phone
-        && okText(request.resource.data.name, 120)
-        && okText(request.resource.data.phone, 30)
-      );
-      allow delete: if isAdmin() || (isSubAdmin() && province == assignedProvince());
+      allow create, update, delete: if isAdmin();
     }
 
     match /news/{id} {
       allow read: if resource.data.audience == 'public'
         || isActive()
         || isAdmin();
-
       allow write: if isAdmin();
     }
 
@@ -155,14 +140,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // =========================
-    // SIGNALEMENTS
-    // =========================
-
     match /reports/{id} {
-
-      // Un membre peut lire uniquement ses propres signalements.
-      // L'administrateur peut tous les lire.
       allow read: if isAdmin()
         || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
         || (
@@ -171,7 +149,6 @@ service cloud.firestore {
           && resource.data.ownerUid == request.auth.uid
         );
 
-      // Création d'un signalement
       allow create: if request.resource.data.keys().hasOnly([
           'ownerUid',
           'anonymous',
@@ -191,15 +168,11 @@ service cloud.firestore {
           'createdAt',
           'updatedAt'
         ])
-
         && request.resource.data.status == 'new'
         && request.resource.data.response == ''
-
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
-
         && request.resource.data.anonymous is bool
-
         && request.resource.data.name is string
         && request.resource.data.etab is string
         && request.resource.data.age is string
@@ -216,11 +189,9 @@ service cloud.firestore {
           'Tiznit',
           'Tata'
         ]
-
         && request.resource.data.attachmentName is string
         && request.resource.data.attachmentType is string
         && request.resource.data.attachmentData is string
-
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)
         && okText(request.resource.data.age, 10)
@@ -228,33 +199,22 @@ service cloud.firestore {
         && okText(request.resource.data.category, 60)
         && okText(request.resource.data.description, 4000)
         && okText(request.resource.data.date, 20)
-
         && okText(request.resource.data.attachmentName, 120)
         && okText(request.resource.data.attachmentType, 80)
         && okText(request.resource.data.attachmentData, 420000)
-
-        // Signalement anonyme :
-        // aucune identité ni UID n'est enregistré.
         && (
           (
             request.resource.data.anonymous == true
             && request.resource.data.ownerUid == ''
             && request.resource.data.name == ''
             && request.resource.data.age == ''
-          )
-
-          ||
-
-          // Signalement identifié :
-          // il est lié au compte de l'utilisateur.
-          (
+          ) || (
             signedIn()
             && request.resource.data.anonymous == false
             && request.resource.data.ownerUid == request.auth.uid
           )
         );
 
-      // L'administrateur général voit tout ; le sous-admin gère son secteur.
       allow update: if isAdmin()
         || (isSubAdmin()
           && resource.data.province == assignedProvinceLabel()
@@ -263,7 +223,6 @@ service cloud.firestore {
             .hasOnly(['status', 'response', 'updatedAt'])
           && okText(request.resource.data.response, 3000));
 
-      // Seul l'administrateur peut supprimer un signalement.
       allow delete: if isAdmin();
     }
   }
