@@ -2,4 +2,14 @@ node_modules/
 android/
 *.zip
 *.keystore
+*.jks
+*.p12
+*.pfx
 google-services.json
+android/app/google-services.json
+android/key.properties
+android/local.properties
+.env
+.env.*
+release/
+build/
