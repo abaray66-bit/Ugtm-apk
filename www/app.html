@@ -5681,28 +5681,20 @@ window.UGTM.failed();
             y+=Math.max(7,lines.length*5.2);
           }
 
-          function drawSignatureBox(title){
-            if(y>235){
-              pdf.addPage();
-              y=18;
-            }
-
+          function drawSignatureBox(title,x,boxY){
             pdf.setFont(undefined,'bold');
             pdf.setFontSize(10);
-            pdf.text(title,margin,y);
-            y+=5;
+            pdf.text(title,x,boxY);
 
             pdf.setDrawColor(150,150,150);
             pdf.setLineWidth(.4);
-            pdf.roundedRect(margin,y,78,30,2,2,'S');
+            pdf.roundedRect(x,boxY+5,78,30,2,2,'S');
 
             pdf.setFont(undefined,'normal');
             pdf.setFontSize(8);
             pdf.setTextColor(120,120,120);
-            pdf.text('Signature',margin+4,y+25);
+            pdf.text('Signature',x+4,boxY+30);
             pdf.setTextColor(0,0,0);
-
-            y+=38;
           }
 
           loadLogo().then(function(logo){
@@ -5775,16 +5767,29 @@ window.UGTM.failed();
 
             section('SIGNATURES');
 
+            var signatureY=y;
+
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(10);
+            pdf.text("Signature de l’adhérent",margin,signatureY);
+
+            pdf.setDrawColor(150,150,150);
+            pdf.setLineWidth(.4);
+            pdf.roundedRect(margin,signatureY+5,78,30,2,2,'S');
+
             if(data.signature){
-              pdf.setFont(undefined,'bold');
-              pdf.setFontSize(10);
-              pdf.text("Signature de l’adhérent",margin,y);
-              y+=5;
-              pdf.addImage(data.signature,'PNG',margin,y,70,32);
-              y+=39;
+              pdf.addImage(data.signature,'PNG',margin+4,signatureY+7,70,26);
             }
 
-            drawSignatureBox("Signature du responsable syndical");
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Signature',margin+4,signatureY+30);
+            pdf.setTextColor(0,0,0);
+
+            drawSignatureBox("Signature du responsable syndical",margin+96,signatureY);
+
+            y=signatureY+43;
 
             pdf.setFont(undefined,'normal');
             pdf.setFontSize(8);
