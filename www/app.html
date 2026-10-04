@@ -2170,7 +2170,7 @@ button.primary:active {
     <div class="adh-step">
       <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
       <div class="adh-grid">
-        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required></select></div>
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="">Sélectionner la province</option><option value="agadir">Agadir Ida-Outanane</option><option value="inezgane">Inezgane-Aït Melloul</option><option value="chtouka">Chtouka-Aït Baha</option><option value="taroudant">Taroudant</option><option value="tiznit">Tiznit</option><option value="tata">Tata</option></select></div>
         <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
         <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><input id="adhFunction" required></div>
@@ -5493,16 +5493,6 @@ window.UGTM.failed();
   function initDigitalAdhesion(){
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
-    var province=document.getElementById("adhProvince");
-    if(province&&typeof PROVS!=="undefined"){
-      province.innerHTML="<option value=\"\">"+(typeof lang!=="undefined"&&lang==="ar"?"اختيار الإقليم":"Sélectionner la province")+"</option>";
-      PROVS.forEach(function(p){
-        var o=document.createElement("option");
-        o.value=p.v;
-        o.textContent=(typeof lang!=="undefined"&&lang==="ar")?p.ar:p.fr;
-        province.appendChild(o);
-      });
-    }
     if(!canvas||!form||canvas.dataset.ready)return;
     canvas.dataset.ready='1';
 
