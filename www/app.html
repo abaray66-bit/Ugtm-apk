@@ -173,48 +173,53 @@ button,input,select,textarea{
 
 .brand{
   flex:1;
-  min-width:0
+  min-width:0;
+  overflow:hidden
 }
 
 .brand b{
   display:block;
   font-family:var(--font-head);
   font-weight:800;
-  font-size:12px;
-  line-height:1.25;
+  font-size:11px;
+  line-height:1.2;
   white-space:nowrap;
-  letter-spacing:-.15px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:-.2px
 }
 
 .brand span{
   display:block;
-  font-size:13px;
+  font-size:11px;
   color:var(--muted);
-  line-height:1.25;
+  line-height:1.2;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
 }
 
 .brand span[data-i18n="brandSub"]{
-  font-size:14px;
+  font-size:12px;
   font-weight:800;
-  color:var(--ink);
+  color:var(--ink)
 }
 
 .brand span[data-i18n="brandL3"]{
-  font-size:12px;
-  font-weight:600;
+  font-size:10px;
+  font-weight:600
 }
 
 [dir="rtl"] .brand b{
-  font-size:12px;
+  font-size:11px
 }
 
 [dir="rtl"] .brand span[data-i18n="brandSub"]{
-  font-size:14px;
+  font-size:12px
 }
 
 [dir="rtl"] .brand span[data-i18n="brandL3"]{
-  font-size:12px;
+  font-size:10px
 }
 
 .langbtn{
@@ -5804,7 +5809,7 @@ window.UGTM.failed();
                 await sh.share({
                   title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
                   text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
-                  url:saved.uri,
+                  files:[saved.uri],
                   dialogTitle:"Envoyer la demande"
                 });
 
