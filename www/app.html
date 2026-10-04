@@ -5792,7 +5792,7 @@ window.UGTM.failed();
             pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
             pdf.setTextColor(0,0,0);
 
-            var base="Demande d'adhésion UGTM-FNS-SOUSS-MASSA.pdf";
+            var base='demande-adhesion-'+(data.nom||'adherent').replace(/[^a-z0-9_-]/gi,'-')+'.pdf';
             var blob=pdf.output('blob');
             var reader=new FileReader();
 
