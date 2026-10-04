@@ -19,6 +19,10 @@ jobs:
         with:
           node-version: 20
 
+      # Syntaxe JS + JSON : bloque le déploiement si un fichier est cassé.
+      - name: Vérifier la syntaxe JavaScript
+        run: node tools/check-syntax.js
+
       - name: Installer la CLI Firebase
         run: npm install -g firebase-tools@13.29.1
 

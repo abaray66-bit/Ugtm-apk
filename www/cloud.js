@@ -3,6 +3,7 @@
    S'il ne peut pas se charger (hors connexion...), l'application continue de fonctionner avec data.js. */
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential,
   reauthenticateWithPopup, reauthenticateWithCredential, onAuthStateChanged, signOut as fbSignOut, deleteUser
@@ -10,7 +11,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp
+  onSnapshot, query, where, serverTimestamp, deleteField
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 var auth, db, hooks;
@@ -99,6 +100,7 @@ function subscribeNews(){
             audience: x.audience,
             date: x.date,
             image: x.image || '',
+            hasImage: !!(x.hasImage || x.image),
             fr: x.fr,
             ar: x.ar
           };
@@ -589,6 +591,13 @@ async function addReport(o){
   }
 
 
+  // La pièce jointe n'est pas encodée dans le signalement : elle part
+  // dans reportAttachments/{id}. Les listes de signalements restent
+  // légères et la pièce se charge à la demande côté admin.
+  var attach =
+    String(o.attachmentData || '').slice(0,420000);
+
+
   var data = {
 
     ownerUid:
@@ -637,8 +646,10 @@ async function addReport(o){
     attachmentType:
       String(o.attachmentType || '').slice(0,80),
 
+    // Champ conservé pour la compatibilité des règles : la donnée
+    // réelle est écrite dans reportAttachments ci-dessous.
     attachmentData:
-      String(o.attachmentData || '').slice(0,420000),
+      '',
 
     status: 'new',
 
@@ -654,7 +665,26 @@ async function addReport(o){
   return addDoc(
     collection(db, 'reports'),
     data
-  );
+  )
+  .then(function(ref){
+
+    if (!attach) return ref;
+
+    return setDoc(
+      doc(db, 'reportAttachments', ref.id),
+      {
+        data: attach,
+        name: String(o.attachmentName || '').slice(0,120),
+        type: String(o.attachmentType || '').slice(0,80),
+        ownerUid: data.ownerUid,
+        anonymous: data.anonymous,
+        province: data.province,
+        createdAt: serverTimestamp()
+      }
+    )
+    .then(function(){ return ref; });
+
+  });
 
 }
 
@@ -980,81 +1010,133 @@ var admin = {
       });
     },
 
+    addNews:
+      function(o){
 
-  addNews:
-    function(o){
+        var data = {
 
-      var data = {
+          cat: o.cat,
 
-        cat: o.cat,
+          audience: o.audience,
 
-        audience: o.audience,
+          date: o.date,
 
-        date: o.date,
+          createdAt:
+            serverTimestamp()
 
-        createdAt:
-          serverTimestamp()
+        };
 
-      };
+        if (o.fr)
+          data.fr = o.fr;
 
-      if (o.image)
-        data.image = String(o.image).slice(0,400000);
+        if (o.ar)
+          data.ar = o.ar;
 
-      if (o.fr)
-        data.fr = o.fr;
+        // L'image part dans newsImages/{id} : la liste des communiqués
+        // reste légère et l'image n'est téléchargée qu'à l'ouverture.
+        var image =
+          o.image
+            ? String(o.image).slice(0,400000)
+            : '';
 
-      if (o.ar)
-        data.ar = o.ar;
+        data.hasImage = !!image;
 
-      return addDoc(
-        collection(db, 'news'),
-        data
-      );
+        var ref =
+          doc(collection(db, 'news'));
 
-    },
+        var jobs = [
+          setDoc(ref, data)
+        ];
 
+        if (image)
+          jobs.push(
+            setDoc(
+              doc(db, 'newsImages', ref.id),
+              {
+                data: image,
+                audience: o.audience || 'public',
+                createdAt: serverTimestamp()
+              }
+            )
+          );
 
-  deleteNews:
-    function(id){
+        return Promise.all(jobs)
+          .then(function(){ return ref; });
 
-      return deleteDoc(
-        doc(db, 'news', id)
-      );
+      },
 
-    },
+    deleteNews:
+      function(id){
 
+        // Supprime aussi l'image rangée à part (doc parfois absent).
+        return deleteDoc(
+          doc(db, 'newsImages', id)
+        )
+        .catch(function(){})
+        .then(function(){
+          return deleteDoc(
+            doc(db, 'news', id)
+          );
+        });
 
-  updateNews:
-    function(id, o){
+      },
 
-      var data = {
+    updateNews:
+      function(id, o){
 
-        cat: o.cat,
+        var data = {
 
-        audience: o.audience,
+          cat: o.cat,
 
-        date: o.date,
+          audience: o.audience,
 
-        updatedAt:
-          serverTimestamp()
+          date: o.date,
 
-      };
+          updatedAt:
+            serverTimestamp()
 
-      if (o.image)
-        data.image = String(o.image).slice(0,400000);
+        };
 
-      if (o.fr)
-        data.fr = o.fr;
+        // Nouvelle image : rangée dans newsImages, et l'ancien champ
+        // encodé dans le document (ancienne version) est retiré.
+        var image =
+          o.image
+            ? String(o.image).slice(0,400000)
+            : '';
 
-      if (o.ar)
-        data.ar = o.ar;
+        if (image){
+          data.hasImage = true;
+          data.image = deleteField();
+        }
 
-      return updateDoc(
-        doc(db, 'news', id),
-        data
-      );
+        if (o.fr)
+          data.fr = o.fr;
 
-    },
+        if (o.ar)
+          data.ar = o.ar;
+
+        var jobs = [
+          updateDoc(
+            doc(db, 'news', id),
+            data
+          )
+        ];
+
+        if (image)
+          jobs.push(
+            setDoc(
+              doc(db, 'newsImages', id),
+              {
+                data: image,
+                audience: o.audience || 'public',
+                createdAt: serverTimestamp()
+              }
+            )
+          );
+
+        return Promise.all(jobs);
+
+      },
 
 
   addEvent:
@@ -1122,15 +1204,21 @@ var admin = {
 
     },
 
+    deleteReport:
+      function(id){
 
-  deleteReport:
-    function(id){
-
+      // Supprime aussi la pièce jointe rangée à part (doc parfois absent).
       return deleteDoc(
-        doc(db, 'reports', id)
-      );
+        doc(db, 'reportAttachments', id)
+      )
+      .catch(function(){})
+      .then(function(){
+        return deleteDoc(
+          doc(db, 'reports', id)
+        );
+      });
 
-    },
+      },
 
 
   updateReport:
@@ -1330,6 +1418,28 @@ export async function init(config, h){
     initializeApp(config);
 
 
+  // App Check (facultatif) : si une clé est renseignée dans data.js,
+  // chaque requête Firebase porte un jeton App Check (protection anti-robots).
+  if (config && config.appCheckKey){
+
+    try{
+
+      initializeAppCheck(
+        app,
+        {
+          provider: new ReCaptchaV3Provider(String(config.appCheckKey)),
+          isTokenAutoRefreshEnabled: true
+        }
+      );
+
+    }
+    catch(e){
+      console.error('App Check:', e);
+    }
+
+  }
+
+
   auth =
     getAuth(app);
 
@@ -1373,11 +1483,21 @@ export async function init(config, h){
 
     saveProfile: saveProfile,
 
-    deleteAccount: deleteAccount,
-
-    addReport: addReport,
-
+    deleteAccount: deleteAccount,    addReport: addReport,
     admin: admin,
+
+    // Chargement à la demande : les listes ne transportent pas les gros champs.
+    getNewsImage: function(id){
+      return getDoc(doc(db, 'newsImages', id))
+        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
+        .catch(function(){ return ''; });
+    },
+
+    getReportAttachment: function(id){
+      return getDoc(doc(db, 'reportAttachments', id))
+        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
+        .catch(function(){ return ''; });
+    },
 
     downloadAdhesionForm: function(){
       var adhUrl = String((window.APP_DATA && window.APP_DATA.links && window.APP_DATA.links.adhesion) || '');

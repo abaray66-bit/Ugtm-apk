@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "check": "node tools/check-syntax.js",
     "cap:sync": "npx cap sync android",
     "android": "npx cap open android",
     "android:sync": "npx cap sync android",

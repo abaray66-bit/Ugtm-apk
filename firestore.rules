@@ -198,6 +198,10 @@ service cloud.firestore {
         && okText(request.resource.data.da, 80)
         && okText(request.resource.data.category, 60)
         && okText(request.resource.data.description, 4000)
+        // Anti-spam : un signalement doit décrire les faits (10 caractères minimum)
+        // et porter une date au format AAAA-MM-JJ (champ type="date" du formulaire).
+        && request.resource.data.description.size() >= 10
+        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
         && okText(request.resource.data.date, 20)
         && okText(request.resource.data.attachmentName, 120)
         && okText(request.resource.data.attachmentType, 80)
@@ -224,6 +228,77 @@ service cloud.firestore {
           && okText(request.resource.data.response, 3000));
 
       allow delete: if isAdmin();
+    }
+
+    // =========================
+    // PIÈCES JOINTES DES SIGNALEMENTS
+    // Stockées dans une collection à part : les listes de signalements
+    // restent légères et l'image est chargée à la demande.
+    // =========================
+    match /reportAttachments/{id} {
+      allow read: if isAdmin()
+        || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
+        || (
+          signedIn()
+          && resource.data.anonymous == false
+          && resource.data.ownerUid == request.auth.uid
+        );
+
+      allow create: if request.resource.data.keys().hasOnly([
+          'ownerUid',
+          'anonymous',
+          'province',
+          'name',
+          'type',
+          'data',
+          'createdAt'
+        ])
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.anonymous is bool
+        && request.resource.data.ownerUid is string
+        && request.resource.data.province is string
+        && request.resource.data.province in [
+          'Agadir Ida-Outanane',
+          'Inezgane-Aït Melloul',
+          'Chtouka-Aït Baha',
+          'Taroudant',
+          'Tiznit',
+          'Tata'
+        ]
+        && request.resource.data.name is string
+        && request.resource.data.type is string
+        && request.resource.data.data is string
+        && okText(request.resource.data.name, 120)
+        && okText(request.resource.data.type, 80)
+        && okText(request.resource.data.data, 420000)
+        && (
+          (
+            request.resource.data.anonymous == true
+            && request.resource.data.ownerUid == ''
+          )
+          ||
+          (
+            signedIn()
+            && request.resource.data.anonymous == false
+            && request.resource.data.ownerUid == request.auth.uid
+          )
+        );
+
+      allow update: if false;
+      // La suppression suit le signalement lui-même (admin uniquement).
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // IMAGES DES COMMUNIQUÉS
+    // Collectées à part pour que la liste des communiqués reste légère
+    // ; l'image n'est téléchargée que quand on déplie le communiqué.
+    // =========================
+    match /newsImages/{id} {
+      allow read: if resource.data.audience == 'public'
+        || isActive()
+        || isAdmin();
+      allow write: if isAdmin();
     }
   }
 }
