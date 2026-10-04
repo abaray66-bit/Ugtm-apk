@@ -1676,7 +1676,7 @@ font-size:1.4rem;
 <div class="field"><label for="rDA" data-i18n="rDA"></label><select id="rDA" required><option value="" data-i18n="rSpecChoose"></option><option value="Médecin" data-i18n="rSpecDoctor"></option><option value="ITS" data-i18n="rSpecITS"></option><option value="Aide soignant" data-i18n="rSpecNurse"></option><option value="Personnel administratif" data-i18n="rSpecAdmin"></option><option value="Autre à préciser" data-i18n="rSpecOther"></option></select></div>
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
-<div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" maxlength="4000" required></textarea></div>
+<div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" minlength="10" maxlength="4000" required></textarea></div>
 <div class="field"><label for="rAttachment">Pièce jointe (facultatif)</label>
 <input id="rAttachment" type="file" accept="image/*,.pdf">
 <p class="hint">Image ou PDF, taille maximale 300 Ko.</p></div>
@@ -1991,6 +1991,8 @@ rSending:`Envoi en cours…`,
 rNeedLogin:`Connectez-vous à votre espace avant d'envoyer un signalement.`,
 rSent:`Signalement envoyé. Merci.`,
 rSentAnon:`Signalement anonyme envoyé. Merci. Aucune réponse ne pourra vous être adressée.`,
+rCooldown:`Un signalement vient d'être envoyé. Patientez une minute avant d'en envoyer un autre.`,
+imgLoading:`Chargement de l'image…`,
 rDenied:`Envoi refusé par le serveur (permission-denied). Fermez et rouvrez l'application pour charger la dernière version, puis réessayez.`,
 lbClose:`Touchez l'image pour fermer`,
 rAdminTab:`Signalements`,
@@ -2153,6 +2155,8 @@ rSending:`جارٍ الإرسال…`,
 rNeedLogin:`يرجى تسجيل الدخول قبل إرسال التبليغ.`,
 rSent:`تم إرسال التبليغ. شكرا.`,
 rSentAnon:`تم إرسال التبليغ المجهول. شكرا. لن يمكن إرسال أي رد إليكم.`,
+rCooldown:`تم إرسال تبليغ للتو. انتظروا دقيقة قبل إرسال آخر.`,
+imgLoading:`جارٍ تحميل الصورة…`,
 rDenied:`رفض الإرسال من الخادم (permission-denied). أغلقوا التطبيق وأعيدوا فتحه لتحميل النسخة الأخيرة ثم أعدوا المحاولة.`,
 lbClose:`المسوا الصورة للإغلاق`,
 rAdminTab:`التبليغات`,
@@ -2475,6 +2479,36 @@ return;
 window.open(url,'_blank','noopener');
 }
 
+/* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
+   les navigateurs bloquent les data: en navigation de premier plan. */
+function openDataUrl(data){
+var url='';
+try{
+var raw=String(data||'');
+var comma=raw.indexOf(',');
+if(comma<1)return;
+var head=raw.slice(0,comma);
+var payload=raw.slice(comma+1);
+var type=(head.split(';')[0]||'').replace(/^data:/,'')||'application/octet-stream';
+var binary=head.indexOf(';base64')>-1?atob(payload):decodeURIComponent(payload);
+var arr=new Uint8Array(binary.length);
+for(var i=0;i<binary.length;i++)arr[i]=binary.charCodeAt(i);
+url=URL.createObjectURL(new Blob([arr],{type:type}));
+}catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
+return;
+}
+var w=window.open(url,'_blank');
+if(!w){
+var a=document.createElement('a');
+a.href=url;
+a.download='piece-jointe';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+}
+setTimeout(function(){URL.revokeObjectURL(url);},60000);
+}
+
 function linkFor(key){
 
 if(key==='wa')
@@ -2788,7 +2822,7 @@ CHEV+
 '</button>'+
 
 '<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-(c.image?'<img class="news-photo" src="'+esc(c.image)+'" alt="">':'')+
+(c.image?'<img class="news-photo" src="'+esc(c.image)+'" alt="">':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -2800,6 +2834,24 @@ t.share+
 }).join('')
 
 :'<li class="empty">'+t.empty+'</li>';
+}
+
+/* L'image du communiqué est stockée à part : elle n'est chargée
+   que lorsque l'on déplie le communiqué. */
+function loadNewsImage(item){
+if(!window.CLOUD||!window.CLOUD.getNewsImage)return;
+item.imageLoading=true;
+renderNews();
+window.CLOUD.getNewsImage(item.id)
+.then(function(data){
+item.imageLoading=false;
+if(data)item.image=data;
+renderNews();
+})
+.catch(function(){
+item.imageLoading=false;
+renderNews();
+});
 }
 
 function renderCalendar(){
@@ -3264,7 +3316,7 @@ return '<li class="mrow"><div class="mi">'+
 (r.etab?'<span>Établissement : '+esc(r.etab)+'</span>':'')+
 ((r.age!=='' || r.da)?'<span>'+(r.age!==''?'PPR : '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?'Spécialité : '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
-(r.attachmentName?'<span>📎 '+esc(r.attachmentName)+'</span>':'')+
+(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
 '<span>'+(r.anonymous?'Signalement anonyme':esc(r.name||''))+'</span>'+
 (r.response?'<span><strong>Réponse :</strong> '+esc(r.response)+'</span>':'')+
 '</div><div class="mact">'+actions+'</div></li>';
@@ -3993,7 +4045,7 @@ document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],[data-adh],'+
-'[data-filter],[data-form],[data-link],[data-share],'+
+'[data-filter],[data-form],[data-link],[data-share],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn'
 );
@@ -4122,6 +4174,11 @@ if(el.hasAttribute('data-item')){
 id=el.getAttribute('data-item');
 
 openId=(openId===id)?null:id;
+
+if(openId){
+var openedItem=NEWS.filter(function(x){return x.id===openId;})[0];
+if(openedItem&&openedItem.hasImage&&!openedItem.image)loadNewsImage(openedItem);
+}
 
 renderNews();
 
@@ -4265,6 +4322,35 @@ if(el.hasAttribute('data-adm')){
 showAdmTab(
 el.getAttribute('data-adm')
 );
+
+return;
+}
+
+if(el.hasAttribute('data-attach')){
+
+var repId=el.getAttribute('data-attach');
+var repItem=(S.reports||[]).filter(function(x){return x.id===repId;})[0];
+if(!repItem)return;
+
+// Anciens signalements : la pièce était encodée dans le document.
+if(repItem.attachmentData){
+openDataUrl(repItem.attachmentData);
+return;
+}
+
+if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
+
+el.disabled=true;
+window.CLOUD.getReportAttachment(repId)
+.then(function(data){
+el.disabled=false;
+if(data)openDataUrl(data);
+else toast('Pièce jointe indisponible.',4000);
+})
+.catch(function(){
+el.disabled=false;
+toast('Impossible de charger la pièce jointe.',4000);
+});
 
 return;
 }
@@ -4548,6 +4634,18 @@ feedback(T().rNeedLogin);
 return;
 }
 
+// Anti-spam : au moins 60 secondes entre deux envois depuis cet appareil.
+var lastReport=0;
+try{
+lastReport=+localStorage.getItem('ugtm-report-last')||0;
+}catch(err){}
+
+if(lastReport && Date.now()-lastReport<60000){
+toast(T().rCooldown,5500);
+feedback(T().rCooldown);
+return;
+}
+
 var c=cloud();
 
 if(!c){
@@ -4617,6 +4715,10 @@ $('rDA').value='';
 $('rAttachment').value='';
 $('rAnonymous').checked=false;
 syncAnonymousReportFields();
+
+try{
+localStorage.setItem('ugtm-report-last',String(Date.now()));
+}catch(err){}
 
 done(true,anonymous?T().rSentAnon:T().rSent);
 

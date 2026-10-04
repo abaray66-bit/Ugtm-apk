@@ -66,6 +66,18 @@ SÉCURITÉ
      placé dans le fichier pourrait être lu par n'importe qui. L'administrateur est reconnu par son
      compte Google. Activez la validation en deux étapes sur ce compte (myaccount.google.com > Sécurité).
    - Ne partagez jamais votre compte Google d'administrateur.
+   - Protection anti-robots des signalements (optionnelle, recommandée) :
+     1. Console Firebase > Paramètres du projet > Applications > Ajouter une application (Web),
+        puis ouvrir « App Check » > Enregistrer l'application (reCAPTCHA v3).
+     2. Copier la clé de site obtenue dans www/data.js, champ firebase.appCheckKey.
+     3. Recharger l'application : chaque requête Firebase joint alors un jeton App Check.
+     4. Quand tous les appareils sont à jour (PWA et APK), activez « Exiger » pour les
+        services Firestore et Authentication dans la console App Check.
+     Tant que la clé est vide, rien ne change : l'application fonctionne comme avant.
+   - Les règles Firestore (firestore.rules) imposent en outre : description de 10 caractères
+     minimum, date au format AAAA-MM-JJ, et au moins 60 secondes entre deux envois depuis
+     un même appareil. Les pièces jointes et les images de communiqués sont stockées dans
+     des collections à part (reportAttachments, newsImages) pour garder les listes légères.
 
 DONNÉES PERSONNELLES (à traiter avant le lancement)
    - L'appartenance syndicale est une donnée sensible. Renseignez-vous auprès de la CNDP (loi 09-08) sur
