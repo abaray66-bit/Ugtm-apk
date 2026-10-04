@@ -2078,6 +2078,26 @@ button.primary:active {
 }
 </style>
 
+
+<style id="digital-adhesion-style">
+.digital-adhesion{max-width:760px;margin:0 auto;padding-bottom:32px}
+.adh-digital-head{margin-bottom:18px}
+.adh-digital-sub{color:var(--muted);line-height:1.6;margin:6px 0 0}
+.adh-step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:0 8px 25px rgba(0,0,0,.06)}
+.adh-step-title{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-family:var(--font-head)}
+.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--soft);color:var(--link);font-size:12px;font-weight:800}
+.adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adh-full{grid-column:1/-1}
+.adh-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.adh-commit{line-height:1.5}
+.adh-sign-hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.adh-signbox{height:180px;border:1.5px dashed var(--link);border-radius:14px;background:rgba(255,255,255,.035);overflow:hidden;touch-action:none}
+.adh-signbox canvas{width:100%;height:100%;display:block}
+.adh-sign-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.adh-sign-state{font-size:12px;color:var(--muted)}
+@media(max-width:620px){.adh-grid{grid-template-columns:1fr}.adh-full{grid-column:auto}.adh-choice{grid-template-columns:1fr}}
+</style>
 </head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
 <img src="icons/ugtm-mark.svg" alt="" width="30" height="30">
 </div><div class="brand">
@@ -2096,8 +2116,8 @@ button.primary:active {
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
 <div class="adhbtns">
-<button class="btn gold" type="button" data-adh="dl" data-i18n="adhDownload"></button>
-<button class="btn ghost" type="button" data-adh="send" data-i18n="adhSend"></button>
+<button class="btn gold" type="button" data-go="adhesion" data-i18n="adhDownload"></button>
+<button class="btn ghost" type="button" data-go="adhesion" data-i18n="adhSend"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
 </div>
@@ -2108,7 +2128,76 @@ button.primary:active {
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
 <h2 data-i18n="recentT"></h2>
 <button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
-</div><ul class="list" id="recentList"></ul></section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
+</div><ul class="list" id="recentList"></ul></section><!-- Adhésion numérique -->
+<section class="screen digital-adhesion" id="s-adhesion" hidden>
+  <div class="adh-digital-head">
+    <span class="adhtag" data-i18n="adhLabel"></span>
+    <h1 class="title" data-i18n="adhDigitalTitle"></h1>
+    <p class="adh-digital-sub" data-i18n="adhDigitalIntro"></p>
+  </div>
+
+  <form id="adhesionForm" class="adh-digital-form">
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>01</span><strong data-i18n="adhIdentity"></strong></div>
+      <div class="adh-grid">
+        <div class="field"><label for="adhNom" data-i18n="adhNom"></label><input id="adhNom" required></div>
+        <div class="field"><label for="adhPrenom" data-i18n="adhPrenom"></label><input id="adhPrenom" required></div>
+        <div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" required></div>
+        <div class="field"><label for="adhDob" data-i18n="adhDob"></label><input id="adhDob" type="date" required></div>
+        <div class="field"><label for="adhPhone" data-i18n="adhPhone"></label><input id="adhPhone" type="tel" required></div>
+        <div class="field adh-full"><label for="adhAddress" data-i18n="adhAddress"></label><textarea id="adhAddress" rows="2" required></textarea></div>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
+      <div class="adh-grid">
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required></select></div>
+        <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
+        <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
+        <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><input id="adhFunction" required></div>
+        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><input id="adhSpecialty"></div>
+        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr"></div>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>03</span><strong data-i18n="adhUnion"></strong></div>
+      <div class="adh-choice">
+        <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
+        <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>04</span><strong data-i18n="adhCommitment"></strong></div>
+      <label class="adh-commit">
+        <input id="adhCommit" type="checkbox" required>
+        <span data-i18n="adhCommitText"></span>
+      </label>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>05</span><strong data-i18n="adhSignature"></strong></div>
+      <p class="adh-sign-hint" data-i18n="adhSignHint"></p>
+      <div class="adh-signbox">
+        <canvas id="adhSignature" width="900" height="300"></canvas>
+      </div>
+      <div class="adh-sign-actions">
+        <button class="btn ghost" type="button" id="adhClearSign" data-i18n="adhClearSign"></button>
+        <span id="adhSignState" class="adh-sign-state" data-i18n="adhNoSignature"></span>
+      </div>
+      <div class="field">
+        <label for="adhDate" data-i18n="adhDate"></label>
+        <input id="adhDate" type="date" required>
+      </div>
+    </div>
+
+    <button class="btn gold block" type="submit" data-i18n="adhContinue"></button>
+    <p class="hint" data-i18n="adhDigitalNext"></p>
+  </form>
+</section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
 <li data-i18n="r1"></li>
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
@@ -2381,6 +2470,14 @@ heroT:`Un dysfonctionnement à signaler ?`,
 heroP:`Décrivez les faits en 2 minutes, anonymement.`,
 heroBtn:`Faire un signalement`,
 
+
+adhDigitalTitle:`Demande d'adhésion`,
+adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
+adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
+adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`,
+adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
+adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`L'étape suivante permettra de générer la fiche PDF et de la partager directement via WhatsApp.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
@@ -2543,6 +2640,14 @@ heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
 heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
 heroBtn:`تقديم تبليغ`,
 
+
+adhDigitalTitle:`طلب الانخراط`,
+adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
+adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
+adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`,
+adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
+adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`في المرحلة التالية سيتم إنشاء ملف PDF للاستِمارة وإرساله مباشرة عبر واتساب.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
@@ -4316,6 +4421,7 @@ fillForm(false);
 
 var SCREENS=[
 'home',
+'adhesion',
 'news',
 'report',
 'agenda',
@@ -5363,5 +5469,232 @@ window.UGTM.failed();
 })();
 </script>
 
+
+<script src="jspdf.umd.min.js"></script>
+<script id="digital-adhesion-js">
+(function(){
+  function initDigitalAdhesion(){
+    var canvas=document.getElementById('adhSignature');
+    var form=document.getElementById('adhesionForm');
+    if(!canvas||!form||canvas.dataset.ready)return;
+    canvas.dataset.ready='1';
+
+    var ctx=canvas.getContext('2d');
+    var drawing=false, signed=false;
+
+    function pos(e){
+      var r=canvas.getBoundingClientRect();
+      return {
+        x:(e.clientX-r.left)*canvas.width/r.width,
+        y:(e.clientY-r.top)*canvas.height/r.height
+      };
+    }
+
+    canvas.addEventListener('pointerdown',function(e){
+      e.preventDefault();
+      drawing=true;
+      var p=pos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+    });
+
+    canvas.addEventListener('pointermove',function(e){
+      if(!drawing)return;
+      e.preventDefault();
+      var p=pos(e);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+      signed=true;
+      var s=document.getElementById('adhSignState');
+      if(s)s.textContent=(typeof T==='function'?T().adhSigned:'Signature enregistrée');
+    });
+
+    window.addEventListener('pointerup',function(){drawing=false;});
+
+    ctx.lineWidth=4;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.strokeStyle='#B83268';
+
+    document.getElementById('adhClearSign').addEventListener('click',function(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      signed=false;
+      var s=document.getElementById('adhSignState');
+      if(s)s.textContent=(typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
+    });
+
+    var date=document.getElementById('adhDate');
+    if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
+
+    var province=document.getElementById('adhProvince');
+    if(province&&typeof PROVS!=='undefined'){
+      province.innerHTML='<option value="">'+(typeof lang!=='undefined'&&lang==='ar'?'اختيار الإقليم':'Sélectionner la province')+'</option>';
+      PROVS.forEach(function(p){
+        var o=document.createElement('option');
+        o.value=p.v;
+        o.textContent=(typeof lang!=='undefined'&&lang==='ar')?p.ar:p.fr;
+        province.appendChild(o);
+      });
+    }
+
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+
+      if(!signed){
+        if(typeof toast==='function')toast(
+          typeof lang!=='undefined'&&lang==='ar'?'يرجى إدخال التوقيع':'Veuillez signer la fiche',
+          3500
+        );
+        return;
+      }
+
+      var type=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+
+      var data={
+        nom:document.getElementById('adhNom').value.trim(),
+        prenom:document.getElementById('adhPrenom').value.trim(),
+        cin:document.getElementById('adhCin').value.trim(),
+        dob:document.getElementById('adhDob').value,
+        phone:document.getElementById('adhPhone').value.trim(),
+        address:document.getElementById('adhAddress').value.trim(),
+        province:document.getElementById('adhProvince').value,
+        establishment:document.getElementById('adhEstablishment').value.trim(),
+        service:document.getElementById('adhService').value.trim(),
+        function:document.getElementById('adhFunction').value.trim(),
+        specialty:document.getElementById('adhSpecialty').value.trim(),
+        ppr:document.getElementById('adhPpr').value.trim(),
+        type:type,
+        commitment:true,
+        date:document.getElementById('adhDate').value,
+        signature:canvas.toDataURL('image/png')
+      };
+
+      try{
+        localStorage.setItem('ugtm-adhesion-draft',JSON.stringify(data));
+      }catch(err){}
+
+        try{
+          var fs=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
+          var sh=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;
+          var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+
+          if(!fs||!sh||!jsPDF)throw new Error('PDF/Share indisponible');
+
+          var pdf=new jsPDF({unit:'mm',format:'a4'});
+          var y=18;
+
+          pdf.setFontSize(16);
+          pdf.text('Union Generale des Travailleurs du Maroc',105,y,{align:'center'});
+          y+=8;
+          pdf.setFontSize(14);
+          pdf.text('Federation Nationale de la Sante',105,y,{align:'center'});
+          y+=7;
+          pdf.setFontSize(12);
+          pdf.text('Region Souss-Massa',105,y,{align:'center'});
+          y+=14;
+
+          pdf.setFontSize(16);
+          pdf.text('Demande d adhesion',105,y,{align:'center'});
+          y+=12;
+
+          pdf.setFontSize(11);
+
+          var rows=[
+            ['Nom',data.nom],
+            ['Prenom',data.prenom],
+            ['CIN',data.cin],
+            ['Date de naissance',data.dob],
+            ['Telephone',data.phone],
+            ['Adresse',data.address],
+            ['Province',data.province],
+            ['Etablissement / structure',data.establishment],
+            ['Service / unite',data.service],
+            ['Fonction',data.function],
+            ['Specialite',data.specialty],
+            ['PPR',data.ppr],
+            ['Adhesion',data.type==='renew'?'Renouvellement':'Premiere adhesion'],
+            ['Date',data.date]
+          ];
+
+          rows.forEach(function(r){
+            if(y>275){pdf.addPage();y=18;}
+            pdf.setFont(undefined,'bold');
+            pdf.text(r[0]+':',18,y);
+            pdf.setFont(undefined,'normal');
+            pdf.text(String(r[1]||''),65,y);
+            y+=7;
+          });
+
+          y+=5;
+          pdf.setFont(undefined,'bold');
+          pdf.text('Engagement',18,y);
+          y+=7;
+          pdf.setFont(undefined,'normal');
+          pdf.text('Je declare adherer a la Federation Nationale de la Sante',18,y);
+          y+=6;
+          pdf.text('et accepter ses statuts et son reglement interieur.',18,y);
+          y+=12;
+
+          if(data.signature){
+            pdf.setFont(undefined,'bold');
+            pdf.text('Signature',18,y);
+            y+=5;
+            pdf.addImage(data.signature,'PNG',18,y,65,32);
+          }
+
+          var base='demande-adhesion-'+(data.nom||'adherent').replace(/[^a-z0-9_-]/gi,'-')+'.pdf';
+          var blob=pdf.output('blob');
+          var reader=new FileReader();
+
+          reader.onloadend=async function(){
+            try{
+              var b64=String(reader.result).split(',')[1];
+
+              var saved=await fs.writeFile({
+                path:base,
+                data:b64,
+                directory:'CACHE'
+              });
+
+              await sh.share({
+                title:'Demande d adhesion',
+                text:'Demande d adhesion UGTM Souss-Massa',
+                url:saved.uri,
+                dialogTitle:'Envoyer la demande'
+              });
+
+            }catch(err){
+              console.error('Adhesion PDF/share:',err);
+              if(typeof toast==='function')toast(
+                typeof lang!=='undefined'&&lang==='ar'
+                ?'تعذر فتح المشاركة'
+                :'Impossible d ouvrir le partage.',
+                4000
+              );
+            }
+          };
+
+          reader.readAsDataURL(blob);
+
+        }catch(err){
+          console.error('Adhesion PDF:',err);
+          if(typeof toast==='function')toast(
+            typeof lang!=='undefined'&&lang==='ar'
+            ?'تم حفظ الاستمارة ولكن تعذر إنشاء PDF'
+            :'Formulaire sauvegardé, mais création du PDF impossible.',
+            4000
+          );
+        }
+    });
+  }
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-go="adhesion"]');
+    if(b)setTimeout(initDigitalAdhesion,50);
+  });
+
+  setTimeout(initDigitalAdhesion,300);
+})();
+</script>
 </body>
 </html>
