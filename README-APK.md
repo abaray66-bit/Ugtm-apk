@@ -1,7 +1,6 @@
 # UGTM Souss-Massa — Android APK
 
-Ce dépôt contient la version web de l'application UGTM préparée pour une
-compilation Android avec Capacitor et GitHub Actions.
+Ce dépôt contient la version web de l'application UGTM préparée pour une compilation Android avec Capacitor et GitHub Actions.
 
 ## 1. Mettre le projet sur GitHub
 
@@ -36,6 +35,21 @@ push sur `main`). Il construit un **APK release signé** et le publie comme
 
 Dans l'exécution terminée du workflow, ouvrir les *Artifacts* et télécharger
 `UGTM-Android-APK`. Le fichier à installer est `app-release.apk`.
+
+## 5. Publication Android de production
+
+Avant la publication, il faut vérifier les éléments suivants :
+
+- `google-services.json` est bien présent
+- le SHA-1 du keystore de release est ajouté dans Firebase
+- le package Android est bien `ma.ugtm.souss.massa`
+- le keystore de release est valide et signé
+- la version Android est définie (`versionCode`, `versionName`)
+- les permissions Android sont justifiées
+- les règles Firestore sont sécurisées
+- le build release est validé sur un appareil réel
+
+Pour la procédure détaillée, voir `README-PUBLISH.md`.
 
 ## Pour aller plus loin (Google Play)
 
