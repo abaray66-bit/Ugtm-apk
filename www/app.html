@@ -5503,6 +5503,10 @@ S.members=[];
 renderAccountButton();
 renderMe();
 
+if(window.prefillDigitalAdhesion){
+  window.prefillDigitalAdhesion();
+}
+
 if(
 (wasManager&&!S.isAdmin&&!S.isSubAdmin)||
 !s.user
@@ -5671,8 +5675,43 @@ window.UGTM.failed();
       if(s)s.textContent=(typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
     });
 
-    var date=document.getElementById('adhDate');
-    if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
+    /*
+     * Préremplissage du dossier électronique à partir du profil membre.
+     * Les données sont relues à chaque appel afin de tenir compte du
+     * chargement asynchrone du profil Firebase.
+     * Une valeur déjà saisie n'est jamais remplacée.
+     */
+    function prefillIfEmpty(id,value){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(String(el.value||'').trim())return;
+      if(value===undefined || value===null)return;
+      if(String(value).trim())el.value=String(value);
+    }
+
+    function prefillDigitalAdhesion(){
+      var member =
+        (typeof S!=='undefined' && S.member)
+          ? S.member
+          : {};
+
+      var currentUser =
+        (typeof S!=='undefined' && S.user)
+          ? S.user
+          : {};
+
+      prefillIfEmpty('adhNom',member.name||currentUser.name||'');
+      prefillIfEmpty('adhPhone',member.phone||'');
+      prefillIfEmpty('adhProvince',member.prov||'');
+      prefillIfEmpty('adhEstablishment',member.etab||'');
+
+      var date=document.getElementById('adhDate');
+      if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
+    }
+
+    window.prefillDigitalAdhesion=prefillDigitalAdhesion;
+
+    prefillDigitalAdhesion();
 
     form.addEventListener('submit',function(e){
       e.preventDefault();
