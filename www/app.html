@@ -4884,6 +4884,17 @@ phone:val('pfPhone')
 
 S.formDirty=false;
 
+S.member = S.member || {};
+
+S.member.name = val('pfName');
+S.member.etab = val('pfEtab');
+S.member.prov = $('pfProv').value;
+S.member.phone = val('pfPhone');
+
+if(window.prefillDigitalAdhesion){
+  window.prefillDigitalAdhesion();
+}
+
 toast(T().saved);
 
 })
