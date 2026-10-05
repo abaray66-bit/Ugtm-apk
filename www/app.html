@@ -5700,13 +5700,35 @@ window.UGTM.failed();
           ? S.user
           : {};
 
+      try{
+        var draft=JSON.parse(
+          localStorage.getItem('ugtm-adhesion-draft')||'null'
+        );
+
+        if(draft&&typeof draft==='object'){
+          prefillIfEmpty('adhNom',draft.nom||'');
+          prefillIfEmpty('adhPrenom',draft.prenom||'');
+          prefillIfEmpty('adhCin',draft.cin||'');
+          prefillIfEmpty('adhDob',draft.dob||'');
+          prefillIfEmpty('adhPhone',draft.phone||'');
+          prefillIfEmpty('adhAddress',draft.address||'');
+          prefillIfEmpty('adhProvince',draft.province||'');
+          prefillIfEmpty('adhEstablishment',draft.establishment||'');
+          prefillIfEmpty('adhService',draft.service||'');
+          prefillIfEmpty('adhFunction',draft.function||'');
+          prefillIfEmpty('adhSpecialty',draft.specialty||'');
+          prefillIfEmpty('adhPpr',draft.ppr||'');
+        }
+      }catch(e){}
+
       prefillIfEmpty('adhNom',member.name||currentUser.name||'');
       prefillIfEmpty('adhPhone',member.phone||'');
       prefillIfEmpty('adhProvince',member.prov||'');
       prefillIfEmpty('adhEstablishment',member.etab||'');
 
       var date=document.getElementById('adhDate');
-      if(date&&!date.value)date.value=new Date().toISOString().slice(0,10);
+      if(date&&!date.value)
+        date.value=new Date().toISOString().slice(0,10);
     }
 
     window.prefillDigitalAdhesion=prefillDigitalAdhesion;
