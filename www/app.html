@@ -1752,9 +1752,9 @@ font-size:1.4rem;
 
 <button class="btn ghost block" type="button" data-act="signout" data-i18n="signOut"></button>
 
-<button class="link danger" type="button" data-act="deldata" data-i18n="delData"></button>
+<button class="link danger" type="button" id="meDelLink" data-act="deldata" data-i18n="delData"></button>
 
-</div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
+</div><div class="mesreports" id="meReportsWrap" hidden><h2 class="h2" data-i18n="meReportsT"></h2><p class="hint" id="meReportsNone" data-i18n="meReportsNone" hidden></p><ul id="meReports"></ul></div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
 
 <h1 class="title">Administration</h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false">Tableau de bord</button><button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
 
@@ -2052,6 +2052,13 @@ st_pending:`Demande en cours de validation par la Fédération régionale de la 
 st_active:`Adhésion validée.`,
 st_blocked:`Compte suspendu. Contactez la Fédération régionale de la Santé.`,
 
+meReportsT:`Mes signalements`,
+meReportsNone:`Aucun signalement enregistré pour le moment.`,
+meReportsResp:`Réponse de l'union :`,
+rStNew:`Nouveau`,
+rStProgress:`En cours`,
+rStClosed:`Clos`,
+
 cardNo:`N° d'adhérent`,
 cardSince:`Adhérent depuis`,
 
@@ -2215,6 +2222,13 @@ meOffline:`الاتصال غير متاح حاليا. تحققوا من الإن
 st_pending:`طلبكم قيد المصادقة من طرف الجامعة الوطنية للصحة.`,
 st_active:`تمت المصادقة على انخراطكم.`,
 st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوطنية للصحة.`,
+
+meReportsT:`بلاغاتي`,
+meReportsNone:`لا توجد بلاغات مسجلة حتى الآن.`,
+meReportsResp:`رد الجامعة:`,
+rStNew:`جديد`,
+rStProgress:`قيد المعالجة`,
+rStClosed:`مغلق`,
 
 cardNo:`رقم المنخرط`,
 cardSince:`منخرط منذ`,
@@ -2980,6 +2994,50 @@ $('pfProv').value=m.prov||'';
 $('pfPhone').value=m.phone||'';
 }
 
+function reportStatusLabelI18n(status){
+var t=T();
+if(status==='in_progress')return t.rStProgress||'En cours';
+if(status==='closed')return t.rStClosed||'Clos';
+return t.rStNew||'Nouveau';
+}
+
+/* Mes signalements (Mon espace) : l'adhérent identifié suit ses propres
+   dossiers et lit la réponse de l'union. */
+function renderMeReports(){
+var wrap=$('meReportsWrap');
+if(!wrap)return;
+
+var t=T();
+var list=$('meReports');
+var none=$('meReportsNone');
+
+if(!S.user){
+wrap.hidden=true;
+list.innerHTML='';
+return;
+}
+
+var uid=S.user.uid;
+var mine=(S.reports||[]).filter(function(r){
+return !r.anonymous&&r.ownerUid===uid;
+});
+
+wrap.hidden=false;
+none.hidden=mine.length>0;
+
+list.innerHTML=mine.map(function(r){
+var head=[r.date?fmtDateFr(r.date):'',r.province||''].filter(Boolean).join(' · ');
+return '<li class="mrow"><div class="mi">'+
+'<strong>'+esc(r.category||'')+' · '+esc(reportStatusLabelI18n(r.status))+'</strong>'+
+(head?'<span>'+esc(head)+'</span>':'')+
+(r.etab?'<span>'+esc(r.etab)+'</span>':'')+
+'<span>'+esc(r.description||'')+'</span>'+
+(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+(r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> '+esc(r.response)+'</span>':'')+
+'</div></li>';
+}).join('');
+}
+
 function renderMe(){
 
 var t=T();
@@ -3032,6 +3090,14 @@ $('meCard').innerHTML=
 fillForm(false);
 
 $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
+
+// Un administrateur de province (sous-admin) ne peut pas supprimer son
+// compte : son mandat est révocable par l'administrateur principal seul.
+// Le bouton est masqué ici et les règles Firestore refusent aussi la
+// suppression (cf. deleteAccount dans cloud.js).
+$('meDelLink').hidden=!!S.isSubAdmin;
+
+renderMeReports();
 }
 
 function renderAccountButton(){
@@ -3067,7 +3133,12 @@ max=Math.max(max,+x[1]);
 
 });
 
-return 'SM-'+('000'+(max+1)).slice(-4);
+var n=('000'+(max+1)).slice(-4);
+// Sous-admin : préfixe province, pour que deux provinces ne décernent pas
+// le même numéro (chaque sous-admin ne voit que sa propre province).
+if(S.isSubAdmin&&S.member&&S.member.adminProvince)
+return 'SM-'+String(S.member.adminProvince).toUpperCase()+'-'+n;
+return 'SM-'+n;
 }
 
 function findMember(uid){
@@ -3143,6 +3214,10 @@ esc(STATUS_FR[m.status]||m.status)+
 
 (info
 ?'<span>'+esc(info)+'</span>'
+:'')
++
+(!m.prov
+?'<span class="hint">⚠ Province non renseignée : seul l\'administrateur principal peut valider cet adhérent.</span>'
 :'')+
 
 (m.memberNo
@@ -4538,6 +4613,10 @@ var response=window.prompt(
 report.response||''
 );
 if(response===null)return;
+if(response.length>3000){
+response=response.slice(0,3000);
+toast('Réponse limitée à 3 000 caractères.',4500);
+}
 c.admin.updateReport(id,'closed',response).catch(showError);
 }
 }
@@ -4859,6 +4938,7 @@ renderProvinceContacts();
 setReports:function(list){
 S.reports=list||[];
 renderAdminReports();
+renderMeReports();
 },
 
 setResponsables:function(list){

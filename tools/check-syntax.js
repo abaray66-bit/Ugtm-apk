@@ -92,6 +92,32 @@ try {
   }
 });
 
+/* --- Parité des e-mails administrateur --- */
+/* Les adminEmails existent en double : www/data.js (affichage côté client)
+   et firestore.rules (droits réels). Si elles divergent, l'app affiche
+   l'espace administrateur mais toutes les écritures échouent. */
+try {
+  function emailsOf(src, re) {
+    var m = re.exec(src);
+    if (!m) return null;
+    var out = [];
+    var re2 = /['"]([^'"]+)['"]/g;
+    var x;
+    while ((x = re2.exec(m[1])) !== null) out.push(String(x[1]).toLowerCase());
+    return out.sort();
+  }
+  var dataEmails = emailsOf(read('www/data.js'), /adminEmails\s*:\s*\[([^\]]*)\]/);
+  var rulesEmails = emailsOf(read('firestore.rules'), /function adminEmails\(\)\s*\{\s*return\s*\[([^\]]*)\]/);
+  if (!dataEmails || !dataEmails.length) fail('www/data.js (adminEmails)', 'liste introuvable');
+  else if (!rulesEmails || !rulesEmails.length) fail('firestore.rules (adminEmails)', 'liste introuvable');
+  else if (dataEmails.join('|') !== rulesEmails.join('|')) {
+    fail('parité adminEmails',
+      'data.js=[' + dataEmails.join(', ') + '] vs firestore.rules=[' + rulesEmails.join(', ') + ']');
+  } else ok('adminEmails data.js == firestore.rules (' + dataEmails.length + ')');
+} catch (e) {
+  fail('parité adminEmails', e.message);
+}
+
 if (failures) {
   console.error('\n' + failures + ' controle(s) en echec.');
   process.exit(1);

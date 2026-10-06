@@ -11,7 +11,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField
+  onSnapshot, query, where, serverTimestamp, deleteField, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 var auth, db, hooks;
@@ -249,11 +249,23 @@ function subscribeReports(){
 
     q = collection(db, 'reports');
 
-  } else {
+  } else if (session.isSubAdmin) {
 
     q = query(
       collection(db, 'reports'),
-      where(session.isSubAdmin ? 'province' : 'ownerUid', '==', session.isSubAdmin ? reportProvinceLabel(session.member.adminProvince) : session.user.uid)
+      where('province', '==', reportProvinceLabel(session.member.adminProvince))
+    );
+
+  } else {
+
+    // Simple adhérent : uniquement SES signalements identifiés.
+    // Le filtre anonymous==false est INDISPENSABLE : sans lui, le moteur de
+    // règles ne peut pas prouver « anonymous == false » à partir de la
+    // requête et tout l'abonnement est refusé (permission-denied silencieux).
+    q = query(
+      collection(db, 'reports'),
+      where('ownerUid', '==', session.user.uid),
+      where('anonymous', '==', false)
     );
 
   }
@@ -662,15 +674,18 @@ async function addReport(o){
   };
 
 
-  return addDoc(
-    collection(db, 'reports'),
-    data
-  )
-  .then(function(ref){
+  // Signalement + pièce jointe écrits dans le MÊME lot : si la pièce jointe
+  // est refusée (hors ligne, règle), le signalement n'est pas créé à demi
+  // et l'utilisateur ne risque pas d'envoyer un doublon en réessayant.
+  var ref = doc(collection(db, 'reports'));
 
-    if (!attach) return ref;
+  var batch = writeBatch(db);
 
-    return setDoc(
+  batch.set(ref, data);
+
+  if (attach) {
+
+    batch.set(
       doc(db, 'reportAttachments', ref.id),
       {
         data: attach,
@@ -681,10 +696,11 @@ async function addReport(o){
         province: data.province,
         createdAt: serverTimestamp()
       }
-    )
-    .then(function(){ return ref; });
+    );
 
-  });
+  }
+
+  return batch.commit().then(function(){ return ref; });
 
 }
 
@@ -832,13 +848,23 @@ async function deleteAccount(){
   var u = auth.currentUser;
   if (!u) throw new Error('Non connecté');
 
-  // Réauthentifier avant toute suppression de données, pour éviter de laisser
-  // un compte actif sans profil si Firebase exige une connexion récente.
-  await reauthenticateForAccountDeletion(u);
-
   var memberRef = doc(db, 'members', u.uid);
   var memberSnap = await getDoc(memberRef);
   var member = memberSnap.exists() ? memberSnap.data() : {};
+
+  // Un administrateur de province (sous-admin) ne peut pas supprimer son
+  // compte : son mandat est révocable par l'administrateur principal seul.
+  // On bloque AVANT la réauthentification et toute suppression de données,
+  // et les règles Firestore refusent également la suppression du profil.
+  if (member.role === 'subadmin'){
+    throw new Error(
+      "Le compte administrateur de province ne peut pas être supprimé. Contactez l'administrateur principal."
+    );
+  }
+
+  // Réauthentifier avant toute suppression de données, pour éviter de laisser
+  // un compte actif sans profil si Firebase exige une connexion récente.
+  await reauthenticateForAccountDeletion(u);
 
   unsub('member');
   unsub('members');

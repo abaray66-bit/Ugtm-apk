@@ -80,8 +80,12 @@ service cloud.firestore {
             && okText(request.resource.data.prov, 40)
             && okText(request.resource.data.phone, 30));
 
+      // Un administrateur de province (sous-admin) ne peut pas supprimer son
+      // propre compte : seul l'administrateur principal peut le faire.
+      // ('role' absent des profils classiques = non sous-admin, autorisé.)
       allow delete: if isAdmin()
-        || (signedIn() && request.auth.uid == uid);
+        || (signedIn() && request.auth.uid == uid
+            && (!('role' in resource.data) || resource.data.role != 'subadmin'));
     }
 
     match /provinceContacts/{province} {
