@@ -173,22 +173,53 @@ button,input,select,textarea{
 
 .brand{
   flex:1;
-  min-width:0
+  min-width:0;
+  overflow:hidden
 }
 
 .brand b{
   display:block;
   font-family:var(--font-head);
   font-weight:800;
-  font-size:15px;
-  line-height:1.3
+  font-size:11px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:-.2px
 }
 
 .brand span{
   display:block;
-  font-size:12.5px;
+  font-size:11px;
   color:var(--muted);
-  line-height:1.4
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+
+.brand span[data-i18n="brandSub"]{
+  font-size:12px;
+  font-weight:800;
+  color:var(--ink)
+}
+
+.brand span[data-i18n="brandL3"]{
+  font-size:10px;
+  font-weight:600
+}
+
+[dir="rtl"] .brand b{
+  font-size:11px
+}
+
+[dir="rtl"] .brand span[data-i18n="brandSub"]{
+  font-size:12px
+}
+
+[dir="rtl"] .brand span[data-i18n="brandL3"]{
+  font-size:10px
 }
 
 .langbtn{
@@ -1626,6 +1657,493 @@ font-size:1.4rem;
 }
 </style>
 
+
+<style id="futuristic-premium-v2">
+/* =========================================================
+   UGTM — FUTURISTIC PREMIUM UI V2
+   Visual layer only — no JS / Firebase / functionality change
+   ========================================================= */
+
+:root {
+  --fp-pink: #d83b78;
+  --fp-pink-2: #a91f58;
+  --fp-gold: #d6ad5b;
+  --fp-glass: rgba(255,255,255,.075);
+  --fp-border: rgba(255,255,255,.13);
+  --fp-shadow: 0 18px 45px rgba(0,0,0,.22);
+}
+
+/* ---------- Global atmosphere ---------- */
+
+body {
+  background:
+    radial-gradient(circle at 12% 8%, rgba(216,59,120,.18), transparent 28%),
+    radial-gradient(circle at 88% 20%, rgba(214,173,91,.10), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(169,31,88,.13), transparent 35%),
+    var(--bg, #101014);
+}
+
+.app {
+  position: relative;
+  isolation: isolate;
+}
+
+.app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,.025),
+      transparent 35%,
+      rgba(216,59,120,.025)
+    );
+}
+
+/* ---------- Header ---------- */
+
+.top {
+  background: rgba(12,12,17,.76) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--fp-border) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+
+.mark {
+  filter:
+    drop-shadow(0 0 10px rgba(216,59,120,.28))
+    drop-shadow(0 0 22px rgba(216,59,120,.12));
+}
+
+/* ---------- Main screens ---------- */
+
+.screen {
+  animation: fpScreenIn .38s ease both;
+}
+
+@keyframes fpScreenIn {
+  from {
+    opacity: .55;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.title {
+  letter-spacing: -.025em;
+  text-shadow: 0 3px 18px rgba(216,59,120,.12);
+}
+
+/* ---------- Home / first page ---------- */
+
+#s-home {
+  position: relative;
+}
+
+#s-home .home-actions {
+  gap: 16px;
+}
+
+#s-home .hero {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 21px;
+  border: 1px solid rgba(255,255,255,.13);
+  border-radius: 25px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(214,173,91,.17), transparent 30%),
+    radial-gradient(circle at 8% 90%, rgba(216,59,120,.22), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.035));
+  box-shadow:
+    0 22px 55px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.09);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+#s-home .hero::before {
+  content: "";
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  right: -70px;
+  top: -80px;
+  border-radius: 50%;
+  background: rgba(216,59,120,.16);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+#s-home .hero::after {
+  content: "";
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(214,173,91,.5),
+    rgba(216,59,120,.55),
+    transparent
+  );
+}
+
+#s-home .list {
+  margin-top: 18px;
+}
+
+/* ---------- Lists / cards ---------- */
+
+.list > li,
+.card {
+  border: 1px solid var(--fp-border) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
+    ) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition:
+    transform .22s ease,
+    border-color .22s ease,
+    box-shadow .22s ease;
+}
+
+.list > li:hover,
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(216,59,120,.34) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.20);
+}
+
+/* ---------- Signalement ---------- */
+
+#s-report {
+  position: relative;
+}
+
+#s-report .title {
+  margin-bottom: 16px;
+}
+
+#s-report .rpintro {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  padding: 17px;
+  border-radius: 21px;
+  border: 1px solid rgba(216,59,120,.22);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(214,173,91,.12), transparent 34%),
+    linear-gradient(145deg, rgba(216,59,120,.11), rgba(255,255,255,.035));
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#s-report .rpintro::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 15px;
+  bottom: 15px;
+  width: 3px;
+  border-radius: 10px;
+  background: linear-gradient(
+    180deg,
+    var(--fp-pink),
+    var(--fp-gold)
+  );
+  box-shadow: 0 0 15px rgba(216,59,120,.45);
+}
+
+#s-report .rplead {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+#s-report .rpdot {
+  flex: 0 0 35px;
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #fff;
+  background:
+    linear-gradient(145deg, var(--fp-pink), var(--fp-pink-2));
+  box-shadow:
+    0 8px 20px rgba(216,59,120,.28),
+    inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+#s-report .points {
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+#s-report .points li {
+  list-style: none;
+  padding: 10px 12px;
+  border-radius: 13px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
+}
+
+/* ---------- Report form ---------- */
+
+#reportForm {
+  padding: 18px;
+  border-radius: 23px;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
+    );
+  box-shadow:
+    0 20px 50px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+#reportForm .field {
+  margin-bottom: 15px;
+}
+
+#reportForm label,
+#reportForm legend {
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+#reportForm input,
+#reportForm select,
+#reportForm textarea {
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 14px !important;
+  background: rgba(0,0,0,.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+#reportForm input:focus,
+#reportForm select:focus,
+#reportForm textarea:focus {
+  border-color: rgba(216,59,120,.68) !important;
+  box-shadow:
+    0 0 0 3px rgba(216,59,120,.12),
+    0 8px 25px rgba(216,59,120,.08) !important;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+/* ---------- Buttons ---------- */
+
+.btn.primary,
+button.primary {
+  border: 0 !important;
+  background:
+    linear-gradient(
+      135deg,
+      var(--fp-pink),
+      var(--fp-pink-2)
+    ) !important;
+  box-shadow:
+    0 10px 25px rgba(216,59,120,.25),
+    inset 0 1px 0 rgba(255,255,255,.18);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    filter .2s ease;
+}
+
+.btn.primary:hover,
+button.primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow:
+    0 15px 32px rgba(216,59,120,.32),
+    inset 0 1px 0 rgba(255,255,255,.2);
+}
+
+.btn.primary:active,
+button.primary:active {
+  transform: translateY(0);
+}
+
+/* ---------- News / filters ---------- */
+
+.filters {
+  padding: 5px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.filters button,
+.filters .btn {
+  border-radius: 12px !important;
+}
+
+/* ---------- Bottom navigation ---------- */
+
+.tabs {
+  background: rgba(12,12,17,.82) !important;
+  border-top: 1px solid rgba(255,255,255,.11) !important;
+  box-shadow:
+    0 -12px 35px rgba(0,0,0,.20),
+    0 -1px 0 rgba(255,255,255,.025);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.tab {
+  position: relative;
+  transition:
+    color .2s ease,
+    transform .2s ease;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--fp-pink) !important;
+  text-shadow: 0 0 16px rgba(216,59,120,.30);
+}
+
+.tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  right: 25%;
+  bottom: 5px;
+  height: 3px;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--fp-pink),
+    var(--fp-gold)
+  );
+  box-shadow: 0 0 12px rgba(216,59,120,.35);
+}
+
+.tab:active {
+  transform: scale(.94);
+}
+
+.bubble {
+  box-shadow:
+    0 4px 12px rgba(216,59,120,.25);
+}
+
+/* ---------- Secondary headings / hints ---------- */
+
+.h2 {
+  letter-spacing: -.02em;
+}
+
+.hint,
+.lead {
+  color: color-mix(in srgb, currentColor 82%, transparent);
+}
+
+/* ---------- Light theme compatibility ---------- */
+
+@media (prefers-color-scheme: light) {
+  body {
+    background:
+      radial-gradient(circle at 10% 0%, rgba(216,59,120,.10), transparent 30%),
+      radial-gradient(circle at 90% 15%, rgba(214,173,91,.08), transparent 25%),
+      var(--bg, #f6f6f8);
+  }
+
+  .top,
+  .tabs {
+    background: rgba(255,255,255,.82) !important;
+  }
+
+  #reportForm input,
+  #reportForm select,
+  #reportForm textarea {
+    background: rgba(255,255,255,.72) !important;
+  }
+}
+
+/* ---------- Motion accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .screen,
+  .list > li,
+  .card,
+  .btn.primary,
+  button.primary,
+  .tab {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+
+
+<style id="digital-adhesion-style">
+.digital-adhesion{max-width:760px;margin:0 auto;padding-bottom:32px}
+.adh-digital-head{margin-bottom:18px}
+.adh-digital-sub{color:var(--muted);line-height:1.6;margin:6px 0 0}
+.adh-step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:0 8px 25px rgba(0,0,0,.06)}
+.adh-step-title{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-family:var(--font-head)}
+.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--soft);color:var(--link);font-size:12px;font-weight:800}
+.adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adh-full{grid-column:1/-1}
+.adh-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.adh-commit{line-height:1.5}
+.adh-sign-hint{font-size:13px;color:var(--muted);margin:0 0 10px}
+.adh-signbox{height:180px;border:1.5px dashed var(--link);border-radius:14px;background:rgba(255,255,255,.035);overflow:hidden;touch-action:none}
+.adh-signbox canvas{width:100%;height:100%;display:block}
+.adh-sign-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.adh-sign-state{font-size:12px;color:var(--muted)}
+@media(max-width:620px){.adh-grid{grid-template-columns:1fr}.adh-full{grid-column:auto}.adh-choice{grid-template-columns:1fr}}
+  .digital-adhesion select{
+    width:100%;
+    min-height:46px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--surface);
+    color:var(--text);
+    font-size:16px;
+    appearance:auto;
+    -webkit-appearance:auto;
+    pointer-events:auto;
+    position:relative;
+    z-index:5;
+  }
+</style>
 </head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
 <img src="icons/ugtm-mark.svg" alt="" width="30" height="30">
 </div><div class="brand">
@@ -1644,8 +2162,8 @@ font-size:1.4rem;
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
 <div class="adhbtns">
-<button class="btn gold" type="button" data-adh="dl" data-i18n="adhDownload"></button>
-<button class="btn ghost" type="button" data-adh="send" data-i18n="adhSend"></button>
+<button class="btn gold" type="button" data-go="adhesion" data-i18n="adhDownload"></button>
+<button class="btn ghost" type="button" data-go="adhesion" data-i18n="adhSend"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
 </div>
@@ -1656,7 +2174,76 @@ font-size:1.4rem;
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
 <h2 data-i18n="recentT"></h2>
 <button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
-</div><ul class="list" id="recentList"></ul></section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
+</div><ul class="list" id="recentList"></ul></section><!-- Adhésion numérique -->
+<section class="screen digital-adhesion" id="s-adhesion" hidden>
+  <div class="adh-digital-head">
+    <span class="adhtag" data-i18n="adhLabel"></span>
+    <h1 class="title" data-i18n="adhDigitalTitle"></h1>
+    <p class="adh-digital-sub" data-i18n="adhDigitalIntro"></p>
+  </div>
+
+  <form id="adhesionForm" class="adh-digital-form">
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>01</span><strong data-i18n="adhIdentity"></strong></div>
+      <div class="adh-grid">
+        <div class="field"><label for="adhNom" data-i18n="adhNom"></label><input id="adhNom" required></div>
+        <div class="field"><label for="adhPrenom" data-i18n="adhPrenom"></label><input id="adhPrenom" required></div>
+        <div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" required></div>
+        <div class="field"><label for="adhDob" data-i18n="adhDob"></label><input id="adhDob" type="date" required></div>
+        <div class="field"><label for="adhPhone" data-i18n="adhPhone"></label><input id="adhPhone" type="tel" required></div>
+        <div class="field adh-full"><label for="adhAddress" data-i18n="adhAddress"></label><textarea id="adhAddress" rows="2" required></textarea></div>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
+      <div class="adh-grid">
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="">Sélectionner la province</option><option value="agadir">Agadir Ida-Outanane</option><option value="inezgane">Inezgane-Aït Melloul</option><option value="chtouka">Chtouka-Aït Baha</option><option value="taroudant">Taroudant</option><option value="tiznit">Tiznit</option><option value="tata">Tata</option></select></div>
+        <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
+        <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
+        <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><input id="adhFunction" required></div>
+        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><input id="adhSpecialty"></div>
+        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr"></div>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>03</span><strong data-i18n="adhUnion"></strong></div>
+      <div class="adh-choice">
+        <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
+        <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
+      </div>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>04</span><strong data-i18n="adhCommitment"></strong></div>
+      <label class="adh-commit">
+        <input id="adhCommit" type="checkbox" required>
+        <span data-i18n="adhCommitText"></span>
+      </label>
+    </div>
+
+    <div class="adh-step">
+      <div class="adh-step-title"><span>05</span><strong data-i18n="adhSignature"></strong></div>
+      <p class="adh-sign-hint" data-i18n="adhSignHint"></p>
+      <div class="adh-signbox">
+        <canvas id="adhSignature" width="900" height="300"></canvas>
+      </div>
+      <div class="adh-sign-actions">
+        <button class="btn ghost" type="button" id="adhClearSign" data-i18n="adhClearSign"></button>
+        <span id="adhSignState" class="adh-sign-state" data-i18n="adhNoSignature"></span>
+      </div>
+      <div class="field">
+        <label for="adhDate" data-i18n="adhDate"></label>
+        <input id="adhDate" type="date" required>
+      </div>
+    </div>
+
+    <button class="btn gold block" type="submit" data-i18n="adhContinue"></button>
+    <p class="hint" data-i18n="adhDigitalNext"></p>
+  </form>
+</section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
 <li data-i18n="r1"></li>
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
@@ -1912,9 +2499,9 @@ formDirty:false
 var I18N = {
 
 fr:{
-brandName:`UGTM Souss-Massa`,
-brandSub:`Fédération régionale de la Santé`,
-brandL3:``,
+brandName:`Union Générale des Travailleurs du Maroc`,
+brandSub:`Fédération nationale de la Santé`,
+brandL3:`Région Souss-Massa`,
 brandShort:`UGTM Souss-Massa`,
 langBtn:`العربية`,
 langAria:`Passer en arabe`,
@@ -1929,6 +2516,14 @@ heroT:`Un dysfonctionnement à signaler ?`,
 heroP:`Décrivez les faits en 2 minutes, anonymement.`,
 heroBtn:`Faire un signalement`,
 
+
+adhDigitalTitle:`Demande d'adhésion`,
+adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
+adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
+adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`,
+adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
+adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`L'étape suivante permettra de générer la fiche PDF et de la partager directement via WhatsApp.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
@@ -2100,6 +2695,14 @@ heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
 heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
 heroBtn:`تقديم تبليغ`,
 
+
+adhDigitalTitle:`طلب الانخراط`,
+adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
+adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
+adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`,
+adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
+adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`في المرحلة التالية سيتم إنشاء ملف PDF للاستِمارة وإرساله مباشرة عبر واتساب.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
@@ -3991,6 +4594,7 @@ fillForm(false);
 
 var SCREENS=[
 'home',
+'adhesion',
 'news',
 'report',
 'agenda',
@@ -4354,6 +4958,17 @@ phone:val('pfPhone')
 .then(function(){
 
 S.formDirty=false;
+
+S.member = S.member || {};
+
+S.member.name = val('pfName');
+S.member.etab = val('pfEtab');
+S.member.prov = $('pfProv').value;
+S.member.phone = val('pfPhone');
+
+if(window.prefillDigitalAdhesion){
+  window.prefillDigitalAdhesion();
+}
 
 toast(T().saved);
 
@@ -4979,6 +5594,10 @@ S.members=[];
 renderAccountButton();
 renderMe();
 
+if(window.prefillDigitalAdhesion){
+  window.prefillDigitalAdhesion();
+}
+
 if(
 (wasManager&&!S.isAdmin&&!S.isSubAdmin)||
 !s.user
@@ -5093,5 +5712,408 @@ window.UGTM.failed();
 })();
 </script>
 
+
+<script src="jspdf.umd.min.js"></script>
+<script id="digital-adhesion-js">
+(function(){
+  function initDigitalAdhesion(){
+    var canvas=document.getElementById('adhSignature');
+    var form=document.getElementById('adhesionForm');
+    if(!canvas||!form||canvas.dataset.ready)return;
+    canvas.dataset.ready='1';
+
+    var ctx=canvas.getContext('2d');
+    var drawing=false, signed=false;
+
+    function pos(e){
+      var r=canvas.getBoundingClientRect();
+      return {
+        x:(e.clientX-r.left)*canvas.width/r.width,
+        y:(e.clientY-r.top)*canvas.height/r.height
+      };
+    }
+
+    canvas.addEventListener('pointerdown',function(e){
+      e.preventDefault();
+      drawing=true;
+      var p=pos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x,p.y);
+    });
+
+    canvas.addEventListener('pointermove',function(e){
+      if(!drawing)return;
+      e.preventDefault();
+      var p=pos(e);
+      ctx.lineTo(p.x,p.y);
+      ctx.stroke();
+      signed=true;
+      var s=document.getElementById('adhSignState');
+      if(s)s.textContent=(typeof T==='function'?T().adhSigned:'Signature enregistrée');
+    });
+
+    window.addEventListener('pointerup',function(){drawing=false;});
+
+    ctx.lineWidth=4;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.strokeStyle='#B83268';
+
+    document.getElementById('adhClearSign').addEventListener('click',function(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      signed=false;
+      var s=document.getElementById('adhSignState');
+      if(s)s.textContent=(typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
+    });
+
+    /*
+     * Préremplissage du dossier électronique à partir du profil membre.
+     * Les données sont relues à chaque appel afin de tenir compte du
+     * chargement asynchrone du profil Firebase.
+     * Une valeur déjà saisie n'est jamais remplacée.
+     */
+    function prefillIfEmpty(id,value){
+      var el=document.getElementById(id);
+      if(!el)return;
+      if(String(el.value||'').trim())return;
+      if(value===undefined || value===null)return;
+      if(String(value).trim())el.value=String(value);
+    }
+
+    function prefillDigitalAdhesion(){
+      var member =
+        (typeof S!=='undefined' && S.member)
+          ? S.member
+          : {};
+
+      var currentUser =
+        (typeof S!=='undefined' && S.user)
+          ? S.user
+          : {};
+
+      try{
+        var draft=JSON.parse(
+          localStorage.getItem('ugtm-adhesion-draft')||'null'
+        );
+
+        if(draft&&typeof draft==='object'){
+          prefillIfEmpty('adhNom',draft.nom||'');
+          prefillIfEmpty('adhPrenom',draft.prenom||'');
+          prefillIfEmpty('adhCin',draft.cin||'');
+          prefillIfEmpty('adhDob',draft.dob||'');
+          prefillIfEmpty('adhPhone',draft.phone||'');
+          prefillIfEmpty('adhAddress',draft.address||'');
+          prefillIfEmpty('adhProvince',draft.province||'');
+          prefillIfEmpty('adhEstablishment',draft.establishment||'');
+          prefillIfEmpty('adhService',draft.service||'');
+          prefillIfEmpty('adhFunction',draft.function||'');
+          prefillIfEmpty('adhSpecialty',draft.specialty||'');
+          prefillIfEmpty('adhPpr',draft.ppr||'');
+        }
+      }catch(e){}
+
+      prefillIfEmpty('adhNom',member.name||currentUser.name||'');
+      prefillIfEmpty('adhPhone',member.phone||'');
+      prefillIfEmpty('adhProvince',member.prov||'');
+      prefillIfEmpty('adhEstablishment',member.etab||'');
+
+      var date=document.getElementById('adhDate');
+      if(date&&!date.value)
+        date.value=new Date().toISOString().slice(0,10);
+    }
+
+    window.prefillDigitalAdhesion=prefillDigitalAdhesion;
+
+    prefillDigitalAdhesion();
+
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+
+      if(!signed){
+        if(typeof toast==='function')toast(
+          typeof lang!=='undefined'&&lang==='ar'?'يرجى إدخال التوقيع':'Veuillez signer la fiche',
+          3500
+        );
+        return;
+      }
+
+      var type=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+
+      var data={
+        nom:document.getElementById('adhNom').value.trim(),
+        prenom:document.getElementById('adhPrenom').value.trim(),
+        cin:document.getElementById('adhCin').value.trim(),
+        dob:document.getElementById('adhDob').value,
+        phone:document.getElementById('adhPhone').value.trim(),
+        address:document.getElementById('adhAddress').value.trim(),
+        province:document.getElementById('adhProvince').value,
+        establishment:document.getElementById('adhEstablishment').value.trim(),
+        service:document.getElementById('adhService').value.trim(),
+        function:document.getElementById('adhFunction').value.trim(),
+        specialty:document.getElementById('adhSpecialty').value.trim(),
+        ppr:document.getElementById('adhPpr').value.trim(),
+        type:type,
+        commitment:true,
+        date:document.getElementById('adhDate').value,
+        signature:canvas.toDataURL('image/png')
+      };
+
+      try{
+        localStorage.setItem('ugtm-adhesion-draft',JSON.stringify(data));
+      }catch(err){}
+
+        try{
+          var fs=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
+          var sh=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;
+          var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+
+          if(!fs||!sh||!jsPDF)throw new Error('PDF/Share indisponible');
+
+          var pdf=new jsPDF({unit:'mm',format:'a4'});
+          var pageW=210;
+          var margin=18;
+          var y=18;
+
+          function loadLogo(){
+            return new Promise(function(resolve,reject){
+              var img=new Image();
+              img.onload=function(){
+                try{
+                  var c=document.createElement('canvas');
+                  c.width=420;
+                  c.height=140;
+                  var cx=c.getContext('2d');
+                  cx.clearRect(0,0,c.width,c.height);
+                  cx.drawImage(img,0,0,c.width,c.height);
+                  resolve(c.toDataURL('image/png'));
+                }catch(e){reject(e);}
+              };
+              img.onerror=reject;
+              img.src='icons/ugtm-logo.svg';
+            });
+          }
+
+          function line(){
+            pdf.setDrawColor(184,50,104);
+            pdf.setLineWidth(.6);
+            pdf.line(margin,y,pageW-margin,y);
+            y+=7;
+          }
+
+          function section(title){
+            if(y>258){
+              pdf.addPage();
+              y=18;
+            }
+            pdf.setFillColor(248,235,242);
+            pdf.roundedRect(margin,y-5,pageW-margin*2,9,2,2,'F');
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(10);
+            pdf.setTextColor(184,50,104);
+            pdf.text(title,margin+4,y+1);
+            pdf.setTextColor(0,0,0);
+            y+=12;
+          }
+
+          function field(label,value){
+            if(y>270){
+              pdf.addPage();
+              y=18;
+            }
+
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(9.5);
+            pdf.text(label,margin,y);
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(10);
+
+            var text=String(value||'');
+            var lines=pdf.splitTextToSize(text,118);
+
+            pdf.text(lines,68,y);
+            y+=Math.max(7,lines.length*5.2);
+          }
+
+          function drawSignatureBox(title,x,boxY){
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(10);
+            pdf.text(title,x,boxY);
+
+            pdf.setDrawColor(150,150,150);
+            pdf.setLineWidth(.4);
+            pdf.roundedRect(x,boxY+5,78,30,2,2,'S');
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Signature',x+4,boxY+30);
+            pdf.setTextColor(0,0,0);
+          }
+
+          loadLogo().then(function(logo){
+
+            pdf.addImage(logo,'PNG',margin,12,38,13);
+
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(12);
+            pdf.text('Union Générale des Travailleurs du Maroc',62,17);
+
+            pdf.setFontSize(11);
+            pdf.text('Fédération nationale de la Santé',62,23);
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(9.5);
+            pdf.text('Région Souss-Massa',62,29);
+
+            y=39;
+            line();
+
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(17);
+            pdf.setTextColor(184,50,104);
+            pdf.text("DEMANDE D'ADHÉSION",105,y,{align:'center'});
+            pdf.setTextColor(0,0,0);
+            y+=11;
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(95,95,95);
+            pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,y,{align:'center'});
+            pdf.setTextColor(0,0,0);
+            y+=13;
+
+            section('IDENTIFICATION DE L’ADHÉRENT');
+
+            field('Nom',data.nom);
+            field('Prénom',data.prenom);
+            field('CIN',data.cin);
+            field('Date de naissance',data.dob);
+            field('Téléphone',data.phone);
+            field('Adresse',data.address);
+
+            section('SITUATION PROFESSIONNELLE');
+
+            field('Province / Préfecture',data.province);
+            field('Établissement / structure',data.establishment);
+            field('Service / unité',data.service);
+            field('Fonction',data.function);
+            field('Spécialité',data.specialty);
+            field('PPR',data.ppr);
+
+            section('ADHÉSION');
+
+            field('Type',data.type==='renew'?'Renouvellement':'Première adhésion');
+            field('Date',data.date);
+
+            section('ENGAGEMENT');
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(9.5);
+
+            var engagement=[
+              "Je déclare adhérer à la Fédération nationale de la Santé",
+              "et accepter ses statuts ainsi que son règlement intérieur."
+            ];
+
+            pdf.text(engagement,margin,y);
+            y+=16;
+
+            section('SIGNATURES');
+
+            var signatureY=y;
+
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(10);
+            pdf.text("Signature de l’adhérent",margin,signatureY);
+
+            pdf.setDrawColor(150,150,150);
+            pdf.setLineWidth(.4);
+            pdf.roundedRect(margin,signatureY+5,78,30,2,2,'S');
+
+            if(data.signature){
+              pdf.addImage(data.signature,'PNG',margin+4,signatureY+7,70,26);
+            }
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Signature',margin+4,signatureY+30);
+            pdf.setTextColor(0,0,0);
+
+            drawSignatureBox("Signature du responsable syndical",margin+96,signatureY);
+
+            y=signatureY+43;
+
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
+            pdf.setTextColor(0,0,0);
+
+            var base='demande-adhesion-'+(data.nom||'adherent').replace(/[^a-z0-9_-]/gi,'-')+'.pdf';
+            var blob=pdf.output('blob');
+            var reader=new FileReader();
+
+            reader.onloadend=async function(){
+              try{
+                var b64=String(reader.result).split(',')[1];
+
+                var saved=await fs.writeFile({
+                  path:base,
+                  data:b64,
+                  directory:'CACHE'
+                });
+
+                await sh.share({
+                  title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
+                  text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
+                  url:saved.uri,
+                  dialogTitle:"Envoyer la demande"
+                });
+
+              }catch(err){
+                console.error('Adhesion PDF/share:',err);
+                if(typeof toast==='function')toast(
+                  typeof lang!=='undefined'&&lang==='ar'
+                  ?'تعذر فتح المشاركة'
+                  :'Impossible d’ouvrir le partage.',
+                  4000
+                );
+              }
+            };
+
+            reader.readAsDataURL(blob);
+
+          }).catch(function(err){
+            console.error('Adhesion logo/PDF:',err);
+            if(typeof toast==='function')toast(
+              typeof lang!=='undefined'&&lang==='ar'
+              ?'تعذر إنشاء ملف PDF'
+              :'Impossible de créer le PDF.',
+              4000
+            );
+          });
+
+        }catch(err){
+          console.error('Adhesion PDF:',err);
+          if(typeof toast==='function')toast(
+            typeof lang!=='undefined'&&lang==='ar'
+            ?'تم حفظ الاستمارة ولكن تعذر إنشاء PDF'
+            :'Formulaire sauvegardé, mais création du PDF impossible.',
+            4000
+          );
+        }
+    });
+  }
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-go="adhesion"]');
+    if(b)setTimeout(initDigitalAdhesion,50);
+  });
+
+  setTimeout(initDigitalAdhesion,300);
+})();
+</script>
 </body>
 </html>

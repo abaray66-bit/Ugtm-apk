@@ -29,7 +29,7 @@ window.APP_DATA = {
     form: "#report",
     // Lien de téléchargement de la demande d'adhésion (Google Drive, Dropbox, site…)
     // Laissez vide : le bouton affiche « Lien bientôt disponible ».
-    adhesion: "demande-adhesion.pdf"
+    adhesion: "https://ugtm-fns-souss-massa.web.app/demande-adhesion.pdf"
   },
 
   // Communiqués (gérés via l'espace admin après configuration)

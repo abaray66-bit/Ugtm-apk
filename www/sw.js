@@ -2,7 +2,7 @@
    - Réseau d'abord : les communiqués modifiés apparaissent dès qu'il y a de la connexion.
    - Sans connexion : la dernière version en cache s'ouvre quand même.
    Si vous changez ce fichier ou l'application, augmentez le numéro de version ci-dessous. */
-var VERSION = 'ugtm-v18';
+var VERSION = 'ugtm-v19';
 var SHELL = [
   './',
   'index.html',
