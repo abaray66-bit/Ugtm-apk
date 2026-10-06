@@ -2321,7 +2321,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div id="meCard"></div><h2 class="h2" data-i18n="pfT"></h2><div class="field">
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div id="meCard"></div><p class="hint" id="meWelcome" hidden data-i18n="meReady"></p><button class="btn ghost block" type="button" id="meProfileToggle" hidden data-act="toggle-profile" aria-expanded="false" data-i18n="editProfile"></button><div id="meProfileForm"><h2 class="h2" data-i18n="pfT"></h2><div class="field">
 <label for="pfName" data-i18n="lName"></label>
 <input id="pfName" type="text" autocomplete="name">
 </div><div class="field">
@@ -2333,7 +2333,7 @@ button.primary:active {
 </div><div class="field">
 <label for="pfPhone" data-i18n="lPhone"></label>
 <input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel">
-</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button>
+</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button></div>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -2639,6 +2639,8 @@ meT:`Mon espace`,
 meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux communiqués réservés aux adhérents.`,
 meBtnIn:`Se connecter avec Google`,
 mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
+meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
+editProfile:`Modifier mon profil`,
 
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
@@ -2811,6 +2813,8 @@ meT:`فضائي`,
 meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والبلاغات المخصصة للمنخرطين.`,
 meBtnIn:`الدخول بحساب Google`,
 mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
+meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
+editProfile:`تعديل معلوماتي`,
 
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
@@ -3633,6 +3637,31 @@ $('meCard').innerHTML=
 :'';
 
 fillForm(false);
+
+var profileForm=$('meProfileForm');
+var profileToggle=$('meProfileToggle');
+var welcome=$('meWelcome');
+
+var profileComplete=!!(
+  m &&
+  String(m.name||'').trim() &&
+  String(m.etab||'').trim() &&
+  String(m.prov||'').trim() &&
+  String(m.phone||'').trim()
+);
+
+if(profileForm&&profileToggle){
+  if(profileComplete){
+    profileForm.hidden=true;
+    profileToggle.hidden=false;
+    profileToggle.setAttribute('aria-expanded','false');
+    if(welcome)welcome.hidden=false;
+  }else{
+    profileForm.hidden=false;
+    profileToggle.hidden=true;
+    if(welcome)welcome.hidden=true;
+  }
+}
 
 $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 }
@@ -4863,6 +4892,19 @@ c.signIn().catch(showError);
 
 }
 
+else if(act==='toggle-profile'){
+
+var pf=$('meProfileForm');
+var pt=$('meProfileToggle');
+
+if(pf&&pt){
+  var open=pf.hidden;
+  pf.hidden=!open;
+  pt.setAttribute('aria-expanded',open?'true':'false');
+}
+
+}
+
 else if(act==='signout'){
 
 c.signOut().catch(showError);
@@ -4896,6 +4938,7 @@ if(window.prefillDigitalAdhesion){
 }
 
 toast(T().saved);
+renderMe();
 
 })
 
