@@ -5092,25 +5092,12 @@ c.admin.removeResponsable(uid)
 
 else if(a==='activate'&&(S.isAdmin||S.isSubAdmin)&&m){
 
-var no=window.prompt(
-"Numéro d'adhérent pour "+
-(m.name||m.email)+" :",
-m.memberNo||nextNo()
-);
-
-if(no===null)return;
-
-no=no.trim();
-
-if(!no)return;
-
 c.admin.setStatus(
 uid,
-'active',
-no
+'active'
 )
-.then(function(){
-toast('Adhérent validé');
+.then(function(no){
+toast('Adhérent validé — numéro '+(no||'attribué automatiquement'));
 })
 .catch(showError);
 

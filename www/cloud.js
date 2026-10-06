@@ -11,7 +11,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField
+  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 var auth, db, hooks;
@@ -971,25 +971,84 @@ var admin = {
 
 
   setStatus:
-    function(uid, status, memberNo){
+    async function(uid, status){
       var ref = doc(db, 'members', uid);
-      return getDoc(ref).then(function(snap){
-        var prior = snap.exists() ? snap.data() : {};
-        var data = {status: status};
-        if (memberNo){
-          data.memberNo = String(memberNo).slice(0,30);
-          data.activatedAt = serverTimestamp();
-        }
-        if (status !== 'active' && prior.role === 'subadmin'){
-          data.role = 'member';
-          data.adminProvince = '';
-        }
-        return updateDoc(ref, data).then(function(){
-          if (status === 'active' || !prior.adminProvince) return;
-          return getDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(contact){
-            if (contact.exists() && contact.data().uid === uid)
-              return deleteDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(){return deletePublicProvinceContact(prior.adminProvince);});
+      var snap = await getDoc(ref);
+
+      if (!snap.exists())
+        throw new Error('Membre introuvable');
+
+      var prior = snap.data();
+
+      /* Attribution automatique du numéro d'adhérent */
+      if (status === 'active' && !prior.memberNo){
+        var sequenceRef = doc(db, 'counters', 'memberNumbers');
+
+        var existingSnap = await getDocs(collection(db, 'members'));
+        var highest = 0;
+
+        existingSnap.forEach(function(memberDoc){
+          var existingNo = memberDoc.data().memberNo || '';
+          var match = /^SM-(\d+)$/.exec(String(existingNo));
+
+          if (match){
+            var value = Number(match[1]);
+            if (Number.isFinite(value) && value > highest)
+              highest = value;
+          }
+        });
+
+        return runTransaction(db, async function(tx){
+          var seqSnap = await tx.get(sequenceRef);
+
+          var next = seqSnap.exists()
+            ? Number(seqSnap.data().next || 1)
+            : (highest + 1);
+
+          if (!Number.isFinite(next) || next < 1)
+            next = highest + 1;
+
+          if (next <= highest)
+            next = highest + 1;
+
+          var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
+          tx.set(sequenceRef, {
+            next: Math.floor(next) + 1,
+            lastMemberNo: no,
+            updatedAt: serverTimestamp()
           });
+
+          tx.update(ref, {
+            status: 'active',
+            memberNo: no,
+            activatedAt: serverTimestamp()
+          });
+
+          return no;
+        });
+      }
+
+      var data = {status: status};
+
+      if (status !== 'active' && prior.role === 'subadmin'){
+        data.role = 'member';
+        data.adminProvince = '';
+      }
+
+      return updateDoc(ref, data).then(function(){
+        if (status === 'active' || !prior.adminProvince)
+          return null;
+
+        return getDoc(
+          doc(db, 'provinceContacts', prior.adminProvince)
+        ).then(function(contact){
+          if (contact.exists() && contact.data().uid === uid)
+            return deleteDoc(
+              doc(db, 'provinceContacts', prior.adminProvince)
+            ).then(function(){
+              return deletePublicProvinceContact(prior.adminProvince);
+            });
         });
       });
     },
