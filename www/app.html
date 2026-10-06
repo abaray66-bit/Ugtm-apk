@@ -6029,10 +6029,16 @@ window.UGTM.failed();
 
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
-    if(b)setTimeout(initDigitalAdhesion,50);
+    if(b){
+      setTimeout(function(){
+        initDigitalAdhesion();
+      },150);
+    }
   });
 
-  setTimeout(initDigitalAdhesion,300);
+  setTimeout(function(){
+    initDigitalAdhesion();
+  },500);
 })();
 </script>
 </body>
