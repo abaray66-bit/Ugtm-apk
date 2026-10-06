@@ -5720,9 +5720,16 @@ window.UGTM.failed();
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
-    canvas.dataset.ready='1';
 
     var ctx=canvas.getContext('2d');
+
+    /* Contexte 2D indisponible : on n'initialise que le cadre de signature.
+       Le préremplissage et la génération PDF du même script doivent
+       continuer à s'exécuter (le reste du formulaire reste utilisable). */
+    if(!ctx)return;
+
+    canvas.dataset.ready='1';
+
     var drawing=false, signed=false;
 
     function pos(e){
