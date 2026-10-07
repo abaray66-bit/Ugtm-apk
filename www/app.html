@@ -6071,5 +6071,42 @@ window.UGTM.failed();
   },500);
 })();
 </script>
+
+<script id="online-update-check">
+(function(){
+  var CURRENT_VERSION_CODE = 1;
+  var UPDATE_URL = 'https://ugtm-fns-souss-massa.web.app/update.json';
+
+  function checkForUpdate(){
+    fetch(UPDATE_URL + '?t=' + Date.now(), {
+      cache: 'no-store'
+    })
+    .then(function(r){
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      return r.json();
+    })
+    .then(function(update){
+      if(!update || !update.versionCode) return;
+
+      if(Number(update.versionCode) > CURRENT_VERSION_CODE){
+        var msg = update.message ||
+          'Une nouvelle version de l’application est disponible.';
+
+        if(typeof toast === 'function'){
+          toast(msg, 6000);
+        }
+
+        console.log('Mise à jour disponible:', update);
+      }
+    })
+    .catch(function(err){
+      console.log('Vérification mise à jour:', err);
+    });
+  }
+
+  setTimeout(checkForUpdate, 2500);
+})();
+</script>
+
 </body>
 </html>

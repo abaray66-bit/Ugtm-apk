@@ -210,6 +210,47 @@ jobs:
           npx cap sync android
 
       # ==========================================================
+      # VERSION ANDROID
+      # ==========================================================
+
+      - name: Définir la version Android
+        run: |
+          set -e
+
+          python3 - <<'PY2'
+          from pathlib import Path
+          import re
+
+          p = Path("android/app/build.gradle")
+          text = p.read_text()
+
+          text, n1 = re.subn(
+              r'(?m)^\s*versionCode\s+\d+',
+              '        versionCode 2',
+              text,
+              count=1
+          )
+
+          text, n2 = re.subn(
+              r'(?m)^\s*versionName\s+"[^"]+"',
+              '        versionName "1.1"',
+              text,
+              count=1
+          )
+
+          if n1 != 1 or n2 != 1:
+              raise SystemExit(
+                  f"ERREUR version Android : versionCode={n1}, versionName={n2}"
+              )
+
+          p.write_text(text)
+
+          print("Version Android définie : versionCode 2 / versionName 1.1")
+          PY2
+
+          grep -n "versionCode\|versionName" android/app/build.gradle
+
+      # ==========================================================
       # INSTALLATION DU KEYSTORE
       # ==========================================================
 
