@@ -984,32 +984,15 @@ var admin = {
       if (status === 'active' && !prior.memberNo){
         var sequenceRef = doc(db, 'counters', 'memberNumbers');
 
-        var existingSnap = await getDocs(collection(db, 'members'));
-        var highest = 0;
-
-        existingSnap.forEach(function(memberDoc){
-          var existingNo = memberDoc.data().memberNo || '';
-          var match = /^SM-(\d+)$/.exec(String(existingNo));
-
-          if (match){
-            var value = Number(match[1]);
-            if (Number.isFinite(value) && value > highest)
-              highest = value;
-          }
-        });
-
         return runTransaction(db, async function(tx){
           var seqSnap = await tx.get(sequenceRef);
 
           var next = seqSnap.exists()
             ? Number(seqSnap.data().next || 1)
-            : (highest + 1);
+            : 1;
 
           if (!Number.isFinite(next) || next < 1)
-            next = highest + 1;
-
-          if (next <= highest)
-            next = highest + 1;
+            next = 1;
 
           var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
