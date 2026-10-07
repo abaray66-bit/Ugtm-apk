@@ -6074,34 +6074,72 @@ window.UGTM.failed();
 
 <script id="online-update-check">
 (function(){
-  var CURRENT_VERSION_CODE = 1;
-  var UPDATE_URL = 'https://ugtm-fns-souss-massa.web.app/update.json';
+  var UPDATE_URL =
+    'https://ugtm-fns-souss-massa.web.app/update.json';
+
+  var AppUpdater = null;
+
+  try {
+    AppUpdater = Capacitor.Plugins.AppUpdater;
+  } catch(e) {
+    console.log('AppUpdater indisponible:', e);
+  }
 
   function checkForUpdate(){
-    fetch(UPDATE_URL + '?t=' + Date.now(), {
-      cache: 'no-store'
-    })
-    .then(function(r){
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.json();
-    })
-    .then(function(update){
-      if(!update || !update.versionCode) return;
+    if(!AppUpdater || typeof AppUpdater.getVersionCode !== 'function'){
+      console.log('AppUpdater non disponible');
+      return;
+    }
 
-      if(Number(update.versionCode) > CURRENT_VERSION_CODE){
-        var msg = update.message ||
-          'Une nouvelle version de l’application est disponible.';
+    AppUpdater.getVersionCode()
+      .then(function(result){
+        var currentVersionCode = Number(result.versionCode || 0);
 
-        if(typeof toast === 'function'){
-          toast(msg, 6000);
-        }
+        return fetch(
+          UPDATE_URL + '?t=' + Date.now(),
+          {cache:'no-store'}
+        ).then(function(r){
+          if(!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        }).then(function(update){
+          if(!update || !update.versionCode || !update.apkUrl){
+            return;
+          }
 
-        console.log('Mise à jour disponible:', update);
-      }
-    })
-    .catch(function(err){
-      console.log('Vérification mise à jour:', err);
-    });
+          var remoteVersionCode = Number(update.versionCode);
+
+          console.log(
+            'Version Android:',
+            currentVersionCode,
+            'Version disponible:',
+            remoteVersionCode
+          );
+
+          if(remoteVersionCode > currentVersionCode){
+            var msg = update.message ||
+              'Une nouvelle version de l’application est disponible.';
+
+            if(typeof toast === 'function'){
+              toast(msg, 6000);
+            }
+
+            console.log(
+              'Mise à jour disponible, téléchargement automatique:',
+              update.apkUrl
+            );
+
+            return AppUpdater.downloadAndInstall({
+              url: update.apkUrl
+            });
+          }
+        });
+      })
+      .catch(function(err){
+        console.log(
+          'Vérification mise à jour:',
+          err
+        );
+      });
   }
 
   setTimeout(checkForUpdate, 2500);
