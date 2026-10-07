@@ -6080,7 +6080,9 @@ window.UGTM.failed();
   var AppUpdater = null;
 
   try {
-    AppUpdater = Capacitor.Plugins.AppUpdater;
+    if (typeof Capacitor.registerPlugin === 'function') {
+      AppUpdater = Capacitor.registerPlugin('AppUpdater');
+    }
   } catch(e) {
     console.log('AppUpdater indisponible:', e);
   }
