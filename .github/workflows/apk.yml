@@ -210,183 +210,397 @@ jobs:
           npx cap sync android
 
       # ==========================================================
-      # MODULE DE MISE A JOUR AUTOMATIQUE
+      # ==========================================================
+      # SYSTEME NATIF DE MISE A JOUR AUTOMATIQUE
       # ==========================================================
 
-      - name: Installer le module AppUpdater
+      - name: Installer le système natif de mise à jour
         run: |
           set -e
 
           JAVA_DIR="android/app/src/main/java/ma/ugtm/souss/massa"
           mkdir -p "$JAVA_DIR"
 
-          cat > "$JAVA_DIR/AppUpdaterPlugin.java" <<'JAVA'
+          cat > "$JAVA_DIR/UpdateManager.java" <<'JAVA'
           package ma.ugtm.souss.massa;
 
+          import android.content.Context;
           import android.content.Intent;
+          import android.content.pm.PackageInfo;
+          import android.content.pm.PackageManager;
           import android.net.Uri;
           import android.os.Build;
           import android.provider.Settings;
 
           import androidx.core.content.FileProvider;
 
-          import com.getcapacitor.JSObject;
-          import com.getcapacitor.Plugin;
-          import com.getcapacitor.PluginCall;
-          import com.getcapacitor.PluginMethod;
-          import com.getcapacitor.annotation.CapacitorPlugin;
+          import org.json.JSONObject;
 
           import java.io.File;
+          import java.io.FileInputStream;
           import java.io.FileOutputStream;
           import java.io.InputStream;
           import java.net.HttpURLConnection;
           import java.net.URL;
+          import java.security.MessageDigest;
           import java.util.concurrent.ExecutorService;
           import java.util.concurrent.Executors;
 
-          @CapacitorPlugin(name = "AppUpdater")
-          public class AppUpdaterPlugin extends Plugin {
+          public final class UpdateManager {
 
-              private final ExecutorService executor =
+              private static final String UPDATE_URL =
+                  "https://ugtm-fns-souss-massa.web.app/update.json";
+
+              private static final String APK_NAME =
+                  "ugtm-update.apk";
+
+              private static final ExecutorService EXECUTOR =
                   Executors.newSingleThreadExecutor();
 
-              @PluginMethod
-              public void getVersionCode(PluginCall call) {
-                  try {
-                      long versionCode;
+              private UpdateManager() {}
 
-                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                          versionCode = getContext()
-                              .getPackageManager()
-                              .getPackageInfo(
-                                  getContext().getPackageName(), 0
-                              ).getLongVersionCode();
-                      } else {
-                          versionCode = getContext()
-                              .getPackageManager()
-                              .getPackageInfo(
-                                  getContext().getPackageName(), 0
-                              ).versionCode;
+              public static void check(Context context) {
+                  Context appContext = context.getApplicationContext();
+
+                  EXECUTOR.execute(() -> {
+                      try {
+                          checkInternal(appContext);
+                      } catch (Exception e) {
+                          android.util.Log.e(
+                              "UGTM_UPDATE",
+                              "Vérification mise à jour échouée",
+                              e
+                          );
+                      }
+                  });
+              }
+
+              private static void checkInternal(Context context)
+                      throws Exception {
+
+                  long currentVersionCode = getCurrentVersionCode(context);
+
+                  URL url = new URL(
+                      UPDATE_URL + "?t=" + System.currentTimeMillis()
+                  );
+
+                  HttpURLConnection connection =
+                      (HttpURLConnection) url.openConnection();
+
+                  connection.setConnectTimeout(15000);
+                  connection.setReadTimeout(30000);
+                  connection.setUseCaches(false);
+                  connection.setRequestProperty(
+                      "Cache-Control",
+                      "no-cache"
+                  );
+                  connection.setRequestProperty(
+                      "Pragma",
+                      "no-cache"
+                  );
+                  connection.setInstanceFollowRedirects(true);
+
+                  try {
+                      connection.connect();
+
+                      int response =
+                          connection.getResponseCode();
+
+                      if (response < 200 || response >= 300) {
+                          throw new Exception(
+                              "HTTP " + response
+                          );
                       }
 
-                      JSObject result = new JSObject();
-                      result.put("versionCode", versionCode);
-                      call.resolve(result);
+                      String json;
 
-                  } catch (Exception e) {
-                      call.reject(
-                          "Impossible de lire la version Android", e
+                      try (InputStream input =
+                               connection.getInputStream()) {
+
+                          java.io.ByteArrayOutputStream buffer =
+                              new java.io.ByteArrayOutputStream();
+
+                          byte[] data = new byte[4096];
+                          int count;
+
+                          while ((count = input.read(data)) != -1) {
+                              buffer.write(data, 0, count);
+                          }
+
+                          json = buffer.toString("UTF-8");
+                      }
+
+                      JSONObject update =
+                          new JSONObject(json);
+
+                      long remoteVersionCode =
+                          update.getLong("versionCode");
+
+                      String apkUrl =
+                          update.getString("apkUrl");
+
+                      android.util.Log.i(
+                          "UGTM_UPDATE",
+                          "Version actuelle=" +
+                          currentVersionCode +
+                          " version serveur=" +
+                          remoteVersionCode
                       );
+
+                      if (remoteVersionCode <= currentVersionCode) {
+                          android.util.Log.i(
+                              "UGTM_UPDATE",
+                              "Application déjà à jour."
+                          );
+                          return;
+                      }
+
+                      String sha256 = null;
+
+                      if (update.has("sha256")) {
+                          sha256 =
+                              update.getString("sha256");
+                      }
+
+                      File apkFile =
+                          downloadApk(context, apkUrl);
+
+                      if (sha256 != null &&
+                          !sha256.trim().isEmpty()) {
+
+                          String calculated =
+                              sha256(apkFile);
+
+                          if (!calculated.equalsIgnoreCase(
+                                  sha256.trim())) {
+
+                              throw new Exception(
+                                  "SHA-256 APK invalide"
+                              );
+                          }
+                      }
+
+                      launchInstaller(context, apkFile);
+
+                  } finally {
+                      connection.disconnect();
                   }
               }
 
-              @PluginMethod
-              public void downloadAndInstall(PluginCall call) {
-                  String apkUrl = call.getString("url");
+              private static long getCurrentVersionCode(
+                      Context context) throws Exception {
 
-                  if (apkUrl == null || apkUrl.trim().isEmpty()) {
-                      call.reject("URL APK manquante");
-                      return;
+                  PackageManager pm =
+                      context.getPackageManager();
+
+                  PackageInfo info =
+                      pm.getPackageInfo(
+                          context.getPackageName(),
+                          0
+                      );
+
+                  if (Build.VERSION.SDK_INT >=
+                      Build.VERSION_CODES.P) {
+
+                      return info.getLongVersionCode();
+
+                  } else {
+                      return info.versionCode;
                   }
+              }
 
-                  executor.execute(() -> {
-                      try {
-                          URL url = new URL(apkUrl);
-                          HttpURLConnection connection =
-                              (HttpURLConnection) url.openConnection();
+              private static File downloadApk(
+                      Context context,
+                      String apkUrl
+              ) throws Exception {
 
-                          connection.setConnectTimeout(15000);
-                          connection.setReadTimeout(120000);
-                          connection.setInstanceFollowRedirects(true);
-                          connection.connect();
+                  URL url = new URL(apkUrl);
 
-                          int response = connection.getResponseCode();
+                  HttpURLConnection connection =
+                      (HttpURLConnection) url.openConnection();
 
-                          if (response < 200 || response >= 400) {
-                              throw new Exception("HTTP " + response);
-                          }
+                  connection.setConnectTimeout(15000);
+                  connection.setReadTimeout(120000);
+                  connection.setInstanceFollowRedirects(true);
+                  connection.connect();
 
-                          File apkFile = new File(
-                              getContext().getCacheDir(),
-                              "ugtm-update.apk"
+                  try {
+                      int response =
+                          connection.getResponseCode();
+
+                      if (response < 200 || response >= 300) {
+                          throw new Exception(
+                              "Téléchargement HTTP " + response
+                          );
+                      }
+
+                      File apkFile =
+                          new File(
+                              context.getCacheDir(),
+                              APK_NAME
                           );
 
-                          try (
-                              InputStream input = connection.getInputStream();
-                              FileOutputStream output =
-                                  new FileOutputStream(apkFile)
-                          ) {
-                              byte[] buffer = new byte[8192];
-                              int count;
+                      try (
+                          InputStream input =
+                              connection.getInputStream();
 
-                              while ((count = input.read(buffer)) != -1) {
-                                  output.write(buffer, 0, count);
-                              }
+                          FileOutputStream output =
+                              new FileOutputStream(apkFile)
+                      ) {
+                          byte[] buffer =
+                              new byte[8192];
+
+                          int count;
+
+                          while ((count =
+                                  input.read(buffer)) != -1) {
+
+                              output.write(
+                                  buffer,
+                                  0,
+                                  count
+                              );
                           }
 
-                          connection.disconnect();
+                          output.flush();
+                      }
 
-                          getActivity().runOnUiThread(() -> {
-                              try {
-                                  Uri apkUri = FileProvider.getUriForFile(
-                                      getContext(),
-                                      getContext().getPackageName()
-                                          + ".fileprovider",
-                                      apkFile
-                                  );
+                      if (!apkFile.exists() ||
+                          apkFile.length() < 1024) {
 
-                                  if (Build.VERSION.SDK_INT >=
-                                      Build.VERSION_CODES.O &&
-                                      !getContext()
-                                          .getPackageManager()
-                                          .canRequestPackageInstalls()) {
+                          throw new Exception(
+                              "APK téléchargé invalide"
+                          );
+                      }
 
-                                      Intent settings = new Intent(
-                                          Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                      return apkFile;
+
+                  } finally {
+                      connection.disconnect();
+                  }
+              }
+
+              private static String sha256(
+                      File file
+              ) throws Exception {
+
+                  MessageDigest digest =
+                      MessageDigest.getInstance("SHA-256");
+
+                  try (InputStream input =
+                           new FileInputStream(file)) {
+
+                      byte[] buffer =
+                          new byte[8192];
+
+                      int count;
+
+                      while ((count =
+                              input.read(buffer)) != -1) {
+
+                          digest.update(
+                              buffer,
+                              0,
+                              count
+                          );
+                      }
+                  }
+
+                  byte[] hash =
+                      digest.digest();
+
+                  StringBuilder result =
+                      new StringBuilder();
+
+                  for (byte b : hash) {
+                      result.append(
+                          String.format(
+                              "%02x",
+                              b & 0xff
+                          )
+                      );
+                  }
+
+                  return result.toString();
+              }
+
+              private static void launchInstaller(
+                      Context context,
+                      File apkFile
+              ) {
+
+                  android.os.Handler handler =
+                      new android.os.Handler(
+                          context.getMainLooper()
+                      );
+
+                  handler.post(() -> {
+
+                      try {
+
+                          if (Build.VERSION.SDK_INT >=
+                              Build.VERSION_CODES.O) {
+
+                              boolean allowed =
+                                  context
+                                      .getPackageManager()
+                                      .canRequestPackageInstalls();
+
+                              if (!allowed) {
+
+                                  Intent settings =
+                                      new Intent(
+                                          Settings
+                                              .ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                           Uri.parse(
                                               "package:" +
-                                              getContext().getPackageName()
+                                              context.getPackageName()
                                           )
                                       );
 
-                                      getActivity().startActivity(settings);
-                                      call.resolve();
-                                      return;
-                                  }
-
-                                  Intent intent =
-                                      new Intent(Intent.ACTION_VIEW);
-
-                                  intent.setDataAndType(
-                                      apkUri,
-                                      "application/vnd.android.package-archive"
-                                  );
-
-                                  intent.addFlags(
-                                      Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                  );
-
-                                  intent.addFlags(
+                                  settings.addFlags(
                                       Intent.FLAG_ACTIVITY_NEW_TASK
                                   );
 
-                                  getActivity().startActivity(intent);
-                                  call.resolve();
-
-                              } catch (Exception e) {
-                                  call.reject(
-                                      "Impossible d'ouvrir l'installation",
-                                      e
-                                  );
+                                  context.startActivity(settings);
+                                  return;
                               }
-                          });
+                          }
+
+                          Uri apkUri =
+                              FileProvider.getUriForFile(
+                                  context,
+                                  context.getPackageName() +
+                                      ".fileprovider",
+                                  apkFile
+                              );
+
+                          Intent installer =
+                              new Intent(
+                                  Intent.ACTION_VIEW
+                              );
+
+                          installer.setDataAndType(
+                              apkUri,
+                              "application/vnd.android.package-archive"
+                          );
+
+                          installer.addFlags(
+                              Intent.FLAG_GRANT_READ_URI_PERMISSION
+                          );
+
+                          installer.addFlags(
+                              Intent.FLAG_ACTIVITY_NEW_TASK
+                          );
+
+                          context.startActivity(installer);
 
                       } catch (Exception e) {
-                          getActivity().runOnUiThread(() ->
-                              call.reject(
-                                  "Téléchargement de la mise à jour impossible",
-                                  e
-                              )
+
+                          android.util.Log.e(
+                              "UGTM_UPDATE",
+                              "Impossible de lancer l'installation",
+                              e
                           );
                       }
                   });
@@ -394,27 +608,23 @@ jobs:
           }
           JAVA
 
-          python3 - <<'PY2'
-          from pathlib import Path
+          cat > "$JAVA_DIR/MainActivity.java" <<'JAVA'
+          package ma.ugtm.souss.massa;
 
-          p = Path(
-              "android/app/src/main/java/ma/ugtm/souss/massa/MainActivity.java"
-          )
-
-          p.write_text("""package ma.ugtm.souss.massa;
+          import android.os.Bundle;
 
           import com.getcapacitor.BridgeActivity;
 
           public class MainActivity extends BridgeActivity {
 
               @Override
-              public void onCreate(android.os.Bundle savedInstanceState) {
-                  registerPlugin(AppUpdaterPlugin.class);
+              public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+
+                  UpdateManager.check(this);
               }
           }
-          """)
-          PY2
+          JAVA
 
           python3 - <<'PY2'
           from pathlib import Path
@@ -437,11 +647,7 @@ jobs:
           p.write_text(text)
           PY2
 
-          echo "Module AppUpdater installé."
-
-      # ==========================================================
-      # VERSION ANDROID
-      # ==========================================================
+          echo "Système natif de mise à jour installé."
 
       - name: Définir la version Android
         run: |
