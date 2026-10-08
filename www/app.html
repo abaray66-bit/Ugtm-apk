@@ -6034,14 +6034,6 @@ window.UGTM.failed();
                   directory:'CACHE'
                 });
 
-                var fileUriResult=await fs.getUri({
-                  path:base,
-                  directory:'CACHE'
-                });
-
-                var fileUri=fileUriResult&&fileUriResult.uri;
-                if(!fileUri)throw new Error('URI PDF indisponible');
-
                 var contacts=S.provinceContacts||[];
                 var contact=contacts.find(function(c){
                   return c &&
@@ -6067,7 +6059,7 @@ window.UGTM.failed();
                 await sh.share({
                   title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
                   text:shareText,
-                  files:[fileUri],
+                  url:saved.uri,
                   dialogTitle:"Envoyer la demande"
                 });
 
