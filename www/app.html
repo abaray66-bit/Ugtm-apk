@@ -6034,31 +6034,9 @@ window.UGTM.failed();
                   directory:'CACHE'
                 });
 
-                var contacts=S.provinceContacts||[];
-                var contact=contacts.find(function(c){
-                  return c &&
-                    String(c.province||'').trim()===String(data.province||'').trim() &&
-                    String(c.phone||'').trim();
-                });
-
-                var recipient='';
-                if(contact){
-                  recipient=
-                    (contact.name||'Responsable provincial')+
-                    ' — '+
-                    String(contact.phone||'').trim();
-                }
-
-                var shareText=
-                  "Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa";
-
-                if(recipient){
-                  shareText+="\\nDestinataire : "+recipient;
-                }
-
                 await sh.share({
                   title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
-                  text:shareText,
+                  text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
                   url:saved.uri,
                   dialogTitle:"Envoyer la demande"
                 });
