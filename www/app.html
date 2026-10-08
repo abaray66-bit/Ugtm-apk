@@ -3088,52 +3088,6 @@ return;
 window.open(url,'_blank','noopener');
 }
 
-function openProvincialWhatsApp(province){
-  var contacts=S.provinceContacts||[];
-  var wanted=String(province||'').trim();
-
-  var contact=contacts.find(function(c){
-    return c && String(c.province||'').trim()===wanted && String(c.phone||'').trim();
-  });
-
-  if(!contact){
-    if(typeof toast==='function')toast(
-      typeof lang!=='undefined'&&lang==='ar'
-      ?'لا يوجد حالياً مسؤول نقابي معيّن لهذا الإقليم.'
-      :'Aucun responsable syndical n’est actuellement désigné pour cette province.',
-      4500
-    );
-    return false;
-  }
-
-  var phone=String(contact.phone||'').replace(/[^0-9+]/g,'');
-
-  if(phone.indexOf('+212')===0){
-    phone=phone.substring(1);
-  }else if(phone.indexOf('212')===0){
-    // déjà au format international
-  }else if(phone.indexOf('0')===0){
-    phone='212'+phone.substring(1);
-  }else{
-    if(typeof toast==='function')toast(
-      typeof lang!=='undefined'&&lang==='ar'
-      ?'رقم المسؤول النقابي غير صالح.'
-      :'Le numéro du responsable provincial est invalide.',
-      4500
-    );
-    return false;
-  }
-
-  var message=encodeURIComponent(
-    typeof lang!=='undefined'&&lang==='ar'
-    ?'السلام عليكم، أرسل إليكم طلب الانخراط الإلكتروني في الاتحاد العام للشغالين بالمغرب - الجامعة الوطنية للصحة - جهة سوس ماسة.'
-    :'Bonjour, je vous transmets ma demande d’adhésion électronique UGTM-FNS – Région Souss-Massa.'
-  );
-
-  openUrl('https://wa.me/'+phone+'?text='+message);
-  return true;
-}
-
 /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
    les navigateurs bloquent les data: en navigation de premier plan. */
 function openDataUrl(data){
@@ -6080,23 +6034,35 @@ window.UGTM.failed();
                   directory:'CACHE'
                 });
 
-                var provincialSent=openProvincialWhatsApp(data.province);
+                var contacts=S.provinceContacts||[];
+                var contact=contacts.find(function(c){
+                  return c &&
+                    String(c.province||'').trim()===String(data.province||'').trim() &&
+                    String(c.phone||'').trim();
+                });
 
-                if(!provincialSent){
-                  await sh.share({
-                    title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
-                    text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
-                    url:saved.uri,
-                    dialogTitle:"Envoyer la demande"
-                  });
-                }else{
-                  if(typeof toast==='function')toast(
-                    typeof lang!=='undefined'&&lang==='ar'
-                    ?'تم فتح واتساب لمسؤول الإقليم. أرفق ملف PDF المحفوظ وأرسله.'
-                    :'WhatsApp est ouvert sur le responsable provincial. Joignez le PDF enregistré puis envoyez-le.',
-                    5000
-                  );
+                var recipient='';
+                if(contact){
+                  recipient=
+                    (contact.name||'Responsable provincial')+
+                    ' — '+
+                    String(contact.phone||'').trim();
                 }
+
+                var shareText=
+                  "Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa";
+
+                if(recipient){
+                  shareText+="\\nDestinataire : "+recipient;
+                }
+
+                await sh.share({
+                  title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
+                  text:shareText,
+                  url:saved.uri,
+                  files:[saved.uri],
+                  dialogTitle:"Envoyer la demande"
+                });
 
               }catch(err){
                 console.error('Adhesion PDF/share:',err);
