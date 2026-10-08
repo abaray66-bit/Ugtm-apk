@@ -4913,6 +4913,14 @@ c.signOut().catch(showError);
 
 else if(act==='save'){
 
+var wasComplete=!!(
+  S.member &&
+  String(S.member.name||'').trim() &&
+  String(S.member.etab||'').trim() &&
+  String(S.member.prov||'').trim() &&
+  String(S.member.phone||'').trim()
+);
+
 c.saveProfile({
 
 name:val('pfName'),
@@ -4939,6 +4947,15 @@ if(window.prefillDigitalAdhesion){
 
 toast(T().saved);
 renderMe();
+
+if(!wasComplete){
+  setTimeout(function(){
+    go('adhesion');
+    if(window.prefillDigitalAdhesion){
+      window.prefillDigitalAdhesion();
+    }
+  },250);
+}
 
 })
 
