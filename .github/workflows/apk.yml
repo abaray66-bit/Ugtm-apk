@@ -355,28 +355,22 @@ jobs:
                           return;
                       }
 
-                      String sha256 = null;
+                      String sha256 = update.optString("sha256", "").trim();
 
-                      if (update.has("sha256")) {
-                          sha256 =
-                              update.getString("sha256");
-                      }
+                      File apkFile = downloadApk(context, apkUrl);
 
-                      File apkFile =
-                          downloadApk(context, apkUrl);
+                      // Vérifier l'empreinte lorsqu'elle est publiée.
+                      // Un manifeste sans SHA reste compatible avec l'existant.
+                      if (!sha256.isEmpty()) {
+                          if (!sha256.matches("(?i)[0-9a-f]{64}")) {
+                              apkFile.delete();
+                              throw new Exception("SHA-256 absent ou invalide");
+                          }
 
-                      if (sha256 != null &&
-                          !sha256.trim().isEmpty()) {
-
-                          String calculated =
-                              sha256(apkFile);
-
-                          if (!calculated.equalsIgnoreCase(
-                                  sha256.trim())) {
-
-                              throw new Exception(
-                                  "SHA-256 APK invalide"
-                              );
+                          String calculated = sha256(apkFile);
+                          if (!calculated.equalsIgnoreCase(sha256)) {
+                              apkFile.delete();
+                              throw new Exception("SHA-256 APK invalide");
                           }
                       }
 
@@ -951,6 +945,16 @@ jobs:
             --print-certs \
             "$APK"
 
+      - name: Calculer SHA-256 de l'APK
+        shell: bash
+        run: |
+          set -e
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          HASH="$(sha256sum "$APK" | awk '{print $1}')"
+          printf '%s  %s\n' "$HASH" "app-release.apk" > "$APK.sha256"
+          echo "SHA-256 APK : $HASH" >> "$GITHUB_STEP_SUMMARY"
+          echo "Empreinte à reporter dans www/update.json avant publication de la mise à jour."
+
       # ==========================================================
       # ARTIFACT
       # ==========================================================
@@ -959,5 +963,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: UGTM-Android-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/apk/release/app-release.apk.sha256
           if-no-files-found: error

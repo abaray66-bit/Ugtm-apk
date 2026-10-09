@@ -93,8 +93,52 @@ service cloud.firestore {
     // =========================
     match /counters/{counterId} {
       allow read: if isAdmin() || isSubAdmin();
-      allow create: if isAdmin() || isSubAdmin();
-      allow update: if isAdmin() || isSubAdmin();
+
+      // Le sous-admin ne peut créer le compteur initial
+      // qu'en activant réellement un adhérent de sa province.
+      allow create: if isAdmin() || (
+        isSubAdmin()
+        && counterId == 'memberNumbers'
+        && request.resource.data.keys().hasOnly([
+          'next', 'lastMemberNo', 'memberUid', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'next', 'lastMemberNo', 'memberUid', 'updatedAt'
+        ])
+        && request.resource.data.next is int
+        && request.resource.data.next == 2
+        && request.resource.data.lastMemberNo == 'SM-0001'
+        && request.resource.data.memberUid is string
+        && request.resource.data.updatedAt == request.time
+        && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'active'
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.memberNo == request.resource.data.lastMemberNo
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.prov == assignedProvince()
+      );
+
+      // Chaque incrément doit accompagner une activation atomique.
+      allow update: if isAdmin() || (
+        isSubAdmin()
+        && counterId == 'memberNumbers'
+        && request.resource.data.keys().hasOnly([
+          'next', 'lastMemberNo', 'memberUid', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'next', 'lastMemberNo', 'memberUid', 'updatedAt'
+        ])
+        && resource.data.next is int
+        && request.resource.data.next is int
+        && request.resource.data.next == resource.data.next + 1
+        && request.resource.data.lastMemberNo is string
+        && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
+        && request.resource.data.memberUid is string
+        && request.resource.data.updatedAt == request.time
+        && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'active'
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.memberNo == request.resource.data.lastMemberNo
+        && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.prov == assignedProvince()
+      );
+
       allow delete: if isAdmin();
     }
 

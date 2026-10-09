@@ -11,7 +11,8 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction
+  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction,
+  writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 var auth, db, hooks;
@@ -582,112 +583,54 @@ async function addReport(o){
 
   var anonymous = !!o.anonymous;
 
-  if (!auth.currentUser && !anonymous){
+  if (!auth.currentUser && !anonymous)
+    throw new Error('Non connecté');
 
-    throw new Error(
-      'Non connecté'
-    );
-
-  }
-
-
-  // La pièce jointe n'est pas encodée dans le signalement : elle part
-  // dans reportAttachments/{id}. Les listes de signalements restent
-  // légères et la pièce se charge à la demande côté admin.
-  var attach =
-    String(o.attachmentData || '').slice(0,420000);
-
+  var attach = String(o.attachmentData || '').slice(0,420000);
 
   var data = {
-
-    ownerUid:
-      anonymous
-        ? ''
-        : auth.currentUser.uid,
-
+    ownerUid: anonymous ? '' : auth.currentUser.uid,
     anonymous: anonymous,
-
-    name:
-      anonymous
-        ? ''
-        : String(o.name || '').slice(0,120),
-
-    etab:
-      String(o.etab || '').slice(0,160),
-
-    age:
-      anonymous
-        ? ''
-        : String(o.age || '').slice(0,10),
-
-    da:
-      String(o.da || '').slice(0,80),
-
-    category:
-      String(o.category || '').slice(0,60),
-
-    description:
-      String(o.description || '').slice(0,4000),
-
-    date:
-      String(o.date || '').slice(0,20),
-
-
-
-    province:
-      String(
-        o.province ||
-        (session.member ? session.member.prov || '' : '')
-      ).slice(0,40),
-
-    attachmentName:
-      String(o.attachmentName || '').slice(0,120),
-
-    attachmentType:
-      String(o.attachmentType || '').slice(0,80),
-
-    // Champ conservé pour la compatibilité des règles : la donnée
-    // réelle est écrite dans reportAttachments ci-dessous.
-    attachmentData:
-      '',
-
+    name: anonymous ? '' : String(o.name || '').slice(0,120),
+    etab: String(o.etab || '').slice(0,160),
+    age: anonymous ? '' : String(o.age || '').slice(0,10),
+    da: String(o.da || '').slice(0,80),
+    category: String(o.category || '').slice(0,60),
+    description: String(o.description || '').slice(0,4000),
+    date: String(o.date || '').slice(0,20),
+    province: String(
+      o.province || (session.member ? session.member.prov || '' : '')
+    ).slice(0,40),
+    attachmentName: String(o.attachmentName || '').slice(0,120),
+    attachmentType: String(o.attachmentType || '').slice(0,80),
+    attachmentData: '',
     status: 'new',
-
     response: '',
-
     createdAt: serverTimestamp(),
-
     updatedAt: serverTimestamp()
-
   };
 
+  var reportRef = doc(collection(db, 'reports'));
+  var batch = writeBatch(db);
 
-  return addDoc(
-    collection(db, 'reports'),
-    data
-  )
-  .then(function(ref){
+  batch.set(reportRef, data);
 
-    if (!attach) return ref;
+  if (attach) {
+    batch.set(doc(db, 'reportAttachments', reportRef.id), {
+      data: attach,
+      name: String(o.attachmentName || '').slice(0,120),
+      type: String(o.attachmentType || '').slice(0,80),
+      ownerUid: data.ownerUid,
+      anonymous: data.anonymous,
+      province: data.province,
+      createdAt: serverTimestamp()
+    });
+  }
 
-    return setDoc(
-      doc(db, 'reportAttachments', ref.id),
-      {
-        data: attach,
-        name: String(o.attachmentName || '').slice(0,120),
-        type: String(o.attachmentType || '').slice(0,80),
-        ownerUid: data.ownerUid,
-        anonymous: data.anonymous,
-        province: data.province,
-        createdAt: serverTimestamp()
-      }
-    )
-    .then(function(){ return ref; });
-
+  return batch.commit().then(function(){
+    return reportRef;
   });
-
 }
-
 
 /* =========================================================
    PROFIL
@@ -999,6 +942,7 @@ var admin = {
           tx.set(sequenceRef, {
             next: Math.floor(next) + 1,
             lastMemberNo: no,
+            memberUid: uid,
             updatedAt: serverTimestamp()
           });
 
