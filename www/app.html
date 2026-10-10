@@ -5694,6 +5694,7 @@ window.UGTM.failed();
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
+    form.noValidate=true;
 
     var ctx=null;
     try{
@@ -5849,6 +5850,30 @@ window.UGTM.failed();
 
     form.addEventListener('submit',function(e){
       e.preventDefault();
+
+      var requiredFields=Array.from(form.querySelectorAll('[required]'));
+      var missing=requiredFields.find(function(field){
+        if(field.disabled)return false;
+        if(field.type==='checkbox')return !field.checked;
+        return !String(field.value||'').trim();
+      });
+
+      if(missing){
+        if(missing.id==='adhRenewalReason'){
+          var chosen=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+          if(chosen!=='renewal')missing=null;
+        }
+        if(missing){
+          missing.focus();
+          if(typeof toast==='function')toast(
+            typeof lang!=='undefined'&&lang==='ar'
+              ?'يرجى إكمال جميع الحقول المطلوبة'
+              :'Veuillez remplir tous les champs obligatoires.',
+            4000
+          );
+          return;
+        }
+      }
 
       if(!signed){
         if(typeof toast==='function')toast(
