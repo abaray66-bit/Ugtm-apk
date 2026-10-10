@@ -5694,51 +5694,84 @@ window.UGTM.failed();
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
-    canvas.dataset.ready='1';
 
-    var ctx=canvas.getContext('2d');
-    var drawing=false, signed=false;
-
-    function pos(e){
-      var r=canvas.getBoundingClientRect();
-      return {
-        x:(e.clientX-r.left)*canvas.width/r.width,
-        y:(e.clientY-r.top)*canvas.height/r.height
-      };
+    var ctx=null;
+    try{
+      ctx=canvas.getContext('2d');
+    }catch(e){
+      ctx=null;
     }
 
-    canvas.addEventListener('pointerdown',function(e){
-      e.preventDefault();
-      drawing=true;
-      var p=pos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x,p.y);
-    });
+    var drawing=false, signed=false;
 
-    canvas.addEventListener('pointermove',function(e){
-      if(!drawing)return;
-      e.preventDefault();
-      var p=pos(e);
-      ctx.lineTo(p.x,p.y);
-      ctx.stroke();
-      signed=true;
-      var s=document.getElementById('adhSignState');
-      if(s)s.textContent=(typeof T==='function'?T().adhSigned:'Signature enregistrée');
-    });
+    if(ctx){
+      try{
+        function pos(e){
+          var r=canvas.getBoundingClientRect();
+          return {
+            x:(e.clientX-r.left)*canvas.width/r.width,
+            y:(e.clientY-r.top)*canvas.height/r.height
+          };
+        }
 
-    window.addEventListener('pointerup',function(){drawing=false;});
+        ctx.lineWidth=4;
+        ctx.lineCap='round';
+        ctx.lineJoin='round';
+        ctx.strokeStyle='#B83268';
 
-    ctx.lineWidth=4;
-    ctx.lineCap='round';
-    ctx.lineJoin='round';
-    ctx.strokeStyle='#B83268';
+        canvas.addEventListener('pointerdown',function(e){
+          if(!ctx)return;
+          e.preventDefault();
+          drawing=true;
+          var p=pos(e);
+          ctx.beginPath();
+          ctx.moveTo(p.x,p.y);
+        });
 
-    document.getElementById('adhClearSign').addEventListener('click',function(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      signed=false;
-      var s=document.getElementById('adhSignState');
-      if(s)s.textContent=(typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
-    });
+        canvas.addEventListener('pointermove',function(e){
+          if(!drawing||!ctx)return;
+          e.preventDefault();
+          var p=pos(e);
+          ctx.lineTo(p.x,p.y);
+          ctx.stroke();
+          signed=true;
+          var state=document.getElementById('adhSignState');
+          if(state)state.textContent=
+            (typeof T==='function'?T().adhSigned:'Signature enregistrée');
+        });
+
+        window.addEventListener('pointerup',function(){
+          drawing=false;
+        });
+
+        canvas.addEventListener('pointercancel',function(){
+          drawing=false;
+        });
+
+        var clearButton=document.getElementById('adhClearSign');
+        if(clearButton){
+          clearButton.addEventListener('click',function(){
+            if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+            signed=false;
+            var state=document.getElementById('adhSignState');
+            if(state)state.textContent=
+              (typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
+          });
+        }
+      }catch(signatureError){
+        ctx=null;
+        signed=false;
+      }
+    }
+
+    if(!ctx){
+      var state=document.getElementById('adhSignState');
+      if(state)state.textContent='Zone de signature indisponible. Réessayez.';
+    }
+
+    /* Le formulaire doit pouvoir initialiser son gestionnaire même
+       si le canevas de signature n'est pas disponible. */
+    canvas.dataset.ready='1';
 
     /*
      * Préremplissage du dossier électronique à partir du profil membre.
