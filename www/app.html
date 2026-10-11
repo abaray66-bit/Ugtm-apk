@@ -4749,7 +4749,13 @@ var destination=el.getAttribute('data-go');
 if(destination==='adhesion'){
   var savedPdf='';
   try{
-    savedPdf=localStorage.getItem('ugtm-adhesion-pdf-uri')||'';
+    var activeAdhesionUid=
+      (typeof S!=='undefined' && S.user && S.user.uid)
+        ? String(S.user.uid)
+        : '';
+    savedPdf=activeAdhesionUid
+      ? (localStorage.getItem('ugtm-adhesion-pdf-uri:'+activeAdhesionUid)||'')
+      : '';
   }catch(storageError){}
 
   if(savedPdf){
@@ -5775,6 +5781,37 @@ window.UGTM.failed();
     }
 
     var drawing=false, signed=false;
+    var lastAdhesionUid=null;
+
+    function currentAdhesionUid(){
+      var user=(typeof S!=='undefined' && S.user) ? S.user : {};
+      return user.uid ? String(user.uid) : '';
+    }
+
+    function adhesionStorageKey(base){
+      var uid=currentAdhesionUid();
+      return uid ? base+':'+uid : '';
+    }
+
+    function resetAdhesionForAccount(uid){
+      uid=String(uid||'');
+      if(lastAdhesionUid===uid)return;
+      lastAdhesionUid=uid;
+
+      try{form.reset();}catch(e){}
+      if(ctx){
+        try{ctx.clearRect(0,0,canvas.width,canvas.height);}catch(e){}
+      }
+
+      signed=false;
+      drawing=false;
+
+      var state=document.getElementById('adhSignState');
+      if(state)state.textContent=
+        typeof T==='function'
+          ? T().adhNoSignature
+          : 'Signature non renseignée';
+    }
 
     if(ctx){
       try{
@@ -5860,6 +5897,10 @@ window.UGTM.failed();
     }
 
     function prefillDigitalAdhesion(){
+      var uid=currentAdhesionUid();
+      resetAdhesionForAccount(uid);
+      if(!uid)return;
+
       var member =
         (typeof S!=='undefined' && S.member)
           ? S.member
@@ -5871,8 +5912,9 @@ window.UGTM.failed();
           : {};
 
       try{
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
         var draft=JSON.parse(
-          localStorage.getItem('ugtm-adhesion-draft')||'null'
+          (draftKey&&localStorage.getItem(draftKey))||'null'
         );
 
         if(draft&&typeof draft==='object'){
@@ -5891,7 +5933,16 @@ window.UGTM.failed();
         }
       }catch(e){}
 
-      prefillIfEmpty('adhNom',member.name||currentUser.name||'');
+      var fullName=String(member.name||currentUser.name||'').trim();
+      if(fullName){
+        var nameParts=fullName.split(/\s+/);
+        if(nameParts.length>1){
+          prefillIfEmpty('adhPrenom',nameParts.shift());
+          prefillIfEmpty('adhNom',nameParts.join(' '));
+        }else{
+          prefillIfEmpty('adhNom',fullName);
+        }
+      }
       prefillIfEmpty('adhPhone',member.phone||'');
       prefillIfEmpty('adhProvince',member.prov||'');
       prefillIfEmpty('adhEstablishment',member.etab||'');
@@ -5979,7 +6030,10 @@ window.UGTM.failed();
       };
 
       try{
-        localStorage.setItem('ugtm-adhesion-draft',JSON.stringify(data));
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
+        if(draftKey){
+          localStorage.setItem(draftKey,JSON.stringify(data));
+        }
       }catch(err){}
 
         try{
@@ -6200,8 +6254,10 @@ window.UGTM.failed();
 
                 if(saved&&saved.uri){
                   try{
-                    localStorage.setItem('ugtm-adhesion-pdf-uri',saved.uri);
-                    localStorage.setItem('ugtm-adhesion-pdf-date',new Date().toISOString());
+                    var pdfKey=adhesionStorageKey('ugtm-adhesion-pdf-uri');
+                    var dateKey=adhesionStorageKey('ugtm-adhesion-pdf-date');
+                    if(pdfKey)localStorage.setItem(pdfKey,saved.uri);
+                    if(dateKey)localStorage.setItem(dateKey,new Date().toISOString());
                   }catch(storageError){}
                 }
 
