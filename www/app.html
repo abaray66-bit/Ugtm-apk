@@ -2213,6 +2213,10 @@ button.primary:active {
         <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
         <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
       </div>
+      <div class="field adh-full" id="adhRenewalReasonWrap" style="display:none">
+        <label for="adhRenewalReason" data-i18n="adhRenewalReason"></label>
+        <input id="adhRenewalReason" maxlength="200" autocomplete="off">
+      </div>
     </div>
 
     <div class="adh-step">
@@ -4720,7 +4724,45 @@ return;
 
 if(el.hasAttribute('data-go')){
 
-go(el.getAttribute('data-go'));
+var destination=el.getAttribute('data-go');
+
+if(destination==='adhesion'){
+  var savedPdf='';
+  try{
+    savedPdf=localStorage.getItem('ugtm-adhesion-pdf-uri')||'';
+  }catch(storageError){}
+
+  if(savedPdf){
+    var reopen=window.confirm(
+      typeof lang!=='undefined'&&lang==='ar'
+        ? 'تم إنشاء ملف PDF لطلب الانخراط. هل تريد فتح المشاركة مرة أخرى؟'
+        : 'Le PDF de votre demande a déjà été généré. Voulez-vous ouvrir à nouveau le partage du PDF ?'
+    );
+
+    if(reopen){
+      var sharePlugin=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;
+      if(sharePlugin){
+        try{
+          Promise.resolve(sharePlugin.share({
+            title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
+            text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
+            url:savedPdf,
+            dialogTitle:"Envoyer la demande"
+          })).catch(showError);
+        }catch(shareError){
+          showError(shareError);
+        }
+      }else{
+        toast(typeof lang!=='undefined'&&lang==='ar'
+          ? 'المشاركة غير متاحة على هذا الجهاز'
+          : 'Le partage du PDF est indisponible sur cet appareil.');
+      }
+    }
+    return;
+  }
+}
+
+go(destination);
 
 return;
 }
@@ -5830,6 +5872,22 @@ window.UGTM.failed();
 
     prefillDigitalAdhesion();
 
+    var renewalWrap=document.getElementById('adhRenewalReasonWrap');
+    var renewalInput=document.getElementById('adhRenewalReason');
+
+    function syncRenewalReason(){
+      var selected=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+      var renewal=selected==='renewal';
+      renewalWrap.style.display=renewal?'':'none';
+      renewalInput.required=renewal;
+      if(!renewal)renewalInput.value='';
+    }
+
+    document.querySelectorAll('input[name="adhType"]').forEach(function(radio){
+      radio.addEventListener('change',syncRenewalReason);
+    });
+    syncRenewalReason();
+
     form.addEventListener('submit',function(e){
       e.preventDefault();
 
@@ -5881,6 +5939,7 @@ window.UGTM.failed();
         specialty:document.getElementById('adhSpecialty').value.trim(),
         ppr:document.getElementById('adhPpr').value.trim(),
         type:type,
+        reason:renewalInput.value.trim(),
         commitment:true,
         date:document.getElementById('adhDate').value,
         signature:canvas.toDataURL('image/png')
@@ -6031,7 +6090,9 @@ window.UGTM.failed();
 
             section('ADHÉSION');
 
-            field('Type',data.type==='renew'?'Renouvellement':'Première adhésion');
+            field('Type',data.type==='renewal'?'Renouvellement':'Première adhésion');
+            if(data.type==='renewal'&&data.reason)
+              field('Motif du renouvellement',data.reason);
             field('Date',data.date);
 
             section('ENGAGEMENT');
@@ -6092,6 +6153,13 @@ window.UGTM.failed();
                   data:b64,
                   directory:'CACHE'
                 });
+
+                if(saved&&saved.uri){
+                  try{
+                    localStorage.setItem('ugtm-adhesion-pdf-uri',saved.uri);
+                    localStorage.setItem('ugtm-adhesion-pdf-date',new Date().toISOString());
+                  }catch(storageError){}
+                }
 
                 await sh.share({
                   title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
