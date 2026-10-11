@@ -2324,7 +2324,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div id="meCard"></div><p class="hint" id="meWelcome" hidden data-i18n="meReady"></p><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meProfileToggle" hidden data-act="toggle-profile" aria-expanded="false" data-i18n="editProfile"></button><div id="meProfileForm"><h2 class="h2" data-i18n="pfT"></h2><div class="field">
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><p class="hint" id="meWelcome" hidden data-i18n="meReady"></p><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meProfileToggle" hidden data-act="toggle-profile" aria-expanded="false" data-i18n="editProfile"></button><div id="meProfileForm"><h2 class="h2" data-i18n="pfT"></h2><div class="field">
 <label for="pfName" data-i18n="lName"></label>
 <input id="pfName" type="text" autocomplete="name">
 </div><div class="field">
@@ -3594,6 +3594,32 @@ $('pfProv').value=m.prov||'';
 $('pfPhone').value=m.phone||'';
 }
 
+var myAdhesionStatusUid='';
+var myAdhesionStatusCache=null;
+var myAdhesionStatusPromise=null;
+function showMyAdhesionStatus(request){
+  var box=$('meAdhesionStatus');if(!box)return;
+  if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
+  var labels={pending:'Demande d’adhésion : en attente de validation.',needs_completion:'Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.',accepted:'Demande d’adhésion : acceptée.',refused:'Demande d’adhésion : refusée.'};
+  box.hidden=false;box.textContent=labels[request.status]||'Statut de la demande : '+String(request.status||'inconnu')+'.';
+  if(request.adminNote)box.textContent+=' Note : '+String(request.adminNote).slice(0,1000);
+}
+function refreshMyAdhesionStatus(force){
+  var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
+  if(!box)return Promise.resolve(null);
+  if(!uid){box.hidden=true;box.textContent='';myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
+  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;return Promise.resolve(null);}
+  if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
+  if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
+  myAdhesionStatusUid=uid;box.hidden=false;box.textContent='Vérification du statut de votre demande…';
+  myAdhesionStatusPromise=window.CLOUD.getMyAdhesionRequest().then(function(request){
+    if(!(S.user&&String(S.user.uid)===uid))return null;
+    myAdhesionStatusCache=request||{status:'none'};showMyAdhesionStatus(myAdhesionStatusCache);return request;
+  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent='Statut de la demande temporairement indisponible.';}return null;}).finally(function(){myAdhesionStatusPromise=null;});
+  return myAdhesionStatusPromise;
+}
+window.refreshMyAdhesionStatus=refreshMyAdhesionStatus;
+
 function renderMe(){
 
 var t=T();
@@ -3671,6 +3697,7 @@ if(profileForm&&profileToggle){
 }
 
 $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
+refreshMyAdhesionStatus(false);
 }
 
 function renderAccountButton(){
@@ -6158,37 +6185,20 @@ window.UGTM.failed();
             var reader=new FileReader();
 
             reader.onloadend=async function(){
-              try{
-                var b64=String(reader.result).split(',')[1];
-
-                if(!window.CLOUD || typeof window.CLOUD.submitAdhesion!=='function'){
-                  throw new Error('Service Firebase d’adhésion indisponible.');
-                }
-                await window.CLOUD.submitAdhesion(data,b64);
-
-                var saved=await fs.writeFile({
-                  path:base,
-                  data:b64,
-                  directory:'CACHE'
-                });
-
-                await sh.share({
-                  title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
-                  text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
-                  files:[saved.uri],
-                  dialogTitle:"Envoyer la demande"
-                });
-
-              }catch(err){
-                console.error('Adhesion PDF/share:',err);
-                if(typeof toast==='function')toast(
-                  err && err.message ? err.message :
-                  (typeof lang!=='undefined'&&lang==='ar'
-                    ?'تعذر حفظ الطلب أو فتح المشاركة'
-                    :'Impossible d’enregistrer la demande ou d’ouvrir le partage.'),
-                  5000
-                );
+              var b64=String(reader.result||'').split(',')[1]||'';
+              if(!b64){if(typeof toast==='function')toast('Impossible de lire le PDF généré.',4000);return;}
+              if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
+                if(typeof toast==='function')toast('Service Firebase d’adhésion indisponible.',5000);return;
               }
+              var result;
+              try{result=await window.CLOUD.submitAdhesion(data,b64);}
+              catch(err){console.error('Adhesion save:',err);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
+              try{
+                if(typeof toast==='function')toast(result&&result.completed?'Complément enregistré. Votre dossier est de nouveau en attente de validation.':'Demande enregistrée. Préparation du partage du PDF…',3500);
+                var saved=await fs.writeFile({path:base,data:b64,directory:'CACHE'});
+                await sh.share({title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",files:[saved.uri],dialogTitle:"Envoyer la demande"});
+              }catch(shareErr){console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a été annulé ou indisponible ; vous pourrez réessayer plus tard.',5500);}
+              if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
             };
 
             reader.readAsDataURL(blob);

@@ -395,13 +395,40 @@ service cloud.firestore {
             && request.resource.data.application.reason.size() > 0)
         )
         && request.resource.data.signature is string && request.resource.data.signature.size() > 0 && request.resource.data.signature.size() <= 180000;
-      // ADHESION_UPDATE_RESTRICTED_FIELDS : aucun rôle ne peut réécrire le dossier signé.
-      allow update: if (isAdmin() || (isSubAdmin()
-          && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel())))
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','adminNote','updatedAt'])
-        && request.resource.data.status in ['pending','needs_completion','accepted','refused']
-        && request.resource.data.adminNote is string && request.resource.data.adminNote.size() <= 1000
-        && request.resource.data.updatedAt == request.time;
+      // Les gestionnaires ne modifient que le statut/la note.
+      // Le propriétaire peut corriger un dossier uniquement après demande de complément.
+      allow update: if (
+          (isAdmin() || (isSubAdmin() && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel())))
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','adminNote','updatedAt'])
+          && request.resource.data.status in ['pending','needs_completion','accepted','refused']
+          && request.resource.data.adminNote is string && request.resource.data.adminNote.size() <= 1000
+          && request.resource.data.updatedAt == request.time
+        ) || (
+          signedIn() && request.auth.uid == uid && resource.data.uid == uid
+          && resource.data.status == 'needs_completion'
+          && request.resource.data.uid == uid && request.resource.data.province == resource.data.province
+          && request.resource.data.application is map
+          && request.resource.data.application.keys().hasOnly(['nom','prenom','cin','dob','phone','address','province','establishment','service','function','specialty','ppr','type','reason','commitment','date'])
+          && request.resource.data.application.province == resource.data.province
+          && request.resource.data.application.nom is string && request.resource.data.application.nom.size() > 0 && request.resource.data.application.nom.size() <= 100
+          && request.resource.data.application.prenom is string && request.resource.data.application.prenom.size() > 0 && request.resource.data.application.prenom.size() <= 100
+          && request.resource.data.application.cin is string && request.resource.data.application.cin.size() > 0 && request.resource.data.application.cin.size() <= 30
+          && request.resource.data.application.dob is string
+          && request.resource.data.application.phone is string && request.resource.data.application.phone.size() > 0 && request.resource.data.application.phone.size() <= 30
+          && request.resource.data.application.address is string && request.resource.data.application.address.size() > 0 && request.resource.data.application.address.size() <= 250
+          && request.resource.data.application.establishment is string && request.resource.data.application.establishment.size() > 0 && request.resource.data.application.establishment.size() <= 160
+          && request.resource.data.application.function is string && request.resource.data.application.function.size() > 0 && request.resource.data.application.function.size() <= 120
+          && request.resource.data.application.commitment == true
+          && request.resource.data.application.type in ['first','renewal']
+          && request.resource.data.application.reason is string && request.resource.data.application.reason.size() <= 200
+          && ((request.resource.data.application.type == 'first' && request.resource.data.application.reason == '') || (request.resource.data.application.type == 'renewal' && request.resource.data.application.reason.size() > 0))
+          && request.resource.data.signature is string && request.resource.data.signature.size() > 0 && request.resource.data.signature.size() <= 180000
+          && request.resource.data.status == 'pending' && request.resource.data.adminNote == ''
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['application','signature','status','adminNote','updatedAt'])
+        );
       allow delete: if isAdmin();
     }
 
@@ -418,7 +445,19 @@ service cloud.firestore {
         && existsAfter(/databases/$(database)/documents/adhesionRequests/$(uid))
         && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
         && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province == request.resource.data.province;
-      allow update: if false;
+      // Remplacement du PDF seulement pendant la correction d'un dossier renvoyé.
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.uid == uid && request.resource.data.uid == uid
+        && request.resource.data.province == resource.data.province
+        && request.resource.data.fileName is string && request.resource.data.mimeType == 'application/pdf'
+        && request.resource.data.data is string && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 650000
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fileName','mimeType','data','updatedAt'])
+        && existsAfter(/databases/$(database)/documents/adhesionRequests/$(uid))
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status == 'needs_completion'
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status == 'pending'
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province == request.resource.data.province;
       allow delete: if isAdmin();
     }
   }

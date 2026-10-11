@@ -750,12 +750,6 @@ async function submitAdhesion(application,pdfBase64){
   var pdf=String(pdfBase64||'');
   if(!pdf||pdf.length>650000) throw new Error('Le PDF signé est vide ou dépasse 650 Ko.');
   var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid), pdfRef=doc(db,'adhesionDocuments',uid);
-  var existing=await getDoc(requestRef);
-  if(existing.exists()){
-    var status=String((existing.data()||{}).status||'pending');
-    var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',needs_completion:'Votre demande nécessite un complément.',accepted:'Votre demande est déjà acceptée.',refused:'Une décision a déjà été prise concernant votre demande.'};
-    var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.'); err.code='adhesion/already-exists'; err.status=status; throw err;
-  }
   var clean={
     nom:String(application.nom||'').trim().slice(0,100),prenom:String(application.prenom||'').trim().slice(0,100),
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
@@ -767,16 +761,30 @@ async function submitAdhesion(application,pdfBase64){
   };
   if(!clean.nom||!clean.prenom||!clean.cin||!clean.dob||!clean.phone||!clean.address||!clean.province||!clean.establishment||!clean.function||!clean.commitment||!application.signature)
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
-  if(clean.type==='renewal'&&!clean.reason)
-    throw new Error('Veuillez préciser le motif du renouvellement.');
+  if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
   if(clean.type==='first')clean.reason='';
   var signature=String(application.signature);
   if(signature.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  var batch=writeBatch(db);
-  batch.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:signature,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-  batch.set(pdfRef,{uid:uid,province:clean.province,fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,createdAt:serverTimestamp()});
-  await batch.commit();
-  return {id:uid,status:'pending'};
+  return runTransaction(db,async function(tx){
+    var reqSnap=await tx.get(requestRef), pdfSnap=await tx.get(pdfRef);
+    var existing=reqSnap.exists()?reqSnap.data():null;
+    var status=existing?String(existing.status||'pending'):'';
+    if(existing&&status!=='needs_completion'){
+      var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre demande est déjà acceptée.',refused:'Une décision a déjà été prise concernant votre demande.'};
+      var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.');err.code='adhesion/already-exists';err.status=status;throw err;
+    }
+    if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
+    if(existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
+    if(existing&&!pdfSnap.exists()) throw new Error('Le PDF du dossier est introuvable. Contactez votre administration avant de renvoyer le dossier.');
+    if(existing){
+      tx.update(requestRef,{application:clean,signature:signature,status:'pending',adminNote:'',updatedAt:serverTimestamp()});
+      tx.update(pdfRef,{fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,updatedAt:serverTimestamp()});
+    }else{
+      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:signature,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      tx.set(pdfRef,{uid:uid,province:clean.province,fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,createdAt:serverTimestamp()});
+    }
+    return {id:uid,status:'pending',completed:!!existing};
+  });
 }
 
 /* =========================================================
