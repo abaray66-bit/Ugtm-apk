@@ -556,21 +556,24 @@ async function signIn(){
 
 async function signOut(){
 
+  // Fermer d'abord la session Firebase.
+  await fbSignOut(auth);
+
+  // La déconnexion native est secondaire et ne doit pas empêcher
+  // la fermeture de la session Firebase.
   if (
     nativeAuth &&
     window.Capacitor &&
     window.Capacitor.isNativePlatform &&
     window.Capacitor.isNativePlatform()
   ){
-
     try {
       await nativeAuth.signOut();
     }
-    catch(e){}
-
+    catch(e){
+      console.warn('Déconnexion native Google non terminée :',e);
+    }
   }
-
-  await fbSignOut(auth);
 
 }
 

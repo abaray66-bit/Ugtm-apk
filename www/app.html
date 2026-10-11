@@ -5704,6 +5704,42 @@ window.UGTM.failed();
     }
 
     var drawing=false, signed=false;
+    var lastAdhesionUid=null;
+
+    function currentAdhesionUid(){
+      var user=(typeof S!=='undefined' && S.user) ? S.user : {};
+      return user.uid ? String(user.uid) : '';
+    }
+
+    function adhesionStorageKey(base){
+      var uid=currentAdhesionUid();
+      return uid ? base+':'+uid : '';
+    }
+
+    function resetAdhesionForAccount(uid){
+      uid=String(uid||'');
+      if(lastAdhesionUid===uid)return;
+      lastAdhesionUid=uid;
+
+      try{form.reset();}catch(e){}
+      if(ctx){
+        try{ctx.clearRect(0,0,canvas.width,canvas.height);}catch(e){}
+      }
+
+      signed=false;
+      drawing=false;
+
+      var state=document.getElementById('adhSignState');
+      if(state){
+        var langText='Signature non renseignée';
+        try{
+          if(typeof T==='function' && T().adhNoSignature){
+            langText=T().adhNoSignature;
+          }
+        }catch(e){}
+        state.textContent=langText;
+      }
+    }
 
     if(ctx){
       try{
@@ -5789,6 +5825,10 @@ window.UGTM.failed();
     }
 
     function prefillDigitalAdhesion(){
+      var uid=currentAdhesionUid();
+      resetAdhesionForAccount(uid);
+      if(!uid)return;
+
       var member =
         (typeof S!=='undefined' && S.member)
           ? S.member
@@ -5800,8 +5840,9 @@ window.UGTM.failed();
           : {};
 
       try{
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
         var draft=JSON.parse(
-          localStorage.getItem('ugtm-adhesion-draft')||'null'
+          (draftKey&&localStorage.getItem(draftKey))||'null'
         );
 
         if(draft&&typeof draft==='object'){
@@ -5918,7 +5959,8 @@ window.UGTM.failed();
       };
 
       try{
-        localStorage.setItem('ugtm-adhesion-draft',JSON.stringify(data));
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
+        if(draftKey)localStorage.setItem(draftKey,JSON.stringify(data));
       }catch(err){}
 
         try{
