@@ -1,8 +1,10 @@
-name: Build Android APK + AAB
+name: Build Android APK
 
 on:
   push:
-    branches: [main, master]
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 permissions:
@@ -13,28 +15,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ==========================================================
+      # CHECKOUT
+      # ==========================================================
+
       - name: Checkout
         uses: actions/checkout@v4
+
+      # ==========================================================
+      # VERIFICATION PROJET
+      # ==========================================================
 
       - name: Vérifier le projet
         run: |
           set -e
+
+          echo "=== CONTENU DU PROJET ==="
           ls -la
-          for f in package.json capacitor.config.json firestore.rules; do
-            [ -f "$f" ] || { echo "ERREUR : $f introuvable"; exit 1; }
-          done
-          [ -d www ] || { echo "ERREUR : dossier www introuvable"; exit 1; }
+
+          if [ ! -f package.json ]; then
+            echo "ERREUR : package.json introuvable."
+            exit 1
+          fi
+
+          if [ ! -d www ]; then
+            echo "ERREUR : dossier www introuvable."
+            exit 1
+          fi
+
+          if [ ! -f capacitor.config.json ]; then
+            echo "ERREUR : capacitor.config.json introuvable."
+            exit 1
+          fi
+
           echo "Projet UGTM valide."
 
-      - name: Nettoyer les backups dans www
-        run: |
-          find www -type f \( -name "*.backup*" -o -name "*.bak" \) -delete || true
-          echo "Backups supprimés."
+      # ==========================================================
+      # NODE
+      # ==========================================================
 
       - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # Syntaxe JS + JSON : bloque l'APK si un fichier est cassé.
+      - name: Vérifier la syntaxe JavaScript
+        run: node tools/check-syntax.js
+
+      # ==========================================================
+      # JAVA
+      # ==========================================================
 
       - name: Java 21
         uses: actions/setup-java@v4
@@ -42,78 +74,172 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # ==========================================================
+      # DEPENDANCES
+      # ==========================================================
+
       - name: Installer les dépendances
-        run: npm install
+        run: |
+          set -e
+          npm install
 
       - name: Installer Capacitor Android
-        run: npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: |
+          set -e
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
 
       - name: Vérifier Capacitor
-        run: npx cap --version
+        run: |
+          npx cap --version
+
+      # ==========================================================
+      # PROJET ANDROID
+      # ==========================================================
 
       - name: Générer le projet Android
         run: |
           set -e
+
           if [ ! -d android ]; then
+            echo "Projet Android absent : génération..."
             npx cap add android
+          else
+            echo "Projet Android déjà présent."
           fi
+
+      # ==========================================================
+      # FIREBASE
+      # ==========================================================
 
       - name: Installer google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -e
-          [ -n "$GOOGLE_SERVICES_JSON" ] || { echo "ERREUR : secret absent"; exit 1; }
+
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "ERREUR : GOOGLE_SERVICES_JSON est absent."
+            exit 1
+          fi
+
           mkdir -p android/app
-          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+
+          printf '%s' "$GOOGLE_SERVICES_JSON" \
+            > android/app/google-services.json
+
+          echo "google-services.json installé."
+
+      # ==========================================================
+      # GOOGLE SERVICES GRADLE
+      # ==========================================================
 
       - name: Configurer Google Services Gradle
         run: |
           set -e
+
           python3 - <<'PY'
           from pathlib import Path
 
           root = Path("android/build.gradle")
+
           if root.exists():
               text = root.read_text()
+
               if "com.google.gms:google-services" not in text:
-                  text = ("buildscript {\n    dependencies {\n        classpath "
-                          "'com.google.gms:google-services:4.4.2'\n    }\n}\n\n" + text)
+                  text = (
+                      "buildscript {\n"
+                      "    dependencies {\n"
+                      "        classpath "
+                      "'com.google.gms:google-services:4.4.2'\n"
+                      "    }\n"
+                      "}\n\n"
+                      + text
+                  )
+
                   root.write_text(text)
 
           app = Path("android/app/build.gradle")
+
           if app.exists():
               text = app.read_text()
+
               if "com.google.gms.google-services" not in text:
-                  text += "\n\napply plugin: 'com.google.gms.google-services'\n"
+                  text += (
+                      "\n\n"
+                      "apply plugin: 'com.google.gms.google-services'\n"
+                  )
+
               app.write_text(text)
           PY
+
+      # ==========================================================
+      # ICÔNES UGTM (lanceur Android)
+      # ==========================================================
 
       - name: Installer les icônes UGTM
         run: |
           set -e
-          [ -d android-icons ] || { echo "ERREUR : dossier android-icons introuvable"; exit 1; }
+
+          if [ ! -d android-icons ]; then
+            echo "ERREUR : dossier android-icons introuvable."
+            exit 1
+          fi
+
           RES="android/app/src/main/res"
+
           for dens in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
             mkdir -p "$RES/mipmap-$dens"
-            cp android-icons/mipmap-$dens/*.png "$RES/mipmap-$dens/"
+            cp "android-icons/mipmap-$dens/"*.png "$RES/mipmap-$dens/"
           done
-          VALUES="$RES/values"
+
+          # Fond de l'icône adaptative (blanc)
+          VALUES="android/app/src/main/res/values"
           mkdir -p "$VALUES"
           cp android-icons/ic_launcher_background.xml "$VALUES/"
-          echo "Icônes UGTM installées."
+
+          echo "Icônes UGTM installées :"
+          ls "$RES"/mipmap-*/ic_launcher.png
+
+      # ==========================================================
+      # CAPACITOR SYNC
+      # ==========================================================
 
       - name: Synchroniser Capacitor
-        run: npx cap sync android
+        run: |
+          set -e
+          npx cap sync android
+
+      # ==========================================================
+      # INSTALLATION DU KEYSTORE
+      # ==========================================================
 
       - name: Installer le keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           set -e
-          [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "ERREUR : keystore absent"; exit 1; }
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/ugtm-release.keystore
-          [ -s android/ugtm-release.keystore ] || { echo "ERREUR : keystore vide"; exit 1; }
+
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "ERREUR : ANDROID_KEYSTORE_BASE64 est absent."
+            exit 1
+          fi
+
+          echo "$ANDROID_KEYSTORE_BASE64" \
+            | base64 --decode \
+            > android/ugtm-release.keystore
+
+          if [ ! -s android/ugtm-release.keystore ]; then
+            echo "ERREUR : keystore vide ou invalide."
+            exit 1
+          fi
+
+          echo "Keystore installé."
+
+          ls -lh android/ugtm-release.keystore
+
+      # ==========================================================
+      # VERIFICATION KEYSTORE
+      # ==========================================================
 
       - name: Vérifier le keystore
         env:
@@ -121,39 +247,78 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           set -e
-          keytool -list -keystore android/ugtm-release.keystore \
-            -storetype PKCS12 -storepass "$ANDROID_KEYSTORE_PASSWORD"
 
-      - name: Configurer la signature + minify + shrink
+          echo "=== FICHIER KEYSTORE ==="
+
+          ls -lh android/ugtm-release.keystore
+
+          echo ""
+          echo "=== VERIFICATION KEYSTORE ==="
+
+          keytool -list \
+            -keystore android/ugtm-release.keystore \
+            -storetype PKCS12 \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD"
+
+          echo ""
+          echo "Keystore valide."
+
+          echo ""
+          echo "=== EMPREINTES ==="
+
+          keytool -list \
+            -v \
+            -keystore android/ugtm-release.keystore \
+            -storetype PKCS12 \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" \
+            | grep -E "Alias name:|SHA1:|SHA256:"
+
+      # ==========================================================
+      # CONFIGURATION SIGNATURE GRADLE
+      # ==========================================================
+
+      - name: Configurer la signature Gradle
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
+
           python3 - <<'PY'
           from pathlib import Path
 
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
 
-          # --- Supprime ancien signingConfigs
+          # ------------------------------------------------------
+          # Supprimer une ancienne configuration signingConfigs
+          # ------------------------------------------------------
+
           start = text.find("signingConfigs {")
+
           if start != -1:
               depth = 0
               end = None
+
               for i in range(start, len(text)):
                   if text[i] == "{":
                       depth += 1
                   elif text[i] == "}":
                       depth -= 1
+
                       if depth == 0:
                           end = i + 1
                           break
+
               if end:
                   text = text[:start] + text[end:]
 
-          # --- Nouvelle config signature
+          # ------------------------------------------------------
+          # Ajouter la configuration PKCS12
+          # ------------------------------------------------------
+
           signing = """
               signingConfigs {
                   release {
@@ -167,94 +332,88 @@ jobs:
           """
 
           marker = "android {"
-          if marker not in text:
-              raise SystemExit("ERREUR : bloc android introuvable.")
-          text = text.replace(marker, marker + signing, 1)
 
-          # --- buildTypes avec minify + shrink
+          if marker not in text:
+              raise SystemExit(
+                  "ERREUR : bloc android introuvable."
+              )
+
+          text = text.replace(
+              marker,
+              marker + signing,
+              1
+          )
+
+          # ------------------------------------------------------
+          # Vérifier buildTypes
+          # ------------------------------------------------------
+
           if "buildTypes {" in text:
-              import re
-              text = re.sub(
-                  r"buildTypes\s*\{.*?\n\s*\}\n",
-                  """buildTypes {
+
+              if "signingConfig signingConfigs.release" not in text:
+
+                  marker = "buildTypes {"
+
+                  replacement = """buildTypes {
                       release {
                           signingConfig signingConfigs.release
-                          minifyEnabled true
-                          shrinkResources true
-                          proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                          minifyEnabled false
+                          shrinkResources false
                       }
-                      debug {
-                          signingConfig signingConfigs.release
-                      }
-                  }
-          """,
-                  text, count=1, flags=re.DOTALL)
+                  """
+
+                  text = text.replace(
+                      marker,
+                      replacement,
+                      1
+                  )
+
           else:
+
               text += """
 
           android {
               buildTypes {
                   release {
                       signingConfig signingConfigs.release
-                      minifyEnabled true
-                      shrinkResources true
-                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                      minifyEnabled false
+                      shrinkResources false
                   }
               }
           }
           """
 
-          # --- Config ABI splits (APK par architecture)
-          if "splits {" not in text:
-              marker = "android {"
-              splits = """
-              splits {
-                  abi {
-                      enable true
-                      reset()
-                      include 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-                      universalApk true
-                  }
-              }
-              """
-              text = text.replace(marker, marker + splits, 1)
-
           gradle.write_text(text)
-          print("Configuration Gradle patchée.")
           PY
 
-      - name: Installer proguard-rules.pro
+          echo "Signature Gradle configurée."
+
+      # ==========================================================
+      # AFFICHER CONFIGURATION
+      # ==========================================================
+
+      - name: Vérifier configuration Gradle
         run: |
-          set -e
-          cat > android/app/proguard-rules.pro <<'PRO'
-          # ===== Capacitor =====
-          -keep class com.getcapacitor.** { *; }
-          -keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
-          -keep class * extends com.getcapacitor.Plugin { *; }
-          -keepclassmembers class * {
-              @com.getcapacitor.PluginMethod public *;
-          }
+          echo "======================================"
+          echo "SIGNING CONFIG"
+          echo "======================================"
 
-          # ===== Firebase =====
-          -keep class com.google.firebase.** { *; }
-          -keep class com.google.android.gms.** { *; }
-          -dontwarn com.google.firebase.**
-          -dontwarn com.google.android.gms.**
+          grep -n -A15 -B3 \
+            "signingConfigs" \
+            android/app/build.gradle || true
 
-          # ===== WebView JS =====
-          -keepclassmembers class * {
-              @android.webkit.JavascriptInterface <methods>;
-          }
-          -keepattributes JavascriptInterface
-          -keepattributes *Annotation*
-          -keepattributes SourceFile,LineNumberTable
-          -keepattributes Signature,InnerClasses,EnclosingMethod
+          echo ""
+          echo "======================================"
+          echo "BUILD TYPES"
+          echo "======================================"
 
-          # ===== Cordova fallback =====
-          -keep class org.apache.cordova.** { *; }
-          -dontwarn org.apache.cordova.**
-          PRO
-          echo "proguard-rules.pro installé."
+          grep -n -A15 \
+            "buildTypes" \
+            android/app/build.gradle || true
+
+      # ==========================================================
+      # BUILD APK
+      # ==========================================================
 
       - name: Compiler APK Release
         working-directory: android
@@ -264,50 +423,64 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
+
           chmod +x gradlew
+
+          echo "Nettoyage Gradle..."
           ./gradlew clean
+
+          echo "Compilation APK Release..."
           ./gradlew assembleRelease
 
-      - name: Compiler AAB Release (Play Store)
-        working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          set -e
-          ./gradlew bundleRelease
+      # ==========================================================
+      # VERIFICATION APK
+      # ==========================================================
 
       - name: Vérifier APK
         run: |
           set -e
-          APK_DIR="android/app/build/outputs/apk/release"
-          AAB="android/app/build/outputs/bundle/release/app-release.aab"
 
-          echo "=== APKs ==="
-          find "$APK_DIR" -type f -name "*.apk" -exec ls -lh {} \;
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+
+          if [ ! -f "$APK" ]; then
+            echo "ERREUR : APK introuvable."
+
+            find android/app/build/outputs \
+              -type f \
+              -name "*.apk" \
+              -print || true
+
+            exit 1
+          fi
 
           echo ""
-          echo "=== AAB ==="
-          [ -f "$AAB" ] && ls -lh "$AAB" || echo "AAB non généré (optionnel)"
+          echo "======================================"
+          echo "APK GENEREE"
+          echo "======================================"
 
-          BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
-          APK_UNIV="$APK_DIR/app-universal-release.apk"
-          [ -f "$APK_UNIV" ] || APK_UNIV="$APK_DIR/app-release.apk"
+          ls -lh "$APK"
+
+          echo ""
+          echo "======================================"
+          echo "SIGNATURE APK"
+          echo "======================================"
+
+          BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" \
+            | sort -V \
+            | tail -1)
 
           "$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify \
-            --verbose --print-certs "$APK_UNIV"
+            --verbose \
+            --print-certs \
+            "$APK"
 
-      - name: Publier APKs
+      # ==========================================================
+      # ARTIFACT
+      # ==========================================================
+
+      - name: Publier APK
         uses: actions/upload-artifact@v4
         with:
-          name: UGTM-APK
-          path: android/app/build/outputs/apk/release/*.apk
+          name: UGTM-Android-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
-
-      - name: Publier AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: UGTM-AAB-PlayStore
-          path: android/app/build/outputs/bundle/release/*.aab
-          if-no-files-found: warn
