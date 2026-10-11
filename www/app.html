@@ -2351,6 +2351,7 @@ button.primary:active {
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
 
 <button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
+<button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false">Adhésions</button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -2435,7 +2436,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint">Demandes numériques enregistrées dans Firestore. Les PDF restent privés.</p><ul class="list" id="admAdhesionList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -4119,6 +4120,24 @@ $('admDashTodo').innerHTML=todo.join('');
 
 }
 
+
+function renderAdminAdhesions(){
+  var list=S.adhesions||[];
+  var el=$('admAdhesionList');
+  if(!el)return;
+  if(!S.isAdmin&&!S.isSubAdmin){el.innerHTML='<li class="empty">Accès réservé aux responsables.</li>';return;}
+  function label(s){return s==='in_progress'?'En cours':s==='approved'?'Acceptée':s==='rejected'?'Refusée':'Nouvelle';}
+  el.innerHTML=list.length?list.map(function(a){
+    var actions='<button type="button" class="btn ghost small" data-adm-act="openAdhesionPdf" data-id="'+esc(a.id)+'">Ouvrir PDF</button>';
+    if(a.status!=='approved'&&a.status!=='rejected'){
+      actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="in_progress" data-id="'+esc(a.id)+'">Prendre en charge</button>';
+      actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="approved" data-id="'+esc(a.id)+'">Accepter</button>';
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="rejected" data-id="'+esc(a.id)+'">Refuser</button>';
+    }
+    return '<li class="mrow"><div class="mi"><strong>'+esc((a.nom+' '+a.prenom).trim()||'Adhérent')+' · '+esc(label(a.status))+'</strong><span>'+esc(a.province)+' · '+esc(a.date)+'</span><span>CIN : '+esc(a.cin)+' · Téléphone : '+esc(a.phone)+'</span><span>Établissement : '+esc(a.establishment)+' · Spécialité : '+esc(a.specialty)+'</span>'+(a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+(a.reviewNote?'<span>Note : '+esc(a.reviewNote)+'</span>':'')+'</div><div class="mact">'+actions+'</div></li>';
+  }).join(''):'<li class="empty">Aucune demande d’adhésion enregistrée.</li>';
+}
+
 function showAdmTab(name){
 
 if(!S.isAdmin&&!S.isSubAdmin)name='members';
@@ -4127,7 +4146,7 @@ if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
 
 S.admTab=name;
 
-['dashboard','members','news','events','reports'].forEach(function(n){
+['dashboard','members','news','events','reports','adhesions'].forEach(function(n){
 
 var el=$('adm-'+n);
 
@@ -4959,6 +4978,14 @@ c.signOut().catch(showError);
 
 else if(act==='save'){
 
+var profileWasComplete=!!(
+  S.member &&
+  String(S.member.name||'').trim() &&
+  String(S.member.etab||'').trim() &&
+  String(S.member.prov||'').trim() &&
+  String(S.member.phone||'').trim()
+);
+
 c.saveProfile({
 
 name:val('pfName'),
@@ -4985,6 +5012,11 @@ if(window.prefillDigitalAdhesion){
 
 toast(T().saved);
 renderMe();
+if(!profileWasComplete){
+  setTimeout(function(){
+    go('adhesion');
+  },150);
+}
 
 })
 
@@ -5212,6 +5244,19 @@ if(newsItem)startEditNews(newsItem);
 
 else if(a==='cancelNews'&&S.isAdmin){
 endEditNews();
+}
+
+else if(a==='openAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+  if(!c.getAdhesionPdf)return;
+  c.getAdhesionPdf(id).then(function(b64){if(b64)openDataUrl('data:application/pdf;base64,'+b64);else toast('PDF indisponible.',4000);}).catch(showError);
+}
+
+else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
+  var adhesion=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+  if(adhesion&&c.admin.updateAdhesionStatus){
+    var note=window.prompt('Note de traitement (facultatif) :',adhesion.reviewNote||'');
+    if(note!==null)c.admin.updateAdhesionStatus(id,el.getAttribute('data-status'),note).then(function(){toast('Statut de la demande mis à jour.');}).catch(showError);
+  }
 }
 
 else if(a==='startReport'){
@@ -5552,6 +5597,8 @@ S.reports=list||[];
 renderAdminReports();
 },
 
+setAdhesions:function(list){S.adhesions=list||[];renderAdminAdhesions();},
+
 setResponsables:function(list){
 S.responsables=list||[];
 renderResponsables();
@@ -5575,8 +5622,10 @@ if(csv)csv.hidden=!S.isAdmin;
 
 var reports=document.querySelector('#admTabs button[data-adm="reports"]');
 if(reports)reports.hidden=!(S.isAdmin||S.isSubAdmin);
+var adhesionsTab=document.querySelector('#admTabs button[data-adm="adhesions"]');
+if(adhesionsTab)adhesionsTab.hidden=!(S.isAdmin||S.isSubAdmin);
 
-if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'){
+if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'){
 showAdmTab('members');
 }
 
@@ -5924,7 +5973,7 @@ window.UGTM.failed();
         ppr:document.getElementById('adhPpr').value.trim(),
         type:type,
         reason:renewalInput.value.trim(),
-        commitment:true,
+        commitment:document.getElementById('adhCommit').checked,
         date:document.getElementById('adhDate').value,
         signature:canvas.toDataURL('image/png')
       };
@@ -6131,6 +6180,17 @@ window.UGTM.failed();
             reader.onloadend=async function(){
               try{
                 var b64=String(reader.result).split(',')[1];
+
+                if(window.CLOUD&&typeof window.CLOUD.submitAdhesion==='function'){
+                  try{
+                    await window.CLOUD.submitAdhesion(data,b64);
+                    if(typeof toast==='function')toast('Demande enregistrée. Choisissez ensuite votre application de partage.',3500);
+                  }catch(saveError){
+                    console.error('Adhesion Firestore:',saveError);
+                    if(typeof toast==='function')toast('PDF prêt, mais la demande n’a pas été enregistrée dans Firestore. Vérifiez la connexion puis réessayez.',5500);
+                  }
+                }
+
 
                 var saved=await fs.writeFile({
                   path:base,
