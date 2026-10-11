@@ -24,6 +24,7 @@ var unsubs = {
   members: null,
   news: null,
   reports: null,
+  adhesions: null,
   responsables: null,
   publicProvinceContacts: null
 };
@@ -321,6 +322,50 @@ function subscribeReports(){
 
 
 /* =========================================================
+   DEMANDES D'ADHÉSION — liste sans données PDF
+   ========================================================= */
+function subscribeAdhesions(){
+  unsub('adhesions');
+  if (!session.user || !(session.isAdmin || session.isSubAdmin)) {
+    if (hooks.setAdhesions) hooks.setAdhesions([]);
+    return;
+  }
+  var q = session.isAdmin
+    ? collection(db, 'adhesionRequests')
+    : query(collection(db, 'adhesionRequests'), where('province', 'in', Array.from(new Set([String(session.member && session.member.adminProvince || '').trim(), reportProvinceLabel(session.member && session.member.adminProvince)].filter(Boolean)))));
+  unsubs.adhesions = onSnapshot(q, function(snap){
+    var rows = snap.docs.map(function(d){
+      var x = d.data() || {};
+      return {
+        id: d.id,
+        uid: x.uid || d.id,
+        province: x.province || '',
+        status: x.status || 'pending',
+        adminNote: x.adminNote || '',
+        application: x.application || {},
+        createdAt: ms(x.createdAt),
+        updatedAt: ms(x.updatedAt)
+      };
+    });
+    rows.sort(function(a,b){ return (b.createdAt || 0) - (a.createdAt || 0); });
+    if (hooks.setAdhesions) hooks.setAdhesions(rows);
+  }, function(err){ hooks.error(err, true); });
+}
+
+async function getAdhesionPdf(uid){
+  if (!session.user || !(session.isAdmin || session.isSubAdmin))
+    throw new Error('Accès réservé à l’administration autorisée.');
+  var snap = await getDoc(doc(db, 'adhesionDocuments', String(uid || '')));
+  if (!snap.exists()) throw new Error('PDF du dossier introuvable.');
+  var data = snap.data() || {};
+  var raw = String(data.data || '').trim();
+  if (!raw) throw new Error('Le PDF enregistré est vide.');
+  if (/^data:application\/pdf;base64,/i.test(raw)) return raw;
+  raw = raw.replace(/^data:[^,]*,/i, '');
+  return 'data:application/pdf;base64,' + raw;
+}
+
+/* =========================================================
    AUTHENTIFICATION
    ========================================================= */
 
@@ -332,6 +377,7 @@ function onUser(user){
   if (!user){
 
     unsub('reports');
+    unsub('adhesions');
 
     session = {
       user: null,
@@ -343,6 +389,7 @@ function onUser(user){
     hooks.setSession(session);
     hooks.setMembers([]);
     hooks.setReports([]);
+    if (hooks.setAdhesions) hooks.setAdhesions([]);
 
     subscribeNews();
 
@@ -435,6 +482,7 @@ function onUser(user){
       subscribeNews();
 
       subscribeReports();
+      subscribeAdhesions();
 
     },
 
@@ -450,6 +498,7 @@ function onUser(user){
 
   subscribeNews();
   subscribeReports();
+  subscribeAdhesions();
 
 }
 
@@ -1265,6 +1314,16 @@ var admin = {
       },
 
 
+  updateAdhesionStatus: function(uid, status, note){
+    var allowed = ['needs_completion','accepted','refused'];
+    if (allowed.indexOf(status) < 0) return Promise.reject(new Error('Décision d’adhésion invalide.'));
+    var cleanNote = String(note || '').trim().slice(0,1000);
+    if (status === 'needs_completion' && !cleanNote) return Promise.reject(new Error('Une note expliquant le complément demandé est obligatoire.'));
+    return updateDoc(doc(db, 'adhesionRequests', String(uid || '')), {
+      status: status, adminNote: cleanNote, updatedAt: serverTimestamp()
+    });
+  },
+
   updateReport:
     function(id, status, response){
 
@@ -1531,6 +1590,7 @@ export async function init(config, h){
 
     getMyAdhesionRequest: getMyAdhesionRequest,
     submitAdhesion: submitAdhesion,
+    getAdhesionPdf: getAdhesionPdf,
 
     addReport: addReport,
     admin: admin,

@@ -2216,6 +2216,7 @@ button.primary:active {
       <div class="field adh-full" id="adhRenewalReasonWrap" style="display:none">
         <label for="adhRenewalReason" data-i18n="adhRenewalReason"></label>
         <input id="adhRenewalReason" maxlength="200" autocomplete="off">
+        <p id="adhRenewalBlockMessage" class="hint" role="status" aria-live="polite" hidden></p>
       </div>
     </div>
 
@@ -2350,7 +2351,7 @@ button.primary:active {
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false">Adhésions</button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -2435,7 +2436,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-adhesions" hidden><p class="hint">Dossiers privés de la Fédération régionale de la Santé. Le PDF est chargé uniquement à la demande.</p><ul class="list" id="admAdhesionList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -2491,6 +2492,7 @@ isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
+adhesions:[],
 provinceContacts:[],
 admTab:'members',
 editNewsId:null,
@@ -4001,8 +4003,27 @@ MONTHS.fr[+p[1]-1]+
 p[0];
 }
 
+function renderAdminAdhesions(){
+var list=S.adhesions||[];
+var labels={pending:'En attente',needs_completion:'Complément demandé',accepted:'Acceptée',refused:'Refusée'};
+var target=$('admAdhesionList');
+if(!target)return;
+target.innerHTML=list.length?list.map(function(r){
+var x=r.application||{};
+var title=[x.nom||'',x.prenom||''].filter(Boolean).join(' ')||'Adhérent sans nom';
+var actions='<button type="button" class="btn ghost small" data-adm-act="openAdhesionPdf" data-id="'+esc(r.uid||r.id)+'">Ouvrir le PDF</button>';
+if(r.status==='pending'||r.status==='needs_completion'){
+actions+='<button type="button" class="btn ghost small" data-adm-act="requestAdhesionCompletion" data-id="'+esc(r.uid||r.id)+'">Demander un complément</button>';
+actions+='<button type="button" class="btn primary small" data-adm-act="acceptAdhesion" data-id="'+esc(r.uid||r.id)+'">Accepter</button>';
+actions+='<button type="button" class="btn ghost small danger" data-adm-act="refuseAdhesion" data-id="'+esc(r.uid||r.id)+'">Refuser</button>';
+}
+return '<li class="mrow"><div class="mi"><strong>'+esc(title)+' · '+esc(labels[r.status]||r.status)+'</strong><span>'+esc(r.province||'')+' · '+esc(x.establishment||'')+'</span><span>CIN : '+esc(x.cin||'')+' · Téléphone : '+esc(x.phone||'')+'</span><span>Fonction : '+esc(x.function||'')+' · Spécialité : '+esc(x.specialty||'')+'</span><span>Type : '+(x.type==='renewal'?'Renouvellement':'Première adhésion')+(x.reason?' · Motif : '+esc(x.reason):'')+'</span>'+(r.adminNote?'<span><strong>Note :</strong> '+esc(r.adminNote)+'</span>':'')+'</div><div class="mact">'+actions+'</div></li>';
+}).join(''):'<li class="empty">Aucune demande d’adhésion à traiter.</li>';
+}
+
 function renderAdminAll(){
 
+renderAdminAdhesions();
 renderAdminDashboard();
 renderAdminMembers();
 renderAdminNews();
@@ -4153,7 +4174,8 @@ if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
 
 S.admTab=name;
 
-['dashboard','members','news','events','reports'].forEach(function(n){
+if(!S.isAdmin&&!S.isSubAdmin&&name==='adhesions')name='members';
+['dashboard','members','news','events','reports','adhesions'].forEach(function(n){
 
 var el=$('adm-'+n);
 
@@ -5290,6 +5312,34 @@ else if(a==='cancelEvent'&&S.isAdmin){
 endEditEvent();
 }
 
+else if(a==='openAdhesionPdf'){
+  if(!S.isAdmin&&!S.isSubAdmin)return;
+  el.disabled=true;
+  window.CLOUD.getAdhesionPdf(id).then(function(data){
+    el.disabled=false;
+    if(data)openDataUrl(data);else toast('PDF indisponible.',4000);
+  }).catch(function(err){el.disabled=false;showError(err);});
+}
+
+else if(a==='requestAdhesionCompletion'||a==='acceptAdhesion'||a==='refuseAdhesion'){
+  if(!S.isAdmin&&!S.isSubAdmin)return;
+  var decisionNote='';
+  var decisionStatus=a==='requestAdhesionCompletion'?'needs_completion':(a==='acceptAdhesion'?'accepted':'refused');
+  if(decisionStatus==='needs_completion'){
+    decisionNote=window.prompt('Expliquez précisément le complément attendu :','');
+    if(decisionNote===null)return;
+    if(!decisionNote.trim()){toast('La note de complément est obligatoire.',4000);return;}
+  }else if(decisionStatus==='refused'){
+    decisionNote=window.prompt('Motif du refus (facultatif) :','');
+    if(decisionNote===null)return;
+  }else{
+    if(!window.confirm('Confirmer l’acceptation de cette demande d’adhésion ?'))return;
+  }
+  c.admin.updateAdhesionStatus(id,decisionStatus,decisionNote).then(function(){
+    toast(decisionStatus==='needs_completion'?'Demande de complément enregistrée.':(decisionStatus==='accepted'?'Demande acceptée.':'Demande refusée.'));
+  }).catch(showError);
+}
+
 else if(a==='csv'){
 
 exportCsv();
@@ -5557,6 +5607,11 @@ S.reports=list||[];
 renderAdminReports();
 },
 
+setAdhesions:function(list){
+S.adhesions=list||[];
+renderAdminAdhesions();
+},
+
 setResponsables:function(list){
 S.responsables=list||[];
 renderResponsables();
@@ -5580,8 +5635,10 @@ if(csv)csv.hidden=!S.isAdmin;
 
 var reports=document.querySelector('#admTabs button[data-adm="reports"]');
 if(reports)reports.hidden=!(S.isAdmin||S.isSubAdmin);
+var adhesions=document.querySelector('#admTabs button[data-adm="adhesions"]');
+if(adhesions)adhesions.hidden=!(S.isAdmin||S.isSubAdmin);
 
-if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'){
+if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'){
 showAdmTab('members');
 }
 
@@ -5904,17 +5961,86 @@ window.UGTM.failed();
 
     var renewalWrap=document.getElementById('adhRenewalReasonWrap');
     var renewalInput=document.getElementById('adhRenewalReason');
+    var renewalMessage=document.getElementById('adhRenewalBlockMessage');
+
     function syncRenewalReason(){
       var selected=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
       var renewal=selected==='renewal';
       renewalWrap.style.display=renewal?'':'none';
       renewalInput.required=renewal;
+
       if(!renewal)renewalInput.value='';
+
+      if(renewalMessage){
+        renewalMessage.textContent=
+          typeof lang!=='undefined' && lang==='ar'
+            ? 'يجب تحديد سبب تجديد الانخراط قبل إرسال الطلب.'
+            : 'Renouvellement bloqué : veuillez renseigner le motif avant de continuer.';
+        renewalMessage.hidden=!renewal || !!String(renewalInput.value||'').trim();
+      }
     }
+
     document.querySelectorAll('input[name="adhType"]').forEach(function(radio){
       radio.addEventListener('change',syncRenewalReason);
     });
+    renewalInput.addEventListener('input',syncRenewalReason);
     syncRenewalReason();
+
+    // Vérifier les demandes existantes AVANT la génération du PDF.
+    var adhesionDuplicatePreflightPassed = false;
+    var adhesionDuplicatePreflightBusy = false;
+
+    form.addEventListener('submit', async function(e){
+      if(adhesionDuplicatePreflightPassed){
+        adhesionDuplicatePreflightPassed = false;
+        return;
+      }
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      if(adhesionDuplicatePreflightBusy) return;
+      adhesionDuplicatePreflightBusy = true;
+
+      try{
+        if(!window.CLOUD ||
+           typeof window.CLOUD.getMyAdhesionRequest !== 'function'){
+          throw new Error('Vérification des demandes indisponible.');
+        }
+
+        var existing = await window.CLOUD.getMyAdhesionRequest();
+        var status = existing ? String(existing.status || 'pending') : '';
+
+        if(existing && status !== 'needs_completion'){
+          var messages = {
+            pending: 'Votre demande est déjà enregistrée et en attente de traitement.',
+            accepted: 'Votre demande est déjà acceptée.',
+            refused: 'Une décision a déjà été prise concernant votre demande.'
+          };
+
+          if(typeof toast === 'function'){
+            toast(messages[status] ||
+              'Une demande existe déjà pour ce compte. Aucun nouvel envoi effectué.',
+              5500);
+          }
+          return;
+        }
+
+        // Aucun dossier existant, ou complément explicitement demandé :
+        // laisser le gestionnaire d'envoi habituel continuer.
+        adhesionDuplicatePreflightPassed = true;
+        form.requestSubmit();
+        setTimeout(function(){ adhesionDuplicatePreflightPassed = false; }, 0);
+
+      }catch(err){
+        console.error('Vérification anti-doublon adhésion:', err);
+        if(typeof toast === 'function'){
+          toast('Impossible de vérifier votre demande. Aucun envoi effectué ; réessayez lorsque la connexion sera rétablie.', 6000);
+        }
+      }finally{
+        adhesionDuplicatePreflightBusy = false;
+      }
+    }, true);
 
     form.addEventListener('submit',function(e){
       e.preventDefault();
