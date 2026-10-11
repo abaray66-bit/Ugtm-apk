@@ -24,6 +24,7 @@ var unsubs = {
   members: null,
   news: null,
   reports: null,
+  adhesions: null,
   responsables: null,
   publicProvinceContacts: null
 };
@@ -238,6 +239,58 @@ function reportProvinceLabel(code){
   return map[String(code || '')] || String(code || '');
 }
 
+
+
+/* =========================
+   ADHÉSIONS NUMÉRIQUES PRIVÉES
+   ========================= */
+function subscribeAdhesions(){
+  unsub('adhesions');
+  if (!session.user) { hooks.setAdhesions([]); return; }
+  var q;
+  if (session.isAdmin) q = collection(db, 'adhesionRequests');
+  else if (session.isSubAdmin) q = query(collection(db, 'adhesionRequests'), where('province', '==', reportProvinceLabel(session.member.adminProvince)));
+  else q = query(collection(db, 'adhesionRequests'), where('ownerUid', '==', session.user.uid));
+  unsubs.adhesions = onSnapshot(q, function(snap){
+    hooks.setAdhesions(snap.docs.map(function(d){
+      var x=d.data();
+      return {id:d.id, ownerUid:x.ownerUid||'', province:x.province||'', nom:x.nom||'', prenom:x.prenom||'', cin:x.cin||'', phone:x.phone||'', establishment:x.establishment||'', specialty:x.specialty||'', type:x.type||'first', reason:x.reason||'', date:x.date||'', status:x.status||'new', reviewNote:x.reviewNote||'', createdAt:ms(x.createdAt), updatedAt:ms(x.updatedAt)};
+    }).sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);}));
+  }, function(err){hooks.error(err, true);});
+}
+
+async function submitAdhesion(data, pdfBase64){
+  if (!auth.currentUser) throw new Error('Connectez-vous avant d’envoyer la demande.');
+  var allowed=['Agadir Ida-Outanane','Inezgane-Aït Melloul','Chtouka-Aït Baha','Taroudant','Tiznit','Tata'];
+  var province=String(data.province||'').slice(0,60);
+  if (allowed.indexOf(province)<0) throw new Error('Province invalide.');
+  if (data.commitment !== true) throw new Error('Engagement obligatoire.');
+  var pdf=String(pdfBase64||'');
+  if (!pdf || pdf.length > 650000) throw new Error('PDF absent ou trop volumineux (limite 650 Ko).');
+  var clean={
+    ownerUid:auth.currentUser.uid, province:province,
+    nom:String(data.nom||'').slice(0,100), prenom:String(data.prenom||'').slice(0,100),
+    cin:String(data.cin||'').slice(0,24), dob:String(data.dob||'').slice(0,20),
+    phone:String(data.phone||'').slice(0,30), address:String(data.address||'').slice(0,220),
+    establishment:String(data.establishment||'').slice(0,180), service:String(data.service||'').slice(0,120),
+    function:String(data.function||'').slice(0,120), specialty:String(data.specialty||'').slice(0,100),
+    ppr:String(data.ppr||'').slice(0,24), type:String(data.type||'first').slice(0,20),
+    reason:String(data.reason||'').slice(0,1000), date:String(data.date||'').slice(0,20),
+    status:'new', reviewNote:'', reviewerUid:'', reviewedAt:null,
+    createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+  };
+  var requestRef=doc(collection(db,'adhesionRequests'));
+  var batch=writeBatch(db);
+  batch.set(requestRef,clean);
+  batch.set(doc(db,'adhesionDocuments',requestRef.id),{ownerUid:auth.currentUser.uid,province:province,data:pdf,contentType:'application/pdf',fileName:'demande-adhesion.pdf',createdAt:serverTimestamp()});
+  await batch.commit();
+  return requestRef.id;
+}
+
+function getAdhesionPdf(id){
+  return getDoc(doc(db,'adhesionDocuments',String(id||''))).then(function(s){return s.exists()?String(s.data().data||''):'';});
+}
+
 function subscribeReports(){
 
   unsub('reports');
@@ -332,6 +385,8 @@ function onUser(user){
   if (!user){
 
     unsub('reports');
+    unsub('adhesions');
+    if (hooks.setAdhesions) hooks.setAdhesions([]);
 
     session = {
       user: null,
@@ -435,6 +490,7 @@ function onUser(user){
       subscribeNews();
 
       subscribeReports();
+  subscribeAdhesions();
 
     },
 
@@ -450,6 +506,7 @@ function onUser(user){
 
   subscribeNews();
   subscribeReports();
+  subscribeAdhesions();
 
 }
 
@@ -1229,7 +1286,16 @@ var admin = {
 
       );
 
-    }
+    },
+
+  updateAdhesionStatus: function(id, status, note){
+    if (['in_progress','approved','rejected'].indexOf(status)<0) return Promise.reject(new Error('Statut invalide'));
+    return updateDoc(doc(db,'adhesionRequests',String(id)),{
+      status:status, reviewNote:String(note||'').slice(0,1500),
+      reviewerUid:auth.currentUser ? auth.currentUser.uid : '',
+      reviewedAt:serverTimestamp(), updatedAt:serverTimestamp()
+    });
+  }
 
 };
 
@@ -1469,7 +1535,10 @@ export async function init(config, h){
 
     saveProfile: saveProfile,
 
-    deleteAccount: deleteAccount,    addReport: addReport,
+    deleteAccount: deleteAccount,
+    addReport: addReport,
+    submitAdhesion: submitAdhesion,
+    getAdhesionPdf: getAdhesionPdf,
     admin: admin,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
