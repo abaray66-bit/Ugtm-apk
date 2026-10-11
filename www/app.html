@@ -2213,10 +2213,6 @@ button.primary:active {
         <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
         <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
       </div>
-      <div class="field adh-full" id="adhRenewalReasonWrap" style="display:none">
-        <label for="adhRenewalReason" data-i18n="adhRenewalReason"></label>
-        <input id="adhRenewalReason" maxlength="200" autocomplete="off">
-      </div>
     </div>
 
     <div class="adh-step">
@@ -2524,7 +2520,7 @@ adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
-adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`,
+adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`L'étape suivante permettra de générer la fiche PDF et de la partager directement via WhatsApp.`,
 adhLabel:`Espace adhérent`,
@@ -2700,7 +2696,7 @@ adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
-adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`,
+adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`في المرحلة التالية سيتم إنشاء ملف PDF للاستِمارة وإرساله مباشرة عبر واتساب.`,
 adhLabel:`فضاء المنخرطين`,
@@ -5834,20 +5830,6 @@ window.UGTM.failed();
 
     prefillDigitalAdhesion();
 
-    var renewalWrap=document.getElementById('adhRenewalReasonWrap');
-    var renewalInput=document.getElementById('adhRenewalReason');
-    function syncRenewalReason(){
-      var selected=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
-      var renewal=selected==='renewal';
-      renewalWrap.style.display=renewal?'':'none';
-      renewalInput.required=renewal;
-      if(!renewal)renewalInput.value='';
-    }
-    document.querySelectorAll('input[name="adhType"]').forEach(function(radio){
-      radio.addEventListener('change',syncRenewalReason);
-    });
-    syncRenewalReason();
-
     form.addEventListener('submit',function(e){
       e.preventDefault();
 
@@ -5884,18 +5866,6 @@ window.UGTM.failed();
       }
 
       var type=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
-      var reason=renewalInput.value.trim();
-      if(type==='renewal'&&!reason){
-        renewalInput.required=true;
-        renewalInput.focus();
-        if(typeof toast==='function')toast(
-          typeof lang!=='undefined'&&lang==='ar'
-            ?'يرجى تحديد سبب تجديد الانخراط'
-            :'Veuillez préciser le motif du renouvellement.',
-          4000
-        );
-        return;
-      }
 
       var data={
         nom:document.getElementById('adhNom').value.trim(),
@@ -5911,7 +5881,6 @@ window.UGTM.failed();
         specialty:document.getElementById('adhSpecialty').value.trim(),
         ppr:document.getElementById('adhPpr').value.trim(),
         type:type,
-        reason:reason,
         commitment:true,
         date:document.getElementById('adhDate').value,
         signature:canvas.toDataURL('image/png')
@@ -6062,8 +6031,7 @@ window.UGTM.failed();
 
             section('ADHÉSION');
 
-            field('Type',data.type==='renewal'?'Renouvellement':'Première adhésion');
-            if(data.type==='renewal')field('Motif du renouvellement',data.reason);
+            field('Type',data.type==='renew'?'Renouvellement':'Première adhésion');
             field('Date',data.date);
 
             section('ENGAGEMENT');
@@ -6119,11 +6087,6 @@ window.UGTM.failed();
               try{
                 var b64=String(reader.result).split(',')[1];
 
-                if(!window.CLOUD || typeof window.CLOUD.submitAdhesion!=='function'){
-                  throw new Error('Service Firebase d’adhésion indisponible.');
-                }
-                await window.CLOUD.submitAdhesion(data,b64);
-
                 var saved=await fs.writeFile({
                   path:base,
                   data:b64,
@@ -6140,11 +6103,10 @@ window.UGTM.failed();
               }catch(err){
                 console.error('Adhesion PDF/share:',err);
                 if(typeof toast==='function')toast(
-                  err && err.message ? err.message :
-                  (typeof lang!=='undefined'&&lang==='ar'
-                    ?'تعذر حفظ الطلب أو فتح المشاركة'
-                    :'Impossible d’enregistrer la demande ou d’ouvrir le partage.'),
-                  5000
+                  typeof lang!=='undefined'&&lang==='ar'
+                  ?'تعذر فتح المشاركة'
+                  :'Impossible d’ouvrir le partage.',
+                  4000
                 );
               }
             };

@@ -730,53 +730,6 @@ async function saveProfile(p){
 
 
 /* =========================================================
-   DEMANDES D'ADHÉSION NUMÉRIQUES — une demande par UID
-   ========================================================= */
-async function getMyAdhesionRequest(){
-  var u=auth.currentUser;
-  if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
-  var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
-  if(!snap.exists()) return null;
-  var x=snap.data()||{};
-  return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',application:x.application||{}};
-}
-async function submitAdhesion(application,pdfBase64){
-  var u=auth.currentUser;
-  if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
-  if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
-  var pdf=String(pdfBase64||'');
-  if(!pdf||pdf.length>650000) throw new Error('Le PDF signé est vide ou dépasse 650 Ko.');
-  var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid), pdfRef=doc(db,'adhesionDocuments',uid);
-  var existing=await getDoc(requestRef);
-  if(existing.exists()){
-    var status=String((existing.data()||{}).status||'pending');
-    var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',needs_completion:'Votre demande nécessite un complément.',accepted:'Votre demande est déjà acceptée.',refused:'Une décision a déjà été prise concernant votre demande.'};
-    var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.'); err.code='adhesion/already-exists'; err.status=status; throw err;
-  }
-  var clean={
-    nom:String(application.nom||'').trim().slice(0,100),prenom:String(application.prenom||'').trim().slice(0,100),
-    cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
-    phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
-    province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
-    service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
-    specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
-    type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
-  };
-  if(!clean.nom||!clean.prenom||!clean.cin||!clean.dob||!clean.phone||!clean.address||!clean.province||!clean.establishment||!clean.function||!clean.commitment||!application.signature)
-    throw new Error('Des champs obligatoires ou la signature sont manquants.');
-  if(clean.type==='renewal'&&!clean.reason)
-    throw new Error('Veuillez préciser le motif du renouvellement.');
-  if(clean.type==='first')clean.reason='';
-  var signature=String(application.signature);
-  if(signature.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  var batch=writeBatch(db);
-  batch.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:signature,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-  batch.set(pdfRef,{uid:uid,province:clean.province,fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,createdAt:serverTimestamp()});
-  await batch.commit();
-  return {id:uid,status:'pending'};
-}
-
-/* =========================================================
    SUPPRESSION COMPTE
    ========================================================= */
 
@@ -1516,12 +1469,7 @@ export async function init(config, h){
 
     saveProfile: saveProfile,
 
-    deleteAccount: deleteAccount,
-
-    getMyAdhesionRequest: getMyAdhesionRequest,
-    submitAdhesion: submitAdhesion,
-
-    addReport: addReport,
+    deleteAccount: deleteAccount,    addReport: addReport,
     admin: admin,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
