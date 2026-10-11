@@ -2650,7 +2650,7 @@ fillAdhesion:`Remplir ma demande d’adhésion`,
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
 
-st_pending:`Demande en cours de validation par la Fédération régionale de la Santé.`,
+st_pending:`Profil enregistré. Pour adhérer, remplissez le formulaire électronique et partagez le PDF.`,
 st_active:`Adhésion validée.`,
 st_blocked:`Compte suspendu. Contactez la Fédération régionale de la Santé.`,
 
@@ -2826,7 +2826,7 @@ fillAdhesion:`ملء طلب الانخراط`,
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
 
-st_pending:`طلبكم قيد المصادقة من طرف الجامعة الوطنية للصحة.`,
+st_pending:`تم حفظ الملف الشخصي. لإتمام الانخراط، يرجى ملء الاستمارة الإلكترونية ومشاركة ملف PDF.`,
 st_active:`تمت المصادقة على انخراطكم.`,
 st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوطنية للصحة.`,
 
@@ -3664,8 +3664,9 @@ if(profileForm&&profileToggle){
     profileToggle.setAttribute('aria-expanded','false');
     if(welcome)welcome.hidden=false;
   }else{
-    profileForm.hidden=false;
-    profileToggle.hidden=true;
+    profileForm.hidden=true;
+    profileToggle.hidden=false;
+    profileToggle.setAttribute('aria-expanded','false');
     if(welcome)welcome.hidden=true;
   }
 }
@@ -4958,14 +4959,6 @@ c.signOut().catch(showError);
 
 else if(act==='save'){
 
-var wasComplete=!!(
-  S.member &&
-  String(S.member.name||'').trim() &&
-  String(S.member.etab||'').trim() &&
-  String(S.member.prov||'').trim() &&
-  String(S.member.phone||'').trim()
-);
-
 c.saveProfile({
 
 name:val('pfName'),
@@ -4992,15 +4985,6 @@ if(window.prefillDigitalAdhesion){
 
 toast(T().saved);
 renderMe();
-
-if(!wasComplete){
-  setTimeout(function(){
-    go('adhesion');
-    if(window.prefillDigitalAdhesion){
-      window.prefillDigitalAdhesion();
-    }
-  },250);
-}
 
 })
 
