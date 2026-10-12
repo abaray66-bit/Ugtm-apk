@@ -2324,19 +2324,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><p class="hint" id="meWelcome" hidden data-i18n="meReady"></p><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meProfileToggle" hidden data-act="toggle-profile" aria-expanded="false" data-i18n="editProfile"></button><div id="meProfileForm"><h2 class="h2" data-i18n="pfT"></h2><div class="field">
-<label for="pfName" data-i18n="lName"></label>
-<input id="pfName" type="text" autocomplete="name">
-</div><div class="field">
-<label for="pfEtab" data-i18n="lEtab"></label>
-<input id="pfEtab" type="text" autocomplete="off">
-</div><div class="field">
-<label for="pfProv" data-i18n="lProv"></label>
-<select id="pfProv"></select>
-</div><div class="field">
-<label for="pfPhone" data-i18n="lPhone"></label>
-<input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel">
-</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button></div>
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionShare" hidden data-act="shareadh" data-i18n="shareAdhPdf"></button>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -2647,6 +2635,7 @@ mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votr
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
 editProfile:`Modifier mon profil`,
 fillAdhesion:`Remplir ma demande d’adhésion`,
+shareAdhPdf:`Envoyer le PDF de ma demande (WhatsApp)`,
 
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
@@ -2830,6 +2819,7 @@ mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤس�
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
 editProfile:`تعديل معلوماتي`,
 fillAdhesion:`ملء طلب الانخراط`,
+shareAdhPdf:`إرسال PDF الطلب عبر واتساب`,
 
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
@@ -3193,6 +3183,94 @@ for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
 
 return new File([arr],name,{type:mime});
 
+}
+
+/* ============ ENVOI DU PDF DE LA DEMANDE (WhatsApp) ============
+   Source de vérité : le PDF enregistré sur Firestore (adhesionDocuments).
+   Sur l'APK, on écrit le fichier puis on ouvre la feuille de partage
+   (WhatsApp puis numéro de l'administration de la province) ; si le
+   partage natif manque ou échoue, WhatsApp s'ouvre directement sur le
+   numéro de l'admin. Chaque étape affiche un message d'état. */
+
+function adhesionAdminWaLink(){
+  var prov=(S.member&&S.member.prov)||'';
+  var list=S.provinceContacts||[];
+  var hit=list.filter(function(c){return c&&c.province===prov&&c.phone;})[0];
+  var phone=hit?String(hit.phone).replace(/\D/g,''):'';
+  if(!phone)return linkFor('num');
+  return 'https://wa.me/'+phone;
+}
+
+function shareAdhesionPdfBytes(b64,name){
+  b64=String(b64||'');
+  if(!b64){
+    toast('PDF introuvable ou inaccessible : envoyez (ou renvoyez) votre demande depuis le formulaire d’adhésion numérique.',6000);
+    return Promise.resolve();
+  }
+  var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+  var plugins=window.Capacitor&&window.Capacitor.Plugins;
+  var fs=isNative&&plugins?plugins.Filesystem:null;
+  var sh=isNative&&plugins?plugins.Share:null;
+  var wa=adhesionAdminWaLink();
+
+  if(isNative&&fs&&sh){
+    toast('Enregistrement du PDF sur l’appareil…',3000);
+    return fs.writeFile({path:name,data:b64,directory:'CACHE'})
+      .then(function(saved){
+        toast('Ouverture du partage : choisissez WhatsApp puis le numéro de l’administration.',5000);
+        return sh.share({
+          title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
+          text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
+          files:[String(saved&&saved.uri||'')],
+          dialogTitle:"Envoyer la demande"
+        });
+      })
+      .then(function(){
+        toast('Partage lancé avec le PDF enregistré sur Firestore.',5000);
+      })
+      .catch(function(err){
+        console.info('Partage natif indisponible :',err);
+        if(wa){
+          toast('Partage de fichier indisponible — ouverture de WhatsApp pour contacter l’administration.',6000);
+          openUrl(wa);
+        }else{
+          toast('Partage indisponible sur cet appareil ('+(err&&err.message?err.message:'erreur')+'). Réessayez.',6000);
+        }
+      });
+  }
+
+  if(isNative){
+    if(wa){
+      toast('Ouverture de WhatsApp : sélectionnez le numéro de l’administration.',5000);
+      openUrl(wa);
+    }else{
+      toast('Le partage natif est indisponible sur cet appareil.',5000);
+    }
+    return Promise.resolve();
+  }
+
+  /* Web / PWA : téléchargement du PDF déjà enregistré. */
+  try{
+    saveFile(dataURLFile('data:application/pdf;base64,'+b64,name));
+    toast('PDF téléchargé — envoyez-le à votre administration sur WhatsApp.',6000);
+  }catch(err){
+    toast('Téléchargement du PDF impossible : '+(err&&err.message?err.message:'erreur'),6000);
+  }
+  return Promise.resolve();
+}
+
+function shareMyAdhesionPdf(){
+  var uid=(S.user&&S.user.uid)?String(S.user.uid):'';
+  if(!uid){toast('Connectez-vous pour envoyer votre PDF.',4500);return;}
+  if(!window.CLOUD||typeof window.CLOUD.getAdhesionPdf!=='function'){
+    toast('Service Firebase d’adhésion indisponible.',5000);return;
+  }
+  toast('Récupération du PDF enregistré sur Firestore…',3500);
+  window.CLOUD.getAdhesionPdf(uid).then(function(b64){
+    shareAdhesionPdfBytes(b64,'demande-adhesion-'+uid+'.pdf');
+  }).catch(function(err){
+    toast('Impossible de récupérer le PDF : '+(err&&err.message?err.message:'erreur inconnue'),5500);
+  });
 }
 
 function adhShare(file,msg){
@@ -3576,54 +3654,29 @@ return '<div class="mcard">'+
 '</div>';
 }
 
-function renderProvOptions(){
-
-var sel=$('pfProv');
-
-var prev=sel.value;
-
-sel.innerHTML=
-'<option value="">'+T().phSelect+'</option>'+
-PROVS.map(function(o){
-
-return '<option value="'+o.v+'">'+
-o[lang]+
-'</option>';
-
-}).join('');
-
-sel.value=prev||'';
-}
-
-function fillForm(force){
-
-if(!S.user)return;
-
-if(S.formDirty&&!force)return;
-
-var m=S.member||{};
-
-$('pfName').value=m.name||S.user.name||'';
-$('pfEtab').value=m.etab||'';
-$('pfProv').value=m.prov||'';
-$('pfPhone').value=m.phone||'';
-}
+/* Le formulaire de profil a été supprimé : le dossier se remplit
+   intégralement dans #adhesionForm (adhésion numérique), seul point
+   d'entrée de l'envoi vers Firestore. */
 
 var myAdhesionStatusUid='';
 var myAdhesionStatusCache=null;
 var myAdhesionStatusPromise=null;
 function showMyAdhesionStatus(request){
   var box=$('meAdhesionStatus');if(!box)return;
-  if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
+  var shareBtn=$('meAdhesionShare');
+  if(!request||request.status==='none'){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;return;}
   var labels={pending:'Demande d’adhésion : en attente de validation.',needs_completion:'Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.',accepted:'Demande d’adhésion : acceptée.',refused:'Demande d’adhésion : refusée.'};
   box.hidden=false;box.textContent=labels[request.status]||'Statut de la demande : '+String(request.status||'inconnu')+'.';
   if(request.adminNote)box.textContent+=' Note : '+String(request.adminNote).slice(0,1000);
+  // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
+  if(shareBtn)shareBtn.hidden=false;
 }
 function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
   if(!box)return Promise.resolve(null);
-  if(!uid){box.hidden=true;box.textContent='';myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
-  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;return Promise.resolve(null);}
+  var shareBtn=$('meAdhesionShare');
+  if(!uid){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
+  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;if(shareBtn)shareBtn.hidden=true;return Promise.resolve(null);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
   myAdhesionStatusUid=uid;box.hidden=false;box.textContent='Vérification du statut de votre demande…';
@@ -3728,32 +3781,7 @@ $('meCard').innerHTML=
 ?cardHTML(m)
 :'';
 
-fillForm(false);
-
-var profileForm=$('meProfileForm');
-var profileToggle=$('meProfileToggle');
-var welcome=$('meWelcome');
-
-var profileComplete=!!(
-  m &&
-  String(m.name||'').trim() &&
-  String(m.etab||'').trim() &&
-  String(m.prov||'').trim() &&
-  String(m.phone||'').trim()
-);
-
-if(profileForm&&profileToggle){
-  if(profileComplete){
-    profileForm.hidden=true;
-    profileToggle.hidden=false;
-    profileToggle.setAttribute('aria-expanded','false');
-    if(welcome)welcome.hidden=false;
-  }else{
-    profileForm.hidden=false;
-    profileToggle.hidden=true;
-    if(welcome)welcome.hidden=true;
-  }
-}
+// Le formulaire de profil a été supprimé : tout passe par #adhesionForm.
 
 $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 
@@ -4670,14 +4698,12 @@ $('permResp').innerHTML='';
 renderResponsables();
 
 renderProvinceContacts();
-renderProvOptions();
 renderHome();
 renderFilters();
 renderNews();
 renderAgenda();
 renderAccountButton();
 renderMe();
-fillForm(false);
 
 }
 
@@ -5027,16 +5053,9 @@ c.signIn().catch(showError);
 
 }
 
-else if(act==='toggle-profile'){
+else if(act==='shareadh'){
 
-var pf=$('meProfileForm');
-var pt=$('meProfileToggle');
-
-if(pf&&pt){
-  var open=pf.hidden;
-  pf.hidden=!open;
-  pt.setAttribute('aria-expanded',open?'true':'false');
-}
+shareMyAdhesionPdf();
 
 }
 
@@ -5046,57 +5065,6 @@ c.signOut().catch(showError);
 
 }
 
-else if(act==='save'){
-
-var wasComplete=!!(
-  S.member &&
-  String(S.member.name||'').trim() &&
-  String(S.member.etab||'').trim() &&
-  String(S.member.prov||'').trim() &&
-  String(S.member.phone||'').trim()
-);
-
-c.saveProfile({
-
-name:val('pfName'),
-etab:val('pfEtab'),
-prov:$('pfProv').value,
-phone:val('pfPhone')
-
-})
-
-.then(function(){
-
-S.formDirty=false;
-
-S.member = S.member || {};
-
-S.member.name = val('pfName');
-S.member.etab = val('pfEtab');
-S.member.prov = $('pfProv').value;
-S.member.phone = val('pfPhone');
-
-if(window.prefillDigitalAdhesion){
-  window.prefillDigitalAdhesion();
-}
-
-toast(T().saved);
-renderMe();
-
-if(!wasComplete){
-  setTimeout(function(){
-    go('adhesion');
-    if(window.prefillDigitalAdhesion){
-      window.prefillDigitalAdhesion();
-    }
-  },250);
-}
-
-})
-
-.catch(showError);
-
-}
 
 else if(act==='deldata'){
 
@@ -5602,24 +5570,6 @@ p.value=label;
 syncReportProvince();
 
 
-['pfName','pfEtab','pfProv','pfPhone']
-.forEach(function(id){
-
-$(id).addEventListener(
-'input',
-function(){
-S.formDirty=true;
-}
-);
-
-$(id).addEventListener(
-'change',
-function(){
-S.formDirty=true;
-}
-);
-
-});
 
 /* =========================
    PONT CLOUD
@@ -6045,6 +5995,10 @@ window.UGTM.failed();
     form.addEventListener('submit',function(e){
       e.preventDefault();
 
+      /* Message d'état immédiat : quoi qu'il arrive ensuite, un retour
+         s'affiche dès le clic (validation, téléversement, partage). */
+      if(typeof toast==='function')toast('Traitement de la demande en cours…',2500);
+
       var requiredFields=Array.from(form.querySelectorAll('[required]'));
       var missing=requiredFields.find(function(field){
         if(field.disabled)return false;
@@ -6117,17 +6071,14 @@ window.UGTM.failed();
       }catch(err){}
 
         try{
-          var fs=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
-          var sh=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;
           var jsPDF=window.jspdf&&window.jspdf.jsPDF;
 
-          /* jsPDF est le seul outil requis pour fabriquer le PDF exigé par
-             Firestore : empaqueté dans l'APK, chargé localement sur le Web.
-             Filesystem/Share n'existent que dans l'APK : sur le Web/PWA le
-             PDF est téléchargé après l'enregistrement (voir plus bas).
-             Sans ce détournement, le parcours Web s'arrêtait AVANT tout
-             envoi vers Firestore — l'adhésion était impossible en navigateur. */
-          if(!jsPDF)throw new Error('PDF/Share indisponible');
+          /* jsPDF fabrique le PDF exigé par Firestore (empaqueté dans
+             l'APK, chargé localement sur le Web). Le partage qui suit est
+             délégué à shareAdhesionPdfBytes() : il utilise le PDF
+             enregistré sur Firestore et ouvre WhatsApp / la feuille de
+             partage, avec un message d'état à chaque étape. */
+          if(!jsPDF)throw new Error('PDF indisponible');
 
           var pdf=new jsPDF({unit:'mm',format:'a4'});
           var pageW=210;
@@ -6135,9 +6086,16 @@ window.UGTM.failed();
           var y=18;
 
           function loadLogo(){
-            return new Promise(function(resolve,reject){
+            return new Promise(function(resolve){
+              var done=false;
+              var finish=function(v){if(done)return;done=true;resolve(v);};
+              /* Filet de sécurité : si l'image ne se charge jamais (WebView
+                 d'APK), on continue SANS logo plutôt que de bloquer tout
+                 l'envoi en silence. */
+              var timer=setTimeout(function(){finish('');},4000);
               var img=new Image();
               img.onload=function(){
+                clearTimeout(timer);
                 try{
                   var c=document.createElement('canvas');
                   c.width=420;
@@ -6145,10 +6103,10 @@ window.UGTM.failed();
                   var cx=c.getContext('2d');
                   cx.clearRect(0,0,c.width,c.height);
                   cx.drawImage(img,0,0,c.width,c.height);
-                  resolve(c.toDataURL('image/png'));
-                }catch(e){reject(e);}
+                  finish(c.toDataURL('image/png'));
+                }catch(e){finish('');}
               };
-              img.onerror=reject;
+              img.onerror=function(){clearTimeout(timer);finish('');};
               img.src='icons/ugtm-logo.svg';
             });
           }
@@ -6213,7 +6171,7 @@ window.UGTM.failed();
 
           loadLogo().then(function(logo){
 
-            pdf.addImage(logo,'PNG',margin,12,38,13);
+            if(logo)pdf.addImage(logo,'PNG',margin,12,38,13);
 
             pdf.setFont(undefined,'bold');
             pdf.setFontSize(12);
@@ -6325,25 +6283,18 @@ window.UGTM.failed();
               var result;
               try{result=await window.CLOUD.submitAdhesion(data,b64);}
               catch(err){console.error('Adhesion save:',err);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
+              if(typeof toast==='function')toast(result&&result.completed?'Complément enregistré. Votre dossier est de nouveau en attente de validation.':'Demande enregistrée sur Firestore. Récupération du PDF enregistré…',4000);
+              /* L'ENVOI PART DU PDF ENREGISTRÉ SUR FIRESTORE (et non du
+                 fichier local) : ce que l'administration reçoit est
+                 exactement ce qui est stocké. Chaque étape est annoncée. */
               try{
-                if(typeof toast==='function')toast(result&&result.completed?'Complément enregistré. Votre dossier est de nouveau en attente de validation.':'Demande enregistrée. Préparation du partage du PDF…',3500);
-                if(fs&&sh){
-                  var saved=await fs.writeFile({path:base,data:b64,directory:'CACHE'});
-                  await sh.share({title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",files:[saved.uri],dialogTitle:"Envoyer la demande"});
-                }else{
-                  /* Web/PWA : la demande est déjà enregistrée à ce stade,
-                     on télécharge le PDF généré à la place du partage natif. */
-                  var dlUrl=URL.createObjectURL(blob);
-                  var dl=document.createElement('a');
-                  dl.href=dlUrl;
-                  dl.download=base;
-                  document.body.appendChild(dl);
-                  dl.click();
-                  dl.remove();
-                  setTimeout(function(){URL.revokeObjectURL(dlUrl);},4000);
-                  if(typeof toast==='function')toast('Demande enregistrée. Le PDF a été téléchargé ; envoyez-le à votre administration.',6000);
-                }
-              }catch(shareErr){console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a été annulé ou indisponible ; vous pourrez réessayer plus tard.',5500);}
+                var stored='';
+                try{stored=await window.CLOUD.getAdhesionPdf(String(result&&result.id||''));}catch(eFetch){}
+                await shareAdhesionPdfBytes(stored||b64,base);
+              }catch(shareErr){
+                console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);
+                if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',6500);
+              }
               if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
             };
 
