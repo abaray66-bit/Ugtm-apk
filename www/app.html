@@ -570,6 +570,90 @@ main{
   color:#fff
 }
 
+/* Liste des demandes d'adhésion (espace
+   responsable) : badges de statut et grille
+   d'identité du dossier. */
+.tag.pending{
+  background:transparent;
+  border:1px solid #b45e10;
+  color:#b45e10
+}
+
+.tag.completion{
+  background:transparent;
+  border:1px solid #2563eb;
+  color:#2563eb
+}
+
+.tag.validated{
+  background:var(--ok);
+  color:#fff
+}
+
+.tag.refused{
+  background:transparent;
+  border:1px solid #c0392b;
+  color:#c0392b
+}
+
+.tag.renewal{
+  background:transparent;
+  border:1px solid var(--link);
+  color:var(--link)
+}
+
+.adh-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:3px 0 6px
+}
+
+.adh-meta{
+  display:block;
+  color:var(--muted);
+  font-size:12px
+}
+
+.adhinfo{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px 16px;
+  margin:9px 0 2px
+}
+
+.adhinfo>div{
+  display:flex;
+  flex-direction:column;
+  min-width:0
+}
+
+.adhinfo span{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--muted)
+}
+
+.adhinfo b{
+  font-weight:600;
+  font-size:13px;
+  overflow-wrap:anywhere
+}
+
+.adh-note{
+  margin:7px 0 0;
+  font-size:12px;
+  line-height:1.5;
+  color:var(--muted)
+}
+
+.adh-note span{
+  font-weight:600;
+  color:var(--ink);
+  margin-inline-end:4px
+}
+
 /* Modale de signature du responsable (espace administration) */
 .signmodal{
   position:fixed;
@@ -4357,7 +4441,26 @@ function renderAdminAdhesions(){
     s==='accepted'?t.admStatusValidated:
     s==='refused'?t.admStatusRefused:t.admStatusPending;
   }
-  el.innerHTML=list.length?list.map(function(a){
+  /* Badge de statut coloré : l'état du dossier
+     se repère au premier coup d'œil. */
+  function statusTag(s){
+    var cls=s==='accepted'?'validated':
+    s==='refused'?'refused':
+    s==='needs_completion'?'completion':'pending';
+    return '<span class="tag '+cls+'">'+esc(label(s))+'</span>';
+  }
+  /* Classement : les dossiers à traiter d'abord
+     (en attente, complément demandé), puis les
+     décisions prises — par date décroissante
+     dans chaque groupe. */
+  var rank={pending:0,needs_completion:1,accepted:2,refused:3};
+  var sorted=list.slice().sort(function(a,b){
+    var ra=rank[a.status]!=null?rank[a.status]:9;
+    var rb=rank[b.status]!=null?rank[b.status]:9;
+    if(ra!==rb)return ra-rb;
+    return String(b.date||'').localeCompare(String(a.date||''));
+  });
+  el.innerHTML=sorted.length?sorted.map(function(a){
     var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
     if(a.status==='pending'||a.status==='needs_completion'){
       actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
@@ -4369,14 +4472,23 @@ function renderAdminAdhesions(){
       actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
     }
     var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
-    return '<li class="mrow"><div class="mi">'+
-    '<strong>'+esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback)+' · '+esc(label(a.status))+
-      (a.signed&&a.status==='accepted'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
-    (head?'<span>'+esc(head)+'</span>':'')+
-    '<span>CIN : '+esc(a.cin||'')+' · Téléphone : '+esc(a.phone||'')+'</span>'+
-    '<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>'+
-    (a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+
-    (a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':'')+
+    var name=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);
+    var renewal=a.type==='renewal';
+    return '<li class="mrow adhrow"><div class="mi">'+
+    '<strong>'+name+'</strong>'+
+    '<div class="adh-tags">'+statusTag(a.status)+
+      (renewal?'<span class="tag renewal">'+esc(t.adhRenewal)+'</span>':'')+
+      (a.signed&&a.status==='accepted'?'<span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+
+    '</div>'+
+    (head?'<span class="adh-meta">'+esc(head)+'</span>':'')+
+    '<div class="adhinfo">'+
+    '<div><span>'+esc(t.adhCin)+'</span><b>'+esc(a.cin||'—')+'</b></div>'+
+    '<div><span>'+esc(t.adhPhone)+'</span><b>'+esc(a.phone||'—')+'</b></div>'+
+    '<div><span>'+esc(t.adhEstablishment)+'</span><b>'+esc(a.establishment||'—')+'</b></div>'+
+    '<div><span>'+esc(t.adhSpecialty)+'</span><b>'+esc(a.specialty||'—')+'</b></div>'+
+    '</div>'+
+    (renewal&&a.reason?'<p class="adh-note"><span>'+esc(t.adhRenewalReason)+'</span>'+esc(a.reason)+'</p>':'')+
+    (a.adminNote?'<p class="adh-note"><span>'+esc(t.admSignNote)+'</span>'+esc(a.adminNote)+'</p>':'')+
     '</div><div class="mact">'+actions+'</div></li>';
   }).join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
 }
@@ -5743,7 +5855,8 @@ else if(a==='delMember'&&S.isAdmin&&m){
 if(window.confirm(
 'Supprimer définitivement le profil de '+
 (m.name||m.email)+
-' ?'
+' ?'+
+'\nSa demande d\'adhésion et son dossier numérique seront également supprimés.'
 ))
 
 c.admin

@@ -1216,6 +1216,15 @@ var admin = {
         return removeContact.then(function(){return deleteDoc(ref);}).then(function(){
           // Nettoyage : un membre supprimé ne reste pas dans la liste des responsables.
           return deleteDoc(doc(db, 'responsables', uid)).catch(function(){});
+        }).then(function(){
+          /* Suppression en cascade : le dossier d'adhésion
+             numérique (demande + PDF stocké) suit le profil
+             supprimé — aucun dossier orphelin ne reste
+             dans Firestore. */
+          return Promise.all([
+            deleteDoc(doc(db, 'adhesionRequests', uid)).catch(function(){}),
+            deleteDoc(doc(db, 'adhesionDocuments', uid)).catch(function(){})
+          ]);
         });
       });
     },
