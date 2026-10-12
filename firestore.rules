@@ -418,7 +418,8 @@ service cloud.firestore {
 
     function adhesionTopKeys() {
       return ['uid', 'email', 'province', 'application', 'signature',
-              'status', 'adminNote', 'createdAt', 'updatedAt'];
+              'status', 'adminNote', 'adminSignature', 'signedBy',
+              'signedAt', 'createdAt', 'updatedAt'];
     }
 
     // Contenu du dossier (application) : toutes les clés attendues,
@@ -489,15 +490,33 @@ service cloud.firestore {
         && adhesionAppOk(request.resource.data.application,
                          request.resource.data.province);
 
-      // ADHESION_UPDATE_RESTRICTED_FIELDS : aucun rôle ne peut réécrire
-      // le dossier signé ; seuls le statut, la note et la date bougent.
+      // ADHESION_UPDATE_RESTRICTED_FIELDS : le dossier signé par l'adhérent
+      // n'est JAMAIS réécrit par un responsable. Seuls le statut, la note
+      // administrative et la signature électronique du responsable bougent.
+      // Une signature ne peut être posée qu'avec le statut 'accepted'
+      // (signer = valider l'adhésion), par le responsable qui la produit,
+      // et horodatée au moment de l'écriture.
       allow update: if (
           (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', '')))
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'adminNote', 'updatedAt'])
+            .hasOnly(['status', 'adminNote', 'adminSignature', 'signedBy', 'signedAt', 'updatedAt'])
           && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
           && okText(request.resource.data.adminNote, 1000)
           && request.resource.data.updatedAt == request.time
+          && (
+            // Décision simple : complément demandé, refus, remise en attente.
+            request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'adminNote', 'updatedAt'])
+            || (
+              // Signature électronique du responsable = validation de l'adhésion.
+              request.resource.data.status == 'accepted'
+              && request.resource.data.adminSignature is string
+              && request.resource.data.adminSignature.size() > 0
+              && request.resource.data.adminSignature.size() <= 180000
+              && request.resource.data.signedBy == request.auth.uid
+              && request.resource.data.signedAt == request.time
+            )
+          )
         )
         || (
           // Renvoi par l'adhérent : complément demandé (needs_completion)
@@ -545,12 +564,19 @@ service cloud.firestore {
         || (signedIn() && request.auth.uid == uid)
         || adhesionIsSubAdminOf(resource.data.get('province', ''));
 
-      allow create: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasAll([
-          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
-        ])
+      // Le PDF officiel n'est JAMAIS écrit par l'adhérent : il est généré
+      // par un responsable habilité (administrateur général ou sous-admin
+      // de la province du dossier), sur action explicite, et uniquement
+      // pour une demande déjà SIGNÉE et VALIDÉE : statut 'accepted',
+      // signataire et signature du responsable enregistrés, province
+      // identique. La régénération est permise (createdAt reprend
+      // l'horodatage de la génération) : le PDF reste toujours aligné sur
+      // l'état validé.
+      allow create, update: if (isAdmin()
+          || adhesionIsSubAdminOf(request.resource.data.get('province', '')))
         && request.resource.data.keys().hasOnly([
-          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
+          'uid', 'province', 'fileName', 'mimeType', 'data',
+          'createdAt', 'updatedAt'
         ])
         && request.resource.data.uid == uid
         && request.resource.data.province in adhesionProvinces()
@@ -560,50 +586,19 @@ service cloud.firestore {
         && request.resource.data.data.size() > 0
         && request.resource.data.data.size() <= 650000
         && request.resource.data.createdAt == request.time
-        && existsAfter(/databases/$(database)/documents/adhesionRequests/$(uid))
-        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
-        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province
-          == request.resource.data.province;
-
-      // Le PDF n'est réécrit que dans le cadre d'un renvoi (complément
-      // demandé OU renouvellement après acceptation) : la demande doit
-      // passer de needs_completion/accepted à pending dans le même lot
-      // (cf. submitAdhesion dans cloud.js), et un renouvellement doit être
-      // de type 'renewal'. Ainsi, impossible de remplacer la pièce jointe
-      // sans que le dossier soit intégralement re-soumis et replacé en
-      // attente de validation.
-      allow update: if signedIn() && request.auth.uid == uid
-        && resource.data.uid == uid
-        && request.resource.data.keys().hasAll([
-          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
-        ])
-        && request.resource.data.keys().hasOnly([
-          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt',
-          'updatedAt'
-        ])
-        && request.resource.data.uid == uid
-        && request.resource.data.province == resource.data.province
-        && okText(request.resource.data.fileName, 120)
-        && request.resource.data.mimeType == 'application/pdf'
-        && request.resource.data.data is string
-        && request.resource.data.data.size() > 0
-        && request.resource.data.data.size() <= 650000
-        && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time
-        && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['fileName', 'mimeType', 'data', 'updatedAt'])
+        && exists(/databases/$(database)/documents/adhesionRequests/$(uid))
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province
+          == request.resource.data.province
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status
+          == 'accepted'
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .status in ['needs_completion', 'accepted']
-        && (get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .status == 'needs_completion'
-          || getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .application.type == 'renewal')
-        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .status == 'pending'
-        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .uid == uid
-        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .province == request.resource.data.province;
+          .get('signedBy', '') is string
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .get('signedBy', '').size() > 0
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .get('adminSignature', '').size() > 0;
 
       allow delete: if isAdmin();
     }

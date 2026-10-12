@@ -565,6 +565,133 @@ main{
   border:1px solid var(--alert)
 }
 
+.tag.signed{
+  background:var(--ok);
+  color:#fff
+}
+
+/* Modale de signature du responsable (espace administration) */
+.signmodal{
+  position:fixed;
+  inset:0;
+  z-index:60;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(28,26,30,.55)
+}
+
+.signmodal-box{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:var(--card,#fff);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28)
+}
+
+.signmodal-canvas{
+  border:1.5px dashed var(--line,#d8cfd4);
+  border-radius:14px;
+  background:#fff;
+  margin:10px 0 6px
+}
+
+.signmodal-canvas canvas{
+  display:block;
+  width:100%;
+  height:170px;
+  touch-action:none
+}
+
+.signmodal-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap
+}
+
+.signmodal-buttons{
+  display:flex;
+  gap:10px;
+  margin-top:14px
+}
+
+.signmodal-buttons .btn{
+  flex:1
+}
+
+/* Dossier d'adhésion dans la modale responsable */
+.adhdoc-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--line,#eee5ea);
+  margin-bottom:10px
+}
+
+.adhdoc-head strong{
+  font-size:16px
+}
+
+.adhdoc-head span{
+  font-size:12px;
+  color:var(--muted)
+}
+
+.adhdoc-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 14px
+}
+
+.adhdoc-row{
+  display:flex;
+  flex-direction:column;
+  font-size:13px;
+  min-width:0
+}
+
+.adhdoc-row span{
+  color:var(--muted);
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.03em
+}
+
+.adhdoc-row b{
+  font-weight:600;
+  overflow-wrap:anywhere
+}
+
+.adhdoc-sign{
+  margin-top:12px
+}
+
+.adhdoc-sign span{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  margin-bottom:4px
+}
+
+.adhdoc-sign img{
+  display:block;
+  width:100%;
+  max-width:280px;
+  background:#fff;
+  border:1px solid var(--line,#e4dbe0);
+  border-radius:10px
+}
+
 .chev{
   flex:none;
   color:var(--muted);
@@ -2179,7 +2306,7 @@ button.primary:active {
 <p class="hint" data-i18n="adhHint"></p>
 </div>
 </div>
-<input id="adhFile" type="file" accept="image/*,.pdf" hidden><div class="sechead">
+<div class="sechead">
 <h2 data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
@@ -2338,7 +2465,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionShare" hidden data-act="shareadh" data-i18n="shareAdhPdf"></button>
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -2437,7 +2564,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint">Demandes numériques enregistrées dans Firestore. Les PDF restent privés.</p><ul class="list" id="admAdhesionList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -2529,7 +2656,7 @@ adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
-adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche PDF est générée, enregistrée sur Firestore puis partagée directement via WhatsApp.`,
+adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
@@ -2537,9 +2664,6 @@ adhDownload:`Télécharger la demande`,
 adhSend:`Envoyer la demande`,
 adhDigitalBtn:`Adhésion numérique`,
 adhHint:``,
-adhReady:`Fichier prêt. Choisissez WhatsApp pour l'envoyer.`,
-adhSaved:`Fichier enregistré sur l'appareil : ajoutez-le au message WhatsApp.`,
-adhErr:`Impossible de préparer ce fichier. Reprenez avec une image plus petite.`,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
 adhProcessing:`Traitement de la demande en cours…`,
@@ -2547,25 +2671,57 @@ adhRequired:`Veuillez remplir tous les champs obligatoires.`,
 adhSignRequired:`Veuillez signer la fiche avant de continuer.`,
 adhRenewalOnlyLock:`Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.`,
 adhRenewalReasonRequired:`Veuillez préciser le motif du renouvellement.`,
-adhPdfGenerating:`Génération de la fiche PDF…`,
-adhPdfReadError:`Impossible de lire le PDF généré.`,
-adhPdfGenerated:`PDF généré (%1 Ko). Enregistrement sur Firestore…`,
 adhServiceUnavailable:`Service Firebase d’adhésion indisponible.`,
-adhSavedFirst:`Demande enregistrée sur Firestore. Récupération du PDF enregistré…`,
-adhSavedCompleted:`Complément enregistré. Votre dossier est de nouveau en attente de validation.`,
-adhSavedRenewal:`Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.`,
-adhShareOpened:`Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.`,
-adhShareFailed:`Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».`,
-adhPdfError:`Impossible de créer le PDF. Réessayez.`,
-adhFormSavedPdfFail:`Formulaire sauvegardé, mais création du PDF impossible.`,
-adhStatusPending:`Demande d’adhésion : en attente de validation.`,
+adhStatusPending:`Demande d’adhésion : en attente de signature d’un responsable.`,
 adhStatusCompletion:`Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.`,
-adhStatusAccepted:`Demande d’adhésion : acceptée.`,
+adhStatusAccepted:`Demande d’adhésion : validée par un responsable.`,
 adhStatusRefused:`Demande d’adhésion : refusée.`,
 adhStatusUnknown:`Statut de la demande : %1.`,
 adhNote:`Note : `,
 adhStatusChecking:`Vérification du statut de votre demande…`,
 adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
+
+/* Transmission à l'administration (le PDF est généré par le responsable) */
+adhTransmitting:`Transmission de votre demande à l’administration…`,
+adhSentFirst:`Demande transmise à l’administration. Vous serez informé dès qu’un responsable l’aura signée.`,
+adhSentCompleted:`Complément transmis. Votre dossier est de nouveau en attente de signature.`,
+adhSentRenewal:`Renouvellement transmis : votre dossier repasse en attente de signature d’un responsable.`,
+adhSaveError:`Impossible d’enregistrer la demande.`,
+
+/* Espace responsable : signature électronique et génération du PDF */
+admSignValidate:`Signer et valider`,
+admGeneratePdf:`Générer le PDF`,
+admSignTitle:`Signature électronique du responsable`,
+admDossierTitle:`Dossier d’adhésion`,
+admViewDossier:`Consulter`,
+admClose:`Fermer`,
+admSignLoading:`Chargement du dossier…`,
+admSignHint:`Signez dans le cadre ci-dessous avec votre doigt : votre signature valide l’adhésion.`,
+admSignNote:`Note de traitement (facultative)`,
+admSignCancel:`Annuler`,
+admSignConfirm:`Valider la signature`,
+admSignMissing:`Veuillez signer avant de valider l’adhésion.`,
+admSignSending:`Enregistrement de la signature…`,
+admSignDone:`Adhésion signée et validée.`,
+admSignErr:`Impossible d’enregistrer la signature.`,
+admSignedBadge:`Signée et validée électroniquement`,
+admPdfGenerating:`Génération du PDF…`,
+admPdfDone:`PDF généré.`,
+admPdfErr:`Impossible de générer le PDF.`,
+admPdfOnlyValidated:`Seule une demande signée et validée permet de générer le PDF.`,
+admPdfFetched:`PDF récupéré depuis le dossier enregistré.`,
+admAdhesionSigned:`Signée électroniquement`,
+admAdhesionsHint:`Demandes numériques enregistrées dans Firestore. Signez une demande pour la valider : le PDF officiel n’est généré qu’à votre demande, après validation.`,
+admAdhesionsDenied:`Accès réservé aux responsables.`,
+admAdhesionsEmpty:`Aucune demande d’adhésion enregistrée.`,
+admAdhesionFallback:`Adhérent`,
+admStatusPending:`En attente de validation`,
+admStatusCompletion:`Complément demandé`,
+admStatusValidated:`Validée`,
+admStatusRefused:`Refusée`,
+admAskCompletion:`Demander un complément`,
+admRefuse:`Refuser`,
+admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
 
 nextT:`Prochain rendez-vous`,
 recentT:`Communiqués récents`,
@@ -2676,7 +2832,6 @@ meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations
 editProfile:`Modifier mon profil`,
 fillAdhesion:`Remplir ma demande d’adhésion`,
 renewAdhesion:`Renouveler mon adhésion`,
-shareAdhPdf:`Envoyer le PDF de ma demande (WhatsApp)`,
 
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
@@ -2740,7 +2895,7 @@ adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`ال�
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
-adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد سيتم إنشاء ملف PDF للاستِمارة وحفظه في قاعدة البيانات ثم إرساله مباشرة عبر واتساب.`,
+adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
@@ -2748,9 +2903,6 @@ adhDownload:`تحميل الاستمارة`,
 adhSend:`إرسال الاستمارة`,
 adhDigitalBtn:`الانخراط الرقمي`,
 adhHint:``,
-adhReady:`الملف جاهز. اختاروا واتساب للإرسال.`,
-adhSaved:`تم حفظ الملف بالهاتف : أرسلوه ضمن رسالة واتساب.`,
-adhErr:`تعذر تحضير هذا الملف. أعيدوا المحاولة بصورة أصغر.`,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
 adhProcessing:`جار معالجة الطلب…`,
@@ -2758,25 +2910,57 @@ adhRequired:`يرجى إكمال جميع الحقول المطلوبة.`,
 adhSignRequired:`يرجى التوقيع على الاستمارة قبل المتابعة.`,
 adhRenewalOnlyLock:`تمت المصادقة على انخراطكم : لا يمكن سوى التجديد مع تحديد السبب.`,
 adhRenewalReasonRequired:`يرجى تحديد سبب تجديد الانخراط.`,
-adhPdfGenerating:`جار إنشاء ملف PDF…`,
-adhPdfReadError:`تعذر قراءة ملف PDF المنشأ.`,
-adhPdfGenerated:`تم إنشاء ملف PDF (%1 ك.ب). جار الحفظ على Firestore…`,
 adhServiceUnavailable:`خدمة Firebase للانخراط غير متوفرة.`,
-adhSavedFirst:`تم تسجيل الطلب على Firestore. جار استرجاع ملف PDF المحفوظ…`,
-adhSavedCompleted:`تم حفظ المعلومات الإضافية. طلبكم عاد إلى قيد المصادقة.`,
-adhSavedRenewal:`تم تسجيل التجديد على Firestore : طلبكم عاد إلى قيد المصادقة.`,
-adhShareOpened:`تم فتح نافذة المشاركة : اختاروا واتساب ثم رقم الإدارة.`,
-adhShareFailed:`تم تسجيل الطلب. فشل مشاركة ملف PDF : أعيدوا المحاولة من «إرسال PDF الطلب».`,
-adhPdfError:`تعذر إنشاء ملف PDF. أعيدوا المحاولة.`,
-adhFormSavedPdfFail:`تم حفظ الاستمارة، لكن تعذر إنشاء ملف PDF.`,
-adhStatusPending:`طلب الانخراط : قيد المصادقة.`,
+adhStatusPending:`طلب الانخراط : في انتظار توقيع أحد المسؤولين.`,
 adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
-adhStatusAccepted:`طلب الانخراط : تمت المصادقة.`,
+adhStatusAccepted:`طلب الانخراط : تمت المصادقة عليه من طرف مسؤول.`,
 adhStatusRefused:`طلب الانخراط : مرفوض.`,
 adhStatusUnknown:`حالة الطلب : %1.`,
 adhNote:`ملاحظة : `,
 adhStatusChecking:`جار التحقق من حالة طلبكم…`,
 adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
+
+/* Transmission à l'administration (le PDF est généré par le responsable) */
+adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
+adhSentFirst:`تم إرسال الطلب إلى الإدارة. سيتم إخباركم فور توقيع أحد المسؤولين عليه.`,
+adhSentCompleted:`تم إرسال المعلومات الإضافية. طلبكم عاد إلى قيد التوقيع.`,
+adhSentRenewal:`تم إرسال طلب التجديد : طلبكم عاد إلى قيد توقيع أحد المسؤولين.`,
+adhSaveError:`تعذر تسجيل الطلب.`,
+
+/* Espace responsable : signature électronique et génération du PDF */
+admSignValidate:`التوقيع والمصادقة`,
+admGeneratePdf:`إنشاء ملف PDF`,
+admSignTitle:`التوقيع الإلكتروني للمسؤول`,
+admDossierTitle:`ملف الانخراط`,
+admViewDossier:`استعراض`,
+admClose:`إغلاق`,
+admSignLoading:`جار تحميل الملف…`,
+admSignHint:`وقّعوا داخل الإطار باستعمال الإصبع : توقيعكم يصادق على الانخراط.`,
+admSignNote:`ملاحظة المعالجة (اختيارية)`,
+admSignCancel:`إلغاء`,
+admSignConfirm:`تأكيد التوقيع`,
+admSignMissing:`يرجى التوقيع قبل المصادقة على الانخراط.`,
+admSignSending:`جار تسجيل التوقيع…`,
+admSignDone:`تم توقيع الانخراط والمصادقة عليه.`,
+admSignErr:`تعذر تسجيل التوقيع.`,
+admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
+admPdfGenerating:`جار إنشاء ملف PDF…`,
+admPdfDone:`تم إنشاء ملف PDF.`,
+admPdfErr:`تعذر إنشاء ملف PDF.`,
+admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
+admPdfFetched:`تم استرجاع ملف PDF من الملف المسجل.`,
+admAdhesionSigned:`موقّع إلكترونياً`,
+admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة في Firestore. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
+admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
+admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
+admAdhesionFallback:`منخرط`,
+admStatusPending:`في انتظار المصادقة`,
+admStatusCompletion:`تم طلب معلومات إضافية`,
+admStatusValidated:`تمت المصادقة`,
+admStatusRefused:`مرفوض`,
+admAskCompletion:`طلب معلومات إضافية`,
+admRefuse:`رفض`,
+admGeneratePdfLong:`إنشاء / تحميل ملف PDF الموقّع`,
 
 nextT:`الموعد القادم`,
 recentT:`أحدث البلاغات`,
@@ -2887,7 +3071,7 @@ meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلو�
 editProfile:`تعديل معلوماتي`,
 fillAdhesion:`ملء طلب الانخراط`,
 renewAdhesion:`تجديد الانخراط`,
-shareAdhPdf:`إرسال PDF الطلب عبر واتساب`,
+
 
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
@@ -3228,206 +3412,6 @@ function linkFor(key){
    ESPACE ADHÉRENT : téléversement de la demande signée
    ========================= */
 
-function saveFile(file){
-
-var a=document.createElement('a');
-
-a.href=URL.createObjectURL(file);
-
-a.download=file.name||'adhesion';
-
-document.body.appendChild(a);
-
-a.click();
-
-document.body.removeChild(a);
-
-setTimeout(function(){
-URL.revokeObjectURL(a.href);
-},4000);
-
-}
-
-function dataURLFile(data,name){
-
-var parts=String(data).split(',');
-
-var mime=(parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg';
-
-var bin=atob(parts[1]||'');
-
-var arr=new Uint8Array(bin.length);
-
-for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
-
-return new File([arr],name,{type:mime});
-
-}
-
-/* ============ ENVOI DU PDF DE LA DEMANDE (WhatsApp) ============
-   Source de vérité : le PDF enregistré sur Firestore (adhesionDocuments).
-   Sur l'APK, on écrit le fichier puis on ouvre la feuille de partage
-   (WhatsApp puis numéro de l'administration de la province) ; si le
-   partage natif manque ou échoue, WhatsApp s'ouvre directement sur le
-   numéro de l'admin. Chaque étape affiche un message d'état. */
-
-function adhesionAdminWaLink(){
-  var prov=(S.member&&S.member.prov)||'';
-  var list=S.provinceContacts||[];
-  var hit=list.filter(function(c){return c&&c.province===prov&&c.phone;})[0];
-  var phone=hit?String(hit.phone).replace(/\D/g,''):'';
-  if(!phone)return linkFor('num');
-  return 'https://wa.me/'+phone;
-}
-
-function shareAdhesionPdfBytes(b64,name){
-  b64=String(b64||'');
-  if(!b64){
-    toast('PDF introuvable ou inaccessible : envoyez (ou renvoyez) votre demande depuis le formulaire d’adhésion numérique.',6000);
-    return Promise.resolve();
-  }
-  var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
-  var plugins=window.Capacitor&&window.Capacitor.Plugins;
-  var fs=isNative&&plugins?plugins.Filesystem:null;
-  var sh=isNative&&plugins?plugins.Share:null;
-  var wa=adhesionAdminWaLink();
-
-  if(isNative&&fs&&sh){
-    toast('Enregistrement du PDF sur l’appareil…',3000);
-    return fs.writeFile({path:name,data:b64,directory:'CACHE'})
-      .then(function(saved){
-        toast('Ouverture du partage : choisissez WhatsApp puis le numéro de l’administration.',5000);
-        return sh.share({
-          title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
-          text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
-          files:[String(saved&&saved.uri||'')],
-          dialogTitle:"Envoyer la demande"
-        });
-      })
-      .then(function(){
-        toast('Partage lancé avec le PDF enregistré sur Firestore.',5000);
-      })
-      .catch(function(err){
-        console.info('Partage natif indisponible :',err);
-        if(wa){
-          toast('Partage de fichier indisponible — ouverture de WhatsApp pour contacter l’administration.',6000);
-          openUrl(wa);
-        }else{
-          toast('Partage indisponible sur cet appareil ('+(err&&err.message?err.message:'erreur')+'). Réessayez.',6000);
-        }
-      });
-  }
-
-  if(isNative){
-    if(wa){
-      toast('Ouverture de WhatsApp : sélectionnez le numéro de l’administration.',5000);
-      openUrl(wa);
-    }else{
-      toast('Le partage natif est indisponible sur cet appareil.',5000);
-    }
-    return Promise.resolve();
-  }
-
-  /* Web / PWA : téléchargement du PDF déjà enregistré. */
-  try{
-    saveFile(dataURLFile('data:application/pdf;base64,'+b64,name));
-    toast('PDF téléchargé — envoyez-le à votre administration sur WhatsApp.',6000);
-  }catch(err){
-    toast('Téléchargement du PDF impossible : '+(err&&err.message?err.message:'erreur'),6000);
-  }
-  return Promise.resolve();
-}
-
-function shareMyAdhesionPdf(){
-  var uid=(S.user&&S.user.uid)?String(S.user.uid):'';
-  if(!uid){toast('Connectez-vous pour envoyer votre PDF.',4500);return;}
-  if(!window.CLOUD||typeof window.CLOUD.getAdhesionPdf!=='function'){
-    toast('Service Firebase d’adhésion indisponible.',5000);return;
-  }
-  toast('Récupération du PDF enregistré sur Firestore…',3500);
-  window.CLOUD.getAdhesionPdf(uid).then(function(b64){
-    shareAdhesionPdfBytes(b64,'demande-adhesion-'+uid+'.pdf');
-  }).catch(function(err){
-    toast('Impossible de récupérer le PDF : '+(err&&err.message?err.message:'erreur inconnue'),5500);
-  });
-}
-
-function adhShare(file,msg){
-
-var wa=linkFor('num');
-
-var fallback=function(){
-
-try{saveFile(file);}catch(e){}
-
-toast(msg,4500);
-
-if(wa)openUrl(wa);
-
-};
-
-try{
-
-if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-
-navigator.share({files:[file]})
-
-.then(function(){toast(T().adhReady,3500);})
-
-.catch(function(err){
-
-if(err&&err.name==='AbortError')return;
-
-fallback();
-
-});
-
-return;
-
-}
-
-}catch(e){}
-
-fallback();
-
-}
-
-function adhPrepare(file){
-
-if(!file)return;
-
-if(/^image\//.test(file.type||'')){
-
-var base=(file.name||'adhesion').replace(/\.[^.]+$/,'');
-
-imageData(file)
-
-.then(function(data){
-
-adhShare(dataURLFile(data,base+'.jpg'),T().adhSaved);
-
-})
-
-.catch(function(){toast(T().adhErr,4000);});
-
-return;
-
-}
-
-adhShare(file,T().adhSaved);
-
-}
-
-$('adhFile').addEventListener('change',function(){
-
-var f=this.files&&this.files[0];
-
-this.value='';
-
-adhPrepare(f);
-
-});
-
 function download(name,type,text){
 
 var blob=new Blob([text],{type:type});
@@ -3742,7 +3726,6 @@ var myAdhesionStatusCache=null;
 var myAdhesionStatusPromise=null;
 function showMyAdhesionStatus(request){
   var box=$('meAdhesionStatus');if(!box)return;
-  var shareBtn=$('meAdhesionShare');
   var fillBtn=$('meAdhesionButton');
   var t=T();
   var st=request?String(request.status||'none'):'none';
@@ -3765,7 +3748,7 @@ function showMyAdhesionStatus(request){
     fillBtn.textContent=t[key]||t.fillAdhesion;
   }
   if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-  if(!request||request.status==='none'){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;return;}
+  if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
   var labels={
     pending:t.adhStatusPending,
     needs_completion:t.adhStatusCompletion,
@@ -3778,14 +3761,12 @@ function showMyAdhesionStatus(request){
   if(request.adminNote)
   box.textContent+=' '+(t.adhNote||'Note : ')+String(request.adminNote).slice(0,1000);
   // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
-  if(shareBtn)shareBtn.hidden=false;
 }
 function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
   if(!box)return Promise.resolve(null);
-  var shareBtn=$('meAdhesionShare');
-  if(!uid){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;var fb0=$('meAdhesionButton');if(fb0){fb0.hidden=false;fb0.setAttribute('data-i18n','fillAdhesion');fb0.textContent=T().fillAdhesion;}window.ADH_RENEWAL_ONLY=false;if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
-  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;if(shareBtn)shareBtn.hidden=true;return Promise.resolve(null);}
+  if(!uid){box.hidden=true;box.textContent='';var fb0=$('meAdhesionButton');if(fb0){fb0.hidden=false;fb0.setAttribute('data-i18n','fillAdhesion');fb0.textContent=T().fillAdhesion;}window.ADH_RENEWAL_ONLY=false;if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
+  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;return Promise.resolve(null);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
   myAdhesionStatusUid=uid;box.hidden=false;box.textContent=T().adhStatusChecking;
@@ -4354,33 +4335,334 @@ $('admDashTodo').innerHTML=todo.join('');
 }
 
 function renderAdminAdhesions(){
-var list=S.adhesions||[];
-var el=$('admAdhesionList');
-if(!el)return;
-if(!S.isAdmin&&!S.isSubAdmin){el.innerHTML='<li class="empty">Accès réservé aux responsables.</li>';return;}
-function label(s){
-return s==='needs_completion'?'Complément demandé':
-s==='accepted'?'Acceptée':
-s==='refused'?'Refusée':'En attente';
+  var t=T();
+  var list=S.adhesions||[];
+  var el=$("admAdhesionList");
+  if(!el)return;
+  if(!S.isAdmin&&!S.isSubAdmin){el.innerHTML='<li class="empty">'+t.admAdhesionsDenied+'</li>';return;}
+  function label(s){
+    return s==='needs_completion'?t.admStatusCompletion:
+    s==='accepted'?t.admStatusValidated:
+    s==='refused'?t.admStatusRefused:t.admStatusPending;
+  }
+  el.innerHTML=list.length?list.map(function(a){
+    var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
+    if(a.status==='pending'||a.status==='needs_completion'){
+      actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+      actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
+    }
+    /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
+    if(a.status==='accepted'&&a.signed){
+      actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
+    }
+    var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
+    return '<li class="mrow"><div class="mi">'+
+    '<strong>'+esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback)+' · '+esc(label(a.status))+
+      (a.signed&&a.status==='accepted'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
+    (head?'<span>'+esc(head)+'</span>':'')+
+    '<span>CIN : '+esc(a.cin||'')+' · Téléphone : '+esc(a.phone||'')+'</span>'+
+    '<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>'+
+    (a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+
+    (a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':'')+
+    '</div><div class="mact">'+actions+'</div></li>';
+  }).join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
 }
-el.innerHTML=list.length?list.map(function(a){
-var actions='<button type="button" class="btn ghost small" data-adm-act="openAdhesionPdf" data-id="'+esc(a.id)+'">Ouvrir PDF</button>';
-if(a.status==='pending'||a.status==='needs_completion'){
-actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="accepted" data-id="'+esc(a.id)+'">Accepter</button>';
-actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">Demander un complément</button>';
-actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">Refuser</button>';
+
+/* =========================
+   SIGNATURE ÉLECTRONIQUE ET PDF DES ADHÉSIONS
+   Espace responsable. La signature du responsable VALIDE la demande ;
+   le PDF officiel est généré puis enregistré à la demande, et
+   uniquement pour une demande validée.
+   ========================= */
+
+var signModalId='';
+var signModalCanSign=false;
+var signModalSigned=false;
+
+function signCanvasReset(){
+  var canvas=$('admSignCanvas');
+  if(!canvas)return false;
+  var ctx=null;
+  try{ctx=canvas.getContext('2d');}catch(e){ctx=null;}
+  if(!ctx)return false;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#B83268';
+  ctx.lineWidth=4;
+  ctx.lineCap='round';
+  ctx.lineJoin='round';
+  signModalSigned=false;
+  signModalState();
+  return true;
 }
-var head=[a.date||'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
-return '<li class="mrow"><div class="mi">'+
-'<strong>'+esc(((a.nom||'')+' '+(a.prenom||'')).trim()||'Adhérent')+' · '+esc(label(a.status))+'</strong>'+
-(head?'<span>'+esc(head)+'</span>':'')+
-'<span>CIN : '+esc(a.cin||'')+' · Téléphone : '+esc(a.phone||'')+'</span>'+
-'<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>'+
-(a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+
-(a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':'')+
-'</div><div class="mact">'+actions+'</div></li>';
-}).join(''):'<li class="empty">Aucune demande d’adhésion enregistrée.</li>';
+
+/* Même conversion que pour l'adhérent : JPEG sur fond blanc, 450x150.
+   jsPDF stocke les PNG en RGB brut (900x300 = 810 Ko dans le PDF). */
+function signCanvasToJpeg(){
+  var canvas=$('admSignCanvas');
+  if(!canvas)return '';
+  var out=document.createElement('canvas');
+  out.width=450;
+  out.height=150;
+  var octx=null;
+  try{octx=out.getContext('2d');}catch(e){octx=null;}
+  if(!octx)return canvas.toDataURL('image/png');
+  octx.fillStyle='#ffffff';
+  octx.fillRect(0,0,out.width,out.height);
+  octx.drawImage(canvas,0,0,out.width,out.height);
+  return out.toDataURL('image/jpeg',0.82);
 }
+
+function signModalState(){
+  var st=$('admSignState');
+  if(st)st.textContent=signModalSigned?T().adhSigned:T().adhNoSignature;
+}
+
+/* Ouverture du dossier d'un adhérent : informations complètes et
+   signature de l'adhérent. Si canSign, le pavé de signature du
+   responsable est affiché en plus (signature = validation). */
+function openAdhesionDossier(id,canSign){
+  if(!S.isAdmin&&!S.isSubAdmin)return;
+  signModalId=id||'';
+  signModalCanSign=!!canSign;
+  var modal=$('admSignModal');
+  if(!modal)return;
+  var info=$('admDossierInfo');
+  var area=$('admSignArea');
+  var confirmBtn=$('admSignConfirm');
+  var t=T();
+
+  if(info)info.innerHTML='<p class="hint">'+esc(t.admSignLoading)+'</p>';
+  if(area)area.hidden=!signModalCanSign;
+  if(confirmBtn)confirmBtn.hidden=!signModalCanSign;
+
+  if(signModalCanSign){
+    if(!signCanvasReset()){toast('Signature indisponible sur cet appareil.',4000);return;}
+    var note=$('admSignNote');
+    if(note)note.value='';
+  }
+
+  modal.hidden=false;
+
+  var c=cloud();
+  if(!c||!c.getAdhesionDoc){if(info)info.innerHTML='';return;}
+  c.getAdhesionDoc(id).then(function(doc){
+    if(signModalId!==id)return;
+    renderAdhesionDossierInfo(doc);
+  }).catch(function(){
+    if(signModalId!==id)return;
+    if(info)info.innerHTML='<p class="hint">Dossier indisponible.</p>';
+  });
+}
+
+function renderAdhesionDossierInfo(doc){
+  var el=$('admDossierInfo');
+  if(!el)return;
+  if(!doc){el.innerHTML='<p class="hint">Dossier introuvable.</p>';return;}
+  var a=doc.application||{};
+  function row(l,v){
+    return '<div class="adhdoc-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';
+  }
+  el.innerHTML='<div class="adhdoc-head"><strong>'+
+    esc(((a.nom||'')+' '+(a.prenom||'')).trim()||'Adhérent')+'</strong><span>'+
+    esc(provName(doc.province,'fr')||doc.province||'')+'</span></div>'+
+    '<div class="adhdoc-grid">'+
+    row('CIN',a.cin)+
+    row('Téléphone',a.phone)+
+    row('Date de naissance',a.dob)+
+    row('Adresse',a.address)+
+    row('Établissement',a.establishment)+
+    row('Service',a.service)+
+    row('Fonction',a['function'])+
+    row('Spécialité',a.specialty)+
+    row('PPR',a.ppr)+
+    row('Type',a.type==='renewal'?'Renouvellement':'Première adhésion')+
+    (a.type==='renewal'?row('Motif',a.reason):'')+
+    row('Date',a.date?fmtDateFr(a.date):'')+
+    '</div>'+
+    (doc.signature
+      ?'<div class="adhdoc-sign"><span>Signature de l’adhérent</span><img src="'+esc(doc.signature)+'" alt="Signature de l’adhérent"></div>'
+      :'')+
+    (doc.adminSignature
+      ?'<div class="adhdoc-sign"><span>Signature du responsable</span><img src="'+esc(doc.adminSignature)+'" alt="Signature du responsable"></div>'
+      :'');
+}
+
+function closeSignAdhesionModal(){
+  var modal=$('admSignModal');
+  if(modal)modal.hidden=true;
+  signModalId='';
+  signModalSigned=false;
+}
+
+function confirmSignAdhesion(){
+  var t=T();
+  if(!signModalId){closeSignAdhesionModal();return;}
+  if(!signModalCanSign){closeSignAdhesionModal();return;}
+  if(!signModalSigned){toast(t.admSignMissing,4000);return;}
+  var c=cloud();
+  if(!c||!c.signAdhesion){toast(t.adhServiceUnavailable,5000);return;}
+  var btn=$('admSignConfirm');
+  if(btn){btn.disabled=true;btn.setAttribute('aria-busy','true');}
+  var noteField=$('admSignNote');
+  var note=noteField?noteField.value.trim():'';
+  toast(t.admSignSending,3000);
+  /* Une seule signature de responsable habilité suffit : la signature
+     enregistre l'identité du signataire, la date, et valide la demande.
+     Les règles Firestore refusent toute signature non autorisée. */
+  c.signAdhesion(signModalId,signCanvasToJpeg(),note)
+  .then(function(){
+    if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');}
+    closeSignAdhesionModal();
+    toast(t.admSignDone,5000);
+    /* Le dossier repasse par l'écouteur Firestore : le statut
+       « Validée » et le badge de signature s'affichent d'eux-mêmes. */
+  })
+  .catch(function(err){
+    if(btn){btn.disabled=false;btn.removeAttribute('aria-busy');}
+    toast(t.admSignErr+(err&&err.message?' — '+err.message:''),6000);
+  });
+}
+
+/* Téléchargement du PDF : fichier natif sur l'APK, téléchargement
+   navigateur sur le Web (repli : ouverture du PDF). */
+function savePdfToDevice(b64,name){
+  b64=String(b64||'');
+  if(!b64)return Promise.reject(new Error('PDF vide'));
+  var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+  var plugins=window.Capacitor&&window.Capacitor.Plugins;
+  var fs=isNative&&plugins?plugins.Filesystem:null;
+
+  if(isNative&&fs&&fs.writeFile){
+    return fs.writeFile({path:name,data:b64,directory:'CACHE'})
+    .then(function(saved){
+      toast('PDF enregistré sur l’appareil : '+(saved&&saved.uri?saved.uri:name),6500);
+    })
+    .catch(function(){
+      openDataUrl('data:application/pdf;base64,'+b64);
+    });
+  }
+
+  try{
+    var bin=atob(b64);
+    var arr=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    var url=URL.createObjectURL(new Blob([arr],{type:'application/pdf'}));
+    var a=document.createElement('a');
+    a.href=url;
+    a.download=name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(url);},4000);
+  }catch(err){
+    openDataUrl('data:application/pdf;base64,'+b64);
+  }
+  return Promise.resolve();
+}
+
+/* PDF officiel d'une demande VALIDÉE, à la demande du responsable :
+   - le PDF déjà généré est récupéré depuis Firestore ;
+   - sinon il est généré depuis le dossier validé, enregistré à côté de
+     celui-ci, puis proposé au téléchargement. */
+function generateAdhesionPdfForAdmin(id){
+  var t=T();
+  var c=cloud();
+  if(!c||!c.getAdhesionDoc){toast(t.adhServiceUnavailable,5000);return;}
+  toast(t.admPdfGenerating,3500);
+
+  c.getSavedAdhesionPdf(id)
+  .then(function(stored){
+    if(stored)return{stored:stored};
+      return c.getAdhesionDoc(id).then(function(doc){
+      if(!doc)throw new Error(t.admPdfErr);
+      if(doc.status!=='accepted'||!doc.adminSignature)
+      throw new Error(t.admPdfOnlyValidated);
+      if(typeof window.generateAdhesionPdf!=='function')
+      throw new Error('PDF indisponible');
+      /* Identité lisible du signataire : son profil s'il est connu de
+         l'administrateur connecté, sinon son identifiant Firebase. */
+      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+      doc.signerName=signer?((signer.name||signer.email||'')+(signer.email&&signer.name?' ('+signer.email+')':'')):doc.signedBy;
+      return window.generateAdhesionPdf(doc).then(function(b64){
+        if(!b64)throw new Error(t.admPdfErr);
+        /* Enregistrement à côté du dossier : le PDF reste récupérable
+           même si le téléchargement échoue. Best effort. */
+        return c.saveAdhesionPdf(id,b64)
+        .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
+        .then(function(){return{fresh:b64};});
+      });
+    });
+  })
+  .then(function(res){
+    var b64=res.stored||res.fresh;
+    return savePdfToDevice(b64,'demande-adhesion-'+id+'.pdf')
+    .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
+  })
+  .catch(function(err){
+    toast(t.admPdfErr+(err&&err.message?' — '+err.message:''),6000);
+  });
+}
+
+/* Dessin au doigt / à la souris sur le canevas de la modale. */
+(function(){
+  var canvas=$('admSignCanvas');
+  if(!canvas)return;
+  var drawing=false;
+
+  function pos(e){
+    var r=canvas.getBoundingClientRect();
+    var cx=(e.touches&&e.touches[0])?e.touches[0].clientX:e.clientX;
+    var cy=(e.touches&&e.touches[0])?e.touches[0].clientY:e.clientY;
+    if(cx==null)return null;
+    return{x:(cx-r.left)*canvas.width/r.width,y:(cy-r.top)*canvas.height/r.height};
+  }
+
+  function start(e){
+    var p=pos(e);
+    if(!p)return;
+    if(e.cancelable)e.preventDefault();
+    var ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    drawing=true;
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+    ctx.arc(p.x,p.y,2,0,Math.PI*2);
+    ctx.fillStyle='#B83268';
+    ctx.fill();
+    signModalSigned=true;
+    signModalState();
+  }
+
+  function move(e){
+    if(!drawing)return;
+    var p=pos(e);
+    if(!p)return;
+    if(e.cancelable)e.preventDefault();
+    var ctx=canvas.getContext('2d');
+    if(!ctx)return;
+    ctx.lineTo(p.x,p.y);
+    ctx.stroke();
+  }
+
+  function end(){drawing=false;}
+
+  canvas.addEventListener('mousedown',start);
+  canvas.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',move,{passive:false});
+  window.addEventListener('touchend',end);
+
+  var clearBtn=$('admSignClear');
+  if(clearBtn)clearBtn.addEventListener('click',function(){signCanvasReset();});
+
+  var cancelBtn=$('admSignCancel');
+  if(cancelBtn)cancelBtn.addEventListener('click',closeSignAdhesionModal);
+
+  var confirmBtn=$('admSignConfirm');
+  if(confirmBtn)confirmBtn.addEventListener('click',confirmSignAdhesion);
+})();
 
 function showAdmTab(name){
 
@@ -4947,7 +5229,7 @@ ics
 document.addEventListener('click',function(e){
 
 var el=e.target.closest(
-'[data-go],[data-tab],[data-item],[data-open],[data-adh],'+
+'[data-go],[data-tab],[data-item],[data-open],'+
 '[data-filter],[data-form],[data-link],[data-share],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn'
@@ -5016,31 +5298,6 @@ openUrl(formTarget);
 else{
 
 go('report');
-
-}
-
-return;
-}
-
-if(el.hasAttribute('data-adh')){
-
-var adhAct=el.getAttribute('data-adh');
-
-if(adhAct==='dl'){
-
-var adhUrl=String(LINKS.adhesion||'');
-
-if(adhUrl){
-openUrl(adhUrl);
-}
-else{
-toast(T().toastLink);
-}
-
-}
-else{
-
-$('adhFile').click();
 
 }
 
@@ -5166,12 +5423,6 @@ var act=el.getAttribute('data-act');
 if(act==='signin'){
 
 c.signIn().catch(showError);
-
-}
-
-else if(act==='shareadh'){
-
-shareMyAdhesionPdf();
 
 }
 
@@ -5404,9 +5655,16 @@ else if(a==='cancelNews'&&S.isAdmin){
 endEditNews();
 }
 
-else if(a==='openAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
-if(!c.getAdhesionPdf)return;
-c.getAdhesionPdf(id).then(function(b64){if(b64)openDataUrl('data:application/pdf;base64,'+b64);else toast('PDF indisponible.',4000);}).catch(showError);
+else if(a==='signAdhesion'&&(S.isAdmin||S.isSubAdmin)){
+openAdhesionDossier(id,true);
+}
+
+else if(a==='viewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
+openAdhesionDossier(id,false);
+}
+
+else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+generateAdhesionPdfForAdmin(id);
 }
 
 else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
@@ -6145,8 +6403,232 @@ window.UGTM.failed();
       el.hidden=false;
     }
 
+    /* Signature au format JPEG sur fond blanc, réduite à 450x150
+       (cadre de 70x26 mm sur la fiche). jsPDF stocke les PNG en RGB
+       brut : le canevas 900x300 pèserait 810 Ko dans le PDF et la
+       fiche dépasserait la limite Firestore. Un JPEG équivalent ne
+       pèse que quelques Ko. */
+    function signatureJpeg(){
+      var out=document.createElement('canvas');
+      out.width=450;
+      out.height=150;
+      var octx=null;
+      try{
+        octx=out.getContext('2d');
+      }catch(e){
+        octx=null;
+      }
+      if(!octx)return canvas.toDataURL('image/png');
+      octx.fillStyle='#ffffff';
+      octx.fillRect(0,0,out.width,out.height);
+      octx.drawImage(canvas,0,0,out.width,out.height);
+      return out.toDataURL('image/jpeg',0.82);
+    }
+
+    /* PDF de la demande, généré À LA DEMANDE de l'administrateur ou du
+       sous-admin (onglet Adhésions > Générer le PDF). La fiche réunit
+       la signature de l'adhérent et la signature électronique du
+       responsable. Retourne le base64 du PDF. */
+    function adhesionPdfBase64(request){
+      return new Promise(function(resolve,reject){
+        var app=(request&&request.application)||{};
+        var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+        if(!jsPDF){reject(new Error('PDF indisponible'));return;}
+
+        var pdf=new jsPDF({unit:'mm',format:'a4'});
+        var pageW=210,margin=18,y=18;
+
+        function loadLogo(){
+          return new Promise(function(resolve){
+            var done=false;
+            var finish=function(v){if(done)return;done=true;resolve(v);};
+            /* Filet de sécurité : si l'image ne se charge jamais (WebView
+               d'APK), on continue SANS logo plutôt que de bloquer la
+               génération en silence. */
+            var timer=setTimeout(function(){finish('');},4000);
+            var img=new Image();
+            img.onload=function(){
+              clearTimeout(timer);
+              try{
+                var c=document.createElement('canvas');
+                c.width=420;
+                c.height=140;
+                var cx=c.getContext('2d');
+                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut
+                   (420x140 = 176 Ko), un JPEG équivalent pèse quelques Ko. */
+                cx.fillStyle='#ffffff';
+                cx.fillRect(0,0,c.width,c.height);
+                cx.drawImage(img,0,0,c.width,c.height);
+                finish(c.toDataURL('image/jpeg',0.85));
+              }catch(e){finish('');}
+            };
+            img.onerror=function(){clearTimeout(timer);finish('');};
+            img.src='icons/ugtm-logo.svg';
+          });
+        }
+
+        function line(){
+          pdf.setDrawColor(184,50,104);
+          pdf.setLineWidth(.6);
+          pdf.line(margin,y,pageW-margin,y);
+          y+=7;
+        }
+
+        function section(title){
+          if(y>258){
+            pdf.addPage();
+            y=18;
+          }
+          pdf.setFillColor(248,235,242);
+          pdf.roundedRect(margin,y-5,pageW-margin*2,9,2,2,'F');
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(184,50,104);
+          pdf.text(title,margin+4,y+1);
+          pdf.setTextColor(0,0,0);
+          y+=12;
+        }
+
+        function field(label,value){
+          if(y>270){
+            pdf.addPage();
+            y=18;
+          }
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(9.5);
+          pdf.text(label,margin,y);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(10);
+          var lines=pdf.splitTextToSize(String(value||''),118);
+          pdf.text(lines,68,y);
+          y+=Math.max(7,lines.length*5.2);
+        }
+
+        function drawSignatureBox(title,x,boxY,image){
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(10);
+          pdf.text(title,x,boxY);
+          pdf.setDrawColor(150,150,150);
+          pdf.setLineWidth(.4);
+          pdf.roundedRect(x,boxY+5,78,30,2,2,'S');
+          if(image){
+            try{pdf.addImage(image,'JPEG',x+4,boxY+7,70,26);}catch(e){}
+          }
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8);
+          pdf.setTextColor(120,120,120);
+          pdf.text('Signature',x+4,boxY+30);
+          pdf.setTextColor(0,0,0);
+        }
+
+        loadLogo().then(function(logo){
+
+          if(logo)pdf.addImage(logo,'JPEG',margin,12,38,13);
+
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(12);
+          pdf.text('Union Générale des Travailleurs du Maroc',62,17);
+          pdf.setFontSize(11);
+          pdf.text('Fédération nationale de la Santé',62,23);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9.5);
+          pdf.text('Région Souss-Massa',62,29);
+
+          y=39;
+          line();
+
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(17);
+          pdf.setTextColor(184,50,104);
+          pdf.text("DEMANDE D'ADHÉSION",105,y,{align:'center'});
+          pdf.setTextColor(0,0,0);
+          y+=11;
+
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9);
+          pdf.setTextColor(95,95,95);
+          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,y,{align:'center'});
+          pdf.setTextColor(0,0,0);
+          y+=13;
+
+          section('IDENTIFICATION DE L’ADHÉRENT');
+          field('Nom',app.nom);
+          field('Prénom',app.prenom);
+          field('CIN',app.cin);
+          field('Date de naissance',app.dob);
+          field('Téléphone',app.phone);
+          field('Adresse',app.address);
+
+          section('SITUATION PROFESSIONNELLE');
+          field('Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
+          field('Établissement / structure',app.establishment);
+          field('Service / unité',app.service);
+          field('Fonction',app['function']);
+          field('Spécialité',app.specialty);
+          field('PPR',app.ppr);
+
+          section('ADHÉSION');
+          field('Type',app.type==='renewal'?'Renouvellement':'Première adhésion');
+          if(app.type==='renewal')field('Motif du renouvellement',app.reason);
+          field('Date',app.date);
+
+          section('ENGAGEMENT');
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9.5);
+          pdf.text([
+            "Je déclare adhérer à la Fédération nationale de la Santé",
+            "et accepter ses statuts ainsi que son règlement intérieur."
+          ],margin,y);
+          y+=16;
+
+          section('SIGNATURES');
+          var signatureY=y;
+          drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
+          drawSignatureBox('Signature du responsable syndical',margin+96,signatureY,request&&request.adminSignature);
+
+          y=signatureY+43;
+
+          /* Identité du signataire et date de validation : le PDF officiel
+             porte la trace de qui a validé le dossier et quand. */
+          if(y+16>282){
+            pdf.addPage();
+            y=18;
+          }
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9);
+          var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
+          pdf.text('Validée par : '+signer,margin,y);
+          if(request&&request.signedAt){
+            try{
+              pdf.text('Date de validation : '+new Date(request.signedAt).toLocaleDateString('fr-FR'),margin,y+5);
+            }catch(eDate){}
+          }
+          pdf.text('Statut du dossier : VALIDÉE',margin,y+10);
+          pdf.text('Référence : '+(request&&request.id?String(request.id):''),margin,y+15);
+
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8);
+          pdf.setTextColor(120,120,120);
+          pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
+          pdf.setTextColor(0,0,0);
+
+          var b64=String(pdf.output('datauristring')||'').split(',')[1]||'';
+          resolve(b64);
+        }).catch(reject);
+      });
+    }
+
+    window.generateAdhesionPdf=adhesionPdfBase64;
+
+    var submitting=false;
+
     form.addEventListener('submit',function(e){
       e.preventDefault();
+
+      /* Garde anti-double-clic : une seule soumission à la fois (le
+         doublon est de toute façon refusé par la transaction). */
+      if(submitting)return;
+      submitting=true;
 
       var t=(typeof T==='function')?T():{};
 
@@ -6217,7 +6699,7 @@ window.UGTM.failed();
         reason:reason,
         commitment:true,
         date:document.getElementById('adhDate').value,
-        signature:canvas.toDataURL('image/png')
+        signature:signatureJpeg()
       };
 
       try{
@@ -6225,257 +6707,42 @@ window.UGTM.failed();
         if(draftKey)localStorage.setItem(draftKey,JSON.stringify(data));
       }catch(err){}
 
-        try{
-          var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-          setAdhStatus(t.adhPdfGenerating||'Génération de la fiche PDF…');
+        /* L'adhérent ne génère plus de PDF et ne l'envoie plus sur
+           WhatsApp : sa fiche signée est transmise à l'administration
+           de sa province. Un responsable la signe électroniquement dans
+           l'application (la signature valide l'adhésion), puis le PDF
+           est généré à sa demande. */
+        (async function(){
+          try{
+            setAdhStatus(t.adhTransmitting||'Transmission de votre demande à l’administration…');
 
-          /* jsPDF fabrique le PDF exigé par Firestore (empaqueté dans
-             l'APK, chargé localement sur le Web). Le partage qui suit est
-             délégué à shareAdhesionPdfBytes() : il utilise le PDF
-             enregistré sur Firestore et ouvre WhatsApp / la feuille de
-             partage, avec un message d'état à chaque étape. */
-          if(!jsPDF)throw new Error('PDF indisponible');
-
-          var pdf=new jsPDF({unit:'mm',format:'a4'});
-          var pageW=210;
-          var margin=18;
-          var y=18;
-
-          function loadLogo(){
-            return new Promise(function(resolve){
-              var done=false;
-              var finish=function(v){if(done)return;done=true;resolve(v);};
-              /* Filet de sécurité : si l'image ne se charge jamais (WebView
-                 d'APK), on continue SANS logo plutôt que de bloquer tout
-                 l'envoi en silence. */
-              var timer=setTimeout(function(){finish('');},4000);
-              var img=new Image();
-              img.onload=function(){
-                clearTimeout(timer);
-                try{
-                  var c=document.createElement('canvas');
-                  c.width=420;
-                  c.height=140;
-                  var cx=c.getContext('2d');
-                  cx.clearRect(0,0,c.width,c.height);
-                  cx.drawImage(img,0,0,c.width,c.height);
-                  finish(c.toDataURL('image/png'));
-                }catch(e){finish('');}
-              };
-              img.onerror=function(){clearTimeout(timer);finish('');};
-              img.src='icons/ugtm-logo.svg';
-            });
-          }
-
-          function line(){
-            pdf.setDrawColor(184,50,104);
-            pdf.setLineWidth(.6);
-            pdf.line(margin,y,pageW-margin,y);
-            y+=7;
-          }
-
-          function section(title){
-            if(y>258){
-              pdf.addPage();
-              y=18;
-            }
-            pdf.setFillColor(248,235,242);
-            pdf.roundedRect(margin,y-5,pageW-margin*2,9,2,2,'F');
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(10);
-            pdf.setTextColor(184,50,104);
-            pdf.text(title,margin+4,y+1);
-            pdf.setTextColor(0,0,0);
-            y+=12;
-          }
-
-          function field(label,value){
-            if(y>270){
-              pdf.addPage();
-              y=18;
+            if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
+              setAdhStatus(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',false);
+              adm(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',5000);
+              return;
             }
 
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(9.5);
-            pdf.text(label,margin,y);
+            var result=await window.CLOUD.submitAdhesion(data,data.signature);
 
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(10);
+            var sentMsg=result&&result.completed
+              ?(data.type==='renewal'
+                ?(t.adhSentRenewal||'Renouvellement transmis : votre dossier repasse en attente de signature d’un responsable.')
+                :(t.adhSentCompleted||'Complément transmis. Votre dossier est de nouveau en attente de signature.'))
+              :(t.adhSentFirst||'Demande transmise à l’administration. Vous serez informé dès qu’un responsable l’aura signée.');
 
-            var text=String(value||'');
-            var lines=pdf.splitTextToSize(text,118);
+            setAdhStatus(sentMsg,true);
+            adm(sentMsg,6000);
 
-            pdf.text(lines,68,y);
-            y+=Math.max(7,lines.length*5.2);
+            if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
+          }catch(err){
+            console.error('Adhesion save:',err);
+            var saveMsg=(err&&err.message)?err.message:(t.adhSaveError||'Impossible d’enregistrer la demande.');
+            setAdhStatus(saveMsg,false);
+            adm(saveMsg,5000);
+          }finally{
+            submitting=false;
           }
-
-          function drawSignatureBox(title,x,boxY){
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(10);
-            pdf.text(title,x,boxY);
-
-            pdf.setDrawColor(150,150,150);
-            pdf.setLineWidth(.4);
-            pdf.roundedRect(x,boxY+5,78,30,2,2,'S');
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(120,120,120);
-            pdf.text('Signature',x+4,boxY+30);
-            pdf.setTextColor(0,0,0);
-          }
-
-          loadLogo().then(function(logo){
-
-            if(logo)pdf.addImage(logo,'PNG',margin,12,38,13);
-
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(12);
-            pdf.text('Union Générale des Travailleurs du Maroc',62,17);
-
-            pdf.setFontSize(11);
-            pdf.text('Fédération nationale de la Santé',62,23);
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(9.5);
-            pdf.text('Région Souss-Massa',62,29);
-
-            y=39;
-            line();
-
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(17);
-            pdf.setTextColor(184,50,104);
-            pdf.text("DEMANDE D'ADHÉSION",105,y,{align:'center'});
-            pdf.setTextColor(0,0,0);
-            y+=11;
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(9);
-            pdf.setTextColor(95,95,95);
-            pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,y,{align:'center'});
-            pdf.setTextColor(0,0,0);
-            y+=13;
-
-            section('IDENTIFICATION DE L’ADHÉRENT');
-
-            field('Nom',data.nom);
-            field('Prénom',data.prenom);
-            field('CIN',data.cin);
-            field('Date de naissance',data.dob);
-            field('Téléphone',data.phone);
-            field('Adresse',data.address);
-
-            section('SITUATION PROFESSIONNELLE');
-
-            field('Province / Préfecture',data.province);
-            field('Établissement / structure',data.establishment);
-            field('Service / unité',data.service);
-            field('Fonction',data.function);
-            field('Spécialité',data.specialty);
-            field('PPR',data.ppr);
-
-            section('ADHÉSION');
-
-            field('Type',data.type==='renewal'?'Renouvellement':'Première adhésion');
-            if(data.type==='renewal')field('Motif du renouvellement',data.reason);
-            field('Date',data.date);
-
-            section('ENGAGEMENT');
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(9.5);
-
-            var engagement=[
-              "Je déclare adhérer à la Fédération nationale de la Santé",
-              "et accepter ses statuts ainsi que son règlement intérieur."
-            ];
-
-            pdf.text(engagement,margin,y);
-            y+=16;
-
-            section('SIGNATURES');
-
-            var signatureY=y;
-
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(10);
-            pdf.text("Signature de l’adhérent",margin,signatureY);
-
-            pdf.setDrawColor(150,150,150);
-            pdf.setLineWidth(.4);
-            pdf.roundedRect(margin,signatureY+5,78,30,2,2,'S');
-
-            if(data.signature){
-              pdf.addImage(data.signature,'PNG',margin+4,signatureY+7,70,26);
-            }
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(120,120,120);
-            pdf.text('Signature',margin+4,signatureY+30);
-            pdf.setTextColor(0,0,0);
-
-            drawSignatureBox("Signature du responsable syndical",margin+96,signatureY);
-
-            y=signatureY+43;
-
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(120,120,120);
-            pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
-            pdf.setTextColor(0,0,0);
-
-            var base='demande-adhesion-'+(data.nom||'adherent').replace(/[^a-z0-9_-]/gi,'-')+'.pdf';
-            var blob=pdf.output('blob');
-            var reader=new FileReader();
-
-            reader.onloadend=async function(){
-              var b64=String(reader.result||'').split(',')[1]||'';
-              if(!b64){setAdhStatus(t.adhPdfReadError||'Impossible de lire le PDF généré.',false);adm(t.adhPdfReadError||'Impossible de lire le PDF généré.',4000);return;}
-              setAdhStatus((t.adhPdfGenerated||'PDF généré (%1 Ko). Enregistrement sur Firestore…')
-                .replace('%1',Math.max(1,Math.round(b64.length*3/4/1024))));
-              if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
-                setAdhStatus(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',false);
-                adm(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',5000);return;
-              }
-              var result;
-              try{result=await window.CLOUD.submitAdhesion(data,b64);}
-              catch(err){console.error('Adhesion save:',err);setAdhStatus(err&&err.message?err.message:'Impossible d’enregistrer la demande.',false);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
-              var savedMsg=result&&result.completed
-                ?(data.type==='renewal'?(t.adhSavedRenewal||'Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.'):(t.adhSavedCompleted||'Complément enregistré. Votre dossier est de nouveau en attente de validation.'))
-                :(t.adhSavedFirst||'Demande enregistrée sur Firestore. Récupération du PDF enregistré…');
-              if(typeof toast==='function')toast(savedMsg,4000);
-              setAdhStatus(savedMsg,true);
-              /* L'ENVOI PART DU PDF ENREGISTRÉ SUR FIRESTORE (et non du
-                 fichier local) : ce que l'administration reçoit est
-                 exactement ce qui est stocké. Chaque étape est annoncée. */
-              try{
-                var stored='';
-                try{stored=await window.CLOUD.getAdhesionPdf(String(result&&result.id||''));}catch(eFetch){}
-                await shareAdhesionPdfBytes(stored||b64,base);
-                setAdhStatus(t.adhShareOpened||'Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.',true);
-              }catch(shareErr){
-                console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);
-                setAdhStatus(t.adhShareFailed||'Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',false);
-                if(typeof toast==='function')toast(t.adhShareFailed||'Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',6500);
-              }
-              if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
-            };
-
-            reader.readAsDataURL(blob);
-
-          }).catch(function(err){
-            console.error('Adhesion logo/PDF:',err);
-            setAdhStatus(t.adhPdfError||'Impossible de créer le PDF. Réessayez.',false);
-            adm(t.adhPdfError||'Impossible de créer le PDF. Réessayez.',4000);
-          });
-
-        }catch(err){
-          console.error('Adhesion PDF:',err);
-          setAdhStatus(t.adhFormSavedPdfFail||'Formulaire sauvegardé, mais création du PDF impossible.',false);
-          adm(t.adhFormSavedPdfFail||'Formulaire sauvegardé, mais création du PDF impossible.',4000);
-        }
+        })();
     });
   }
 

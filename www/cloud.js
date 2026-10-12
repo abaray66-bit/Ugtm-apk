@@ -267,6 +267,11 @@ function subscribeAdhesions(){
         dob: app.dob || '', phone: app.phone || '',
         establishment: app.establishment || '', specialty: app.specialty || '',
         type: app.type || 'first', reason: app.reason || '', date: app.date || '',
+        // Indicateurs de validation (les images de signature sont
+        // récupérées à la demande dans getAdhesionDoc()).
+        signed: !!x.adminSignature,
+        signedBy: x.signedBy || '',
+        signedAt: ms(x.signedAt),
         createdAt: ms(x.createdAt), updatedAt: ms(x.updatedAt)
       };
     }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
@@ -794,13 +799,11 @@ async function getMyAdhesionRequest(){
   var x=snap.data()||{};
   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',application:x.application||{}};
 }
-async function submitAdhesion(application,pdfBase64){
+async function submitAdhesion(application,signature){
   var u=auth.currentUser;
   if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
   if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
-  var pdf=String(pdfBase64||'');
-  if(!pdf||pdf.length>650000) throw new Error('Le PDF signé est vide ou dépasse 650 Ko.');
-  var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid), pdfRef=doc(db,'adhesionDocuments',uid);
+  var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid);
   var clean={
     nom:String(application.nom||'').trim().slice(0,100),prenom:String(application.prenom||'').trim().slice(0,100),
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
@@ -814,10 +817,11 @@ async function submitAdhesion(application,pdfBase64){
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
   if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
   if(clean.type==='first')clean.reason='';
-  var signature=String(application.signature);
-  if(signature.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  var sig=String(signature||'');
+  if(!sig) throw new Error('La signature est manquante.');
+  if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
   return runTransaction(db,async function(tx){
-    var reqSnap=await tx.get(requestRef), pdfSnap=await tx.get(pdfRef);
+    var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
     var status=existing?String(existing.status||'pending'):'';
     /* RENOUVELLEMENT : un adhérent déjà accepté peut redéposer son
@@ -830,16 +834,87 @@ async function submitAdhesion(application,pdfBase64){
     }
     if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
     if(existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
-    if(existing&&!pdfSnap.exists()) throw new Error('Le PDF du dossier est introuvable. Contactez votre administration avant de renvoyer le dossier.');
     if(existing){
-      tx.update(requestRef,{application:clean,signature:signature,status:'pending',adminNote:'',updatedAt:serverTimestamp()});
-      tx.update(pdfRef,{fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,updatedAt:serverTimestamp()});
+      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',updatedAt:serverTimestamp()});
     }else{
-      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:signature,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-      tx.set(pdfRef,{uid:uid,province:clean.province,fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,createdAt:serverTimestamp()});
+      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
   });
+}
+
+/* =========================================================
+   SIGNATURE ÉLECTRONIQUE DU RESPONSABLE
+   L'administrateur (ou le sous-admin de la province) signe la
+   demande dans l'application : la signature VALIDE l'adhésion
+   (statut 'accepted'). Le dossier signé par l'adhérent n'est
+   jamais réécrit (cf. firestore.rules).
+   ========================================================= */
+async function signAdhesion(uid,signature,note){
+  var u=auth.currentUser;
+  if(!u) throw new Error('Non connecté');
+  var sig=String(signature||'');
+  if(!sig) throw new Error('La signature du responsable est manquante.');
+  if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  return updateDoc(doc(db,'adhesionRequests',String(uid)),{
+    status:'accepted',
+    adminSignature:sig,
+    signedBy:u.uid,
+    signedAt:serverTimestamp(),
+    adminNote:String(note||'').slice(0,1000),
+    updatedAt:serverTimestamp()
+  });
+}
+
+/* Dossier complet d'une demande (signatures incluses) : chargé à la
+   demande, pour la signature du responsable et la génération du PDF. */
+function getAdhesionDoc(uid){
+  return getDoc(doc(db,'adhesionRequests',String(uid||''))).then(function(s){
+    if(!s.exists())return null;
+    var x=s.data()||{};
+    return {
+      id:s.id,uid:x.uid||'',email:x.email||'',province:x.province||'',
+      status:x.status||'pending',adminNote:x.adminNote||'',
+      adminSignature:x.adminSignature||'',signedBy:x.signedBy||'',
+      signedAt:ms(x.signedAt),
+      application:x.application||{},signature:x.signature||'',
+      createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt)
+    };
+  }).catch(function(){return null;});
+}
+
+/* =========================================================
+   PDF OFFICIEL — généré par un responsable, stocké à côté du dossier
+   Le PDF n'est écrit que sur action explicite d'un responsable
+   habilité, et uniquement pour une demande déjà signée (les règles
+   Firestore vérifient le statut 'accepted' et la province).
+   ========================================================= */
+async function saveAdhesionPdf(uid,pdfBase64){
+  var u=auth.currentUser;
+  if(!u) throw new Error('Non connecté');
+  var uidStr=String(uid||'');
+  var b64=String(pdfBase64||'');
+  if(!uidStr) throw new Error('Dossier introuvable.');
+  if(!b64) throw new Error('PDF vide : génération impossible.');
+  if(b64.length>650000) throw new Error('Le PDF dépasse la taille maximale autorisée (650 Ko).');
+  var province=await getAdhesionDoc(uidStr).then(function(r){return r?r.province:'';});
+  if(!province) throw new Error('Dossier introuvable.');
+  return setDoc(doc(db,'adhesionDocuments',uidStr),{
+    uid:uidStr,
+    province:province,
+    fileName:'demande-adhesion-'+uidStr+'.pdf',
+    mimeType:'application/pdf',
+    data:b64,
+    createdAt:serverTimestamp(),
+    updatedAt:serverTimestamp()
+  });
+}
+
+/* Récupération du PDF officiel enregistré (responsables habilités). */
+function getSavedAdhesionPdf(uid){
+  return getDoc(doc(db,'adhesionDocuments',String(uid||''))).then(function(s){
+    return s.exists()?String(s.data().data||''):'';
+  }).catch(function(){return '';});
 }
 
 /* =========================================================
@@ -1628,12 +1703,15 @@ export async function init(config, h){
     getMyAdhesionRequest: getMyAdhesionRequest,
     submitAdhesion: submitAdhesion,
 
-    // Chargement à la demande du PDF signé (vue responsables).
-    getAdhesionPdf: function(uid){
-      return getDoc(doc(db, 'adhesionDocuments', String(uid || '')))
-        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
-        .catch(function(){ return ''; });
-    },
+    // Signature électronique du responsable : valide l'adhésion.
+    signAdhesion: signAdhesion,
+
+    // Dossier complet (signatures incluses), chargé à la demande.
+    getAdhesionDoc: getAdhesionDoc,
+
+    // PDF officiel : enregistrement et récupération (responsables habilités).
+    saveAdhesionPdf: saveAdhesionPdf,
+    getSavedAdhesionPdf: getSavedAdhesionPdf,
 
     addReport: addReport,
     admin: admin,

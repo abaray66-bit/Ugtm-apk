@@ -5,10 +5,11 @@
      firebase emulators:exec --only firestore "node test-firestore-adhesion.mjs"
    ou : npm run test:firestore
 
-   Le payload testé reproduit exactement ce que www/cloud.js envoie
-   via submitAdhesion() : un lot de deux documents
-   (adhesionRequests/{uid} + adhesionDocuments/{uid}) dont les
-   timestamps sont des serverTimestamp() sentinelles.
+   Le payload testé reproduit ce que www/cloud.js envoie via
+   submitAdhesion() : le dossier signé par l'adhérent uniquement
+   (adhesionRequests/{uid}). L'adhérent ne génère plus de PDF :
+   celui-ci est produit puis enregistré par un responsable habilité
+   (adhesionDocuments/{uid}) après signature et validation.
    ============================================================ */
 
 import test, { after, before } from 'node:test';
@@ -140,13 +141,11 @@ before(async () => {
 
 // ---------- scénarios ----------
 
-test('un adhérent peut créer sa demande', async () => {
+test('un adhérent peut créer sa demande (dossier signé seul)', async () => {
   const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
-  // Même opération que le client : un lot demande + PDF signé.
-  const batch = writeBatch(db);
-  batch.set(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir'));
-  batch.set(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir'));
-  await assertSucceeds(batch.commit());
+  // Exactement ce qu'envoie submitAdhesion() : le dossier et la
+  // signature de l'adhérent, sans aucun PDF.
+  await assertSucceeds(setDoc(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir')));
 });
 
 test('un adhérent ne peut pas recréer sa demande', async () => {
@@ -223,7 +222,7 @@ test('un adhérent ne peut pas lire le PDF d’un autre', async () => {
    RENVOI APRÈS DEMANDE DE COMPLÉMENT (needs_completion)
    ========================================================== */
 
-test('renvoi après complément : dossier + PDF remis en attente', async () => {
+test('renvoi après complément : le dossier signé repasse en attente', async () => {
   // 1) Le responsable marque le dossier d'Alice en complément.
   const adminDb = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
   await assertSucceeds(updateDoc(doc(adminDb, 'adhesionRequests', ALICE), {
@@ -234,30 +233,17 @@ test('renvoi après complément : dossier + PDF remis en attente', async () => {
 
   const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
 
-  // 2) Le PDF seul, sans que le dossier repasse en pending, est refusé.
-  await assertFails(updateDoc(doc(db, 'adhesionDocuments', ALICE), {
-    fileName: 'demande-adhesion-' + ALICE + '.pdf',
-    mimeType: 'application/pdf',
-    data: 'JVBERi0xLjQKQ2F2ZQ==',
-    updatedAt: serverTimestamp()
-  }));
+  // 2) L'adhérent ne peut aucunement écrire le PDF officiel.
+  await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
 
-  // 3) Le vrai renvoi — lot unique comme dans submitAdhesion — est accepté.
-  const batch = writeBatch(db);
-  batch.update(doc(db, 'adhesionRequests', ALICE), {
+  // 3) Le vrai renvoi — dossier seul, comme dans submitAdhesion — est accepté.
+  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
     application: applicationPayload('agadir', { phone: '0611111111' }),
     signature: 'data:image/png;base64,UmVzb21pbg==',
     status: 'pending',
     adminNote: '',
     updatedAt: serverTimestamp()
-  });
-  batch.update(doc(db, 'adhesionDocuments', ALICE), {
-    fileName: 'demande-adhesion-' + ALICE + '.pdf',
-    mimeType: 'application/pdf',
-    data: 'JVBERi0xLjQKUmV2aXNlZA==',
-    updatedAt: serverTimestamp()
-  });
-  await assertSucceeds(batch.commit());
+  }));
 });
 
 test('le renvoi est refusé tant que le dossier est en attente (pending)', async () => {
@@ -271,8 +257,9 @@ test('le renvoi est refusé tant que le dossier est en attente (pending)', async
   }));
 });
 
-test('le PDF ne peut pas être réécrit hors renvoi (statut pending)', async () => {
+test('l’adhérent ne peut jamais écrire le PDF officiel', async () => {
   const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
+  await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
   await assertFails(updateDoc(doc(db, 'adhesionDocuments', ALICE), {
     fileName: 'demande-adhesion-' + ALICE + '.pdf',
     mimeType: 'application/pdf',
@@ -315,18 +302,12 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
     updatedAt: serverTimestamp()
   }));
 
-  // 4) Le PDF seul, hors renvoi, reste refusé (statut accepted).
-  await assertFails(updateDoc(doc(db, 'adhesionDocuments', ALICE), {
-    fileName: 'demande-adhesion-' + ALICE + '.pdf',
-    mimeType: 'application/pdf',
-    data: 'JVBERi0xLjQKUmV3',
-    updatedAt: serverTimestamp()
-  }));
+  // 4) L'adhérent ne peut pas écrire le PDF officiel (statut accepted).
+  await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
 
-  // 5) Le vrai renouvellement — lot unique comme dans submitAdhesion —
+  // 5) Le vrai renouvellement — dossier seul, comme dans submitAdhesion —
   //    est accepté : motif présent, type renewal, statut pending.
-  const batch = writeBatch(db);
-  batch.update(doc(db, 'adhesionRequests', ALICE), {
+  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
     application: applicationPayload('agadir', {
       type: 'renewal',
       reason: 'Renouvellement annuel 2026-2027',
@@ -336,14 +317,7 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
     status: 'pending',
     adminNote: '',
     updatedAt: serverTimestamp()
-  });
-  batch.update(doc(db, 'adhesionDocuments', ALICE), {
-    fileName: 'demande-adhesion-' + ALICE + '.pdf',
-    mimeType: 'application/pdf',
-    data: 'JVBERi0xLjQKUmV3',
-    updatedAt: serverTimestamp()
-  });
-  await assertSucceeds(batch.commit());
+  }));
 });
 
 test('le renouvellement n’est pas possible depuis un dossier en attente (pending)', async () => {
@@ -366,6 +340,103 @@ test('statut hors vocabulaire refusé même à l’administrateur général', as
   await assertFails(updateDoc(doc(db, 'adhesionRequests', DAVE), {
     status: 'approved', // statut de l'ancienne branche, interdit ici
     adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+});
+
+/* ==========================================================
+   SIGNATURE ÉLECTRONIQUE DU RESPONSABLE (validation)
+   ========================================================== */
+
+test('un responsable habilité signe et valide la demande', async () => {
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    status: 'accepted',
+    adminSignature: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+    signedBy: SUB_AGADIR,
+    signedAt: serverTimestamp(),
+    adminNote: 'Dossier conforme.',
+    updatedAt: serverTimestamp()
+  }));
+});
+
+test('un utilisateur non habilité ne peut pas signer ni valider', async () => {
+  const db = env.authenticatedContext(BOB, USER_TOKEN(BOB)).firestore();
+  // Bob n'est ni administrateur général ni sous-admin d'Agadir.
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    status: 'accepted',
+    adminSignature: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+    signedBy: BOB,
+    signedAt: serverTimestamp(),
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+});
+
+test('une signature sans le statut « validée » est refusée', async () => {
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    status: 'pending',
+    adminSignature: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+    signedBy: SUB_AGADIR,
+    signedAt: serverTimestamp(),
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+});
+
+test('une signature attribuée à un autre signataire est refusée', async () => {
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    status: 'accepted',
+    adminSignature: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+    signedBy: 'admin-uid', // n'est pas le responsable connecté
+    signedAt: serverTimestamp(),
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+});
+
+/* ==========================================================
+   PDF OFFICIEL — enregistrement par un responsable habilité
+   ========================================================== */
+
+test('le PDF officiel est enregistrable sur une demande signée et validée', async () => {
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  await assertSucceeds(setDoc(doc(db, 'adhesionDocuments', ALICE), {
+    uid: ALICE,
+    province: 'agadir',
+    fileName: 'demande-adhesion-' + ALICE + '.pdf',
+    mimeType: 'application/pdf',
+    data: 'JVBERi0xLjQK',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }));
+});
+
+test('le PDF officiel est refusé sur une demande non validée', async () => {
+  // DAVE est encore en attente de validation (fixture).
+  const db = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
+  await assertFails(setDoc(doc(db, 'adhesionDocuments', DAVE), {
+    uid: DAVE,
+    province: 'tata',
+    fileName: 'demande-adhesion-' + DAVE + '.pdf',
+    mimeType: 'application/pdf',
+    data: 'JVBERi0xLjQK',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  }));
+});
+
+test('le sous-admin d’une autre province ne peut pas enregistrer le PDF', async () => {
+  const db = env.authenticatedContext(SUB_TIZNIT, USER_TOKEN(SUB_TIZNIT)).firestore();
+  await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), {
+    uid: ALICE,
+    province: 'agadir',
+    fileName: 'demande-adhesion-' + ALICE + '.pdf',
+    mimeType: 'application/pdf',
+    data: 'JVBERi0xLjQK',
+    createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   }));
 });
