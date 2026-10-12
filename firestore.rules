@@ -71,7 +71,14 @@ service cloud.firestore {
             && request.resource.data.status == 'active'
             && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['status', 'memberNo', 'activatedAt'])
-            && okText(request.resource.data.memberNo, 30))
+            && okText(request.resource.data.memberNo, 30)
+            // La numérotation vient OBLIGATOIREMENT du compteur global,
+            // écrit dans le même lot : le numéro du membre doit être
+            // exactement le dernier numéro émis (cf. setStatus de
+            // cloud.js, transaction counters/memberNumbers).
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+                 .lastMemberNo == request.resource.data.memberNo)
         || (signedIn() && request.auth.uid == uid
             && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['name', 'etab', 'prov', 'phone', 'updatedAt'])
@@ -86,6 +93,62 @@ service cloud.firestore {
       allow delete: if isAdmin()
         || (signedIn() && request.auth.uid == uid
             && (!('role' in resource.data) || resource.data.role != 'subadmin'));
+    }
+
+    // ==========================================================
+    // COMPTEURS — numérotation atomique des adhérents (SM-0001…)
+    // Un numéro n'est émis qu'avec l'activation d'un membre, dans le
+    // même lot : l'invariant est vérifié dans les deux sens
+    // (membre ⇄ compteur) via getAfter.
+    // L'administrateur général peut créer/corriger le compteur librement
+    // (migration, réparation) ; un sous-admin n'y touche que pour activer
+    // un membre PENDANT de sa propre province.
+    // ==========================================================
+    match /counters/{counterId} {
+      allow read: if isAdmin() || isSubAdmin();
+
+      allow create: if isAdmin()
+        || (isSubAdmin()
+          && counterId == 'memberNumbers'
+          && request.resource.data.keys().hasAll(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.next is int
+          && request.resource.data.next >= 2
+          && request.resource.data.lastMemberNo is string
+          && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
+          && request.resource.data.memberUid is string
+          && request.resource.data.updatedAt == request.time
+          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'pending'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'active'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .memberNo == request.resource.data.lastMemberNo
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .prov == assignedProvince());
+
+      allow update: if isAdmin()
+        || (isSubAdmin()
+          && counterId == 'memberNumbers'
+          && request.resource.data.keys().hasAll(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.next == resource.data.next + 1
+          && request.resource.data.lastMemberNo is string
+          && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
+          && request.resource.data.memberUid is string
+          && request.resource.data.updatedAt == request.time
+          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'pending'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'active'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .memberNo == request.resource.data.lastMemberNo
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .prov == assignedProvince());
     }
 
     match /provinceContacts/{province} {
@@ -303,6 +366,236 @@ service cloud.firestore {
         || isActive()
         || isAdmin();
       allow write: if isAdmin();
+    }
+
+    // ==========================================================
+    // DEMANDES D'ADHÉSION NUMÉRIQUES — dossiers privés
+    // L'adhérent dépose son dossier signé une fois ; il ne peut plus
+    // le modifier ensuite. Seuls les administrateurs donnent une suite
+    // (statut, note) sans jamais réécrire la pièce signée.
+    // ==========================================================
+
+    // Les champs du dossier sont exigés à la création (hasAll ci-dessous),
+    // ce qui garantit que chaque lecture d'un champ est sans risque
+    // d'erreur d'évaluation.
+    function adhesionAppKeys() {
+      return ['nom', 'prenom', 'cin', 'dob', 'phone', 'address',
+              'province', 'establishment', 'service', 'function',
+              'specialty', 'ppr', 'type', 'reason', 'commitment', 'date'];
+    }
+
+    // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
+    // encore le champ adminProvince.
+    function adhesionSubAdminProvince() {
+      return isSubAdmin()
+        ? get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('adminProvince', '')
+        : '';
+    }
+
+    function adhesionProvinceLabel(p) {
+      return p == 'agadir' ? 'Agadir Ida-Outanane' :
+             p == 'inezgane' ? 'Inezgane-Aït Melloul' :
+             p == 'chtouka' ? 'Chtouka-Aït Baha' :
+             p == 'taroudant' ? 'Taroudant' :
+             p == 'tiznit' ? 'Tiznit' :
+             p == 'tata' ? 'Tata' :
+             p;
+    }
+
+    // Vrai quand le sous-admin en cours est celui de la province portée
+    // par le dossier (la province peut être un code ou un libellé).
+    function adhesionIsSubAdminOf(province) {
+      return isSubAdmin()
+        && (province == adhesionSubAdminProvince()
+          || province == adhesionProvinceLabel(adhesionSubAdminProvince()));
+    }
+
+    function adhesionProvinces() {
+      return ['agadir', 'inezgane', 'chtouka', 'taroudant', 'tiznit', 'tata',
+              'Agadir Ida-Outanane', 'Inezgane-Aït Melloul', 'Chtouka-Aït Baha',
+              'Taroudant', 'Tiznit', 'Tata'];
+    }
+
+    function adhesionTopKeys() {
+      return ['uid', 'email', 'province', 'application', 'signature',
+              'status', 'adminNote', 'createdAt', 'updatedAt'];
+    }
+
+    // Contenu du dossier (application) : toutes les clés attendues,
+    // aucune en trop, textes bornés, province cohérente, engagement
+    // assumé, motif obligatoire pour un renouvellement.
+    // Partagé entre la création ET le renvoi après demande de complément
+    // : les deux parcours appliquent exactement les mêmes exigences.
+    // 'service' et 'function' sont des mots-clés du langage de règles :
+    // accès par crochets obligatoire. hasAll est évalué en premier et
+    // les opérateurs && courts-circuitent : aucun accès à risque.
+    function adhesionAppOk(app, province) {
+      return app is map
+        && app.keys().hasAll(adhesionAppKeys())
+        && app.keys().hasOnly(adhesionAppKeys())
+        && okText(app.nom, 100)
+        && app.nom.size() > 0
+        && okText(app.prenom, 100)
+        && app.prenom.size() > 0
+        && okText(app.cin, 30)
+        && app.cin.size() > 0
+        && okText(app.dob, 10)
+        && okText(app.phone, 30)
+        && app.phone.size() > 0
+        && okText(app.address, 250)
+        && app.address.size() > 0
+        && okText(app.establishment, 160)
+        && app.establishment.size() > 0
+        && okText(app['service'], 120)
+        && okText(app['function'], 120)
+        && app['function'].size() > 0
+        && okText(app.specialty, 120)
+        && okText(app.ppr, 30)
+        && app.province == province
+        && app.commitment == true
+        && app.type in ['first', 'renewal']
+        && okText(app.reason, 200)
+        && ((app.type == 'first' && app.reason == '')
+          || (app.type == 'renewal' && app.reason.size() > 0));
+    }
+
+    match /adhesionRequests/{uid} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || adhesionIsSubAdminOf(resource.data.get('province', ''));
+
+      // hasAll exige la présence de toutes les clés attendues : les
+      // accès aux champs qui suivent ne peuvent donc jamais lever
+      // d'erreur d'évaluation.
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasAll([
+          'uid', 'email', 'province', 'application', 'signature',
+          'status', 'adminNote', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'province', 'application', 'signature',
+          'status', 'adminNote', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.adminNote == ''
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.province in adhesionProvinces()
+        && okText(request.resource.data.email, 254)
+        && request.resource.data.signature is string
+        && request.resource.data.signature.size() > 0
+        && request.resource.data.signature.size() <= 180000
+        && adhesionAppOk(request.resource.data.application,
+                         request.resource.data.province);
+
+      // ADHESION_UPDATE_RESTRICTED_FIELDS : aucun rôle ne peut réécrire
+      // le dossier signé ; seuls le statut, la note et la date bougent.
+      allow update: if (
+          (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', '')))
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'adminNote', 'updatedAt'])
+          && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
+          && okText(request.resource.data.adminNote, 1000)
+          && request.resource.data.updatedAt == request.time
+        )
+        || (
+          // Renvoi par l'adhérent après une demande de complément :
+          // le dossier repasse en pending avec application, signature et
+          // PDF ré-validés intégralement (mêmes exigences qu'à la création
+          // via adhesionAppOk). Province, e-mail et date de création
+          // restent figés ; la note du responsable est effacée.
+          signedIn() && request.auth.uid == uid
+          && resource.data.uid == uid
+          && resource.data.status == 'needs_completion'
+          && request.resource.data.keys().hasAll(adhesionTopKeys())
+          && request.resource.data.keys().hasOnly(adhesionTopKeys())
+          && request.resource.data.uid == uid
+          && request.resource.data.province in adhesionProvinces()
+          && request.resource.data.province == resource.data.province
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.status == 'pending'
+          && request.resource.data.adminNote == ''
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['application', 'signature', 'status', 'adminNote', 'updatedAt'])
+          && okText(request.resource.data.email, 254)
+          && request.resource.data.signature is string
+          && request.resource.data.signature.size() > 0
+          && request.resource.data.signature.size() <= 180000
+          && adhesionAppOk(request.resource.data.application,
+                           request.resource.data.province)
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================================
+    // PDF SIGNÉ DES DEMANDES D'ADHÉSION
+    // Pièce jointe du dossier : refusée si aucune demande n'existe
+    // pour ce compte, ou si sa province ne correspond pas.
+    // ==========================================================
+    match /adhesionDocuments/{uid} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || adhesionIsSubAdminOf(resource.data.get('province', ''));
+
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasAll([
+          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.province in adhesionProvinces()
+        && okText(request.resource.data.fileName, 120)
+        && request.resource.data.mimeType == 'application/pdf'
+        && request.resource.data.data is string
+        && request.resource.data.data.size() > 0
+        && request.resource.data.data.size() <= 650000
+        && request.resource.data.createdAt == request.time
+        && existsAfter(/databases/$(database)/documents/adhesionRequests/$(uid))
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province
+          == request.resource.data.province;
+
+      // Le PDF n'est réécrit que dans le cadre d'un renvoi après demande
+      // de complément : la demande doit passer de needs_completion à
+      // pending dans le même lot (cf. submitAdhesion dans cloud.js).
+      // Ainsi, impossible de remplacer la pièce jointe sans que le dossier
+      // soit intégralement re-soumis et replacé en attente de validation.
+      allow update: if signedIn() && request.auth.uid == uid
+        && resource.data.uid == uid
+        && request.resource.data.keys().hasAll([
+          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'province', 'fileName', 'mimeType', 'data', 'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.province == resource.data.province
+        && okText(request.resource.data.fileName, 120)
+        && request.resource.data.mimeType == 'application/pdf'
+        && request.resource.data.data is string
+        && request.resource.data.data.size() > 0
+        && request.resource.data.data.size() <= 650000
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['fileName', 'mimeType', 'data', 'updatedAt'])
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .status == 'needs_completion'
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .status == 'pending'
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .uid == uid
+        && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .province == request.resource.data.province;
+
+      allow delete: if isAdmin();
     }
   }
 }

@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "check": "node tools/check-syntax.js",
+    "test:firestore": "firebase emulators:exec --only firestore \"node test-firestore-adhesion.mjs\"",
     "cap:sync": "npx cap sync android",
     "android": "npx cap open android",
     "android:sync": "npx cap sync android",
@@ -22,6 +23,8 @@
     "jspdf": "^4.2.1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0"
+    "@capacitor/cli": "^7.0.0",
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "firebase": "^11.10.0"
   }
 }

@@ -11,7 +11,8 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField, writeBatch
+  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction,
+  writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
 var auth, db, hooks;
@@ -23,6 +24,7 @@ var unsubs = {
   members: null,
   news: null,
   reports: null,
+  adhesions: null,
   responsables: null,
   publicProvinceContacts: null
 };
@@ -237,6 +239,38 @@ function reportProvinceLabel(code){
   return map[String(code || '')] || String(code || '');
 }
 
+/* =========================
+   DEMANDES D'ADHÉSION — VUE RESPONSABLES
+   Les dossiers sont lus par les seuls managers (admin ou sous-admin de la
+   province portée par le dossier). L'adhérent lit le sien via
+   getMyAdhesionRequest() : pas d'abonnement côté membre.
+   ========================= */
+function subscribeAdhesions(){
+  unsub('adhesions');
+  if (!session.user || !(session.isAdmin || session.isSubAdmin)) { hooks.setAdhesions([]); return; }
+  var q;
+  if (session.isAdmin) q = collection(db, 'adhesionRequests');
+  else q = query(collection(db, 'adhesionRequests'), where('province', '==', String(session.member && session.member.adminProvince || '')));
+  unsubs.adhesions = onSnapshot(q, function(snap){
+    hooks.setAdhesions(snap.docs.map(function(d){
+      var x = d.data();
+      var app = x.application || {};
+      return {
+        id: d.id,
+        uid: x.uid || '',
+        province: x.province || '',
+        status: x.status || 'pending',
+        adminNote: x.adminNote || '',
+        nom: app.nom || '', prenom: app.prenom || '', cin: app.cin || '',
+        dob: app.dob || '', phone: app.phone || '',
+        establishment: app.establishment || '', specialty: app.specialty || '',
+        type: app.type || 'first', reason: app.reason || '', date: app.date || '',
+        createdAt: ms(x.createdAt), updatedAt: ms(x.updatedAt)
+      };
+    }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+  }, function(err){ hooks.error(err, true); });
+}
+
 function subscribeReports(){
 
   unsub('reports');
@@ -343,6 +377,7 @@ function onUser(user){
   if (!user){
 
     unsub('reports');
+    unsub('adhesions');
 
     session = {
       user: null,
@@ -354,6 +389,7 @@ function onUser(user){
     hooks.setSession(session);
     hooks.setMembers([]);
     hooks.setReports([]);
+    hooks.setAdhesions([]);
 
     subscribeNews();
 
@@ -446,6 +482,7 @@ function onUser(user){
       subscribeNews();
 
       subscribeReports();
+      subscribeAdhesions();
 
     },
 
@@ -461,6 +498,7 @@ function onUser(user){
 
   subscribeNews();
   subscribeReports();
+  subscribeAdhesions();
 
 }
 
@@ -567,21 +605,24 @@ async function signIn(){
 
 async function signOut(){
 
+  // Fermer d'abord la session Firebase.
+  await fbSignOut(auth);
+
+  // La déconnexion native est secondaire et ne doit pas empêcher
+  // la fermeture de la session Firebase.
   if (
     nativeAuth &&
     window.Capacitor &&
     window.Capacitor.isNativePlatform &&
     window.Capacitor.isNativePlatform()
   ){
-
     try {
       await nativeAuth.signOut();
     }
-    catch(e){}
-
+    catch(e){
+      console.warn('Déconnexion native Google non terminée :',e);
+    }
   }
-
-  await fbSignOut(auth);
 
 }
 
@@ -594,116 +635,54 @@ async function addReport(o){
 
   var anonymous = !!o.anonymous;
 
-  if (!auth.currentUser && !anonymous){
+  if (!auth.currentUser && !anonymous)
+    throw new Error('Non connecté');
 
-    throw new Error(
-      'Non connecté'
-    );
-
-  }
-
-
-  // La pièce jointe n'est pas encodée dans le signalement : elle part
-  // dans reportAttachments/{id}. Les listes de signalements restent
-  // légères et la pièce se charge à la demande côté admin.
-  var attach =
-    String(o.attachmentData || '').slice(0,420000);
-
+  var attach = String(o.attachmentData || '').slice(0,420000);
 
   var data = {
-
-    ownerUid:
-      anonymous
-        ? ''
-        : auth.currentUser.uid,
-
+    ownerUid: anonymous ? '' : auth.currentUser.uid,
     anonymous: anonymous,
-
-    name:
-      anonymous
-        ? ''
-        : String(o.name || '').slice(0,120),
-
-    etab:
-      String(o.etab || '').slice(0,160),
-
-    age:
-      anonymous
-        ? ''
-        : String(o.age || '').slice(0,10),
-
-    da:
-      String(o.da || '').slice(0,80),
-
-    category:
-      String(o.category || '').slice(0,60),
-
-    description:
-      String(o.description || '').slice(0,4000),
-
-    date:
-      String(o.date || '').slice(0,20),
-
-
-
-    province:
-      String(
-        o.province ||
-        (session.member ? session.member.prov || '' : '')
-      ).slice(0,40),
-
-    attachmentName:
-      String(o.attachmentName || '').slice(0,120),
-
-    attachmentType:
-      String(o.attachmentType || '').slice(0,80),
-
-    // Champ conservé pour la compatibilité des règles : la donnée
-    // réelle est écrite dans reportAttachments ci-dessous.
-    attachmentData:
-      '',
-
+    name: anonymous ? '' : String(o.name || '').slice(0,120),
+    etab: String(o.etab || '').slice(0,160),
+    age: anonymous ? '' : String(o.age || '').slice(0,10),
+    da: String(o.da || '').slice(0,80),
+    category: String(o.category || '').slice(0,60),
+    description: String(o.description || '').slice(0,4000),
+    date: String(o.date || '').slice(0,20),
+    province: String(
+      o.province || (session.member ? session.member.prov || '' : '')
+    ).slice(0,40),
+    attachmentName: String(o.attachmentName || '').slice(0,120),
+    attachmentType: String(o.attachmentType || '').slice(0,80),
+    attachmentData: '',
     status: 'new',
-
     response: '',
-
     createdAt: serverTimestamp(),
-
     updatedAt: serverTimestamp()
-
   };
 
-
-  // Signalement + pièce jointe écrits dans le MÊME lot : si la pièce jointe
-  // est refusée (hors ligne, règle), le signalement n'est pas créé à demi
-  // et l'utilisateur ne risque pas d'envoyer un doublon en réessayant.
-  var ref = doc(collection(db, 'reports'));
-
+  var reportRef = doc(collection(db, 'reports'));
   var batch = writeBatch(db);
 
-  batch.set(ref, data);
+  batch.set(reportRef, data);
 
   if (attach) {
-
-    batch.set(
-      doc(db, 'reportAttachments', ref.id),
-      {
-        data: attach,
-        name: String(o.attachmentName || '').slice(0,120),
-        type: String(o.attachmentType || '').slice(0,80),
-        ownerUid: data.ownerUid,
-        anonymous: data.anonymous,
-        province: data.province,
-        createdAt: serverTimestamp()
-      }
-    );
-
+    batch.set(doc(db, 'reportAttachments', reportRef.id), {
+      data: attach,
+      name: String(o.attachmentName || '').slice(0,120),
+      type: String(o.attachmentType || '').slice(0,80),
+      ownerUid: data.ownerUid,
+      anonymous: data.anonymous,
+      province: data.province,
+      createdAt: serverTimestamp()
+    });
   }
 
-  return batch.commit().then(function(){ return ref; });
-
+  return batch.commit().then(function(){
+    return reportRef;
+  });
 }
-
 
 /* =========================================================
    PROFIL
@@ -801,6 +780,61 @@ async function saveProfile(p){
 
 }
 
+
+/* =========================================================
+   DEMANDES D'ADHÉSION NUMÉRIQUES — une demande par UID
+   ========================================================= */
+async function getMyAdhesionRequest(){
+  var u=auth.currentUser;
+  if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
+  var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
+  if(!snap.exists()) return null;
+  var x=snap.data()||{};
+  return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',application:x.application||{}};
+}
+async function submitAdhesion(application,pdfBase64){
+  var u=auth.currentUser;
+  if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
+  if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
+  var pdf=String(pdfBase64||'');
+  if(!pdf||pdf.length>650000) throw new Error('Le PDF signé est vide ou dépasse 650 Ko.');
+  var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid), pdfRef=doc(db,'adhesionDocuments',uid);
+  var clean={
+    nom:String(application.nom||'').trim().slice(0,100),prenom:String(application.prenom||'').trim().slice(0,100),
+    cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
+    phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
+    province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
+    service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
+    specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
+    type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
+  };
+  if(!clean.nom||!clean.prenom||!clean.cin||!clean.dob||!clean.phone||!clean.address||!clean.province||!clean.establishment||!clean.function||!clean.commitment||!application.signature)
+    throw new Error('Des champs obligatoires ou la signature sont manquants.');
+  if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
+  if(clean.type==='first')clean.reason='';
+  var signature=String(application.signature);
+  if(signature.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  return runTransaction(db,async function(tx){
+    var reqSnap=await tx.get(requestRef), pdfSnap=await tx.get(pdfRef);
+    var existing=reqSnap.exists()?reqSnap.data():null;
+    var status=existing?String(existing.status||'pending'):'';
+    if(existing&&status!=='needs_completion'){
+      var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre demande est déjà acceptée.',refused:'Une décision a déjà été prise concernant votre demande.'};
+      var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.');err.code='adhesion/already-exists';err.status=status;throw err;
+    }
+    if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
+    if(existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
+    if(existing&&!pdfSnap.exists()) throw new Error('Le PDF du dossier est introuvable. Contactez votre administration avant de renvoyer le dossier.');
+    if(existing){
+      tx.update(requestRef,{application:clean,signature:signature,status:'pending',adminNote:'',updatedAt:serverTimestamp()});
+      tx.update(pdfRef,{fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,updatedAt:serverTimestamp()});
+    }else{
+      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:signature,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      tx.set(pdfRef,{uid:uid,province:clean.province,fileName:'demande-adhesion-'+uid+'.pdf',mimeType:'application/pdf',data:pdf,createdAt:serverTimestamp()});
+    }
+    return {id:uid,status:'pending',completed:!!existing};
+  });
+}
 
 /* =========================================================
    SUPPRESSION COMPTE
@@ -997,25 +1031,93 @@ var admin = {
 
 
   setStatus:
-    function(uid, status, memberNo){
+    async function(uid, status){
       var ref = doc(db, 'members', uid);
-      return getDoc(ref).then(function(snap){
-        var prior = snap.exists() ? snap.data() : {};
-        var data = {status: status};
-        if (memberNo){
-          data.memberNo = String(memberNo).slice(0,30);
-          data.activatedAt = serverTimestamp();
+      var snap = await getDoc(ref);
+
+      if (!snap.exists())
+        throw new Error('Membre introuvable');
+
+      var prior = snap.data();
+
+      /* Attribution automatique du numéro d'adhérent */
+      if (status === 'active' && !prior.memberNo){
+        var sequenceRef = doc(db, 'counters', 'memberNumbers');
+
+        /* Initialisation du compteur s'il n'existe pas encore : on repart
+           du plus grand numéro déjà attribué + 1 pour ne jamais réattribuer
+           un numéro existant. Une requête ne passe pas dans une transaction
+           Web : la lecture a lieu AVANT, et la transaction re-lit le
+           compteur — si un autre l'a créé entre-temps, sa valeur gagne :
+           l'atomicité reste donc garantie. Un sous-admin ne voit que sa
+           province (la requête globale est refusée) : retombée sur 1 — la
+           migration fiable se fait en faisant initialiser le compteur par
+           l'administrateur principal (cf. firestore.rules/counters). */
+        var seed = 1;
+        var seq0 = await getDoc(sequenceRef);
+        if (!seq0.exists()){
+          try {
+            var maxNo = 0;
+            var allMembers = await getDocs(collection(db, 'members'));
+            allMembers.forEach(function(d){
+              var m = /(\d+)\s*$/.exec(String((d.data() || {}).memberNo || ''));
+              if (m) maxNo = Math.max(maxNo, +m[1]);
+            });
+            if (maxNo > 0) seed = maxNo + 1;
+          } catch (e) {
+            /* Lecture globale refusée (sous-admin) : retombée sur 1. */
+          }
         }
-        if (status !== 'active' && prior.role === 'subadmin'){
-          data.role = 'member';
-          data.adminProvince = '';
-        }
-        return updateDoc(ref, data).then(function(){
-          if (status === 'active' || !prior.adminProvince) return;
-          return getDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(contact){
-            if (contact.exists() && contact.data().uid === uid)
-              return deleteDoc(doc(db, 'provinceContacts', prior.adminProvince)).then(function(){return deletePublicProvinceContact(prior.adminProvince);});
+
+        return runTransaction(db, async function(tx){
+          var seqSnap = await tx.get(sequenceRef);
+
+          var next = seqSnap.exists()
+            ? Number(seqSnap.data().next || 1)
+            : seed;
+
+          if (!Number.isFinite(next) || next < 1)
+            next = 1;
+
+          var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
+          tx.set(sequenceRef, {
+            next: Math.floor(next) + 1,
+            lastMemberNo: no,
+            memberUid: uid,
+            updatedAt: serverTimestamp()
           });
+
+          tx.update(ref, {
+            status: 'active',
+            memberNo: no,
+            activatedAt: serverTimestamp()
+          });
+
+          return no;
+        });
+      }
+
+      var data = {status: status};
+
+      if (status !== 'active' && prior.role === 'subadmin'){
+        data.role = 'member';
+        data.adminProvince = '';
+      }
+
+      return updateDoc(ref, data).then(function(){
+        if (status === 'active' || !prior.adminProvince)
+          return null;
+
+        return getDoc(
+          doc(db, 'provinceContacts', prior.adminProvince)
+        ).then(function(contact){
+          if (contact.exists() && contact.data().uid === uid)
+            return deleteDoc(
+              doc(db, 'provinceContacts', prior.adminProvince)
+            ).then(function(){
+              return deletePublicProvinceContact(prior.adminProvince);
+            });
         });
       });
     },
@@ -1269,7 +1371,20 @@ var admin = {
 
       );
 
+    },
+
+  /* Décision sur une demande d'adhésion : seuls le statut, la note et la
+     date bougent — jamais le dossier signé (cf. firestore.rules). */
+  updateAdhesionStatus: function(uid, status, note){
+    if (['pending','needs_completion','accepted','refused'].indexOf(status) < 0){
+      return Promise.reject(new Error('Statut invalide'));
     }
+    return updateDoc(doc(db, 'adhesionRequests', String(uid)), {
+      status: status,
+      adminNote: String(note || '').slice(0,1000),
+      updatedAt: serverTimestamp()
+    });
+  }
 
 };
 
@@ -1509,7 +1624,19 @@ export async function init(config, h){
 
     saveProfile: saveProfile,
 
-    deleteAccount: deleteAccount,    addReport: addReport,
+    deleteAccount: deleteAccount,
+
+    getMyAdhesionRequest: getMyAdhesionRequest,
+    submitAdhesion: submitAdhesion,
+
+    // Chargement à la demande du PDF signé (vue responsables).
+    getAdhesionPdf: function(uid){
+      return getDoc(doc(db, 'adhesionDocuments', String(uid || '')))
+        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
+        .catch(function(){ return ''; });
+    },
+
+    addReport: addReport,
     admin: admin,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.

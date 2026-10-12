@@ -2162,8 +2162,7 @@ button.primary:active {
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
 <div class="adhbtns">
-<button class="btn gold" type="button" data-go="adhesion" data-i18n="adhDownload"></button>
-<button class="btn ghost" type="button" data-go="adhesion" data-i18n="adhSend"></button>
+<button class="btn gold" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
 </div>
@@ -2213,6 +2212,10 @@ button.primary:active {
       <div class="adh-choice">
         <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
         <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
+      </div>
+      <div class="field adh-full" id="adhRenewalReasonWrap" style="display:none">
+        <label for="adhRenewalReason" data-i18n="adhRenewalReason"></label>
+        <input id="adhRenewalReason" maxlength="200" autocomplete="off">
       </div>
     </div>
 
@@ -2321,7 +2324,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div id="meCard"></div><h2 class="h2" data-i18n="pfT"></h2><div class="field">
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><p class="hint" id="meWelcome" hidden data-i18n="meReady"></p><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meProfileToggle" hidden data-act="toggle-profile" aria-expanded="false" data-i18n="editProfile"></button><div id="meProfileForm"><h2 class="h2" data-i18n="pfT"></h2><div class="field">
 <label for="pfName" data-i18n="lName"></label>
 <input id="pfName" type="text" autocomplete="name">
 </div><div class="field">
@@ -2333,7 +2336,7 @@ button.primary:active {
 </div><div class="field">
 <label for="pfPhone" data-i18n="lPhone"></label>
 <input id="pfPhone" type="tel" autocomplete="tel" inputmode="tel">
-</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button>
+</div><button class="btn primary block" type="button" data-act="save" data-i18n="save"></button></div>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -2347,7 +2350,7 @@ button.primary:active {
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false">Adhésions</button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -2432,7 +2435,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint">Demandes numériques enregistrées dans Firestore. Les PDF restent privés.</p><ul class="list" id="admAdhesionList"></ul></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -2488,6 +2491,7 @@ isSubAdmin:false,
 members:[],
 memFilter:'pending',
 reports:[],
+adhesions:[],
 provinceContacts:[],
 admTab:'members',
 editNewsId:null,
@@ -2521,7 +2525,7 @@ adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
-adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`,
+adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`L'étape suivante permettra de générer la fiche PDF et de la partager directement via WhatsApp.`,
 adhLabel:`Espace adhérent`,
@@ -2529,7 +2533,8 @@ adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
 adhDownload:`Télécharger la demande`,
 adhSend:`Envoyer la demande`,
-adhHint:`Images volumineuses réduites automatiquement.`,
+adhDigitalBtn:`Adhésion numérique`,
+adhHint:``,
 adhReady:`Fichier prêt. Choisissez WhatsApp pour l'envoyer.`,
 adhSaved:`Fichier enregistré sur l'appareil : ajoutez-le au message WhatsApp.`,
 adhErr:`Impossible de préparer ce fichier. Reprenez avec une image plus petite.`,
@@ -2639,6 +2644,9 @@ meT:`Mon espace`,
 meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux communiqués réservés aux adhérents.`,
 meBtnIn:`Se connecter avec Google`,
 mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
+meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
+editProfile:`Modifier mon profil`,
+fillAdhesion:`Remplir ma demande d’adhésion`,
 
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
@@ -2700,7 +2708,7 @@ adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
-adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`,
+adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`في المرحلة التالية سيتم إنشاء ملف PDF للاستِمارة وإرساله مباشرة عبر واتساب.`,
 adhLabel:`فضاء المنخرطين`,
@@ -2708,7 +2716,8 @@ adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
 adhDownload:`تحميل الاستمارة`,
 adhSend:`إرسال الاستمارة`,
-adhHint:`تم تصغير الصور الكبيرة تلقائيا.`,
+adhDigitalBtn:`الانخراط الرقمي`,
+adhHint:``,
 adhReady:`الملف جاهز. اختاروا واتساب للإرسال.`,
 adhSaved:`تم حفظ الملف بالهاتف : أرسلوه ضمن رسالة واتساب.`,
 adhErr:`تعذر تحضير هذا الملف. أعيدوا المحاولة بصورة أصغر.`,
@@ -2818,6 +2827,9 @@ meT:`فضائي`,
 meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والبلاغات المخصصة للمنخرطين.`,
 meBtnIn:`الدخول بحساب Google`,
 mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
+meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
+editProfile:`تعديل معلوماتي`,
+fillAdhesion:`ملء طلب الانخراط`,
 
 meLoading:`جار التحميل…`,
 meOffline:`الاتصال غير متاح حاليا. تحققوا من الإنترنت وأعيدوا المحاولة.`,
@@ -3597,6 +3609,32 @@ $('pfProv').value=m.prov||'';
 $('pfPhone').value=m.phone||'';
 }
 
+var myAdhesionStatusUid='';
+var myAdhesionStatusCache=null;
+var myAdhesionStatusPromise=null;
+function showMyAdhesionStatus(request){
+  var box=$('meAdhesionStatus');if(!box)return;
+  if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
+  var labels={pending:'Demande d’adhésion : en attente de validation.',needs_completion:'Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.',accepted:'Demande d’adhésion : acceptée.',refused:'Demande d’adhésion : refusée.'};
+  box.hidden=false;box.textContent=labels[request.status]||'Statut de la demande : '+String(request.status||'inconnu')+'.';
+  if(request.adminNote)box.textContent+=' Note : '+String(request.adminNote).slice(0,1000);
+}
+function refreshMyAdhesionStatus(force){
+  var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
+  if(!box)return Promise.resolve(null);
+  if(!uid){box.hidden=true;box.textContent='';myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
+  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;return Promise.resolve(null);}
+  if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
+  if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
+  myAdhesionStatusUid=uid;box.hidden=false;box.textContent='Vérification du statut de votre demande…';
+  myAdhesionStatusPromise=window.CLOUD.getMyAdhesionRequest().then(function(request){
+    if(!(S.user&&String(S.user.uid)===uid))return null;
+    myAdhesionStatusCache=request||{status:'none'};showMyAdhesionStatus(myAdhesionStatusCache);return request;
+  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent='Statut de la demande temporairement indisponible.';}return null;}).finally(function(){myAdhesionStatusPromise=null;});
+  return myAdhesionStatusPromise;
+}
+window.refreshMyAdhesionStatus=refreshMyAdhesionStatus;
+
 function reportStatusLabelI18n(status){
 var t=T();
 if(status==='in_progress')return t.rStProgress||'En cours';
@@ -3692,6 +3730,31 @@ $('meCard').innerHTML=
 
 fillForm(false);
 
+var profileForm=$('meProfileForm');
+var profileToggle=$('meProfileToggle');
+var welcome=$('meWelcome');
+
+var profileComplete=!!(
+  m &&
+  String(m.name||'').trim() &&
+  String(m.etab||'').trim() &&
+  String(m.prov||'').trim() &&
+  String(m.phone||'').trim()
+);
+
+if(profileForm&&profileToggle){
+  if(profileComplete){
+    profileForm.hidden=true;
+    profileToggle.hidden=false;
+    profileToggle.setAttribute('aria-expanded','false');
+    if(welcome)welcome.hidden=false;
+  }else{
+    profileForm.hidden=false;
+    profileToggle.hidden=true;
+    if(welcome)welcome.hidden=true;
+  }
+}
+
 $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 
 // Un administrateur de province (sous-admin) ne peut pas supprimer son
@@ -3701,6 +3764,7 @@ $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin);
 $('meDelLink').hidden=!!S.isSubAdmin;
 
 renderMeReports();
+refreshMyAdhesionStatus(false);
 }
 
 function renderAccountButton(){
@@ -3736,12 +3800,7 @@ max=Math.max(max,+x[1]);
 
 });
 
-var n=('000'+(max+1)).slice(-4);
-// Sous-admin : préfixe province, pour que deux provinces ne décernent pas
-// le même numéro (chaque sous-admin ne voit que sa propre province).
-if(S.isSubAdmin&&S.member&&S.member.adminProvince)
-return 'SM-'+String(S.member.adminProvince).toUpperCase()+'-'+n;
-return 'SM-'+n;
+return 'SM-'+('000'+(max+1)).slice(-4);
 }
 
 function findMember(uid){
@@ -4157,6 +4216,35 @@ $('admDashTodo').innerHTML=todo.join('');
 
 }
 
+function renderAdminAdhesions(){
+var list=S.adhesions||[];
+var el=$('admAdhesionList');
+if(!el)return;
+if(!S.isAdmin&&!S.isSubAdmin){el.innerHTML='<li class="empty">Accès réservé aux responsables.</li>';return;}
+function label(s){
+return s==='needs_completion'?'Complément demandé':
+s==='accepted'?'Acceptée':
+s==='refused'?'Refusée':'En attente';
+}
+el.innerHTML=list.length?list.map(function(a){
+var actions='<button type="button" class="btn ghost small" data-adm-act="openAdhesionPdf" data-id="'+esc(a.id)+'">Ouvrir PDF</button>';
+if(a.status==='pending'||a.status==='needs_completion'){
+actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="accepted" data-id="'+esc(a.id)+'">Accepter</button>';
+actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">Demander un complément</button>';
+actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">Refuser</button>';
+}
+var head=[a.date||'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
+return '<li class="mrow"><div class="mi">'+
+'<strong>'+esc(((a.nom||'')+' '+(a.prenom||'')).trim()||'Adhérent')+' · '+esc(label(a.status))+'</strong>'+
+(head?'<span>'+esc(head)+'</span>':'')+
+'<span>CIN : '+esc(a.cin||'')+' · Téléphone : '+esc(a.phone||'')+'</span>'+
+'<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>'+
+(a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+
+(a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':'')+
+'</div><div class="mact">'+actions+'</div></li>';
+}).join(''):'<li class="empty">Aucune demande d’adhésion enregistrée.</li>';
+}
+
 function showAdmTab(name){
 
 if(!S.isAdmin&&!S.isSubAdmin)name='members';
@@ -4165,7 +4253,7 @@ if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
 
 S.admTab=name;
 
-['dashboard','members','news','events','reports'].forEach(function(n){
+['dashboard','members','news','events','reports','adhesions'].forEach(function(n){
 
 var el=$('adm-'+n);
 
@@ -4183,6 +4271,7 @@ String(b.getAttribute('data-adm')===name)
 });
 
 if(name==='dashboard')renderAdminDashboard();
+if(name==='adhesions')renderAdminAdhesions();
 
 }
 
@@ -4938,6 +5027,19 @@ c.signIn().catch(showError);
 
 }
 
+else if(act==='toggle-profile'){
+
+var pf=$('meProfileForm');
+var pt=$('meProfileToggle');
+
+if(pf&&pt){
+  var open=pf.hidden;
+  pf.hidden=!open;
+  pt.setAttribute('aria-expanded',open?'true':'false');
+}
+
+}
+
 else if(act==='signout'){
 
 c.signOut().catch(showError);
@@ -4945,6 +5047,14 @@ c.signOut().catch(showError);
 }
 
 else if(act==='save'){
+
+var wasComplete=!!(
+  S.member &&
+  String(S.member.name||'').trim() &&
+  String(S.member.etab||'').trim() &&
+  String(S.member.prov||'').trim() &&
+  String(S.member.phone||'').trim()
+);
 
 c.saveProfile({
 
@@ -4971,6 +5081,16 @@ if(window.prefillDigitalAdhesion){
 }
 
 toast(T().saved);
+renderMe();
+
+if(!wasComplete){
+  setTimeout(function(){
+    go('adhesion');
+    if(window.prefillDigitalAdhesion){
+      window.prefillDigitalAdhesion();
+    }
+  },250);
+}
 
 })
 
@@ -5124,25 +5244,12 @@ c.admin.removeResponsable(uid)
 
 else if(a==='activate'&&(S.isAdmin||S.isSubAdmin)&&m){
 
-var no=window.prompt(
-"Numéro d'adhérent pour "+
-(m.name||m.email)+" :",
-m.memberNo||nextNo()
-);
-
-if(no===null)return;
-
-no=no.trim();
-
-if(!no)return;
-
 c.admin.setStatus(
 uid,
-'active',
-no
+'active'
 )
-.then(function(){
-toast('Adhérent validé');
+.then(function(no){
+toast('Adhérent validé — numéro '+(no||'attribué automatiquement'));
 })
 .catch(showError);
 
@@ -5211,6 +5318,19 @@ if(newsItem)startEditNews(newsItem);
 
 else if(a==='cancelNews'&&S.isAdmin){
 endEditNews();
+}
+
+else if(a==='openAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+if(!c.getAdhesionPdf)return;
+c.getAdhesionPdf(id).then(function(b64){if(b64)openDataUrl('data:application/pdf;base64,'+b64);else toast('PDF indisponible.',4000);}).catch(showError);
+}
+
+else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
+var adhesion=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+if(adhesion&&c.admin.updateAdhesionStatus){
+var note=window.prompt('Note de traitement (facultatif) :',adhesion.adminNote||'');
+if(note!==null)c.admin.updateAdhesionStatus(id,el.getAttribute('data-status'),note).then(function(){toast('Statut de la demande mis à jour.');}).catch(showError);
+}
 }
 
 else if(a==='startReport'){
@@ -5556,6 +5676,11 @@ renderAdminReports();
 renderMeReports();
 },
 
+setAdhesions:function(list){
+S.adhesions=list||[];
+renderAdminAdhesions();
+},
+
 setResponsables:function(list){
 S.responsables=list||[];
 renderResponsables();
@@ -5579,8 +5704,10 @@ if(csv)csv.hidden=!S.isAdmin;
 
 var reports=document.querySelector('#admTabs button[data-adm="reports"]');
 if(reports)reports.hidden=!(S.isAdmin||S.isSubAdmin);
+var adhesionsTab=document.querySelector('#admTabs button[data-adm="adhesions"]');
+if(adhesionsTab)adhesionsTab.hidden=!(S.isAdmin||S.isSubAdmin);
 
-if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'){
+if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'){
 showAdmTab('members');
 }
 
@@ -5720,58 +5847,121 @@ window.UGTM.failed();
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
+    form.noValidate=true;
 
-    var ctx=canvas.getContext('2d');
-
-    /* Contexte 2D indisponible : on n'initialise que le cadre de signature.
-       Le préremplissage et la génération PDF du même script doivent
-       continuer à s'exécuter (le reste du formulaire reste utilisable). */
-    if(!ctx)return;
-
-    canvas.dataset.ready='1';
-
-    var drawing=false, signed=false;
-
-    function pos(e){
-      var r=canvas.getBoundingClientRect();
-      return {
-        x:(e.clientX-r.left)*canvas.width/r.width,
-        y:(e.clientY-r.top)*canvas.height/r.height
-      };
+    var ctx=null;
+    try{
+      ctx=canvas.getContext('2d');
+    }catch(e){
+      ctx=null;
     }
 
-    canvas.addEventListener('pointerdown',function(e){
-      e.preventDefault();
-      drawing=true;
-      var p=pos(e);
-      ctx.beginPath();
-      ctx.moveTo(p.x,p.y);
-    });
+    var drawing=false, signed=false;
+    var lastAdhesionUid=null;
 
-    canvas.addEventListener('pointermove',function(e){
-      if(!drawing)return;
-      e.preventDefault();
-      var p=pos(e);
-      ctx.lineTo(p.x,p.y);
-      ctx.stroke();
-      signed=true;
-      var s=document.getElementById('adhSignState');
-      if(s)s.textContent=(typeof T==='function'?T().adhSigned:'Signature enregistrée');
-    });
+    function currentAdhesionUid(){
+      var user=(typeof S!=='undefined' && S.user) ? S.user : {};
+      return user.uid ? String(user.uid) : '';
+    }
 
-    window.addEventListener('pointerup',function(){drawing=false;});
+    function adhesionStorageKey(base){
+      var uid=currentAdhesionUid();
+      return uid ? base+':'+uid : '';
+    }
 
-    ctx.lineWidth=4;
-    ctx.lineCap='round';
-    ctx.lineJoin='round';
-    ctx.strokeStyle='#B83268';
+    function resetAdhesionForAccount(uid){
+      uid=String(uid||'');
+      if(lastAdhesionUid===uid)return;
+      lastAdhesionUid=uid;
 
-    document.getElementById('adhClearSign').addEventListener('click',function(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+      try{form.reset();}catch(e){}
+      if(ctx){
+        try{ctx.clearRect(0,0,canvas.width,canvas.height);}catch(e){}
+      }
+
       signed=false;
-      var s=document.getElementById('adhSignState');
-      if(s)s.textContent=(typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
-    });
+      drawing=false;
+
+      var state=document.getElementById('adhSignState');
+      if(state){
+        var langText='Signature non renseignée';
+        try{
+          if(typeof T==='function' && T().adhNoSignature){
+            langText=T().adhNoSignature;
+          }
+        }catch(e){}
+        state.textContent=langText;
+      }
+    }
+
+    if(ctx){
+      try{
+        function pos(e){
+          var r=canvas.getBoundingClientRect();
+          return {
+            x:(e.clientX-r.left)*canvas.width/r.width,
+            y:(e.clientY-r.top)*canvas.height/r.height
+          };
+        }
+
+        ctx.lineWidth=4;
+        ctx.lineCap='round';
+        ctx.lineJoin='round';
+        ctx.strokeStyle='#B83268';
+
+        canvas.addEventListener('pointerdown',function(e){
+          if(!ctx)return;
+          e.preventDefault();
+          drawing=true;
+          var p=pos(e);
+          ctx.beginPath();
+          ctx.moveTo(p.x,p.y);
+        });
+
+        canvas.addEventListener('pointermove',function(e){
+          if(!drawing||!ctx)return;
+          e.preventDefault();
+          var p=pos(e);
+          ctx.lineTo(p.x,p.y);
+          ctx.stroke();
+          signed=true;
+          var state=document.getElementById('adhSignState');
+          if(state)state.textContent=
+            (typeof T==='function'?T().adhSigned:'Signature enregistrée');
+        });
+
+        window.addEventListener('pointerup',function(){
+          drawing=false;
+        });
+
+        canvas.addEventListener('pointercancel',function(){
+          drawing=false;
+        });
+
+        var clearButton=document.getElementById('adhClearSign');
+        if(clearButton){
+          clearButton.addEventListener('click',function(){
+            if(ctx)ctx.clearRect(0,0,canvas.width,canvas.height);
+            signed=false;
+            var state=document.getElementById('adhSignState');
+            if(state)state.textContent=
+              (typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
+          });
+        }
+      }catch(signatureError){
+        ctx=null;
+        signed=false;
+      }
+    }
+
+    if(!ctx){
+      var state=document.getElementById('adhSignState');
+      if(state)state.textContent='Zone de signature indisponible. Réessayez.';
+    }
+
+    /* Le formulaire doit pouvoir initialiser son gestionnaire même
+       si le canevas de signature n'est pas disponible. */
+    canvas.dataset.ready='1';
 
     /*
      * Préremplissage du dossier électronique à partir du profil membre.
@@ -5788,6 +5978,10 @@ window.UGTM.failed();
     }
 
     function prefillDigitalAdhesion(){
+      var uid=currentAdhesionUid();
+      resetAdhesionForAccount(uid);
+      if(!uid)return;
+
       var member =
         (typeof S!=='undefined' && S.member)
           ? S.member
@@ -5799,8 +5993,9 @@ window.UGTM.failed();
           : {};
 
       try{
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
         var draft=JSON.parse(
-          localStorage.getItem('ugtm-adhesion-draft')||'null'
+          (draftKey&&localStorage.getItem(draftKey))||'null'
         );
 
         if(draft&&typeof draft==='object'){
@@ -5833,8 +6028,46 @@ window.UGTM.failed();
 
     prefillDigitalAdhesion();
 
+    var renewalWrap=document.getElementById('adhRenewalReasonWrap');
+    var renewalInput=document.getElementById('adhRenewalReason');
+    function syncRenewalReason(){
+      var selected=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+      var renewal=selected==='renewal';
+      renewalWrap.style.display=renewal?'':'none';
+      renewalInput.required=renewal;
+      if(!renewal)renewalInput.value='';
+    }
+    document.querySelectorAll('input[name="adhType"]').forEach(function(radio){
+      radio.addEventListener('change',syncRenewalReason);
+    });
+    syncRenewalReason();
+
     form.addEventListener('submit',function(e){
       e.preventDefault();
+
+      var requiredFields=Array.from(form.querySelectorAll('[required]'));
+      var missing=requiredFields.find(function(field){
+        if(field.disabled)return false;
+        if(field.type==='checkbox')return !field.checked;
+        return !String(field.value||'').trim();
+      });
+
+      if(missing){
+        if(missing.id==='adhRenewalReason'){
+          var chosen=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+          if(chosen!=='renewal')missing=null;
+        }
+        if(missing){
+          missing.focus();
+          if(typeof toast==='function')toast(
+            typeof lang!=='undefined'&&lang==='ar'
+              ?'يرجى إكمال جميع الحقول المطلوبة'
+              :'Veuillez remplir tous les champs obligatoires.',
+            4000
+          );
+          return;
+        }
+      }
 
       if(!signed){
         if(typeof toast==='function')toast(
@@ -5845,6 +6078,18 @@ window.UGTM.failed();
       }
 
       var type=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
+      var reason=renewalInput.value.trim();
+      if(type==='renewal'&&!reason){
+        renewalInput.required=true;
+        renewalInput.focus();
+        if(typeof toast==='function')toast(
+          typeof lang!=='undefined'&&lang==='ar'
+            ?'يرجى تحديد سبب تجديد الانخراط'
+            :'Veuillez préciser le motif du renouvellement.',
+          4000
+        );
+        return;
+      }
 
       var data={
         nom:document.getElementById('adhNom').value.trim(),
@@ -5860,13 +6105,15 @@ window.UGTM.failed();
         specialty:document.getElementById('adhSpecialty').value.trim(),
         ppr:document.getElementById('adhPpr').value.trim(),
         type:type,
+        reason:reason,
         commitment:true,
         date:document.getElementById('adhDate').value,
         signature:canvas.toDataURL('image/png')
       };
 
       try{
-        localStorage.setItem('ugtm-adhesion-draft',JSON.stringify(data));
+        var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
+        if(draftKey)localStorage.setItem(draftKey,JSON.stringify(data));
       }catch(err){}
 
         try{
@@ -5874,7 +6121,13 @@ window.UGTM.failed();
           var sh=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Share;
           var jsPDF=window.jspdf&&window.jspdf.jsPDF;
 
-          if(!fs||!sh||!jsPDF)throw new Error('PDF/Share indisponible');
+          /* jsPDF est le seul outil requis pour fabriquer le PDF exigé par
+             Firestore : empaqueté dans l'APK, chargé localement sur le Web.
+             Filesystem/Share n'existent que dans l'APK : sur le Web/PWA le
+             PDF est téléchargé après l'enregistrement (voir plus bas).
+             Sans ce détournement, le parcours Web s'arrêtait AVANT tout
+             envoi vers Firestore — l'adhésion était impossible en navigateur. */
+          if(!jsPDF)throw new Error('PDF/Share indisponible');
 
           var pdf=new jsPDF({unit:'mm',format:'a4'});
           var pageW=210;
@@ -6010,7 +6263,8 @@ window.UGTM.failed();
 
             section('ADHÉSION');
 
-            field('Type',data.type==='renew'?'Renouvellement':'Première adhésion');
+            field('Type',data.type==='renewal'?'Renouvellement':'Première adhésion');
+            if(data.type==='renewal')field('Motif du renouvellement',data.reason);
             field('Date',data.date);
 
             section('ENGAGEMENT');
@@ -6063,31 +6317,34 @@ window.UGTM.failed();
             var reader=new FileReader();
 
             reader.onloadend=async function(){
-              try{
-                var b64=String(reader.result).split(',')[1];
-
-                var saved=await fs.writeFile({
-                  path:base,
-                  data:b64,
-                  directory:'CACHE'
-                });
-
-                await sh.share({
-                  title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",
-                  text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",
-                  url:saved.uri,
-                  dialogTitle:"Envoyer la demande"
-                });
-
-              }catch(err){
-                console.error('Adhesion PDF/share:',err);
-                if(typeof toast==='function')toast(
-                  typeof lang!=='undefined'&&lang==='ar'
-                  ?'تعذر فتح المشاركة'
-                  :'Impossible d’ouvrir le partage.',
-                  4000
-                );
+              var b64=String(reader.result||'').split(',')[1]||'';
+              if(!b64){if(typeof toast==='function')toast('Impossible de lire le PDF généré.',4000);return;}
+              if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
+                if(typeof toast==='function')toast('Service Firebase d’adhésion indisponible.',5000);return;
               }
+              var result;
+              try{result=await window.CLOUD.submitAdhesion(data,b64);}
+              catch(err){console.error('Adhesion save:',err);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
+              try{
+                if(typeof toast==='function')toast(result&&result.completed?'Complément enregistré. Votre dossier est de nouveau en attente de validation.':'Demande enregistrée. Préparation du partage du PDF…',3500);
+                if(fs&&sh){
+                  var saved=await fs.writeFile({path:base,data:b64,directory:'CACHE'});
+                  await sh.share({title:"Demande d'adhésion UGTM-FNS-SOUSS-MASSA",text:"Demande d'adhésion UGTM – Fédération nationale de la Santé – Région Souss-Massa",files:[saved.uri],dialogTitle:"Envoyer la demande"});
+                }else{
+                  /* Web/PWA : la demande est déjà enregistrée à ce stade,
+                     on télécharge le PDF généré à la place du partage natif. */
+                  var dlUrl=URL.createObjectURL(blob);
+                  var dl=document.createElement('a');
+                  dl.href=dlUrl;
+                  dl.download=base;
+                  document.body.appendChild(dl);
+                  dl.click();
+                  dl.remove();
+                  setTimeout(function(){URL.revokeObjectURL(dlUrl);},4000);
+                  if(typeof toast==='function')toast('Demande enregistrée. Le PDF a été téléchargé ; envoyez-le à votre administration.',6000);
+                }
+              }catch(shareErr){console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a été annulé ou indisponible ; vous pourrez réessayer plus tard.',5500);}
+              if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
             };
 
             reader.readAsDataURL(blob);
@@ -6116,11 +6373,18 @@ window.UGTM.failed();
 
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
-    if(b)setTimeout(initDigitalAdhesion,50);
+    if(b){
+      setTimeout(function(){
+        initDigitalAdhesion();
+      },150);
+    }
   });
 
-  setTimeout(initDigitalAdhesion,300);
+  setTimeout(function(){
+    initDigitalAdhesion();
+  },500);
 })();
 </script>
+
 </body>
 </html>
