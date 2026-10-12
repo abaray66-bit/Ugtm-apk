@@ -466,6 +466,14 @@ function onUser(user){
               createdAt: serverTimestamp()
             }
           )
+          .then(function(){
+            /* Premier enregistrement du profil : l'application
+               ouvre automatiquement le formulaire d'adhésion
+               (hook onFirstProfile, cf. app.html). */
+            if (hooks && typeof hooks.onFirstProfile === 'function'){
+              try { hooks.onFirstProfile(user); } catch (e) {}
+            }
+          })
           .catch(function(e){
             hooks.error(e);
           });
