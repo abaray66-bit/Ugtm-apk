@@ -647,23 +647,46 @@ jobs:
         run: |
           set -e
 
+          # Source unique de version : package.json (versionName).
+          # versionCode dérivé : major*10000 + minor*100 + patch
+          # (1.4.0 → 10400), croissant à chaque publication semver.
+          # Penser à reporter versionCode / versionName dans www/update.json
+          # à la publication de la mise à jour OTA.
+
           python3 - <<'PY2'
           from pathlib import Path
+          import json
+          import os
           import re
+
+          pkg = json.loads(Path("package.json").read_text())
+          version = str(pkg.get("version", "")).strip()
+
+          m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version)
+
+          if not m:
+              raise SystemExit(
+                  f"ERREUR version : package.json doit porter une version "
+                  f"semver X.Y.Z (trouvé : {version!r})."
+              )
+
+          major, minor, patch = (int(g) for g in m.groups())
+          version_code = major * 10000 + minor * 100 + patch
+          version_name = version
 
           p = Path("android/app/build.gradle")
           text = p.read_text()
 
           text, n1 = re.subn(
               r'(?m)^\s*versionCode\s+\d+',
-              '        versionCode 5',
+              f'        versionCode {version_code}',
               text,
               count=1
           )
 
           text, n2 = re.subn(
               r'(?m)^\s*versionName\s+"[^"]+"',
-              '        versionName "1.4"',
+              f'        versionName "{version_name}"',
               text,
               count=1
           )
@@ -675,7 +698,20 @@ jobs:
 
           p.write_text(text)
 
-          print("Version Android définie : versionCode 5 / versionName 1.4")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+
+          if summary:
+              with open(summary, "a") as f:
+                  f.write(
+                      f"Version Android : versionCode {version_code} / "
+                      f"versionName \"{version_name}\" "
+                      f"(depuis package.json {version})\n"
+                  )
+
+          print(
+              f"Version Android définie : versionCode {version_code} / "
+              f"versionName \"{version_name}\""
+          )
           PY2
 
           grep -n "versionCode\|versionName" android/app/build.gradle

@@ -217,9 +217,11 @@ function subscribeResponsables(){
 function subscribeMembers(){
   unsub('members');
   if (!session.user || !(session.isAdmin || session.isSubAdmin)) { hooks.setMembers([]); return; }
+  var adminProvince = String((session.member && session.member.adminProvince) || '');
+  if (!session.isAdmin && !adminProvince) { hooks.setMembers([]); return; }
   var membersQuery = session.isAdmin
     ? collection(db, 'members')
-    : query(collection(db, 'members'), where('prov', '==', session.member.adminProvince));
+    : query(collection(db, 'members'), where('prov', '==', adminProvince));
   unsubs.members = onSnapshot(membersQuery, function(snap){
     hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
   }, function(err){hooks.error(err);});
@@ -907,13 +909,6 @@ async function deleteAccount(){
   unsub('member');
   unsub('members');
   unsub('reports');
-
-  // Retirer les coordonnées rattachées au rôle de sous-admin tant que ses droits existent.
-  if (member.status === 'active' && member.role === 'subadmin' && member.adminProvince){
-    var province = String(member.adminProvince).slice(0,40);
-    await deleteDoc(doc(db, 'provinceContacts', province));
-    await deletePublicProvinceContact(province);
-  }
 
   // Les signalements soumis ne sont pas supprimés par la suppression du compte.
   await deleteDoc(doc(db, 'responsables', u.uid));

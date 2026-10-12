@@ -2541,6 +2541,32 @@ adhReady:`Fichier prêt. Choisissez WhatsApp pour l'envoyer.`,
 adhSaved:`Fichier enregistré sur l'appareil : ajoutez-le au message WhatsApp.`,
 adhErr:`Impossible de préparer ce fichier. Reprenez avec une image plus petite.`,
 
+/* Parcours d'adhésion numérique : statuts et retours du formulaire */
+adhProcessing:`Traitement de la demande en cours…`,
+adhRequired:`Veuillez remplir tous les champs obligatoires.`,
+adhSignRequired:`Veuillez signer la fiche avant de continuer.`,
+adhRenewalOnlyLock:`Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.`,
+adhRenewalReasonRequired:`Veuillez préciser le motif du renouvellement.`,
+adhPdfGenerating:`Génération de la fiche PDF…`,
+adhPdfReadError:`Impossible de lire le PDF généré.`,
+adhPdfGenerated:`PDF généré (%1 Ko). Enregistrement sur Firestore…`,
+adhServiceUnavailable:`Service Firebase d’adhésion indisponible.`,
+adhSavedFirst:`Demande enregistrée sur Firestore. Récupération du PDF enregistré…`,
+adhSavedCompleted:`Complément enregistré. Votre dossier est de nouveau en attente de validation.`,
+adhSavedRenewal:`Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.`,
+adhShareOpened:`Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.`,
+adhShareFailed:`Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».`,
+adhPdfError:`Impossible de créer le PDF. Réessayez.`,
+adhFormSavedPdfFail:`Formulaire sauvegardé, mais création du PDF impossible.`,
+adhStatusPending:`Demande d’adhésion : en attente de validation.`,
+adhStatusCompletion:`Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.`,
+adhStatusAccepted:`Demande d’adhésion : acceptée.`,
+adhStatusRefused:`Demande d’adhésion : refusée.`,
+adhStatusUnknown:`Statut de la demande : %1.`,
+adhNote:`Note : `,
+adhStatusChecking:`Vérification du statut de votre demande…`,
+adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
+
 nextT:`Prochain rendez-vous`,
 recentT:`Communiqués récents`,
 seeAll:`Tout voir`,
@@ -2723,8 +2749,34 @@ adhSend:`إرسال الاستمارة`,
 adhDigitalBtn:`الانخراط الرقمي`,
 adhHint:``,
 adhReady:`الملف جاهز. اختاروا واتساب للإرسال.`,
-adhSaved:`تم حفظ الملف بالهاتف : أرسلوه ضمن رسالة واتساب.`,
+adhSaved:`تم حفظ الملف على الجهاز : أضيفوه إلى رسالة واتساب.`,
 adhErr:`تعذر تحضير هذا الملف. أعيدوا المحاولة بصورة أصغر.`,
+
+/* Parcours d'adhésion numérique : statuts et retours du formulaire */
+adhProcessing:`جار معالجة الطلب…`,
+adhRequired:`يرجى إكمال جميع الحقول المطلوبة.`,
+adhSignRequired:`يرجى التوقيع على الاستمارة قبل المتابعة.`,
+adhRenewalOnlyLock:`تمت المصادقة على انخراطكم : لا يمكن سوى التجديد مع تحديد السبب.`,
+adhRenewalReasonRequired:`يرجى تحديد سبب تجديد الانخراط.`,
+adhPdfGenerating:`جار إنشاء ملف PDF…`,
+adhPdfReadError:`تعذر قراءة ملف PDF المنشأ.`,
+adhPdfGenerated:`تم إنشاء ملف PDF (%1 ك.ب). جار الحفظ على Firestore…`,
+adhServiceUnavailable:`خدمة Firebase للانخراط غير متوفرة.`,
+adhSavedFirst:`تم تسجيل الطلب على Firestore. جار استرجاع ملف PDF المحفوظ…`,
+adhSavedCompleted:`تم حفظ المعلومات الإضافية. طلبكم عاد إلى قيد المصادقة.`,
+adhSavedRenewal:`تم تسجيل التجديد على Firestore : طلبكم عاد إلى قيد المصادقة.`,
+adhShareOpened:`تم فتح نافذة المشاركة : اختاروا واتساب ثم رقم الإدارة.`,
+adhShareFailed:`تم تسجيل الطلب. فشل مشاركة ملف PDF : أعيدوا المحاولة من «إرسال PDF الطلب».`,
+adhPdfError:`تعذر إنشاء ملف PDF. أعيدوا المحاولة.`,
+adhFormSavedPdfFail:`تم حفظ الاستمارة، لكن تعذر إنشاء ملف PDF.`,
+adhStatusPending:`طلب الانخراط : قيد المصادقة.`,
+adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
+adhStatusAccepted:`طلب الانخراط : تمت المصادقة.`,
+adhStatusRefused:`طلب الانخراط : مرفوض.`,
+adhStatusUnknown:`حالة الطلب : %1.`,
+adhNote:`ملاحظة : `,
+adhStatusChecking:`جار التحقق من حالة طلبكم…`,
+adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
 
 nextT:`الموعد القادم`,
 recentT:`أحدث البلاغات`,
@@ -3703,9 +3755,17 @@ function showMyAdhesionStatus(request){
   }
   if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
   if(!request||request.status==='none'){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;return;}
-  var labels={pending:'Demande d’adhésion : en attente de validation.',needs_completion:'Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.',accepted:'Demande d’adhésion : acceptée.',refused:'Demande d’adhésion : refusée.'};
-  box.hidden=false;box.textContent=labels[request.status]||'Statut de la demande : '+String(request.status||'inconnu')+'.';
-  if(request.adminNote)box.textContent+=' Note : '+String(request.adminNote).slice(0,1000);
+  var labels={
+    pending:t.adhStatusPending,
+    needs_completion:t.adhStatusCompletion,
+    accepted:t.adhStatusAccepted,
+    refused:t.adhStatusRefused
+  };
+  box.hidden=false;
+  box.textContent=labels[request.status]||
+    (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
+  if(request.adminNote)
+  box.textContent+=' '+(t.adhNote||'Note : ')+String(request.adminNote).slice(0,1000);
   // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
   if(shareBtn)shareBtn.hidden=false;
 }
@@ -3717,11 +3777,11 @@ function refreshMyAdhesionStatus(force){
   if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;if(shareBtn)shareBtn.hidden=true;return Promise.resolve(null);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
-  myAdhesionStatusUid=uid;box.hidden=false;box.textContent='Vérification du statut de votre demande…';
+  myAdhesionStatusUid=uid;box.hidden=false;box.textContent=T().adhStatusChecking;
   myAdhesionStatusPromise=window.CLOUD.getMyAdhesionRequest().then(function(request){
     if(!(S.user&&String(S.user.uid)===uid))return null;
     myAdhesionStatusCache=request||{status:'none'};showMyAdhesionStatus(myAdhesionStatusCache);return request;
-  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent='Statut de la demande temporairement indisponible.';}return null;}).finally(function(){myAdhesionStatusPromise=null;});
+  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent=T().adhStatusUnavailable;}return null;}).finally(function(){myAdhesionStatusPromise=null;});
   return myAdhesionStatusPromise;
 }
 window.refreshMyAdhesionStatus=refreshMyAdhesionStatus;
@@ -4989,16 +5049,23 @@ return;
 
 if(el.hasAttribute('data-open')){
 
-openId=el.getAttribute('data-open');
+  openId=el.getAttribute('data-open');
 
-filter='all';
+  filter='all';
 
-renderFilters();
-renderNews();
+  var fromHome=NEWS.filter(function(x){
+    return x.id===openId;
+  })[0];
 
-go('news');
+  if(fromHome&&fromHome.hasImage&&!fromHome.image)
+  loadNewsImage(fromHome);
 
-return;
+  renderFilters();
+  renderNews();
+
+  go('news');
+
+  return;
 }
 
 if(el.hasAttribute('data-item')){
@@ -6070,10 +6137,16 @@ window.UGTM.failed();
     form.addEventListener('submit',function(e){
       e.preventDefault();
 
+      var t=(typeof T==='function')?T():{};
+
+      function adm(msg,ms){
+        if(typeof toast==='function')toast(msg,ms);
+      }
+
       /* Message d'état immédiat : quoi qu'il arrive ensuite, un retour
          s'affiche dès le clic (validation, téléversement, partage). */
-      if(typeof toast==='function')toast('Traitement de la demande en cours…',2500);
-      setAdhStatus('Traitement de la demande en cours…');
+      adm(t.adhProcessing||'Traitement de la demande en cours…',2500);
+      setAdhStatus(t.adhProcessing||'Traitement de la demande en cours…');
 
       var requiredFields=Array.from(form.querySelectorAll('[required]'));
       var missing=requiredFields.find(function(field){
@@ -6089,23 +6162,15 @@ window.UGTM.failed();
         }
         if(missing){
           missing.focus();
-          setAdhStatus('Veuillez remplir tous les champs obligatoires.',false);
-          if(typeof toast==='function')toast(
-            typeof lang!=='undefined'&&lang==='ar'
-              ?'يرجى إكمال جميع الحقول المطلوبة'
-              :'Veuillez remplir tous les champs obligatoires.',
-            4000
-          );
+          setAdhStatus(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',false);
+          adm(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',4000);
           return;
         }
       }
 
       if(!signed){
-        setAdhStatus('Veuillez signer la fiche avant de continuer.',false);
-        if(typeof toast==='function')toast(
-          typeof lang!=='undefined'&&lang==='ar'?'يرجى إدخال التوقيع':'Veuillez signer la fiche',
-          3500
-        );
+        setAdhStatus(t.adhSignRequired||'Veuillez signer la fiche avant de continuer.',false);
+        adm(t.adhSignRequired||'Veuillez signer la fiche avant de continuer.',3500);
         return;
       }
 
@@ -6113,19 +6178,14 @@ window.UGTM.failed();
       var reason=renewalInput.value.trim();
       /* Un adhérent déjà accepté ne peut soumettre qu'un renouvellement. */
       if(window.ADH_RENEWAL_ONLY&&type!=='renewal'){
-        setAdhStatus('Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.',false);
+        setAdhStatus(t.adhRenewalOnlyLock||'Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.',false);
         return;
       }
       if(type==='renewal'&&!reason){
         renewalInput.required=true;
         renewalInput.focus();
-        setAdhStatus('Veuillez préciser le motif du renouvellement.',false);
-        if(typeof toast==='function')toast(
-          typeof lang!=='undefined'&&lang==='ar'
-            ?'يرجى تحديد سبب تجديد الانخراط'
-            :'Veuillez préciser le motif du renouvellement.',
-          4000
-        );
+        setAdhStatus(t.adhRenewalReasonRequired||'Veuillez préciser le motif du renouvellement.',false);
+        adm(t.adhRenewalReasonRequired||'Veuillez préciser le motif du renouvellement.',4000);
         return;
       }
 
@@ -6156,7 +6216,7 @@ window.UGTM.failed();
 
         try{
           var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-          setAdhStatus('Génération de la fiche PDF…');
+          setAdhStatus(t.adhPdfGenerating||'Génération de la fiche PDF…');
 
           /* jsPDF fabrique le PDF exigé par Firestore (empaqueté dans
              l'APK, chargé localement sur le Web). Le partage qui suit est
@@ -6361,18 +6421,19 @@ window.UGTM.failed();
 
             reader.onloadend=async function(){
               var b64=String(reader.result||'').split(',')[1]||'';
-              if(!b64){setAdhStatus('Impossible de lire le PDF généré.',false);if(typeof toast==='function')toast('Impossible de lire le PDF généré.',4000);return;}
-              setAdhStatus('PDF généré ('+Math.max(1,Math.round(b64.length*3/4/1024))+' Ko). Enregistrement sur Firestore…');
+              if(!b64){setAdhStatus(t.adhPdfReadError||'Impossible de lire le PDF généré.',false);adm(t.adhPdfReadError||'Impossible de lire le PDF généré.',4000);return;}
+              setAdhStatus((t.adhPdfGenerated||'PDF généré (%1 Ko). Enregistrement sur Firestore…')
+                .replace('%1',Math.max(1,Math.round(b64.length*3/4/1024))));
               if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
-                setAdhStatus('Service Firebase d’adhésion indisponible.',false);
-                if(typeof toast==='function')toast('Service Firebase d’adhésion indisponible.',5000);return;
+                setAdhStatus(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',false);
+                adm(t.adhServiceUnavailable||'Service Firebase d’adhésion indisponible.',5000);return;
               }
               var result;
               try{result=await window.CLOUD.submitAdhesion(data,b64);}
               catch(err){console.error('Adhesion save:',err);setAdhStatus(err&&err.message?err.message:'Impossible d’enregistrer la demande.',false);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
               var savedMsg=result&&result.completed
-                ?(data.type==='renewal'?'Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.':'Complément enregistré. Votre dossier est de nouveau en attente de validation.')
-                :'Demande enregistrée sur Firestore. Récupération du PDF enregistré…';
+                ?(data.type==='renewal'?(t.adhSavedRenewal||'Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.'):(t.adhSavedCompleted||'Complément enregistré. Votre dossier est de nouveau en attente de validation.'))
+                :(t.adhSavedFirst||'Demande enregistrée sur Firestore. Récupération du PDF enregistré…');
               if(typeof toast==='function')toast(savedMsg,4000);
               setAdhStatus(savedMsg,true);
               /* L'ENVOI PART DU PDF ENREGISTRÉ SUR FIRESTORE (et non du
@@ -6382,11 +6443,11 @@ window.UGTM.failed();
                 var stored='';
                 try{stored=await window.CLOUD.getAdhesionPdf(String(result&&result.id||''));}catch(eFetch){}
                 await shareAdhesionPdfBytes(stored||b64,base);
-                setAdhStatus('Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.',true);
+                setAdhStatus(t.adhShareOpened||'Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.',true);
               }catch(shareErr){
                 console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);
-                setAdhStatus('Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',false);
-                if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',6500);
+                setAdhStatus(t.adhShareFailed||'Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',false);
+                if(typeof toast==='function')toast(t.adhShareFailed||'Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',6500);
               }
               if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
             };
@@ -6395,24 +6456,14 @@ window.UGTM.failed();
 
           }).catch(function(err){
             console.error('Adhesion logo/PDF:',err);
-            setAdhStatus('Impossible de créer le PDF. Réessayez.',false);
-            if(typeof toast==='function')toast(
-              typeof lang!=='undefined'&&lang==='ar'
-              ?'تعذر إنشاء ملف PDF'
-              :'Impossible de créer le PDF.',
-              4000
-            );
+            setAdhStatus(t.adhPdfError||'Impossible de créer le PDF. Réessayez.',false);
+            adm(t.adhPdfError||'Impossible de créer le PDF. Réessayez.',4000);
           });
 
         }catch(err){
           console.error('Adhesion PDF:',err);
-          setAdhStatus('Formulaire sauvegardé, mais création du PDF impossible.',false);
-          if(typeof toast==='function')toast(
-            typeof lang!=='undefined'&&lang==='ar'
-            ?'تم حفظ الاستمارة ولكن تعذر إنشاء PDF'
-            :'Formulaire sauvegardé, mais création du PDF impossible.',
-            4000
-          );
+          setAdhStatus(t.adhFormSavedPdfFail||'Formulaire sauvegardé, mais création du PDF impossible.',false);
+          adm(t.adhFormSavedPdfFail||'Formulaire sauvegardé, mais création du PDF impossible.',4000);
         }
     });
   }
