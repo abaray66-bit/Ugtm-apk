@@ -3196,21 +3196,32 @@ document.body.removeChild(a);
 setTimeout(function(){URL.revokeObjectURL(url);},60000);
 }
 
+/* Recherche d'un contact par motif d'URL : l'ordre des entrées dans
+   data.js peut changer sans casser les boutons WhatsApp / Facebook. */
+function contactUrl(re){
+
+  var hit=(CONTACT||[]).filter(function(c){
+    return c&&c.url&&re.test(String(c.url));
+  })[0];
+
+  return hit?hit.url:'';
+}
+
 function linkFor(key){
 
-if(key==='wa')
-return(CONTACT[0]&&CONTACT[0].url)||'';
+  if(key==='wa')
+  return contactUrl(/chat\.whatsapp\.com/i)||contactUrl(/wa\.me/i);
 
-if(key==='fb')
-return(CONTACT[2]&&CONTACT[2].url)||'';
+  if(key==='fb')
+  return contactUrl(/facebook\.com/i);
 
-if(key==='num')
-return(CONTACT[1]&&CONTACT[1].url)||
-((PERM.phone||'').replace(/\D/g,'')
-?'https://wa.me/'+String(PERM.phone).replace(/\D/g,'')
-:'');
+  if(key==='num')
+  return contactUrl(/wa\.me/i)||
+  ((PERM.phone||'').replace(/\D/g,'')
+  ?'https://wa.me/'+String(PERM.phone).replace(/\D/g,'')
+  :'');
 
-return '';
+  return '';
 }
 
 /* =========================
