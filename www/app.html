@@ -17,6 +17,7 @@
 :root{
   --bg:#FFF7FA;
   --surface:#FFFFFF;
+  --card:#FFFFFF;
   --ink:#24191F;
   --muted:#75656C;
   --line:#EAD9E0;
@@ -48,6 +49,7 @@
     color-scheme:dark;
     --bg:#1A0D13;
     --surface:#24121A;
+    --card:#24121A;
     --ink:#FFF0F5;
     --muted:#C7AEB8;
     --line:#432532;
@@ -71,6 +73,7 @@
   color-scheme:dark;
   --bg:#1A0D13;
   --surface:#24121A;
+  --card:#24121A;
   --ink:#FFF0F5;
   --muted:#C7AEB8;
   --line:#432532;
@@ -602,6 +605,19 @@ main{
   color:var(--link)
 }
 
+/* Dossiers d'adhésion : cartes et grille
+   d'identité adaptative — deux colonnes
+   sur grand écran, paires label — valeur
+   sur mobile. */
+#adm-adhesions .mrow{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.04)
+}
+
 .adh-tags{
   display:flex;
   flex-wrap:wrap;
@@ -652,6 +668,64 @@ main{
   font-weight:600;
   color:var(--ink);
   margin-inline-end:4px
+}
+
+@media(max-width:600px){
+  #adm-adhesions .mrow{
+    flex-direction:column;
+    padding:12px 14px;
+    margin-bottom:10px
+  }
+
+  #adm-adhesions .mact{
+    flex-direction:column;
+    align-items:stretch;
+    width:100%;
+    margin-top:12px
+  }
+
+  #adm-adhesions .mact .btn{
+    width:100%
+  }
+
+  .adhinfo{
+    grid-template-columns:1fr;
+    gap:5px
+  }
+
+  .adhinfo>div{
+    flex-direction:row;
+    align-items:baseline;
+    gap:6px
+  }
+
+  .adhinfo span{
+    font-size:12px;
+    text-transform:none;
+    letter-spacing:0;
+    flex:none
+  }
+
+  .adhinfo b{
+    font-size:14px
+  }
+
+  .adhdoc-grid{
+    grid-template-columns:1fr
+  }
+
+  .adhdoc-row{
+    flex-direction:row;
+    align-items:baseline;
+    gap:6px
+  }
+
+  .adhdoc-row span{
+    font-size:12px;
+    text-transform:none;
+    letter-spacing:0;
+    flex:none
+  }
 }
 
 /* Modale de signature du responsable (espace administration) */
