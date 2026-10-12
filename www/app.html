@@ -2681,6 +2681,7 @@ adhNote:`Note : `,
   adhStatusChecking:`Vérification du statut de votre demande…`,
   adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
   adhBlockedPending:`Votre demande est déjà enregistrée et en attente de traitement. Vous serez informé dès qu’un responsable la signera.`,
+  adhBlockedMember:`Vous êtes déjà adhérent(e) : votre adhésion est validée. Aucune nouvelle demande n’est nécessaire.`,
   adhBlockedRefused:`Une décision a déjà été prise concernant votre demande. Contactez la permanence pour toute démarche supplémentaire.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
@@ -2922,6 +2923,7 @@ adhNote:`ملاحظة : `,
   adhStatusChecking:`جار التحقق من حالة طلبكم…`,
   adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
   adhBlockedPending:`طلب الانخراط مسجل بالفعل وهو في انتظار توقيع أحد المسؤولين. سيتم إخباركم فور توقيعه.`,
+  adhBlockedMember:`أنتم عضو بالفعل : تمت مصادقة انخراطكم. لا حاجة لطلب جديد.`,
   adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
@@ -3734,18 +3736,24 @@ function showMyAdhesionStatus(request){
   var t=T();
   var st=request?String(request.status||'none'):'none';
   /* Accès au formulaire conditionné au statut du dossier ET au
-     profil : un adhérent déjà actif (carte validée, SM-XXXX) ne
-     remplit le formulaire que pour un renouvellement avec motif,
-     même si aucun document adhesionRequests n'existe pour lui.
-     - adhérent non actif, aucune demande : formulaire libre ;
-     - complément demandé : formulaire ouvert pour compléter ;
-     - en attente ou décision prise : plus d'accès au formulaire
-       (le PDF déjà enregistré reste ré-envoyable) ;
-     - acceptée OU adhérent actif : renouvellement avec motif seul. */
+     profil :
+     - aucune demande et pas encore adhérent : formulaire libre ;
+     - complément demandé : formulaire ouvert pour compléter
+       (reprise du dossier) ;
+     - demande en attente, déjà validée ou déjà traitée, OU
+       compte déjà adhérent actif : le formulaire NE S'OUVRE
+       PLUS — le bouton affiche un message (déjà inscrit /
+       déjà adhérent). Le PDF déjà enregistré reste
+       ré-envoyable par le responsable. */
   var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
   window.ADH_RENEWAL_ONLY=(st==='accepted')||(memberActive&&st!=='needs_completion');
   if(fillBtn){
-    var showFill=(st==='none'||st==='needs_completion'||st==='accepted');
+    /* Bouton de « Mon espace » : formulaire libre sans
+       dossier, reprise si complément demandé, et
+       « Renouveler mon adhésion » pour un adhérent déjà
+       inscrit — le renouvellement n'est accessible
+       qu'ici, jamais depuis l'accueil. */
+    var showFill=(st==='none'&&!memberActive)||st==='needs_completion'||window.ADH_RENEWAL_ONLY;
     fillBtn.hidden=!showFill;
     var key=window.ADH_RENEWAL_ONLY?'renewAdhesion':'fillAdhesion';
     fillBtn.setAttribute('data-i18n',key);
@@ -4614,34 +4622,38 @@ function generateAdhesionPdfForAdmin(id){
   pdfJobs[id]=true;
   toast(t.admPdfGenerating,3500);
 
-  c.getSavedAdhesionPdf(id)
-  .then(function(stored){
-    if(stored)return{stored:stored};
-      return c.getAdhesionDoc(id).then(function(doc){
-      if(!doc)throw new Error(t.admPdfErr);
-      if(doc.status!=='accepted'||!doc.adminSignature)
-      throw new Error(t.admPdfOnlyValidated);
-      if(typeof window.generateAdhesionPdf!=='function')
-      throw new Error('PDF indisponible');
-      /* Identité lisible du signataire : son profil s'il est connu de
-         l'administrateur connecté, sinon son identifiant Firebase. */
-      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
-      doc.signerName=signer?((signer.name||signer.email||'')+(signer.email&&signer.name?' ('+signer.email+')':'')):doc.signedBy;
-      return window.generateAdhesionPdf(doc).then(function(b64){
-        if(!b64)throw new Error(t.admPdfErr);
-        /* Enregistrement à côté du dossier : le PDF reste récupérable
-           même si le téléchargement échoue. Best effort. */
-        return c.saveAdhesionPdf(id,b64)
-        .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
-        .then(function(){return{fresh:b64};});
-      });
+  c.getAdhesionDoc(id)
+  .then(function(doc){
+    if(!doc)throw new Error(t.admPdfErr);
+    if(doc.status!=='accepted'||!doc.adminSignature)
+    throw new Error(t.admPdfOnlyValidated);
+    if(typeof window.generateAdhesionPdf!=='function')
+    throw new Error('PDF indisponible');
+    /* Identité lisible du signataire : son profil s'il est connu de
+       l'administrateur connecté, sinon son identifiant Firebase. */
+    var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+    doc.signerName=signer?((signer.name||signer.email||'')+(signer.email&&signer.name?' ('+signer.email+')':'')):doc.signedBy;
+    return window.generateAdhesionPdf(doc).then(function(b64){
+      if(!b64)throw new Error(t.admPdfErr);
+      /* Enregistrement à côté du dossier : le PDF reste récupérable
+         même si le téléchargement échoue. Best effort. */
+      return c.saveAdhesionPdf(id,b64)
+      .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
+      .then(function(){return{b64:b64,stored:false};});
+    });
+  })
+  .catch(function(err){
+    /* Repli uniquement : exemplaire stocké lors d'une génération
+       antérieure, si la génération fraîche échoue. */
+    return c.getSavedAdhesionPdf(id).then(function(stored){
+      if(stored)return{b64:stored,stored:true};
+      throw err;
     });
   })
   .then(function(res){
-    var b64=res.stored||res.fresh;
     /* Le succès n'est affiché qu'après confirmation de
        l'enregistrement effectif du fichier sur l'appareil. */
-    return savePdfToDevice(b64,'demande-adhesion-'+id+'.pdf')
+    return savePdfToDevice(res.b64,'demande-adhesion-'+id+'.pdf')
     .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
   })
   .catch(function(err){
@@ -5160,24 +5172,59 @@ var SCREENS=[
    Le formulaire s'ouvre :
    - automatiquement après le premier enregistrement du
      profil (première connexion, hook onFirstProfile) ;
-   - librement sans dossier, pour un complément demandé
-     (needs_completion : reprise du dossier) ou un
-     renouvellement (adhésion acceptée, avec motif) ;
-   il est BLOQUÉ quand une demande est déjà en attente
-   (doublon interdit) ou déjà traitée (décision prise).
-   La transaction Firestore reste le dernier rempart.
+   - librement sans dossier et sans adhésion active ;
+   - pour un complément demandé (needs_completion :
+     reprise du dossier).
+   Il est BLOQUÉ dès qu'une demande existe — en attente
+   (doublon interdit), validée ou refusée (décision
+   prise) — ou que le compte est déjà adhérent actif :
+   le bouton affiche alors un message au lieu d'ouvrir
+   le formulaire. La transaction Firestore reste le
+   dernier rempart.
    ========================= */
 function adhesionFormStatus(){
   var req=myAdhesionStatusCache;
   return req?String(req.status||'none'):'none';
 }
+function adhesionFormMemberActive(){
+  return !!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+}
 function adhesionFormBlocked(){
   var st=adhesionFormStatus();
-  return st==='pending'||st==='refused';
+  /* Reprise : un complément demandé rouvre TOUJOURS
+     le formulaire. */
+  if(st==='needs_completion')return false;
+  /* Renouvellement : l'accès au formulaire n'est
+     autorisé QUE via le bouton « Renouveler mon
+     adhésion » de « Mon espace » (drapeau posé par
+     ce bouton, consommé à l'ouverture). */
+  if(window.ADH_RENEWAL_SESSION){
+    window.ADH_RENEWAL_SESSION=false;
+    return false;
+  }
+  /* Doublon : demande en attente, déjà validée ou
+     déjà traitée. */
+  if(st==='pending'||st==='refused'||st==='accepted')return true;
+  /* Adhérent déjà actif : aucune demande nécessaire. */
+  return adhesionFormMemberActive();
 }
+
+/* Bouton « Renouveler mon adhésion » (Mon espace) :
+   seul accès au formulaire pour un adhérent déjà
+   inscrit — ouvre le formulaire en mode renouvellement
+   (motif obligatoire). */
+(function(){
+  var renewalBtn=$('meAdhesionButton');
+  if(!renewalBtn)return;
+  renewalBtn.addEventListener('click',function(){
+    if(window.ADH_RENEWAL_ONLY)window.ADH_RENEWAL_SESSION=true;
+  });
+})();
 function adhesionFormBlockedMessage(){
   var t=T();
-  if(adhesionFormStatus()==='refused')return t.adhBlockedRefused;
+  var st=adhesionFormStatus();
+  if(st==='refused')return t.adhBlockedRefused;
+  if(st==='accepted'||adhesionFormMemberActive())return t.adhBlockedMember;
   return t.adhBlockedPending;
 }
 
@@ -6168,7 +6215,10 @@ go('me');
 
       var st=req?String(req.status||'none'):'none';
 
-      if(st==='pending'||st==='refused')return;
+      /* Le formulaire ne s'ouvre automatiquement que
+         s'il est accessible : aucun dossier bloquant
+         (doublon, décision prise, adhérent actif). */
+      if(st!=='none'&&st!=='needs_completion')return;
 
       if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
 
@@ -6917,16 +6967,22 @@ window.UGTM.failed();
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
     if(b){
+      /* Le renouvellement ne s'ouvre que via le bouton
+         dédié de « Mon espace » : une ouverture venue
+         d'ailleurs (accueil) pour un dossier validé est
+         un accès refusé, même si le formulaire s'est
+         ouvert avant le rafraîchissement. */
+      var renewalEntry=(b.id==='meAdhesionButton'&&!!window.ADH_RENEWAL_ONLY);
       /* Le verrou renouvellement dépend du statut du dossier côté
          serveur : on le (ré)évalue à chaque ouverture du formulaire. */
       if(typeof window.refreshMyAdhesionStatus==='function'){
         try{
           window.refreshMyAdhesionStatus(true).then(function(req){
             var st=req?String(req.status||'none'):'none';
-            if(st==='pending'||st==='refused'){
-              /* Statut confirmé côté serveur : une demande en
-                 double est bloquée — on quitte le formulaire
-                 (l'ouverture a pu précéder le rafraîchissement). */
+            if(st==='pending'||st==='refused'||(st==='accepted'&&!renewalEntry)){
+              /* Statut confirmé côté serveur : l'accès est
+                 refusé — on quitte le formulaire (l'ouverture
+                 a pu précéder le rafraîchissement). */
               toast(adhesionFormBlockedMessage(),5500);
               go('me');
             }
