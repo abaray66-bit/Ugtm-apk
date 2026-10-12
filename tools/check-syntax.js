@@ -118,6 +118,86 @@ try {
   fail('parité adminEmails', e.message);
 }
 
+/* --- Parité des traductions (www/app.html) ---
+   Chaque écran est bilingue FR/AR. Une clé data-i18n ou t.xxx absente
+   d'un dictionnaire affiche « undefined » dans l'interface. On vérifie
+   que toutes les clés utilisées existent dans les deux dictionnaires. */
+try {
+  var appHtml = read('www/app.html');
+
+  // Le dictionnaire vit dans un <script> en ligne de app.html.
+  var scripts = [];
+  var scriptRe = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g;
+  var sm;
+  while ((sm = scriptRe.exec(appHtml)) !== null) {
+    if (sm[1].trim()) scripts.push(sm[1]);
+  }
+  // Tous les scripts concaténés : les clés sont utilisées dans
+  // plusieurs blocs <script> (app principale + parcours d'adhésion).
+  var mainScript = scripts.join('\n');
+
+  function dictBody(name) {
+    var open = mainScript.search(new RegExp('(?:^|\\n)[ \\t]*' + name + '\\s*:\\s*\\{'));
+    if (open < 0) return null;
+    open = mainScript.indexOf('{', open);
+    var depth = 0;
+    for (var i = open; i < mainScript.length; i++) {
+      var ch = mainScript[i];
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) return mainScript.slice(open, i + 1);
+      }
+    }
+    return null;
+  }
+
+  // Clés de dictionnaire : identifiant collé aux deux points (pas d'espace,
+  // pour ne pas ramasser les « mot : » des textes français).
+  function keysOf(body) {
+    var out = [];
+    var re = /(?:^|[{,\n])[ \t]*([A-Za-z_$][\w$]*)[ \t]*:/g;
+    var m;
+    while ((m = re.exec(body)) !== null) out.push(m[1]);
+    return out;
+  }
+
+  var frBody = dictBody('fr');
+  var arBody = dictBody('ar');
+  if (!frBody || !arBody) {
+    fail('i18n app.html', 'dictionnaires fr/ar introuvables');
+  } else {
+    var frKeys = keysOf(frBody);
+    var arKeys = keysOf(arBody);
+    var frSet = {};
+    frKeys.forEach(function (k) { frSet[k] = true; });
+    var arSet = {};
+    arKeys.forEach(function (k) { arSet[k] = true; });
+
+    var used = {};
+    function use(k) { if (k) used[k] = true; }
+    var im;
+    var i18nRe = /data-i18n="([^"]+)"/g;
+    while ((im = i18nRe.exec(appHtml)) !== null) use(im[1]);
+    var litRe = /setAttribute\('data-i18n',\s*'([^']+)'\)/g;
+    while ((im = litRe.exec(mainScript)) !== null) use(im[1]);
+    var tRe = /[^A-Za-z0-9_$.](?:t|T\(\))\.([A-Za-z0-9_]+)/g;
+    while ((im = tRe.exec(mainScript)) !== null) use(im[1]);
+
+    // Clés posées dynamiquement (setAttribute('data-i18n', key)).
+    ['fillAdhesion', 'renewAdhesion'].forEach(use);
+
+    var missFr = Object.keys(used).filter(function (k) { return !frSet[k]; });
+    var missAr = Object.keys(used).filter(function (k) { return !arSet[k]; });
+
+    if (missFr.length) fail('i18n fr', 'clés utilisées absentes : ' + missFr.join(', '));
+    else if (missAr.length) fail('i18n ar', 'clés utilisées absentes : ' + missAr.join(', '));
+    else ok('i18n app.html : ' + Object.keys(used).length + ' clés utilisées présentes en fr et ar');
+  }
+} catch (e) {
+  fail('i18n app.html', e.message);
+}
+
 if (failures) {
   console.error('\n' + failures + ' controle(s) en echec.');
   process.exit(1);
