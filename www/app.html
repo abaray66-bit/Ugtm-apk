@@ -1104,14 +1104,26 @@ main{
   font-weight:600
 }
 
+.fb-err{
+  color:#c0392b;
+  font-weight:600
+}
+
 @media (prefers-color-scheme: dark){
   .fb-ok{
     color:#6fdc9a
+  }
+  .fb-err{
+    color:#ff8f80
   }
 }
 
 :root[data-theme="dark"] .fb-ok{
   color:#6fdc9a
+}
+
+:root[data-theme="dark"] .fb-err{
+  color:#ff8f80
 }
 
 /* =========================
@@ -2213,6 +2225,7 @@ button.primary:active {
         <label><input type="radio" name="adhType" value="first" checked><span data-i18n="adhFirst"></span></label>
         <label><input type="radio" name="adhType" value="renewal"><span data-i18n="adhRenewal"></span></label>
       </div>
+      <p class="hint" id="adhRenewalNotice" hidden data-i18n="adhRenewalOnly"></p>
       <div class="field adh-full" id="adhRenewalReasonWrap" style="display:none">
         <label for="adhRenewalReason" data-i18n="adhRenewalReason"></label>
         <input id="adhRenewalReason" maxlength="200" autocomplete="off">
@@ -2244,6 +2257,7 @@ button.primary:active {
     </div>
 
     <button class="btn gold block" type="submit" data-i18n="adhContinue"></button>
+    <p class="hint" id="adhFormStatus" role="status" aria-live="polite" hidden></p>
     <p class="hint" data-i18n="adhDigitalNext"></p>
   </form>
 </section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
@@ -2513,9 +2527,9 @@ adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
-adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`,
+adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
-adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`L'étape suivante permettra de générer la fiche PDF et de la partager directement via WhatsApp.`,
+adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche PDF est générée, enregistrée sur Firestore puis partagée directement via WhatsApp.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
@@ -2635,6 +2649,7 @@ mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votr
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
 editProfile:`Modifier mon profil`,
 fillAdhesion:`Remplir ma demande d’adhésion`,
+renewAdhesion:`Renouveler mon adhésion`,
 shareAdhPdf:`Envoyer le PDF de ma demande (WhatsApp)`,
 
 meLoading:`Chargement…`,
@@ -2697,9 +2712,9 @@ adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
-adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`,
+adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
-adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`في المرحلة التالية سيتم إنشاء ملف PDF للاستِمارة وإرساله مباشرة عبر واتساب.`,
+adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد سيتم إنشاء ملف PDF للاستِمارة وحفظه في قاعدة البيانات ثم إرساله مباشرة عبر واتساب.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
@@ -2819,6 +2834,7 @@ mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤس�
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
 editProfile:`تعديل معلوماتي`,
 fillAdhesion:`ملء طلب الانخراط`,
+renewAdhesion:`تجديد الانخراط`,
 shareAdhPdf:`إرسال PDF الطلب عبر واتساب`,
 
 meLoading:`جار التحميل…`,
@@ -3664,6 +3680,28 @@ var myAdhesionStatusPromise=null;
 function showMyAdhesionStatus(request){
   var box=$('meAdhesionStatus');if(!box)return;
   var shareBtn=$('meAdhesionShare');
+  var fillBtn=$('meAdhesionButton');
+  var t=T();
+  var st=request?String(request.status||'none'):'none';
+  /* Accès au formulaire conditionné au statut du dossier ET au
+     profil : un adhérent déjà actif (carte validée, SM-XXXX) ne
+     remplit le formulaire que pour un renouvellement avec motif,
+     même si aucun document adhesionRequests n'existe pour lui.
+     - adhérent non actif, aucune demande : formulaire libre ;
+     - complément demandé : formulaire ouvert pour compléter ;
+     - en attente ou décision prise : plus d'accès au formulaire
+       (le PDF déjà enregistré reste ré-envoyable) ;
+     - acceptée OU adhérent actif : renouvellement avec motif seul. */
+  var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+  window.ADH_RENEWAL_ONLY=(st==='accepted')||(memberActive&&st!=='needs_completion');
+  if(fillBtn){
+    var showFill=(st==='none'||st==='needs_completion'||st==='accepted');
+    fillBtn.hidden=!showFill;
+    var key=window.ADH_RENEWAL_ONLY?'renewAdhesion':'fillAdhesion';
+    fillBtn.setAttribute('data-i18n',key);
+    fillBtn.textContent=t[key]||t.fillAdhesion;
+  }
+  if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
   if(!request||request.status==='none'){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;return;}
   var labels={pending:'Demande d’adhésion : en attente de validation.',needs_completion:'Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.',accepted:'Demande d’adhésion : acceptée.',refused:'Demande d’adhésion : refusée.'};
   box.hidden=false;box.textContent=labels[request.status]||'Statut de la demande : '+String(request.status||'inconnu')+'.';
@@ -3675,7 +3713,7 @@ function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
   if(!box)return Promise.resolve(null);
   var shareBtn=$('meAdhesionShare');
-  if(!uid){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
+  if(!uid){box.hidden=true;box.textContent='';if(shareBtn)shareBtn.hidden=true;var fb0=$('meAdhesionButton');if(fb0){fb0.hidden=false;fb0.setAttribute('data-i18n','fillAdhesion');fb0.textContent=T().fillAdhesion;}window.ADH_RENEWAL_ONLY=false;if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
   if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;if(shareBtn)shareBtn.hidden=true;return Promise.resolve(null);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
@@ -5972,6 +6010,10 @@ window.UGTM.failed();
       var date=document.getElementById('adhDate');
       if(date&&!date.value)
         date.value=new Date().toISOString().slice(0,10);
+
+      /* Le reset du formulaire remet le choix « première adhésion » par
+         défaut : on ré-applique le verrou renouvellement juste après. */
+      if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
     }
 
     window.prefillDigitalAdhesion=prefillDigitalAdhesion;
@@ -5992,12 +6034,46 @@ window.UGTM.failed();
     });
     syncRenewalReason();
 
+    /* Verrou renouvellement : un adhérent déjà accepté n'accède au
+       formulaire que pour un renouvellement avec motif obligatoire
+       (window.ADH_RENEWAL_ONLY posé par showMyAdhesionStatus). */
+    function applyAdhesionRenewalLock(){
+      var lock=!!window.ADH_RENEWAL_ONLY;
+      var firstRadio=document.querySelector('input[name="adhType"][value="first"]');
+      var renewalRadio=document.querySelector('input[name="adhType"][value="renewal"]');
+      var notice=document.getElementById('adhRenewalNotice');
+      if(firstRadio){
+        var wrap=firstRadio.closest('label');
+        firstRadio.disabled=lock;
+        if(wrap)wrap.style.display=lock?'none':'';
+        if(lock&&renewalRadio)renewalRadio.checked=true;
+      }
+      if(notice)notice.hidden=!lock;
+      syncRenewalReason();
+    }
+    window.applyAdhesionRenewalLock=applyAdhesionRenewalLock;
+    applyAdhesionRenewalLock();
+
+    /* Retour visible et persistant sous le bouton « Continuer » : les
+       toasts disparaissent trop vite pour savoir si le PDF a bien été
+       généré ; ce message reste affiché jusqu'à l'étape suivante. */
+    function setAdhStatus(msg,ok){
+      var el=document.getElementById('adhFormStatus');
+      if(!el)return;
+      if(!msg){el.hidden=true;el.textContent='';el.classList.remove('fb-ok','fb-err');return;}
+      el.textContent=msg;
+      el.classList.toggle('fb-ok',ok===true);
+      el.classList.toggle('fb-err',ok===false);
+      el.hidden=false;
+    }
+
     form.addEventListener('submit',function(e){
       e.preventDefault();
 
       /* Message d'état immédiat : quoi qu'il arrive ensuite, un retour
          s'affiche dès le clic (validation, téléversement, partage). */
       if(typeof toast==='function')toast('Traitement de la demande en cours…',2500);
+      setAdhStatus('Traitement de la demande en cours…');
 
       var requiredFields=Array.from(form.querySelectorAll('[required]'));
       var missing=requiredFields.find(function(field){
@@ -6013,6 +6089,7 @@ window.UGTM.failed();
         }
         if(missing){
           missing.focus();
+          setAdhStatus('Veuillez remplir tous les champs obligatoires.',false);
           if(typeof toast==='function')toast(
             typeof lang!=='undefined'&&lang==='ar'
               ?'يرجى إكمال جميع الحقول المطلوبة'
@@ -6024,6 +6101,7 @@ window.UGTM.failed();
       }
 
       if(!signed){
+        setAdhStatus('Veuillez signer la fiche avant de continuer.',false);
         if(typeof toast==='function')toast(
           typeof lang!=='undefined'&&lang==='ar'?'يرجى إدخال التوقيع':'Veuillez signer la fiche',
           3500
@@ -6033,9 +6111,15 @@ window.UGTM.failed();
 
       var type=(document.querySelector('input[name="adhType"]:checked')||{}).value||'first';
       var reason=renewalInput.value.trim();
+      /* Un adhérent déjà accepté ne peut soumettre qu'un renouvellement. */
+      if(window.ADH_RENEWAL_ONLY&&type!=='renewal'){
+        setAdhStatus('Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.',false);
+        return;
+      }
       if(type==='renewal'&&!reason){
         renewalInput.required=true;
         renewalInput.focus();
+        setAdhStatus('Veuillez préciser le motif du renouvellement.',false);
         if(typeof toast==='function')toast(
           typeof lang!=='undefined'&&lang==='ar'
             ?'يرجى تحديد سبب تجديد الانخراط'
@@ -6072,6 +6156,7 @@ window.UGTM.failed();
 
         try{
           var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+          setAdhStatus('Génération de la fiche PDF…');
 
           /* jsPDF fabrique le PDF exigé par Firestore (empaqueté dans
              l'APK, chargé localement sur le Web). Le partage qui suit est
@@ -6276,14 +6361,20 @@ window.UGTM.failed();
 
             reader.onloadend=async function(){
               var b64=String(reader.result||'').split(',')[1]||'';
-              if(!b64){if(typeof toast==='function')toast('Impossible de lire le PDF généré.',4000);return;}
+              if(!b64){setAdhStatus('Impossible de lire le PDF généré.',false);if(typeof toast==='function')toast('Impossible de lire le PDF généré.',4000);return;}
+              setAdhStatus('PDF généré ('+Math.max(1,Math.round(b64.length*3/4/1024))+' Ko). Enregistrement sur Firestore…');
               if(!window.CLOUD||typeof window.CLOUD.submitAdhesion!=='function'){
+                setAdhStatus('Service Firebase d’adhésion indisponible.',false);
                 if(typeof toast==='function')toast('Service Firebase d’adhésion indisponible.',5000);return;
               }
               var result;
               try{result=await window.CLOUD.submitAdhesion(data,b64);}
-              catch(err){console.error('Adhesion save:',err);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
-              if(typeof toast==='function')toast(result&&result.completed?'Complément enregistré. Votre dossier est de nouveau en attente de validation.':'Demande enregistrée sur Firestore. Récupération du PDF enregistré…',4000);
+              catch(err){console.error('Adhesion save:',err);setAdhStatus(err&&err.message?err.message:'Impossible d’enregistrer la demande.',false);if(typeof toast==='function')toast(err&&err.message?err.message:'Impossible d’enregistrer la demande.',5000);return;}
+              var savedMsg=result&&result.completed
+                ?(data.type==='renewal'?'Renouvellement enregistré sur Firestore : votre dossier repasse en attente de validation.':'Complément enregistré. Votre dossier est de nouveau en attente de validation.')
+                :'Demande enregistrée sur Firestore. Récupération du PDF enregistré…';
+              if(typeof toast==='function')toast(savedMsg,4000);
+              setAdhStatus(savedMsg,true);
               /* L'ENVOI PART DU PDF ENREGISTRÉ SUR FIRESTORE (et non du
                  fichier local) : ce que l'administration reçoit est
                  exactement ce qui est stocké. Chaque étape est annoncée. */
@@ -6291,8 +6382,10 @@ window.UGTM.failed();
                 var stored='';
                 try{stored=await window.CLOUD.getAdhesionPdf(String(result&&result.id||''));}catch(eFetch){}
                 await shareAdhesionPdfBytes(stored||b64,base);
+                setAdhStatus('Partage du PDF ouvert : choisissez WhatsApp puis le numéro de l’administration.',true);
               }catch(shareErr){
                 console.info('Partage PDF annulé ou indisponible; demande déjà enregistrée.',shareErr);
+                setAdhStatus('Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',false);
                 if(typeof toast==='function')toast('Demande enregistrée. Le partage du PDF a échoué : réessayez depuis « Envoyer le PDF de ma demande ».',6500);
               }
               if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
@@ -6302,6 +6395,7 @@ window.UGTM.failed();
 
           }).catch(function(err){
             console.error('Adhesion logo/PDF:',err);
+            setAdhStatus('Impossible de créer le PDF. Réessayez.',false);
             if(typeof toast==='function')toast(
               typeof lang!=='undefined'&&lang==='ar'
               ?'تعذر إنشاء ملف PDF'
@@ -6312,6 +6406,7 @@ window.UGTM.failed();
 
         }catch(err){
           console.error('Adhesion PDF:',err);
+          setAdhStatus('Formulaire sauvegardé, mais création du PDF impossible.',false);
           if(typeof toast==='function')toast(
             typeof lang!=='undefined'&&lang==='ar'
             ?'تم حفظ الاستمارة ولكن تعذر إنشاء PDF'
@@ -6325,8 +6420,14 @@ window.UGTM.failed();
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
     if(b){
+      /* Le verrou renouvellement dépend du statut du dossier côté
+         serveur : on le (ré)évalue à chaque ouverture du formulaire. */
+      if(typeof window.refreshMyAdhesionStatus==='function'){
+        try{window.refreshMyAdhesionStatus(true);}catch(errStatus){}
+      }
       setTimeout(function(){
         initDigitalAdhesion();
+        if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
       },150);
     }
   });

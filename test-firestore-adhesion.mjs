@@ -281,6 +281,86 @@ test('le PDF ne peut pas être réécrit hors renvoi (statut pending)', async ()
   }));
 });
 
+/* ==========================================================
+   RENOUVELLEMENT APRÈS ACCEPTATION (accepted + type renewal)
+   ========================================================== */
+
+test('renouvellement après acceptation : dossier + PDF remis en attente', async () => {
+  // 1) Le responsable accepte la demande d'Alice.
+  const adminDb = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
+  await assertSucceeds(updateDoc(doc(adminDb, 'adhesionRequests', ALICE), {
+    status: 'accepted',
+    adminNote: 'Dossier complet.',
+    updatedAt: serverTimestamp()
+  }));
+
+  const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
+
+  // 2) Un renouvellement sans motif est refusé (motif exigé).
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    application: applicationPayload('agadir', { type: 'renewal', reason: '' }),
+    signature: 'data:image/png;base64,Um52ZWw=',
+    status: 'pending',
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+
+  // 3) Une « première adhésion » après acceptation est refusée :
+  //    un adhérent déjà accepté ne peut que renouveler.
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    application: applicationPayload('agadir', { type: 'first', reason: '' }),
+    signature: 'data:image/png;base64,Um52ZWw=',
+    status: 'pending',
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+
+  // 4) Le PDF seul, hors renvoi, reste refusé (statut accepted).
+  await assertFails(updateDoc(doc(db, 'adhesionDocuments', ALICE), {
+    fileName: 'demande-adhesion-' + ALICE + '.pdf',
+    mimeType: 'application/pdf',
+    data: 'JVBERi0xLjQKUmV3',
+    updatedAt: serverTimestamp()
+  }));
+
+  // 5) Le vrai renouvellement — lot unique comme dans submitAdhesion —
+  //    est accepté : motif présent, type renewal, statut pending.
+  const batch = writeBatch(db);
+  batch.update(doc(db, 'adhesionRequests', ALICE), {
+    application: applicationPayload('agadir', {
+      type: 'renewal',
+      reason: 'Renouvellement annuel 2026-2027',
+      phone: '0633333333'
+    }),
+    signature: 'data:image/png;base64,Um52ZWw=',
+    status: 'pending',
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  });
+  batch.update(doc(db, 'adhesionDocuments', ALICE), {
+    fileName: 'demande-adhesion-' + ALICE + '.pdf',
+    mimeType: 'application/pdf',
+    data: 'JVBERi0xLjQKUmV3',
+    updatedAt: serverTimestamp()
+  });
+  await assertSucceeds(batch.commit());
+});
+
+test('le renouvellement n’est pas possible depuis un dossier en attente (pending)', async () => {
+  // Alice est repassée en pending ci-dessus : le renvoi doit échouer.
+  const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    application: applicationPayload('agadir', {
+      type: 'renewal',
+      reason: 'Tentative depuis pending'
+    }),
+    signature: 'data:image/png;base64,VGVzdA==',
+    status: 'pending',
+    adminNote: '',
+    updatedAt: serverTimestamp()
+  }));
+});
+
 test('statut hors vocabulaire refusé même à l’administrateur général', async () => {
   const db = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
   await assertFails(updateDoc(doc(db, 'adhesionRequests', DAVE), {

@@ -500,16 +500,20 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time
         )
         || (
-          // Renvoi par l'adhérent après une demande de complément :
-          // le dossier repasse en pending avec application, signature et
-          // PDF ré-validés intégralement (mêmes exigences qu'à la création
-          // via adhesionAppOk). Province, e-mail et date de création
-          // restent figés ; la note du responsable est effacée.
+          // Renvoi par l'adhérent : complément demandé (needs_completion)
+          // OU renouvellement après acceptation (accepted + type renewal,
+          // motif exigé par adhesionAppOk). Le dossier repasse en pending
+          // avec application, signature et PDF ré-validés intégralement
+          // (mêmes exigences qu'à la création via adhesionAppOk).
+          // Province, e-mail et date de création restent figés ; la note
+          // du responsable est effacée.
           signedIn() && request.auth.uid == uid
           && resource.data.uid == uid
-          && resource.data.status == 'needs_completion'
+          && resource.data.status in ['needs_completion', 'accepted']
           && request.resource.data.keys().hasAll(adhesionTopKeys())
           && request.resource.data.keys().hasOnly(adhesionTopKeys())
+          && (resource.data.status == 'needs_completion'
+            || request.resource.data.application.type == 'renewal')
           && request.resource.data.uid == uid
           && request.resource.data.province in adhesionProvinces()
           && request.resource.data.province == resource.data.province
@@ -561,11 +565,13 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province
           == request.resource.data.province;
 
-      // Le PDF n'est réécrit que dans le cadre d'un renvoi après demande
-      // de complément : la demande doit passer de needs_completion à
-      // pending dans le même lot (cf. submitAdhesion dans cloud.js).
-      // Ainsi, impossible de remplacer la pièce jointe sans que le dossier
-      // soit intégralement re-soumis et replacé en attente de validation.
+      // Le PDF n'est réécrit que dans le cadre d'un renvoi (complément
+      // demandé OU renouvellement après acceptation) : la demande doit
+      // passer de needs_completion/accepted à pending dans le même lot
+      // (cf. submitAdhesion dans cloud.js), et un renouvellement doit être
+      // de type 'renewal'. Ainsi, impossible de remplacer la pièce jointe
+      // sans que le dossier soit intégralement re-soumis et replacé en
+      // attente de validation.
       allow update: if signedIn() && request.auth.uid == uid
         && resource.data.uid == uid
         && request.resource.data.keys().hasAll([
@@ -587,7 +593,11 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
           .hasOnly(['fileName', 'mimeType', 'data', 'updatedAt'])
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .status in ['needs_completion', 'accepted']
+        && (get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
           .status == 'needs_completion'
+          || getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+          .application.type == 'renewal')
         && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data
           .status == 'pending'
         && getAfter(/databases/$(database)/documents/adhesionRequests/$(uid)).data

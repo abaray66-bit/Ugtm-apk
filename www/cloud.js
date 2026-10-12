@@ -818,8 +818,12 @@ async function submitAdhesion(application,pdfBase64){
     var reqSnap=await tx.get(requestRef), pdfSnap=await tx.get(pdfRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
     var status=existing?String(existing.status||'pending'):'';
-    if(existing&&status!=='needs_completion'){
-      var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre demande est déjà acceptée.',refused:'Une décision a déjà été prise concernant votre demande.'};
+    /* RENOUVELLEMENT : un adhérent déjà accepté peut redéposer son
+       dossier, mais uniquement en type 'renewal' avec un motif — le
+       dossier repasse alors en attente de validation (cf. firestore.rules). */
+    var renewalAccepted=status==='accepted'&&clean.type==='renewal'&&!!clean.reason;
+    if(existing&&status!=='needs_completion'&&!renewalAccepted){
+      var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre adhésion est déjà acceptée : renouvelez-la avec un motif depuis le formulaire.',refused:'Une décision a déjà été prise concernant votre demande.'};
       var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.');err.code='adhesion/already-exists';err.status=status;throw err;
     }
     if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
