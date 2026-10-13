@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -22,6 +22,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # ==========================================================
       # VERIFICATION PROJET
@@ -1003,3 +1005,112 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/release/app-release.apk.sha256
           if-no-files-found: error
+
+      # ==========================================================
+      # VERSION OTA (calcul partagé)
+      # ==========================================================
+
+      - name: Calculer la version OTA
+        run: |
+          set -e
+
+          python3 - <<'PY2'
+          from pathlib import Path
+          import json
+          import os
+          import re
+
+          version = json.loads(
+              Path("package.json").read_text(encoding="utf-8")
+          )["version"].strip()
+
+          m = re.match(r"^(\d+)\.(\d+)\.(\d+)$", version)
+          if not m:
+              raise SystemExit(f"Version invalide : {version}")
+
+          major, minor, patch = (int(g) for g in m.groups())
+          version_code = major * 10000 + minor * 100 + patch
+
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              env.write(f"UGTM_VERSION={version}\n")
+              env.write(f"UGTM_VERSION_CODE={version_code}\n")
+              env.write(f"UGTM_VERSION_NAME={version}\n")
+
+          print(
+              f"OTA : versionName {version} / "
+              f"versionCode {version_code}"
+          )
+          PY2
+
+      # ==========================================================
+      # RELEASE GitHub (l'APK de update.json y est attaché)
+      # ==========================================================
+
+      - name: Créer la release GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.UGTM_VERSION_NAME }}
+          name: UGTM Souss-Massa ${{ env.UGTM_VERSION_NAME }}
+          files: android/app/build/outputs/apk/release/app-release.apk
+          token: ${{ github.token }}
+          draft: false
+          prerelease: false
+
+      # ==========================================================
+      # PUBLICATION OTA AUTOMATIQUE
+      # Régénère www/update.json (versionCode, versionName, apkUrl,
+      # sha256) et le pousse sur main : update.json est déployé
+      # automatiquement par le workflow Firebase Hosting. La
+      # boucle s'arrête d'elle-même : à la publication suivante,
+      # update.json régénéré est identique → aucun commit.
+      # ==========================================================
+
+      - name: Publication OTA automatique (update.json)
+        run: |
+          set -e
+
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+
+          if [ ! -f "$APK_PATH" ] || [ ! -f "$APK_PATH.sha256" ]; then
+            echo "ERREUR : APK ou empreinte absente."
+            exit 1
+          fi
+
+          SHA256="$(awk '{print $1}' "$APK_PATH.sha256")"
+          APK_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${UGTM_VERSION_NAME}/app-release.apk"
+
+          export SHA256 APK_URL
+
+          python3 - <<'PY2'
+          import json
+          from pathlib import Path
+          import os
+
+          manifest = {
+              "versionCode": int(os.environ["UGTM_VERSION_CODE"]),
+              "versionName": os.environ["UGTM_VERSION_NAME"],
+              "apkUrl": os.environ["APK_URL"],
+              "sha256": os.environ["SHA256"].strip(),
+              "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
+          }
+
+          Path("www/update.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8"
+          )
+
+          print("update.json régénéré :")
+          print(json.dumps(manifest, indent=2, ensure_ascii=False))
+          PY2
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet www/update.json; then
+            echo "update.json déjà à jour pour ${UGTM_VERSION_NAME} — rien à publier."
+          else
+            git add www/update.json
+            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
+            git push origin HEAD:${GITHUB_REF_NAME}
+            echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
+          fi
