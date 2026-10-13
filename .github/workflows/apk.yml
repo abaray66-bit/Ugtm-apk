@@ -1044,9 +1044,30 @@ jobs:
 
       # ==========================================================
       # RELEASE GitHub (l'APK de update.json y est attaché)
+      # Une release existante n'est pas recréée : l'APK publié
+      # reste celui dont l'empreinte est enregistrée dans
+      # update.json (les reconstructions ne sont pas identiques
+      # à l'octet près → recréer la release casserait la
+      # vérification SHA-256 côté appareil).
       # ==========================================================
 
+      - name: Vérifier si la release existe
+        id: release_check
+        run: |
+          set -e
+
+          if gh release view "v${UGTM_VERSION_NAME}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v${UGTM_VERSION_NAME} déjà existante — APK conservé."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Release v${UGTM_VERSION_NAME} à créer."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Créer la release GitHub
+        if: steps.release_check.outputs.exists != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.UGTM_VERSION_NAME }}
@@ -1058,11 +1079,12 @@ jobs:
 
       # ==========================================================
       # PUBLICATION OTA AUTOMATIQUE
-      # Régénère www/update.json (versionCode, versionName, apkUrl,
-      # sha256) et le pousse sur main : update.json est déployé
-      # automatiquement par le workflow Firebase Hosting. La
-      # boucle s'arrête d'elle-même : à la publication suivante,
-      # update.json régénéré est identique → aucun commit.
+      # Régénère www/update.json (versionCode, versionName,
+      # apkUrl, sha256) et le pousse sur main uniquement
+      # quand le versionCode change. Le déploiement Firebase
+      # Hosting (déclenché par le commit) rend update.json
+      # accessible en ligne : la mise à jour est alors
+      # automatique sur les appareils installés.
       # ==========================================================
 
       - name: Publication OTA automatique (update.json)
@@ -1106,11 +1128,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          if git diff --quiet www/update.json; then
-            echo "update.json déjà à jour pour ${UGTM_VERSION_NAME} — rien à publier."
+          # Publication uniquement quand le versionCode change :
+          # l'empreinte SHA d'une reconstruction diffère, mais
+          # l'APK de la release (et son empreinte enregistrée)
+          # reste valide tant que la version n'a pas bougé.
+          CURRENT_CODE="$(python3 -c "import json;print(json.load(open('www/update.json'))['versionCode'])" 2>/dev/null || echo 0)"
+
+          if [ "$CURRENT_CODE" = "$UGTM_VERSION_CODE" ]; then
+            echo "update.json déjà à jour (versionCode ${CURRENT_CODE}) — rien à publier."
+            git checkout -- www/update.json
           else
             git add www/update.json
-            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
+            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE})"
             git push origin HEAD:${GITHUB_REF_NAME}
             echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
           fi
