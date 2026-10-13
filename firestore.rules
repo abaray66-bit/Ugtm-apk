@@ -164,8 +164,7 @@ service cloud.firestore {
           && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
           && request.resource.data.memberUid is string
           && request.resource.data.updatedAt == request.time
-          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .status == 'pending'
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid)) || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending')
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .status == 'active'
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
@@ -185,8 +184,7 @@ service cloud.firestore {
           && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
           && request.resource.data.memberUid is string
           && request.resource.data.updatedAt == request.time
-          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .status == 'pending'
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid)) || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending')
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .status == 'active'
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data

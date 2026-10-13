@@ -828,7 +828,7 @@ async function submitAdhesion(application,signature){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature est manquante.');
   if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  return runTransaction(db,async function(tx){
+  var result = await runTransaction(db,async function(tx){
     var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
     var status=existing?String(existing.status||'pending'):'';
@@ -849,6 +849,8 @@ async function submitAdhesion(application,signature){
     }
     return {id:uid,status:'pending',completed:!!existing};
   });
+  await syncMemberContact(uid, clean);
+  return result;
 }
 
 /* =========================================================
@@ -864,7 +866,7 @@ async function signAdhesion(uid,signature,note){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature du responsable est manquante.');
   if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  return updateDoc(doc(db,'adhesionRequests',String(uid)),{
+  await updateDoc(doc(db,'adhesionRequests',String(uid)),{
     status:'accepted',
     adminSignature:sig,
     signedBy:u.uid,
@@ -872,23 +874,106 @@ async function signAdhesion(uid,signature,note){
     adminNote:String(note||'').slice(0,1000),
     updatedAt:serverTimestamp()
   });
+  await activateMemberFromRequest(uid);
+  return sig;
+/* =========================================================
+   ACTIVATON D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
+   Transforme une demande d'adhésion acceptée en membre actif
+   avec un numéro d'adhérent SM-XXXX depuis le compteur global.
+   ========================================================= */
+async function activateMemberFromRequest(uid){
+  var ref = doc(db, 'members', uid);
+  var snap = await getDoc(ref);
+  var member = snap.exists() ? snap.data() : null;
+  var reqRef = doc(db, 'adhesionRequests', uid);
+  var reqSnap = await getDoc(reqRef);
+  if (!reqSnap.exists()) {
+    throw new Error('Dossier d’adhésion introuvable');
+  }
+  var req = reqSnap.data();
+  if (req.status !== 'accepted') {
+    throw new Error('Le dossier n’est pas encore accepté');
+  }
+  var app = req.application || {};
+  if (!app.nom || !app.prenom || !app.cin || !app.dob) {
+    throw new Error('Application d’adhésion incomplète');
+  }
+  var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
+  name = name.trim();
+  var data = {
+    uid: uid,
+    name: name,
+    email: req.email||'',
+    photo: '',
+    etab: String(app.establishment||'').trim(),
+    prov: String(app.province||'').trim(),
+    phone: String(app.phone||'').trim(),
+    status: 'active',
+    memberNo: '',
+    role: 'member',
+    adminProvince: String(app.province||'').trim(),
+    createdAt: serverTimestamp(),
+    activatedAt: serverTimestamp()
+  };
+  var no = '';
+  if (member && member.status === 'active') {
+    no = member.memberNo || '';
+    await updateDoc(ref, {updatedAt: serverTimestamp()});
+  } else {
+    var seqRef = doc(db, 'counters', 'memberNumbers');
+    var seed = 1;
+    var seq0 = await getDoc(seqRef);
+    if (!seq0.exists()) {
+      var maxNo = 0;
+      var allMembers = await getDocs(collection(db, 'members'));
+      allMembers.forEach(function(d){
+        var m = /(\d+)\s*$/.exec(String((d.data() || {}).memberNo || ''));
+        if (m) maxNo = Math.max(maxNo, +m[1]);
+      });
+      if (maxNo > 0) seed = maxNo + 1;
+    }
+    no = 'SM-' + String(Math.floor(seed)).padStart(4, '0');
+    await runTransaction(db, async function(tx){
+      var seqSnap = await tx.get(seqRef);
+      var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : seed;
+      if (!Number.isFinite(next) || next < 1) next = 1;
+      tx.set(seqRef, {
+        next: Math.floor(next) + 1,
+        lastMemberNo: no,
+        memberUid: uid,
+        updatedAt: serverTimestamp()
+      });
+      tx.set(ref, {...data, memberNo: no});
+    });
+  }
+  await updateDoc(reqRef, {signedAt: serverTimestamp(), updatedAt: serverTimestamp()});
+  return no;
 }
 
-/* Dossier complet d'une demande (signatures incluses) : chargé à la
-   demande, pour la signature du responsable et la génération du PDF. */
-function getAdhesionDoc(uid){
-  return getDoc(doc(db,'adhesionRequests',String(uid||''))).then(function(s){
-    if(!s.exists())return null;
-    var x=s.data()||{};
-    return {
-      id:s.id,uid:x.uid||'',email:x.email||'',province:x.province||'',
-      status:x.status||'pending',adminNote:x.adminNote||'',
-      adminSignature:x.adminSignature||'',signedBy:x.signedBy||'',
-      signedAt:ms(x.signedAt),
-      application:x.application||{},signature:x.signature||'',
-      createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt)
-    };
-  }).catch(function(){return null;});
+/* =========================================================
+   SYNCHRONISATION D'UN CONTACT MEMBRE (PROVINCE/ETAB/TELEPHONE)
+   Synchronise les champs de contact du membre avec la demande
+   d'adhésion originale pour les provinces et les responsables.
+   ========================================================= */
+async function syncMemberContact(uid, contactData){
+  if (!contactData || typeof contactData !== 'object') return;
+  var updates = {};
+  if (contactData.etab) updates.etab = String(contactData.etab).trim();
+  if (contactData.prov) updates.prov = String(contactData.prov).trim();
+  if (contactData.phone) updates.phone = String(contactData.phone).trim();
+  if (Object.keys(updates).length > 0) {
+    await updateDoc(doc(db, 'members', uid), {...updates, updatedAt: serverTimestamp()});
+    if (updates.prov && contactData.phone) {
+      await setDoc(doc(db, 'provinceContacts', updates.prov), {
+        uid: uid,
+        province: updates.prov,
+        name: contactData.name || '',
+        phone: updates.phone,
+        updatedAt: serverTimestamp()
+      });
+      await savePublicProvinceContact(updates.prov, contactData.name || '', updates.phone);
+    }
+  }
 }
 
 /* =========================================================
@@ -1219,8 +1304,6 @@ var admin = {
         });
       });
     },
-
-    addNews:
       function(o){
 
         var data = {
@@ -1628,7 +1711,7 @@ async function loadCapacitorBrowser(){
    INITIALISATION
    ========================================================= */
 
-export async function init(config, h){
+// export async function init(config, h){
 
   hooks = h;
 
