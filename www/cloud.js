@@ -193,7 +193,8 @@ function subscribeResponsables(){
           return {
             uid: d.id,
             name: String(x.name || '').slice(0,120),
-            title: String(x.title || '').slice(0,60)
+            title: String(x.title || '').slice(0,60),
+            phone: String(x.phone || '').slice(0,30)
           };
 
         })
@@ -1101,6 +1102,7 @@ var admin = {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),
           title: String(title || '').slice(0,60),
+          phone: String(member.phone || '').slice(0,30),
           createdAt: serverTimestamp()
         });
       });

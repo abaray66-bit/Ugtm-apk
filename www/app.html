@@ -127,6 +127,16 @@ button,input,select,textarea{
   outline-offset:2px
 }
 
+/* Typographie arabe : le letter-spacing négatif
+   de la couche « futuristic » déconnecte les
+   lettres cursives — on l'annule en RTL. */
+[dir="rtl"] .title,
+[dir="rtl"] .h2,
+[dir="rtl"] .hero h1,
+[dir="rtl"] .brand b{
+  letter-spacing:0
+}
+
 [hidden]{
   display:none!important
 }
@@ -156,7 +166,8 @@ button,input,select,textarea{
   gap:12px;
   padding:12px 16px;
   background:var(--surface);
-  border-bottom:1px solid var(--line)
+  border-bottom:1px solid var(--line);
+  overflow:hidden
 }
 
 .mark{
@@ -226,7 +237,7 @@ button,input,select,textarea{
 }
 
 .langbtn{
-  flex:none;
+  flex:0 1 auto;
   min-height:40px;
   padding:0 14px;
   border-radius:999px;
@@ -234,7 +245,26 @@ button,input,select,textarea{
   background:var(--bg);
   font-weight:600;
   font-size:14px;
+  white-space:nowrap;
   cursor:pointer
+}
+
+/* Écrans étroits : l'en-tête (marque,
+   texte, cercle de compte, langue)
+   doit tenir sans déborder. */
+@media(max-width:380px){
+  .top{
+    gap:8px;
+    padding-inline:12px
+  }
+
+  .langbtn{
+    padding:0 10px
+  }
+
+  .brand b{
+    font-size:10.5px
+  }
 }
 
 .notice{
@@ -261,7 +291,8 @@ main{
   font-weight:800;
   font-size:24px;
   line-height:1.3;
-  margin:4px 0 12px
+  margin:4px 0 12px;
+  text-wrap:balance
 }
 
 .lead{
@@ -315,7 +346,7 @@ main{
   line-height:1.3;
   margin:0 0 4px;
   overflow-wrap:anywhere;
-  word-break:break-word
+  text-wrap:balance
 }
 
 .hero p{
@@ -420,6 +451,11 @@ main{
     grid-area:membership;
     min-width:0;
     margin-top:0
+    }
+
+    [dir="rtl"] .home-actions{
+    direction:rtl;
+    grid-template-areas:"report membership"
     }
 
     [dir="rtl"] .home-actions > .hero,
@@ -908,6 +944,86 @@ main{
   opacity:.75
 }
 
+/* Aperçu de pièce jointe (signalement) */
+.attachmodal{
+  position:fixed;
+  inset:0;
+  z-index:61;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(28,26,30,.55)
+}
+
+.attachmodal-box{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:var(--card);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  display:flex;
+  flex-direction:column
+}
+
+.attachmodal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px
+}
+
+.attachmodal-head strong{
+  font-size:15px;
+  overflow-wrap:anywhere
+}
+
+.attachmodal-note{
+  font-size:13px;
+  color:var(--muted);
+  margin:0 0 10px
+}
+
+.attachmodal-body{
+  flex:1;
+  min-height:180px;
+  display:grid;
+  place-items:center;
+  background:var(--soft);
+  border-radius:12px;
+  overflow:auto
+}
+
+.attachmodal-body img{
+  max-width:100%;
+  max-height:58vh;
+  display:block;
+  border-radius:10px
+}
+
+.attachmodal-body iframe,
+.attachmodal-body object{
+  width:100%;
+  height:58vh;
+  border:0;
+  border-radius:10px;
+  background:#fff
+}
+
+.attachmodal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px
+}
+
+.attachmodal-actions .btn{
+  flex:1
+}
+
 .filters{
   display:flex;
   gap:8px;
@@ -1269,7 +1385,8 @@ main{
 /* Responsables syndicaux : sous-éléments de la permanence */
 .resp{
   margin:8px 0 0;
-  padding:8px 0 0 16px;
+  padding:8px 0 0;
+  padding-inline-start:16px;
   border-top:1px dashed var(--line);
   list-style:disc
 }
@@ -1523,7 +1640,9 @@ main{
   cursor:pointer;
   overflow:hidden;
   padding:0;
-  color:var(--ink)
+  color:var(--ink);
+  font-weight:800;
+  font-size:15px
 }
 
 .acctbtn img{
@@ -2667,8 +2786,9 @@ button.primary:active {
 <div class="rb">
 <strong data-i18n="cWa"></strong>
 <p data-i18n="cWaD"></p>
+<p class="hint" id="waLock" hidden></p>
 </div>
-<button class="btn ghost small" type="button" data-link="wa" data-i18n="cWaB"></button>
+<button class="btn ghost small" type="button" data-link="wa" id="waBtn" data-i18n="cWaB"></button>
 </div><div class="row">
 <div class="ico" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.35 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5h1.6V3.6c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.2v2.2H7v3.1h2.85V21h3.5z"/></svg>
@@ -2831,7 +2951,7 @@ button.primary:active {
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -3042,6 +3162,12 @@ contactT:`Nous joindre`,
 cWa:`Groupe de communication régional`,
 cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.`,
 cWaB:`Rejoindre le groupe`,
+attachTitle:`Pièce jointe`,
+attachClose:`Fermer`,
+attachDownload:`Télécharger la pièce jointe`,
+attachPdfNote:`Si le PDF ne s'affiche pas dans l'aperçu, utilisez le bouton de téléchargement pour l'ouvrir avec une application.`,
+waLocked:`Réservé aux adhérents authentifiés dont la demande d'adhésion a été validée.`,
+waLockedToast:`Le groupe régional est réservé aux adhérents dont la demande d'adhésion est validée. Connectez-vous et faites valider votre demande d'adhésion.`,
 
 cFb:`Page officielle Facebook`,
 cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
@@ -3284,6 +3410,12 @@ contactT:`اتصلوا بنا`,
 cWa:`مجموعة التواصل الجهوية`,
 cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاصة بالجامعة الوطنية للصحة.`,
 cWaB:`انضموا إلى المجموعة`,
+attachTitle:`الملف المرفق`,
+attachClose:`إغلاق`,
+attachDownload:`تحميل الملف المرفق`,
+attachPdfNote:`إذا لم يظهر ملف PDF في المعاينة، استخدموا زر التحميل لفتحه بتطبيق خارجي.`,
+waLocked:`مخصص للأعضاء المسجلين الذين تمت الموافقة على طلب انضمامهم.`,
+waLockedToast:`المجموعة الجهوية مخصصة للأعضاء الذين تمت الموافقة على طلب انضمامهم. سجلوا الدخول واطلبوا الموافقة على طلب الانضمام الخاص بكم.`,
 
 cFb:`الصفحة الرسمية على فيسبوك`,
 cFbD:`تابعوا الصفحة الرسمية لفيدرالية الصحة الجهوية على فيسبوك.`,
@@ -3542,9 +3674,28 @@ var lb=$('lightbox');
 
 lb.addEventListener('click',closeLightbox);
 
+$('attachModal').addEventListener('click',function(e){
+if(e.target===$('attachModal'))closeAttachModal();
+});
+
+$('attachClose').addEventListener('click',closeAttachModal);
+
+$('attachDownload').addEventListener('click',function(){
+if(!attachUrl)return;
+var a=document.createElement('a');
+a.href=attachUrl;
+a.download=attachName||'piece-jointe';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+});
+
 document.addEventListener('keydown',function(e){
 
-if(e.key==='Escape'&&!lb.hidden)closeLightbox();
+if(e.key==='Escape'){
+if(!$('attachModal').hidden){closeAttachModal();return;}
+if(!lb.hidden)closeLightbox();
+}
 
 });
 
@@ -3596,7 +3747,57 @@ window.open(url,'_blank','noopener');
 
 /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
    les navigateurs bloquent les data: en navigation de premier plan. */
-function openDataUrl(data){
+var attachUrl='';
+var attachName='';
+var attachTrigger=null;
+
+function openAttachModal(url,name,type){
+var body=$('attachBody');
+body.innerHTML='';
+if(type&&type.indexOf('image/')===0){
+var img=document.createElement('img');
+img.src=url;
+img.alt=name||'';
+body.appendChild(img);
+}
+else{
+var frame=document.createElement('iframe');
+frame.src=url;
+frame.title=name||'';
+body.appendChild(frame);
+var note=$('attachNote');
+if(note){
+note.hidden=false;
+note.textContent=T().attachPdfNote;
+}
+}
+attachName=name||'';
+
+if(attachUrl){
+try{URL.revokeObjectURL(attachUrl);}catch(e){}
+}
+
+attachUrl=url;
+$('attachTitle').textContent=name||T().attachTitle;
+$('attachModal').hidden=false;
+attachTrigger=document.activeElement;
+$('attachClose').focus();
+}
+
+function closeAttachModal(){
+if($('attachModal').hidden)return;
+$('attachModal').hidden=true;
+$('attachBody').innerHTML='';
+$('attachNote').hidden=true;
+if(attachUrl){
+try{URL.revokeObjectURL(attachUrl);}catch(e){}
+attachUrl='';
+}
+if(attachTrigger&&attachTrigger.focus)attachTrigger.focus();
+attachTrigger=null;
+}
+
+function openDataUrl(data,name){
 var url='';
 try{
 var raw=String(data||'');
@@ -3612,16 +3813,12 @@ url=URL.createObjectURL(new Blob([arr],{type:type}));
 }catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
 return;
 }
-var w=window.open(url,'_blank');
-if(!w){
-var a=document.createElement('a');
-a.href=url;
-a.download='piece-jointe';
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
+openAttachModal(url,name||'',type);
+setTimeout(function(){
+if($('attachModal').hidden&&url){
+try{URL.revokeObjectURL(url);}catch(e){}
 }
-setTimeout(function(){URL.revokeObjectURL(url);},60000);
+},120000);
 }
 
 /* Recherche d'un contact par motif d'URL : l'ordre des entrées dans
@@ -5346,6 +5543,37 @@ eventEditState();
 }
 
 /* Liste des responsables syndicaux : sous-éléments de la permanence */
+/* =========================
+   GROUPE RÉGIONAL WHATSAPP
+   Accès réservé aux adhérents
+   authentifiés dont la demande
+   d'adhésion a été validée
+   (membre « active »).
+   ========================= */
+
+function isApprovedMember(){
+return !!(S.user&&S.member&&S.member.status==='active');
+}
+
+function renderWaGate(){
+
+var btn=$('waBtn');
+if(!btn)return;
+
+var ok=isApprovedMember();
+var lock=$('waLock');
+
+if(lock){
+lock.hidden=ok;
+if(!ok)lock.textContent=T().waLocked;
+}
+
+btn.disabled=!ok;
+if(ok)btn.removeAttribute('aria-disabled');
+else btn.setAttribute('aria-disabled','true');
+
+}
+
 function renderResponsables(){
 
 var list=(S.responsables||[])
@@ -5360,8 +5588,10 @@ $('permResp').innerHTML=list.map(function(r){
 
 var nom=r.name||'';
 var role=r.title||'';
+var phone=String(r.phone||'').trim();
+var tel=phone.replace(/[^0-9+]/g,'');
 
-return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+'</li>';
+return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+(phone&&tel?' <a dir="ltr" href="tel:'+esc(tel)+'">'+esc(phone)+'</a>':'')+'</li>';
 
 }).join('');
 
@@ -5403,6 +5633,15 @@ t[el.getAttribute('data-i18n')];
 
 });
 
+document
+.querySelectorAll('[data-i18n-aria]')
+.forEach(function(el){
+
+var v=t[el.getAttribute('data-i18n-aria')];
+if(v)el.setAttribute('aria-label',v);
+
+});
+
 $('permDesc').textContent=
 [PERM.hours,PERM.address,PERM.phone]
 .filter(Boolean)
@@ -5419,6 +5658,7 @@ renderNews();
 renderAgenda();
 renderAccountButton();
 renderMe();
+renderWaGate();
 
 }
 
@@ -5700,9 +5940,18 @@ return;
 
 if(el.hasAttribute('data-link')){
 
+var linkKey=el.getAttribute('data-link');
+
+/* Groupe régional WhatsApp : réservé aux adhérents
+   authentifiés dont la demande d'adhésion est validée. */
+if(linkKey==='wa'&&!isApprovedMember()){
+toast(T().waLockedToast,5000);
+return;
+}
+
 openUrl(
 linkFor(
-el.getAttribute('data-link')
+linkKey
 )
 );
 
@@ -5873,7 +6122,7 @@ if(!repItem)return;
 
 // Anciens signalements : la pièce était encodée dans le document.
 if(repItem.attachmentData){
-openDataUrl(repItem.attachmentData);
+openDataUrl(repItem.attachmentData,repItem.attachmentName);
 return;
 }
 
@@ -5883,7 +6132,7 @@ el.disabled=true;
 window.CLOUD.getReportAttachment(repId)
 .then(function(data){
 el.disabled=false;
-if(data)openDataUrl(data);
+if(data)openDataUrl(data,repItem.attachmentName);
 else toast('Pièce jointe indisponible.',4000);
 })
 .catch(function(){
@@ -6439,6 +6688,7 @@ S.members=[];
 
 renderAccountButton();
 renderMe();
+renderWaGate();
 
 if(window.prefillDigitalAdhesion){
   window.prefillDigitalAdhesion();
