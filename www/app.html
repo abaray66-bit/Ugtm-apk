@@ -2369,7 +2369,11 @@ button.primary:active {
   color: color-mix(in srgb, currentColor 82%, transparent);
 }
 
-/* ---------- Light theme compatibility ---------- */
+/* ---------- Light theme compatibility ----------
+   Le système « futuriste » (glassmorphisme) est pensé
+   pour le fond sombre : en mode clair on remplace les
+   fonds translucides par des surfaces pleines et des
+   bordures visibles, sans toucher au mode sombre. */
 
 @media (prefers-color-scheme: light) {
   body {
@@ -2388,6 +2392,85 @@ button.primary:active {
   #reportForm select,
   #reportForm textarea {
     background: rgba(255,255,255,.72) !important;
+  }
+
+  /* Cartes et items de liste : surface pleine +
+     bordure visible (le verre blanc est invisible
+     sur fond clair). */
+  .list > li,
+  .card {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+    box-shadow: 0 2px 10px rgba(36,25,31,.06);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .list > li:hover,
+  .card:hover {
+    border-color: rgba(184,50,104,.35) !important;
+  }
+
+  /* Filtres et formulaires : contenants pleins. */
+  .filters {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #reportForm {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  /* Hero de la page d'accueil : fond clair structuré
+     et texte lisible (le texte blanc d'origine est
+     illisible sur fond clair). */
+  #s-home .hero {
+    background:
+      linear-gradient(
+        145deg,
+        var(--soft),
+        var(--bg)
+      ) !important;
+    border-color: var(--line) !important;
+    box-shadow: 0 8px 24px rgba(184,50,104,.10);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #s-home .hero::before {
+    opacity: .45;
+  }
+
+  #s-home .hero h1 {
+    color: var(--ink);
+  }
+
+  #s-home .hero p {
+    color: var(--muted);
+  }
+
+  /* Bandeau d'introduction et points du signalement. */
+  #s-report .rpintro {
+    background: var(--soft) !important;
+    border-color: rgba(184,50,104,.25) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #s-report .points li {
+    background: var(--surface) !important;
+    border-color: var(--line) !important;
+  }
+
+  /* Onglet actif : rose de marque plus soutenu pour
+     le contraste sur fond clair (4,5:1+). */
+  .tab[aria-selected="true"] {
+    color: var(--primary) !important;
   }
 }
 
