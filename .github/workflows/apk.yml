@@ -1098,10 +1098,32 @@ jobs:
             exit 1
           fi
 
-          SHA256="$(awk '{print $1}' "$APK_PATH.sha256")"
           APK_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${UGTM_VERSION_NAME}/app-release.apk"
 
-          export SHA256 APK_URL
+          # Version actuellement PUBLIÉE = celle du
+          # commit HEAD (update.json en ligne), et non
+          # le fichier qui serait régénéré ici.
+          CURRENT_CODE="$(git show HEAD:www/update.json | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+
+          if [ "$CURRENT_CODE" = "$UGTM_VERSION_CODE" ]; then
+            echo "update.json déjà à jour (versionCode ${CURRENT_CODE}) — rien à publier."
+            exit 0
+          fi
+
+          # Empreinte de l'APK réellement publié dans la
+          # release : identique à l'APK construit si la
+          # release vient d'être créée, ou à l'APK existant
+          # si la release préexiste (reconstruction non
+          # reproductible à l'octet près).
+          rm -rf /tmp/ugtm-ota
+          mkdir -p /tmp/ugtm-ota
+          if ! gh release download "v${UGTM_VERSION_NAME}" --pattern "app-release.apk" --dir /tmp/ugtm-ota --yes >/dev/null 2>&1; then
+            echo "Téléchargement de la release impossible — empreinte de l'APK construit utilisée."
+            cp "$APK_PATH" /tmp/ugtm-ota/app-release.apk
+          fi
+          RELEASE_SHA256="$(sha256sum /tmp/ugtm-ota/app-release.apk | awk '{print $1}')"
+
+          export APK_URL RELEASE_SHA256
 
           python3 - <<'PY2'
           import json
@@ -1112,7 +1134,7 @@ jobs:
               "versionCode": int(os.environ["UGTM_VERSION_CODE"]),
               "versionName": os.environ["UGTM_VERSION_NAME"],
               "apkUrl": os.environ["APK_URL"],
-              "sha256": os.environ["SHA256"].strip(),
+              "sha256": os.environ["RELEASE_SHA256"].strip(),
               "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
           }
 
@@ -1127,19 +1149,9 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          # Publication uniquement quand le versionCode change :
-          # l'empreinte SHA d'une reconstruction diffère, mais
-          # l'APK de la release (et son empreinte enregistrée)
-          # reste valide tant que la version n'a pas bougé.
-          CURRENT_CODE="$(python3 -c "import json;print(json.load(open('www/update.json'))['versionCode'])" 2>/dev/null || echo 0)"
-
-          if [ "$CURRENT_CODE" = "$UGTM_VERSION_CODE" ]; then
-            echo "update.json déjà à jour (versionCode ${CURRENT_CODE}) — rien à publier."
-            git checkout -- www/update.json
-          else
-            git add www/update.json
-            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE})"
-            git push origin HEAD:${GITHUB_REF_NAME}
-            echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
-          fi
+          git add www/update.json
+          git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE})"
+          git push origin HEAD:${GITHUB_REF_NAME}
+          echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
+        env:
+          GH_TOKEN: ${{ github.token }}
