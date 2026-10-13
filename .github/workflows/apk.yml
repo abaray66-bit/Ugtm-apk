@@ -1153,5 +1153,14 @@ jobs:
           git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE})"
           git push origin HEAD:${GITHUB_REF_NAME}
           echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
+
+          # Un commit poussé avec le GITHUB_TOKEN ne
+          # déclenche pas les autres workflows : le
+          # déploiement Firebase Hosting est donc
+          # déclenché explicitement pour mettre
+          # update.json en ligne immédiatement.
+          gh workflow run "Deploy Firebase Hosting" \
+            --ref "${GITHUB_REF_NAME}" \
+            >/dev/null 2>&1 || true
         env:
           GH_TOKEN: ${{ github.token }}
