@@ -137,6 +137,18 @@ button,input,select,textarea{
   letter-spacing:0
 }
 
+/* Communiqués et listes : alignement à droite
+   garanti en version arabe. */
+[dir="rtl"] .head,
+[dir="rtl"] .tt,
+[dir="rtl"] .meta,
+[dir="rtl"] .evb,
+[dir="rtl"] .mi,
+[dir="rtl"] .sechead,
+[dir="rtl"] .calendar-head{
+  text-align:right
+}
+
 [hidden]{
   display:none!important
 }
@@ -168,6 +180,20 @@ button,input,select,textarea{
   background:var(--surface);
   border-bottom:1px solid var(--line);
   overflow:hidden
+}
+
+.mark,
+.acctbtn,
+.langbtn{
+  position:relative;
+  z-index:1
+}
+
+.brand{
+  flex:1 1 0;
+  min-width:0;
+  overflow:hidden;
+  padding-inline-end:4px
 }
 
 .mark{
@@ -292,6 +318,7 @@ main{
   font-size:24px;
   line-height:1.3;
   margin:4px 0 12px;
+  hyphens:auto;
   text-wrap:balance
 }
 
@@ -345,7 +372,8 @@ main{
   font-size:18px;
   line-height:1.3;
   margin:0 0 4px;
-  overflow-wrap:anywhere;
+  overflow-wrap:break-word;
+  hyphens:auto;
   text-wrap:balance
 }
 
@@ -790,9 +818,21 @@ main{
   max-height:92vh;
   overflow:auto;
   background:var(--card,#fff);
+  border:1px solid var(--line,#e4dbe0);
   border-radius:18px;
   padding:18px;
   box-shadow:0 18px 50px rgba(0,0,0,.28)
+}
+
+/* Dossier à consulter / à signer : surface
+   distincte du fond de la modale (surtout
+   en mode sombre : fond sur fond). */
+.adhdoc{
+  background:var(--soft,#f7f2f5);
+  border:1px solid var(--line,#e4dbe0);
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px
 }
 
 .signmodal-canvas{
@@ -2041,10 +2081,12 @@ font-size:1.4rem;
 }
 
 #adm-members .subadmin-control select{
-  min-width:0 !important;
-  width:180px !important;
-  max-width:180px !important;
-  flex:0 1 180px !important;
+  min-width:0;
+  width:auto;
+  flex:1 1 160px;
+  max-width:100%;
+  min-height:40px;
+  box-sizing:border-box !important;
   background:var(--surface) !important;
   color:var(--ink) !important;
   border-color:var(--line) !important;
@@ -2069,9 +2111,9 @@ font-size:1.4rem;
   }
 
   #adm-members .subadmin-control select{
-    width:180px !important;
-    max-width:180px !important;
-    flex:0 1 180px !important;
+    width:100% !important;
+    max-width:100% !important;
+    flex:1 1 100% !important;
   }
 
   #adm-members .subadmin-control{
@@ -3059,6 +3101,7 @@ admClose:`Fermer`,
 admSignLoading:`Chargement du dossier…`,
 admSignHint:`Signez dans le cadre ci-dessous avec votre doigt : votre signature valide l’adhésion.`,
 admSignNote:`Note de traitement (facultative)`,
+admSignNoteDefault:`Bienvenue à l'UGTM Souss-Massa – Fédération nationale de la Santé. Votre adhésion est validée, merci pour votre confiance.`,
 admSignCancel:`Annuler`,
 admSignConfirm:`Valider la signature`,
 admSignMissing:`Veuillez signer avant de valider l’adhésion.`,
@@ -3307,6 +3350,7 @@ admClose:`إغلاق`,
 admSignLoading:`جار تحميل الملف…`,
 admSignHint:`وقّعوا داخل الإطار باستعمال الإصبع : توقيعكم يصادق على الانخراط.`,
 admSignNote:`ملاحظة المعالجة (اختيارية)`,
+admSignNoteDefault:`مرحباً بكم في جهة سوس ماسة – الاتحاد العام للشغالين بالمغرب، الجامعة الوطنية للصحة. تمت المصادقة على انضمامكم، شكراً لثقتكم.`,
 admSignCancel:`إلغاء`,
 admSignConfirm:`تأكيد التوقيع`,
 admSignMissing:`يرجى التوقيع قبل المصادقة على الانخراط.`,
@@ -4196,6 +4240,21 @@ function showMyAdhesionStatus(request){
   }
   if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
   if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
+  /* Adhérent actif : la carte membre et le bandeau
+     « Adhésion validée » suffisent — on évite le
+     doublon de la ligne de demande ; seule la
+     note du responsable reste affichée. */
+  var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+  if(memberActive&&request.status==='accepted'){
+    if(request.adminNote){
+      box.hidden=false;
+      box.textContent=String(request.adminNote).slice(0,1000);
+    }else{
+      box.hidden=true;
+      box.textContent='';
+    }
+    return;
+  }
   var labels={
     pending:t.adhStatusPending,
     needs_completion:t.adhStatusCompletion,
@@ -4914,7 +4973,7 @@ function openAdhesionDossier(id,canSign){
   if(signModalCanSign){
     if(!signCanvasReset()){toast('Signature indisponible sur cet appareil.',4000);return;}
     var note=$('admSignNote');
-    if(note)note.value='';
+    if(note)note.value=t.admSignNoteDefault||'';
   }
 
   modal.hidden=false;
