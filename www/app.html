@@ -866,6 +866,13 @@ main{
   flex:1
 }
 
+/* Bas de la modale « Consulter » : suppression
+   du dossier (administrateur général uniquement). */
+.signmodal-footer{
+  margin-top:12px;
+  text-align:right
+}
+
 /* Dossier d'adhésion dans la modale responsable */
 .adhdoc-head{
   display:flex;
@@ -2964,7 +2971,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div><div class="signmodal-footer"><button class="btn link danger" type="button" id="admDeleteAdhesion" data-i18n="admDeleteAdhesion"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -3125,7 +3132,11 @@ admStatusValidated:`Validée`,
 admStatusRefused:`Refusée`,
 admAskCompletion:`Demander un complément`,
 admRefuse:`Refuser`,
-admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
+  admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
+  admDeleteAdhesion:`Supprimer le dossier`,
+  admDeleteConfirm:`Supprimer définitivement ce dossier d’adhésion (fiche signée et PDF inclus) ?`,
+  admDeleteDone:`Dossier d’adhésion supprimé.`,
+  admDeleteErr:`Impossible de supprimer le dossier.`,
 
 nextT:`Prochain rendez-vous`,
 recentT:`Communiqués récents`,
@@ -3375,6 +3386,10 @@ admStatusRefused:`مرفوض`,
 admAskCompletion:`طلب معلومات إضافية`,
 admRefuse:`رفض`,
 admGeneratePdfLong:`إنشاء / تحميل ملف PDF الموقّع`,
+admDeleteAdhesion:`حذف الملف`,
+admDeleteConfirm:`حذف ملف الانخراط هذا نهائياً (الاستمارة الموقعّة وملف PDF)؟`,
+admDeleteDone:`تم حذف ملف الانخراط.`,
+admDeleteErr:`تعذّر حذف الملف.`,
 
 nextT:`الموعد القادم`,
 recentT:`أحدث البلاغات`,
@@ -4884,6 +4899,11 @@ function renderAdminAdhesions(){
     if(a.status==='accepted'&&a.signed){
       actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
     }
+    /* Suppression du dossier : administrateur général
+       uniquement (les règles Firestore le vérifient). */
+    if(S.isAdmin){
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="deleteAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admDeleteAdhesion)+'</button>';
+    }
     var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
     var name=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);
     var renewal=a.type==='renewal';
@@ -4972,6 +4992,11 @@ function openAdhesionDossier(id,canSign){
   if(info)info.innerHTML='<p class="hint">'+esc(t.admSignLoading)+'</p>';
   if(area)area.hidden=!signModalCanSign;
   if(confirmBtn)confirmBtn.hidden=!signModalCanSign;
+  /* Suppression du dossier : en bas de la modale,
+     en consultation seule (pas pendant la signature),
+     et réservée à l'administrateur général. */
+  var deleteBtn=$('admDeleteAdhesion');
+  if(deleteBtn)deleteBtn.hidden=!(S.isAdmin&&!signModalCanSign);
 
   if(signModalCanSign){
     if(!signCanvasReset()){toast('Signature indisponible sur cet appareil.',4000);return;}
@@ -5242,6 +5267,30 @@ function generateAdhesionPdfForAdmin(id){
 
   var cancelBtn=$('admSignCancel');
   if(cancelBtn)cancelBtn.addEventListener('click',closeSignAdhesionModal);
+
+  /* Suppression du dossier depuis le bas de la
+     modale « Consulter » (administrateur général,
+     consultation seule — le bouton n'est affiché
+     que dans ce mode). */
+  var deleteAdhesionBtn=$('admDeleteAdhesion');
+  if(deleteAdhesionBtn)deleteAdhesionBtn.addEventListener('click',function(){
+    if(!signModalId)return;
+    var t=T();
+    if(!window.confirm(t.admDeleteConfirm||'Supprimer définitivement ce dossier d\'adhésion ?'))return;
+    var c=cloud();
+    if(!c||!c.admin||!c.admin.deleteAdhesion){toast(t.adhServiceUnavailable||'Service Firebase d\'adhésion indisponible.',5000);return;}
+    var delBtn=$('admDeleteAdhesion');
+    if(delBtn)delBtn.disabled=true;
+    c.admin.deleteAdhesion(signModalId)
+    .then(function(){
+      closeSignAdhesionModal();
+      toast(t.admDeleteDone||'Dossier d\'adhésion supprimé.',5000);
+    })
+    .catch(function(err){
+      if(delBtn)delBtn.disabled=false;
+      toast((t.admDeleteErr||'Impossible de supprimer le dossier.')+(err&&err.message?' — '+err.message:''),6000);
+    });
+  });
 
   var confirmBtn=$('admSignConfirm');
   if(confirmBtn)confirmBtn.addEventListener('click',confirmSignAdhesion);
@@ -6382,6 +6431,17 @@ else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
 generateAdhesionPdfForAdmin(id);
 }
 
+else if(a==='deleteAdhesion'&&S.isAdmin){
+var t=T();
+var target=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+var who=target?String(((target.nom||'')+' '+(target.prenom||'')).trim()):'';
+if(!window.confirm((t.admDeleteConfirm||'Supprimer définitivement ce dossier d\'adhésion ?')+(who?' — '+who:'')))return;
+if(!c||!c.admin||!c.admin.deleteAdhesion){toast(t.adhServiceUnavailable||'Service Firebase d\'adhésion indisponible.',5000);return;}
+c.admin.deleteAdhesion(id)
+.then(function(){toast(t.admDeleteDone||'Dossier d\'adhésion supprimé.',5000);})
+.catch(function(err){toast((t.admDeleteErr||'Impossible de supprimer le dossier.')+(err&&err.message?' — '+err.message:''),6000);});
+}
+
 else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
 var adhesion=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
 if(adhesion&&c.admin.updateAdhesionStatus){
@@ -7264,13 +7324,13 @@ window.UGTM.failed();
             y=18;
           }
           pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-5,pageW-margin*2,10,2,2,'F');
+          pdf.roundedRect(margin,y-5,pageW-margin*2,8,2,2,'F');
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(10);
           pdf.setTextColor(184,50,104);
-          pdf.text(title,margin+4,y+1.5);
+          pdf.text(title,margin+4,y+0.5);
           pdf.setTextColor(0,0,0);
-          y+=13;
+          y+=10;
         }
 
         function field(label,value){
@@ -7279,15 +7339,15 @@ window.UGTM.failed();
             y=18;
           }
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10);
+          pdf.setFontSize(9);
           pdf.setTextColor(90,90,90);
           pdf.text(label,margin,y);
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(9.5);
           pdf.setTextColor(0,0,0);
           var lines=pdf.splitTextToSize(String(value||''),116);
           pdf.text(lines,70,y);
-          y+=Math.max(8,lines.length*5.4);
+          y+=Math.max(6.5,lines.length*4.8);
           /* Filet de séparation : chaque ligne du dossier
              est visuellement distincte, plus lisible. */
           pdf.setDrawColor(232,222,228);
@@ -7295,21 +7355,49 @@ window.UGTM.failed();
           pdf.line(margin,y-2.5,pageW-margin,y-2.5);
         }
 
+        /* Deux champs courts côte à côte : le dossier
+           tient sur une seule page A4. */
+        function field2(label1,value1,label2,value2){
+          if(y>264){
+            pdf.addPage();
+            y=18;
+          }
+          var colX=margin+90;
+          function cell(x,label,value){
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(9);
+            pdf.setTextColor(90,90,90);
+            pdf.text(label,x,y);
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(9.5);
+            pdf.setTextColor(0,0,0);
+            var lines=pdf.splitTextToSize(String(value||''),44);
+            pdf.text(lines,x+32,y);
+            return Math.max(6.5,lines.length*4.8);
+          }
+          var h=Math.max(cell(margin,label1,value1),cell(colX,label2,value2));
+          y+=h;
+          pdf.setDrawColor(232,222,228);
+          pdf.setLineWidth(.2);
+          pdf.line(margin,y-2.5,pageW-margin,y-2.5);
+          pdf.setTextColor(0,0,0);
+        }
+
         function drawSignatureBox(title,x,boxY,image){
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(10);
           pdf.setTextColor(60,60,60);
           pdf.text(title,x,boxY);
           pdf.setDrawColor(170,170,170);
           pdf.setLineWidth(.5);
-          pdf.roundedRect(x,boxY+5,84,36,2,2,'S');
+          pdf.roundedRect(x,boxY+4,84,30,2,2,'S');
           if(image){
-            try{pdf.addImage(image,'JPEG',x+4,boxY+7,76,29);}catch(e){}
+            try{pdf.addImage(image,'JPEG',x+4,boxY+6,76,24);}catch(e){}
           }
           pdf.setFont(undefined,'normal');
           pdf.setFontSize(8.5);
           pdf.setTextColor(120,120,120);
-          pdf.text('Signature',x+4,boxY+45);
+          pdf.text('Signature',x+4,boxY+39);
           pdf.setTextColor(0,0,0);
         }
 
@@ -7328,82 +7416,79 @@ window.UGTM.failed();
           pdf.text('Région Souss-Massa',64,30);
           pdf.setTextColor(0,0,0);
 
-          y=38;
+          y=36;
           line();
 
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(18);
+          pdf.setFontSize(17);
           pdf.setTextColor(184,50,104);
-          pdf.text("DEMANDE D'ADHÉSION",105,48,{align:'center'});
+          pdf.text("DEMANDE D'ADHÉSION",105,46,{align:'center'});
           pdf.setTextColor(0,0,0);
 
           pdf.setFont(undefined,'normal');
           pdf.setFontSize(9.5);
           pdf.setTextColor(95,95,95);
-          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,55,{align:'center'});
+          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,52,{align:'center'});
           pdf.setTextColor(0,0,0);
-          y=63;
+          y=58;
 
           section('IDENTIFICATION DE L’ADHÉRENT');
-          field('Nom',app.nom);
-          field('Prénom',app.prenom);
-          field('CIN',app.cin);
-          field('Date de naissance',app.dob);
+          field2('Nom',app.nom,'Prénom',app.prenom);
+          field2('CIN',app.cin,'Date de naissance',app.dob);
           field('Téléphone',app.phone);
           field('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
           field('Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
           field('Établissement / structure',app.establishment);
-          field('Service / unité',app.service);
-          field('Fonction',app['function']);
-          field('Spécialité',app.specialty);
-          field('PPR',app.ppr);
+          field2('Service / unité',app.service,'Fonction',app['function']);
+          field2('Spécialité',app.specialty,'PPR',app.ppr);
 
           section('ADHÉSION');
-          field('Type',app.type==='renewal'?'Renouvellement':'Première adhésion');
+          field2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
           if(app.type==='renewal')field('Motif du renouvellement',app.reason);
-          field('Date',app.date);
 
           section('ENGAGEMENT');
           pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-4,pageW-margin*2,18,2,2,'F');
+          pdf.roundedRect(margin,y-4,pageW-margin*2,14,2,2,'F');
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(10);
+          pdf.setFontSize(9.5);
           pdf.setTextColor(60,60,60);
           pdf.text([
             "Je déclare adhérer à la Fédération nationale de la Santé",
             "et accepter ses statuts ainsi que son règlement intérieur."
-          ],margin+4,y+4);
+          ],margin+4,y+3);
           pdf.setTextColor(0,0,0);
-          y+=24;
+          y+=18;
 
           section('SIGNATURES');
           var signatureY=y;
           /* Les deux cadres de signature tiennent sur la
              même page : on force un saut avant de les
              couper en deux. */
-          if(signatureY+52>282){
+          if(signatureY+44>279){
             pdf.addPage();
             signatureY=18;
           }
           drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
           drawSignatureBox('Signature du responsable syndical',margin+90,signatureY,request&&request.adminSignature);
 
-          y=signatureY+52;
+          y=signatureY+44;
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
           var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
           section('VALIDATION');
-          field('Validée par',signer);
           if(request&&request.signedAt){
+            var dateValidation='';
             try{
-              field('Date de validation',new Date(request.signedAt).toLocaleDateString('fr-FR'));
+              dateValidation=new Date(request.signedAt).toLocaleDateString('fr-FR');
             }catch(eDate){}
+            field2('Validée par',signer,'Date de validation',dateValidation);
+          }else{
+            field('Validée par',signer);
           }
-          field('Statut du dossier','VALIDÉE');
-          field('Référence',request&&request.id?String(request.id):'');
+          field2('Statut du dossier','VALIDÉE','Référence',request&&request.id?String(request.id):'');
 
           /* Pied de page sur CHAQUE page : fil conducteur
              du document, avec numérotation. */

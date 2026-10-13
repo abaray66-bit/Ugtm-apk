@@ -1153,6 +1153,20 @@ var admin = {
       return deleteDoc(doc(db, 'responsables', uid));
     },
 
+  /* Suppression complète d'un dossier d'adhésion par
+     l'administrateur général : la demande signée ET le
+     PDF officiel enregistré sont effacés ensemble. */
+  deleteAdhesion:
+    function(uid){
+      var id=String(uid||'');
+      if(!id)return Promise.reject(new Error('Dossier inconnu'));
+      return deleteDoc(doc(db,'adhesionRequests',id)).then(function(){
+        return deleteDoc(doc(db,'adhesionDocuments',id)).catch(function(){
+          /* Aucun PDF enregistré : rien d'autre à effacer. */
+        });
+      });
+    },
+
 
   setStatus:
     async function(uid, status){
