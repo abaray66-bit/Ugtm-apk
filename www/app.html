@@ -2211,6 +2211,23 @@ body {
   }
 }
 
+/* Note de bienvenue : affichée 24 h après la signature,
+   elle clignote pour attirer l'attention puis disparaît. */
+.adh-welcome {
+  animation: adhBlink 1.2s ease-in-out infinite;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@keyframes adhBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .adh-welcome { animation: none; }
+}
+
 .title {
   letter-spacing: -.025em;
   text-shadow: 0 3px 18px rgba(216,59,120,.12);
@@ -3084,7 +3101,6 @@ adhStatusCompletion:`Demande d’adhésion : un complément est demandé. Ouvrez
 adhStatusAccepted:`Demande d’adhésion : validée par un responsable.`,
 adhStatusRefused:`Demande d’adhésion : refusée.`,
 adhStatusUnknown:`Statut de la demande : %1.`,
-adhNote:`Note : `,
   adhStatusChecking:`Vérification du statut de votre demande…`,
   adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
   adhBlockedPending:`Votre demande est déjà enregistrée et en attente de traitement. Vous serez informé dès qu’un responsable la signera.`,
@@ -3337,7 +3353,6 @@ adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضا
 adhStatusAccepted:`طلب الانخراط : تمت المصادقة عليه من طرف مسؤول.`,
 adhStatusRefused:`طلب الانخراط : مرفوض.`,
 adhStatusUnknown:`حالة الطلب : %1.`,
-adhNote:`ملاحظة : `,
   adhStatusChecking:`جار التحقق من حالة طلبكم…`,
   adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
   adhBlockedPending:`طلب الانخراط مسجل بالفعل وهو في انتظار توقيع أحد المسؤولين. سيتم إخباركم فور توقيعه.`,
@@ -4279,8 +4294,15 @@ function showMyAdhesionStatus(request){
   box.hidden=false;
   box.textContent=labels[request.status]||
     (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
-  if(request.adminNote)
-  box.textContent+=' '+(t.adhNote||'Note : ')+String(request.adminNote).slice(0,1000);
+  if(request.adminNote && request.status === 'accepted' && request.signedAt){
+    var welcomeAge = Date.now() - request.signedAt;
+    if(welcomeAge < 86400000){
+      var welcomeSpan = document.createElement('span');
+      welcomeSpan.className = 'adh-welcome';
+      welcomeSpan.textContent = String(request.adminNote).slice(0,1000);
+      box.appendChild(welcomeSpan);
+    }
+  }
   // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
 }
 function refreshMyAdhesionStatus(force){

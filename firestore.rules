@@ -63,14 +63,45 @@ service cloud.firestore {
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)
         && okText(request.resource.data.prov, 40)
-        && okText(request.resource.data.phone, 30);
+        && okText(request.resource.data.phone, 30)
+        // Validation d'une demande d'adhésion : la fiche adhérent
+        // (active, numérotée depuis le compteur global) est créée dans
+        // la même transaction que l'écriture du compteur
+        // (cf. activateMemberFromRequest de cloud.js).
+        || ((isAdmin()
+            || (isSubAdmin() && request.resource.data.prov == assignedProvince()))
+            && request.resource.data.status == 'active'
+            && request.resource.data.keys().hasOnly([
+              'uid', 'name', 'email', 'photo', 'etab', 'prov',
+              'phone', 'status', 'role', 'adminProvince',
+              'memberNo', 'createdAt', 'activatedAt'
+            ])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+              .lastMemberNo == request.resource.data.memberNo);
 
       allow update: if isAdmin()
+        // Activation d'un adhérent en attente par son sous-admin de
+        // province : la fiche complète du dossier signé (coordonnées)
+        // est enregistrée en même temps que l'activation et le numéro.
         || (isSubAdmin() && resource.data.prov == assignedProvince()
             && resource.data.status == 'pending'
             && request.resource.data.status == 'active'
             && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'memberNo', 'activatedAt'])
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'role', 'adminProvince',
+                'memberNo', 'createdAt', 'activatedAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
             && okText(request.resource.data.memberNo, 30)
             // La numérotation vient OBLIGATOIREMENT du compteur global,
             // écrit dans le même lot : le numéro du membre doit être
@@ -120,8 +151,9 @@ service cloud.firestore {
           && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
           && request.resource.data.memberUid is string
           && request.resource.data.updatedAt == request.time
-          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .status == 'pending'
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid))
+            || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+              .status == 'pending')
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .status == 'active'
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
@@ -141,8 +173,9 @@ service cloud.firestore {
           && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
           && request.resource.data.memberUid is string
           && request.resource.data.updatedAt == request.time
-          && get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .status == 'pending'
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid))
+            || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+              .status == 'pending')
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .status == 'active'
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data

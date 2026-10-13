@@ -806,7 +806,7 @@ async function getMyAdhesionRequest(){
   var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
   if(!snap.exists()) return null;
   var x=snap.data()||{};
-  return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',application:x.application||{}};
+  return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{}};
 }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
@@ -902,7 +902,7 @@ async function signAdhesion(uid,signature,note){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature du responsable est manquante.');
   if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  return updateDoc(doc(db,'adhesionRequests',String(uid)),{
+  await updateDoc(doc(db,'adhesionRequests',String(uid)),{
     status:'accepted',
     adminSignature:sig,
     signedBy:u.uid,
@@ -910,6 +910,74 @@ async function signAdhesion(uid,signature,note){
     adminNote:String(note||'').slice(0,1000),
     updatedAt:serverTimestamp()
   });
+  await activateMemberFromRequest(uid);
+  return sig;
+}
+
+/* =========================================================
+   ACTIVATION D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHÉSION
+   La validation d'une demande crée (ou complète) la fiche
+   membre avec un numéro SM-XXXX pris dans le compteur global,
+   dans la même transaction que l'écriture du compteur.
+   ========================================================= */
+async function activateMemberFromRequest(uid){
+  var ref = doc(db,'members',uid);
+  var snap = await getDoc(ref);
+  var member = snap.exists() ? snap.data() : null;
+  var reqSnap = await getDoc(doc(db,'adhesionRequests',uid));
+  if(!reqSnap.exists()) throw new Error('Dossier d’adhésion introuvable.');
+  var req = reqSnap.data();
+  if(req.status!=='accepted') throw new Error('Le dossier n’est pas encore accepté.');
+  var app = req.application || {};
+  var name = (String(app.prenom||'').trim()+' '+String(app.nom||'').trim()).trim();
+  var data = {
+    uid:uid,
+    name:name,
+    email:String(req.email||'').slice(0,254),
+    photo:'',
+    etab:String(app.establishment||'').trim().slice(0,160),
+    prov:String(app.province||'').slice(0,40),
+    phone:String(app.phone||'').trim().slice(0,30),
+    status:'active',
+    role:'member',
+    adminProvince:String(app.province||'').slice(0,40),
+    createdAt:serverTimestamp(),
+    activatedAt:serverTimestamp()
+  };
+  var no='';
+  if(member && member.status==='active'){
+    no = member.memberNo || '';
+  }else{
+    var seqRef = doc(db,'counters','memberNumbers');
+    var seed = 1;
+    var seq0 = await getDoc(seqRef);
+    if(!seq0.exists()){
+      var maxNo = 0;
+      var all = await getDocs(collection(db,'members'));
+      all.forEach(function(d){
+        var m = /(\d+)\s*$/.exec(String((d.data()||{}).memberNo||''));
+        if(m) maxNo = Math.max(maxNo, +m[1]);
+      });
+      if(maxNo>0) seed = maxNo+1;
+    }
+    no = 'SM-'+String(Math.floor(seed)).padStart(4,'0');
+    await runTransaction(db,async function(tx){
+      var seqSnap = await tx.get(seqRef);
+      var next = seqSnap.exists() ? Number(seqSnap.data().next||1) : seed;
+      if(!Number.isFinite(next)||next<1) next = 1;
+      var number = 'SM-'+String(Math.floor(next)).padStart(4,'0');
+      tx.set(seqRef,{
+        next:Math.floor(next)+1,
+        lastMemberNo:number,
+        memberUid:uid,
+        updatedAt:serverTimestamp()
+      });
+      tx.set(ref,Object.assign({},data,{memberNo:number}));
+      no = number;
+    });
+  }
+  await updateDoc(doc(db,'adhesionRequests',uid),{signedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+  return no;
 }
 
 /* Dossier complet d'une demande (signatures incluses) : chargé à la
