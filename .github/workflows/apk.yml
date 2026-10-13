@@ -1111,13 +1111,15 @@ jobs:
           fi
 
           # Empreinte de l'APK réellement publié dans la
-          # release : identique à l'APK construit si la
-          # release vient d'être créée, ou à l'APK existant
-          # si la release préexiste (reconstruction non
-          # reproductible à l'octet près).
+          # release : l'APK est téléchargé depuis l'URL
+          # de la release (identique à l'APK construit
+          # si la release vient d'être créée, ou à
+          # l'APK existant si la release préexiste —
+          # les reconstructions ne sont pas
+          # reproductibles à l'octet près).
           rm -rf /tmp/ugtm-ota
           mkdir -p /tmp/ugtm-ota
-          if ! gh release download "v${UGTM_VERSION_NAME}" --pattern "app-release.apk" --dir /tmp/ugtm-ota --yes >/dev/null 2>&1; then
+          if ! curl -sSL --fail --connect-timeout 20 --max-time 300 "$APK_URL" -o /tmp/ugtm-ota/app-release.apk || [ ! -s /tmp/ugtm-ota/app-release.apk ]; then
             echo "Téléchargement de la release impossible — empreinte de l'APK construit utilisée."
             cp "$APK_PATH" /tmp/ugtm-ota/app-release.apk
           fi
