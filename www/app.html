@@ -5589,6 +5589,15 @@ $('permResp').innerHTML=list.map(function(r){
 var nom=r.name||'';
 var role=r.title||'';
 var phone=String(r.phone||'').trim();
+
+/* Anciens responsables désignés avant l'ajout
+   du téléphone : on complète depuis la fiche
+   de l'adhérent, sans re-désignation. */
+if(!phone){
+var m=(S.members||[]).filter(function(x){return x.uid===r.uid;})[0];
+if(m)phone=String(m.phone||'').trim();
+}
+
 var tel=phone.replace(/[^0-9+]/g,'');
 
 return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+(phone&&tel?' <a dir="ltr" href="tel:'+esc(tel)+'">'+esc(phone)+'</a>':'')+'</li>';
