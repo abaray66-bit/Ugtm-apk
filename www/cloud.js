@@ -800,13 +800,13 @@ async function saveProfile(p){
    DEMANDES D'ADHÉSION NUMÉRIQUES — une demande par UID
    ========================================================= */
 async function getMyAdhesionRequest(){
-  var u=auth.currentUser;
-  if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
-  var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
-  if(!snap.exists()) return null;
-  var x=snap.data()||{};
-  return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',application:x.application||{}};
-}
+   var u=auth.currentUser;
+   if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
+   var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
+   if(!snap.exists()) return null;
+   var x=snap.data()||{};
+   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{}};
+ }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
   if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
@@ -866,21 +866,23 @@ async function signAdhesion(uid,signature,note){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature du responsable est manquante.');
   if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  await updateDoc(doc(db,'adhesionRequests',String(uid)),{
-    status:'accepted',
-    adminSignature:sig,
-    signedBy:u.uid,
-    signedAt:serverTimestamp(),
-    adminNote:String(note||'').slice(0,1000),
-    updatedAt:serverTimestamp()
-  });
-  await activateMemberFromRequest(uid);
-  return sig;
-/* =========================================================
-   ACTIVATON D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
-   Transforme une demande d'adhésion acceptée en membre actif
-   avec un numéro d'adhérent SM-XXXX depuis le compteur global.
-   ========================================================= */
+await updateDoc(doc(db,'adhesionRequests',String(uid)),{
+     status:'accepted',
+     adminSignature:sig,
+     signedBy:u.uid,
+     signedAt:serverTimestamp(),
+     adminNote:String(note||'').slice(0,1000),
+     updatedAt:serverTimestamp()
+   });
+   await activateMemberFromRequest(uid);
+   return sig;
+ }
+ 
+ /* =========================================================
+    ACTIVATION D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
+    Transforme une demande d'adhésion acceptée en membre actif
+    avec un numéro d'adhérent SM-XXXX depuis le compteur global.
+    ========================================================= */
 async function activateMemberFromRequest(uid){
   var ref = doc(db, 'members', uid);
   var snap = await getDoc(ref);

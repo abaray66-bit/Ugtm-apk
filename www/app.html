@@ -742,6 +742,85 @@ main{
   opacity:.75
 }
 
+.attachmodal{
+  position:fixed;
+  inset:0;
+  z-index:61;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(28,26,30,.55)
+}
+
+.attachmodal-box{
+  width:100%;
+  max-width:520px;
+  max-height:92vh;
+  overflow:auto;
+  background:var(--card);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  display:flex;
+  flex-direction:column
+}
+
+.attachmodal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px
+}
+
+.attachmodal-head strong{
+  font-size:15px;
+  overflow-wrap:anywhere
+}
+
+.attachmodal-note{
+  font-size:13px;
+  color:var(--muted);
+  margin:0 0 10px
+}
+
+.attachmodal-body{
+  flex:1;
+  min-height:180px;
+  display:grid;
+  place-items:center;
+  background:var(--soft);
+  border-radius:12px;
+  overflow:auto
+}
+
+.attachmodal-body img{
+  max-width:100%;
+  max-height:58vh;
+  display:block;
+  border-radius:10px
+}
+
+.attachmodal-body iframe,
+.attachmodal-body object{
+  width:100%;
+  height:58vh;
+  border:0;
+  border-radius:10px;
+  background:#fff
+}
+
+.attachmodal-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px
+}
+
+.attachmodal-actions .btn{
+  flex:1
+}
+
 .filters{
   display:flex;
   gap:8px;
@@ -1876,9 +1955,13 @@ body {
 }
 
 .adh-welcome {
-  animation: adhBlink 1.2s ease-in-out 1;
+  animation: adhBlink 1.2s ease-in-out infinite;
   font-weight: 600;
   color: var(--primary);
+}
+
+@media (prefers-reduced-motion: reduce){
+  .adh-welcome { animation: none; }
 }
 
 @keyframes adhBlink {
@@ -2604,7 +2687,7 @@ button.primary:active {
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -2815,10 +2898,15 @@ cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération régional
 cWaB:`Rejoindre le groupe`,
 
 cFb:`Page officielle Facebook`,
-cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
-cFbB:`Voir la page`,
-
-cNum:`Numéro du secrétaire régional`,
+ cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
+ cFbB:`Voir la page`,
+ 
+ attachTitle:`Pièce jointe`,
+ attachClose:`Fermer`,
+ attachDownload:`Télécharger la pièce jointe`,
+ attachPdfNote:`Si le PDF ne s'affiche pas dans l'aperçu, utilisez le bouton de téléchargement pour l'ouvrir avec une application.`,
+ 
+ cNum:`Numéro du secrétaire régional`,
 cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
 cNumB:`Écrire`,
 
@@ -3107,6 +3195,11 @@ cFb:`الصفحة الرسمية على فيسبوك`,
 cFbD:`تابعوا الصفحة الرسمية لفيدرالية الصحة الجهوية على فيسبوك.`,
 cFbB:`زيارة الصفحة`,
 
+ attachTitle:`الملف المرفق`,
+ attachClose:`إغلاق`,
+ attachDownload:`.Circle تحميل الملف المرفق`,
+ attachPdfNote:`إذا لم يظهر الملف PDF في المعاينة، استخدموا زر التحميل لفتحه بتطبيق خارجي.`,
+
 cNum:`رقم الكاتب الجهوي`,
 cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
 cNumB:`مراسلة`,
@@ -3301,9 +3394,10 @@ var html="<h2 class=\"h2\">"+esc(T().provinceContactsTitle)+"</h2>";
 if(!contacts.length){box.innerHTML=html+"<p class=\"hint\">"+esc(T().provinceContactsEmpty)+"</p>";return;}
 html+="<ul class=\"list province-contact-list\">";
 contacts.forEach(function(c){
-var phone=String(c.phone||'').trim();
-var tel=phone.replace(/[^0-9+]/g,'');
-html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"tel:"+esc(tel)+"\">"+esc(phone)+"</a>":"")+"</div></li>";
+  var phone=String(c.phone||'').trim();
+  var tel=phone.replace(/[^0-9+]/g,'');
+  var wa=tel.replace(/^\+/, '');
+  html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"wa.me/"+esc(wa)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
 });
 html+="</ul>";
 box.innerHTML=html;
@@ -3355,24 +3449,43 @@ $('lightboxImg').src='';
 }
 
 (function(){
-
-var lb=$('lightbox');
-
-lb.addEventListener('click',closeLightbox);
-
-document.addEventListener('keydown',function(e){
-
-if(e.key==='Escape'&&!lb.hidden)closeLightbox();
-
-});
-
-document.addEventListener('click',function(e){
-
-var img=e.target.closest('img.news-photo');
-
-if(img)openLightbox(img.src);
-
-});
+ 
+ var lb=$('lightbox');
+ 
+ lb.addEventListener('click',closeLightbox);
+ 
+ $('attachModal').addEventListener('click',function(e){
+ if(e.target===$('attachModal'))closeAttachModal();
+ });
+ 
+ $('attachClose').addEventListener('click',closeAttachModal);
+ 
+ $('attachDownload').addEventListener('click',function(){
+ if(!attachUrl)return;
+ var a=document.createElement('a');
+ a.href=attachUrl;
+ a.download=attachName||'piece-jointe';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
+ });
+ 
+ document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+  if(!$('attachModal').hidden){closeAttachModal();return;}
+  if(!lb.hidden)closeLightbox();
+  }
+ });
+ 
+ document.addEventListener('click',function(e){
+ 
+ var img=e.target.closest('img.news-photo');
+ 
+ if(img)openLightbox(img.src);
+ 
+ });
+ 
+ })();
 
 })();
 
@@ -3404,43 +3517,89 @@ T().errPrefix+
 }
 
 function openUrl(url){
-if(!url){
-toast(T().toastLink);
-return;
-}
-
-window.open(url,'_blank','noopener');
-}
-
-/* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
-   les navigateurs bloquent les data: en navigation de premier plan. */
-function openDataUrl(data){
-var url='';
-try{
-var raw=String(data||'');
-var comma=raw.indexOf(',');
-if(comma<1)return;
-var head=raw.slice(0,comma);
-var payload=raw.slice(comma+1);
-var type=(head.split(';')[0]||'').replace(/^data:/,'')||'application/octet-stream';
-var binary=head.indexOf(';base64')>-1?atob(payload):decodeURIComponent(payload);
-var arr=new Uint8Array(binary.length);
-for(var i=0;i<binary.length;i++)arr[i]=binary.charCodeAt(i);
-url=URL.createObjectURL(new Blob([arr],{type:type}));
-}catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
-return;
-}
-var w=window.open(url,'_blank');
-if(!w){
-var a=document.createElement('a');
-a.href=url;
-a.download='piece-jointe';
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-}
-setTimeout(function(){URL.revokeObjectURL(url);},60000);
-}
+ if(!url){
+ toast(T().toastLink);
+ return;
+ }
+ 
+ window.open(url,'_blank','noopener');
+ }
+ 
+ /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
+    les navigateurs bloquent les data: en navigation de premier plan. */
+ var attachUrl='';
+ var attachName='';
+ var attachTrigger=null;
+ 
+ function openAttachModal(url,name,type){
+ var body=$('attachBody');
+ body.innerHTML='';
+ if(type&&type.indexOf('image/')===0){
+ var img=document.createElement('img');
+ img.src=url;
+ img.alt=name||'';
+ body.appendChild(img);
+ }
+ else{
+ var frame=document.createElement('iframe');
+ frame.src=url;
+ frame.title=name||'';
+ body.appendChild(frame);
+ var note=$('attachNote');
+ if(note){
+ note.hidden=false;
+ note.textContent=T().attachPdfNote;
+ }
+ }
+ attachName=name||'';
+ 
+ if(attachUrl){
+ try{URL.revokeObjectURL(attachUrl);}catch(e){}
+ }
+ 
+ attachUrl=url;
+ $('attachTitle').textContent=name||T().attachTitle;
+ $('attachModal').hidden=false;
+ attachTrigger=document.activeElement;
+ $('attachClose').focus();
+ }
+ 
+ function closeAttachModal(){
+ if($('attachModal').hidden)return;
+ $('attachModal').hidden=true;
+ $('attachBody').innerHTML='';
+ $('attachNote').hidden=true;
+ if(attachUrl){
+ try{URL.revokeObjectURL(attachUrl);}catch(e){}
+ attachUrl='';
+ }
+ if(attachTrigger&&attachTrigger.focus)attachTrigger.focus();
+ attachTrigger=null;
+ }
+ 
+ function openDataUrl(data,name){
+ var url='';
+ try{
+ var raw=String(data||'');
+ var comma=raw.indexOf(',');
+ if(comma<1)return;
+ var head=raw.slice(0,comma);
+ var payload=raw.slice(comma+1);
+ var type=(head.split(';')[0]||'').replace(/^data:/,'')||'application/octet-stream';
+ var binary=head.indexOf(';base64')>-1?atob(payload):decodeURIComponent(payload);
+ var arr=new Uint8Array(binary.length);
+ for(var i=0;i<binary.length;i++)arr[i]=binary.charCodeAt(i);
+ url=URL.createObjectURL(new Blob([arr],{type:type}));
+ }catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
+ return;
+ }
+ openAttachModal(url,name||'',type);
+ setTimeout(function(){
+ if($('attachModal').hidden&&url){
+ try{URL.revokeObjectURL(url);}catch(e){}
+ }
+ },120000);
+ }
 
 /* Recherche d'un contact par motif d'URL : l'ordre des entrées dans
    data.js peut changer sans casser les boutons WhatsApp / Facebook. */
@@ -3809,28 +3968,43 @@ function showMyAdhesionStatus(request){
     fillBtn.setAttribute('data-i18n',key);
     fillBtn.textContent=t[key]||t.fillAdhesion;
   }
-  if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-  if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
-  var labels={
-    pending:t.adhStatusPending,
-    needs_completion:t.adhStatusCompletion,
-    accepted:t.adhStatusAccepted,
-    refused:t.adhStatusRefused
-  };
-   box.hidden=false;
-   box.textContent=labels[request.status]||
-     (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
-   if(request.adminNote && request.status === 'accepted' && request.signedAt){
-     var age = Date.now() - request.signedAt;
-     if(age < 86400000){
-       var span = document.createElement('span');
-       span.className = 'adh-welcome';
-       span.textContent = String(request.adminNote).slice(0,1000);
-       box.appendChild(span);
+if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+   if(!request||request.status==='none'){box.hidden=true;box.textContent='';return;}
+   /* Adhérent actif : la carte membre et le bandeau
+      « Adhésion validée » suffisent — on évite le
+      doublon de la ligne de demande ; seule la
+      note du reste affichée. */
+   var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+   if(memberActive&&request.status==='accepted'){
+     if(request.adminNote){
+       box.hidden=false;
+       box.textContent=String(request.adminNote).slice(0,1000);
+     }else{
+       box.hidden=true;
+       box.textContent='';
      }
+     return;
    }
-   // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
-}
+   var labels={
+     pending:t.adhStatusPending,
+     needs_completion:t.adhStatusCompletion,
+     accepted:t.adhStatusAccepted,
+     refused:t.adhStatusRefused
+   };
+    box.hidden=false;
+    box.textContent=labels[request.status]||
+      (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
+    if(request.adminNote && request.status === 'accepted' && request.signedAt){
+      var age = Date.now() - request.signedAt;
+      if(age < 86400000){
+        var span = document.createElement('span');
+        span.className = 'adh-welcome';
+        span.textContent = String(request.adminNote).slice(0,1000);
+        box.appendChild(span);
+      }
+    }
+    // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
+  }
 function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
   if(!box)return Promise.resolve(null);
@@ -5147,8 +5321,15 @@ $('permResp').innerHTML=list.map(function(r){
 
 var nom=r.name||'';
 var role=r.title||'';
+var phone=String(r.phone||'').trim();
+var tel=phone.replace(/[^0-9+]/g,'');
+var wa=tel.replace(/^\+/, '');
 
-return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+'</li>';
+var phoneHtml=(phone&&tel)
+  ?'<a dir="ltr" href="wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
+  : '';
+
+return '<li>'+esc(nom?(role?role+' : '+nom:nom)+phoneHtml+'</li>';
 
 }).join('');
 
@@ -5624,27 +5805,27 @@ var repItem=(S.reports||[]).filter(function(x){return x.id===repId;})[0];
 if(!repItem)return;
 
 // Anciens signalements : la pièce était encodée dans le document.
-if(repItem.attachmentData){
-openDataUrl(repItem.attachmentData);
-return;
-}
-
-if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
-
-el.disabled=true;
-window.CLOUD.getReportAttachment(repId)
-.then(function(data){
-el.disabled=false;
-if(data)openDataUrl(data);
-else toast('Pièce jointe indisponible.',4000);
-})
-.catch(function(){
-el.disabled=false;
-toast('Impossible de charger la pièce jointe.',4000);
-});
-
-return;
-}
+ if(repItem.attachmentData){
+ openDataUrl(repItem.attachmentData,repItem.attachmentName);
+ return;
+ }
+ 
+ if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
+ 
+ el.disabled=true;
+ window.CLOUD.getReportAttachment(repId)
+ .then(function(data){
+ el.disabled=false;
+ if(data)openDataUrl(data,repItem.attachmentName);
+ else toast('Pièce jointe indisponible.',4000);
+ })
+ .catch(function(){
+ el.disabled=false;
+ toast('Impossible de charger la pièce jointe.',4000);
+ });
+ 
+ return;
+ }
 
 if(el.hasAttribute('data-memf')){
 
@@ -6377,6 +6558,19 @@ window.UGTM.failed();
       uid=String(uid||'');
       if(lastAdhesionUid===uid)return;
       lastAdhesionUid=uid;
+
+      // Purge du brouillon LOCALSTORAGE : un changement de compte
+      // ne doit pas réafficher les données d'un autre compte.
+      try{
+        if(lastAdhesionUid){
+          var oldKey='ugtm-adhesion-draft:'+lastAdhesionUid;
+          localStorage.removeItem(oldKey);
+        }
+        if(uid){
+          var newKey='ugtm-adhesion-draft:'+uid;
+          localStorage.removeItem(newKey);
+        }
+      }catch(e){}
 
       try{form.reset();}catch(e){}
       if(ctx){
