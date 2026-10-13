@@ -849,7 +849,44 @@ async function submitAdhesion(application,signature){
       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
+  }).then(function(result){
+    /* Le formulaire d'adhésion est la saisie de
+       référence du téléphone (le formulaire de profil
+       a été retiré) : le numéro saisi est reporté sur
+       la fiche membre, puis — quand le compte en porte
+       un — sur la fiche de responsable et le contact de
+       province (liste publique). */
+    return syncMemberPhone(u, clean.phone).then(function(){return result;});
   });
+}
+
+/* Reporte le téléphone saisi dans la demande d'adhésion
+   sur la fiche membre et, quand le compte en porte un,
+   sur la fiche de responsable (permanence syndicale) et
+   le contact de province (sous-admin), publics. */
+async function syncMemberPhone(u, phone){
+  var uid=u.uid;
+  var tel=String(phone||'').trim().slice(0,30);
+  if(!tel)return;
+  var ref=doc(db,'members',uid);
+  var snap=await getDoc(ref);
+  if(!snap.exists())return;
+  var data=snap.data()||{};
+  var name=String(data.name||'').slice(0,120);
+  await updateDoc(ref,{phone:tel,updatedAt:serverTimestamp()});
+  if(data.role==='subadmin'&&data.adminProvince){
+    var cref=doc(db,'provinceContacts',data.adminProvince);
+    var csnap=await getDoc(cref);
+    if(csnap.exists()&&csnap.data().uid===uid){
+      await updateDoc(cref,{name:name,phone:tel});
+      await savePublicProvinceContact(data.adminProvince,name,tel);
+    }
+  }
+  var rref=doc(db,'responsables',uid);
+  var rsnap=await getDoc(rref);
+  if(rsnap.exists()){
+    await updateDoc(rref,{name:name,phone:tel});
+  }
 }
 
 /* =========================================================
@@ -1044,6 +1081,7 @@ var admin = {
         if (!snap.exists()) throw new Error('Membre introuvable');
         var member = snap.data();
         if (member.status !== 'active') throw new Error('Seul un adhérent actif peut devenir sous-admin.');
+        if (!String(member.phone || '').trim()) throw new Error('Ce membre n’a pas renseigné de téléphone : il doit d’abord le saisir dans sa demande d’adhésion pour figurer dans la liste publique des responsables de province.');
         var old = member.adminProvince || '';
         return getDoc(doc(db, 'provinceContacts', assigned)).then(function(existing){
           if (existing.exists() && existing.data().uid !== uid)
@@ -1098,6 +1136,8 @@ var admin = {
         var member = snap.data();
         if (member.status !== 'active')
           throw new Error('Seul un adhérent actif peut être désigné responsable.');
+        if (!String(member.phone || '').trim())
+          throw new Error('Ce membre n’a pas renseigné de téléphone : il doit d’abord le saisir dans sa demande d’adhésion pour figurer dans la liste publique sous la permanence syndicale.');
         return setDoc(doc(db, 'responsables', uid), {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),

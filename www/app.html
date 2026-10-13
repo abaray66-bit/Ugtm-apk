@@ -4505,6 +4505,9 @@ esc(STATUS_FR[m.status]||m.status)+
 (!m.prov
 ?'<span class="hint">⚠ Province non renseignée : seul l\'administrateur principal peut valider cet adhérent.</span>'
 :'')+
+(m.status==='active'&&!String(m.phone||'').trim()
+?'<span class="hint">⚠ Téléphone non renseigné : l\'adhérent doit le saisir dans sa demande d\'adhésion avant d\'être désigné responsable ou sous-admin (liste publique).</span>'
+:'')+
 
 (m.memberNo
 ?'<span>N° '+esc(m.memberNo)+'</span>'
