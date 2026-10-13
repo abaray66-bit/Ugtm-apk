@@ -224,17 +224,36 @@ service cloud.firestore {
     match /responsables/{respId} {
       allow read: if true;
       allow create, update: if isAdmin()
-        && request.resource.data.keys().hasOnly(['uid', 'name', 'title', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'title', 'phone', 'createdAt'])
         && request.resource.data.uid == respId
         && okText(request.resource.data.name, 120)
-        && okText(request.resource.data.title, 60);
+        && okText(request.resource.data.title, 60)
+        && (!('phone' in request.resource.data) || okText(request.resource.data.phone, 30))
+        // Le responsable met lui-même ses coordonnées
+        // publiques à jour (nom, téléphone) — sans jamais
+        // toucher à sa fonction, qui relève de l'admin.
+        || (signedIn() && request.auth.uid == respId
+            && request.resource.data.uid == respId
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'phone'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.phone, 30));
       allow delete: if isAdmin()
         || (signedIn() && request.auth.uid == respId);
     }
 
     match /publicProvinceContacts/{province} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin()
+        // Le sous-admin tient à jour la fiche publique de
+        // sa propre province (nom, téléphone).
+        || (isSubAdmin()
+            && province == assignedProvince()
+            && request.resource.data.keys().hasOnly(['province', 'name', 'phone'])
+            && request.resource.data.province == province
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.phone, 30));
+      allow delete: if isAdmin();
     }
 
     match /news/{id} {

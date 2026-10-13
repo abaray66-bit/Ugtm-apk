@@ -39,10 +39,12 @@ window.APP_DATA = {
   events: [],
 
   // Permanence
+  // Le numéro de téléphone n'est plus affiché ici : c'est
+  // celui du secrétaire régional (déjà joignable via le
+  // contact « Numéro du secrétaire régional sur WhatsApp »).
   permanence: {
     title: "Permanence de la Fédération régionale de la Santé",
     address: "Agadir, Souss-Massa",
-    phone: "06 61 38 62 47",
     email: "abaray66@gmail.com",
     hours: "Lundi - Vendredi, 09:00 - 17:00"
     // Les responsables syndicaux ne se saisissent pas ici :

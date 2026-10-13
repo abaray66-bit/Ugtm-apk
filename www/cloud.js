@@ -193,7 +193,8 @@ function subscribeResponsables(){
           return {
             uid: d.id,
             name: String(x.name || '').slice(0,120),
-            title: String(x.title || '').slice(0,60)
+            title: String(x.title || '').slice(0,60),
+            phone: String(x.phone || '').slice(0,30)
           };
 
         })
@@ -848,9 +849,46 @@ async function submitAdhesion(application,signature){
       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
+  }).then(function(result){
+    /* Le formulaire d'adhésion est la saisie de
+       référence du téléphone (le formulaire de profil
+       a été retiré) : le numéro saisi est reporté sur
+       la fiche membre, puis — quand le compte en porte
+       un — sur la fiche de responsable et le contact de
+       province (liste publique). */
+    return syncMemberPhone(u, clean.phone).then(function(){return result;});
   });
   await syncMemberContact(uid, clean);
   return result;
+}
+
+/* Reporte le téléphone saisi dans la demande d'adhésion
+   sur la fiche membre et, quand le compte en porte un,
+   sur la fiche de responsable (permanence syndicale) et
+   le contact de province (sous-admin), publics. */
+async function syncMemberPhone(u, phone){
+  var uid=u.uid;
+  var tel=String(phone||'').trim().slice(0,30);
+  if(!tel)return;
+  var ref=doc(db,'members',uid);
+  var snap=await getDoc(ref);
+  if(!snap.exists())return;
+  var data=snap.data()||{};
+  var name=String(data.name||'').slice(0,120);
+  await updateDoc(ref,{phone:tel,updatedAt:serverTimestamp()});
+  if(data.role==='subadmin'&&data.adminProvince){
+    var cref=doc(db,'provinceContacts',data.adminProvince);
+    var csnap=await getDoc(cref);
+    if(csnap.exists()&&csnap.data().uid===uid){
+      await updateDoc(cref,{name:name,phone:tel});
+      await savePublicProvinceContact(data.adminProvince,name,tel);
+    }
+  }
+  var rref=doc(db,'responsables',uid);
+  var rsnap=await getDoc(rref);
+  if(rsnap.exists()){
+    await updateDoc(rref,{name:name,phone:tel});
+  }
 }
 
 /* =========================================================
@@ -1128,6 +1166,7 @@ var admin = {
         if (!snap.exists()) throw new Error('Membre introuvable');
         var member = snap.data();
         if (member.status !== 'active') throw new Error('Seul un adhérent actif peut devenir sous-admin.');
+        if (!String(member.phone || '').trim()) throw new Error('Ce membre n’a pas renseigné de téléphone : il doit d’abord le saisir dans sa demande d’adhésion pour figurer dans la liste publique des responsables de province.');
         var old = member.adminProvince || '';
         return getDoc(doc(db, 'provinceContacts', assigned)).then(function(existing){
           if (existing.exists() && existing.data().uid !== uid)
@@ -1182,10 +1221,13 @@ var admin = {
         var member = snap.data();
         if (member.status !== 'active')
           throw new Error('Seul un adhérent actif peut être désigné responsable.');
+        if (!String(member.phone || '').trim())
+          throw new Error('Ce membre n’a pas renseigné de téléphone : il doit d’abord le saisir dans sa demande d’adhésion pour figurer dans la liste publique sous la permanence syndicale.');
         return setDoc(doc(db, 'responsables', uid), {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),
           title: String(title || '').slice(0,60),
+          phone: String(member.phone || '').slice(0,30),
           createdAt: serverTimestamp()
         });
       });
@@ -1194,6 +1236,20 @@ var admin = {
   removeResponsable:
     function(uid){
       return deleteDoc(doc(db, 'responsables', uid));
+    },
+
+  /* Suppression complète d'un dossier d'adhésion par
+     l'administrateur général : la demande signée ET le
+     PDF officiel enregistré sont effacés ensemble. */
+  deleteAdhesion:
+    function(uid){
+      var id=String(uid||'');
+      if(!id)return Promise.reject(new Error('Dossier inconnu'));
+      return deleteDoc(doc(db,'adhesionRequests',id)).then(function(){
+        return deleteDoc(doc(db,'adhesionDocuments',id)).catch(function(){
+          /* Aucun PDF enregistré : rien d'autre à effacer. */
+        });
+      });
     },
 
 
@@ -1301,6 +1357,15 @@ var admin = {
         return removeContact.then(function(){return deleteDoc(ref);}).then(function(){
           // Nettoyage : un membre supprimé ne reste pas dans la liste des responsables.
           return deleteDoc(doc(db, 'responsables', uid)).catch(function(){});
+        }).then(function(){
+          /* Suppression en cascade : le dossier d'adhésion
+             numérique (demande + PDF stocké) suit le profil
+             supprimé — aucun dossier orphelin ne reste
+             dans Firestore. */
+          return Promise.all([
+            deleteDoc(doc(db, 'adhesionRequests', uid)).catch(function(){}),
+            deleteDoc(doc(db, 'adhesionDocuments', uid)).catch(function(){})
+          ]);
         });
       });
     },

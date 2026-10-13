@@ -1,6 +1,7 @@
 {
-  "versionCode": 5,
-  "versionName": "1.4",
-  "apkUrl": "https://github.com/abaray66-bit/Ugtm-apk/releases/download/v1.4/app-release.apk",
+  "versionCode": 10508,
+  "versionName": "1.5.8",
+  "apkUrl": "https://github.com/abaray66-bit/Ugtm-apk/releases/download/v1.5.8/app-release.apk",
+  "sha256": "4dc7af99f6faaf8c0d25ca02cf70b19d10d5577e754a3af9de9437fe18653705",
   "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
 }
