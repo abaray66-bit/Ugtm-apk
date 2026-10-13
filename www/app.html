@@ -5329,7 +5329,7 @@ var phoneHtml=(phone&&tel)
   ?'<a dir="ltr" href="wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
   : '';
 
-return '<li>'+esc(nom?(role?role+' : '+nom:nom)+phoneHtml+'</li>';
+return '<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
 
 }).join('');
 
