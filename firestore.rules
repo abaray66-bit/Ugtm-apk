@@ -63,22 +63,66 @@ service cloud.firestore {
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)
         && okText(request.resource.data.prov, 40)
-        && okText(request.resource.data.phone, 30);
+        && okText(request.resource.data.phone, 30)
+        // Validation d'une demande d'adhésion : le
+        // responsable crée la fiche adhérent (actif,
+        // numéroté depuis le compteur global). Le
+        // compteur et la fiche sont écrits dans la
+        // même transaction : lastMemberNo correspond
+        // obligatoirement au numéro de la fiche.
+        || ((isAdmin()
+            || (isSubAdmin() && request.resource.data.prov == assignedProvince()))
+            && request.resource.data.status == 'active'
+            && request.resource.data.keys().hasOnly([
+              'name', 'email', 'photo', 'etab', 'prov',
+              'phone', 'status', 'memberNo', 'activatedAt', 'createdAt'
+            ])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+              .lastMemberNo == request.resource.data.memberNo);
 
       allow update: if isAdmin()
+        // Activation d'un adhérent en attente par son
+        // sous-admin de province : la fiche complète du
+        // dossier signé (coordonnées) peut être enregistrée
+        // en même temps que l'activation et le numéro.
         || (isSubAdmin() && resource.data.prov == assignedProvince()
             && resource.data.status == 'pending'
             && request.resource.data.status == 'active'
             && request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'memberNo', 'activatedAt'])
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'memberNo', 'activatedAt', 'updatedAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
             && okText(request.resource.data.memberNo, 30)
             // La numérotation vient OBLIGATOIREMENT du compteur global,
-            // écrit dans le même lot : le numéro du membre doit être
-            // exactement le dernier numéro émis (cf. setStatus de
-            // cloud.js, transaction counters/memberNumbers).
+            // écrite dans le même lot : le numéro du membre doit être
+            // exactement le dernier numéro émis (cf. activateMemberFromRequest
+            // de cloud.js, transaction counters/memberNumbers).
             && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
                  .lastMemberNo == request.resource.data.memberNo)
+        // Rafraîchissement des coordonnées d'un adhérent
+        // actif de la province (renouvellement signé).
+        || (isSubAdmin() && resource.data.prov == assignedProvince()
+            && resource.data.status == 'active'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov', 'phone', 'updatedAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30))
         || (signedIn() && request.auth.uid == uid
             && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['name', 'etab', 'prov', 'phone', 'updatedAt'])
