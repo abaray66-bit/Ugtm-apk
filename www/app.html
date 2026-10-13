@@ -1875,6 +1875,17 @@ body {
   }
 }
 
+.adh-welcome {
+  animation: adhBlink 1.2s ease-in-out 1;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+@keyframes adhBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .title {
   letter-spacing: -.025em;
   text-shadow: 0 3px 18px rgba(216,59,120,.12);
@@ -2677,7 +2688,6 @@ adhStatusCompletion:`Demande d’adhésion : un complément est demandé. Ouvrez
 adhStatusAccepted:`Demande d’adhésion : validée par un responsable.`,
 adhStatusRefused:`Demande d’adhésion : refusée.`,
 adhStatusUnknown:`Statut de la demande : %1.`,
-adhNote:`Note : `,
   adhStatusChecking:`Vérification du statut de votre demande…`,
   adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
   adhBlockedPending:`Votre demande est déjà enregistrée et en attente de traitement. Vous serez informé dès qu’un responsable la signera.`,
@@ -2712,18 +2722,18 @@ admSignedBadge:`Signée et validée électroniquement`,
   admPdfErr:`Impossible de générer le PDF.`,
   admPdfOnlyValidated:`Seule une demande signée et validée permet de générer le PDF.`,
   admPdfFetched:`PDF récupéré et enregistré sur l’appareil.`,
-admAdhesionSigned:`Signée électroniquement`,
-admAdhesionsHint:`Demandes numériques enregistrées dans Firestore. Signez une demande pour la valider : le PDF officiel n’est généré qu’à votre demande, après validation.`,
-admAdhesionsDenied:`Accès réservé aux responsables.`,
-admAdhesionsEmpty:`Aucune demande d’adhésion enregistrée.`,
-admAdhesionFallback:`Adhérent`,
-admStatusPending:`En attente de validation`,
-admStatusCompletion:`Complément demandé`,
-admStatusValidated:`Validée`,
-admStatusRefused:`Refusée`,
-admAskCompletion:`Demander un complément`,
-admRefuse:`Refuser`,
-admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
+  admAdhesionSigned:`Signée électroniquement`,
+  admAdhesionsHint:`Demandes numériques enregistrées dans Firestore. Signez une demande pour la valider : le PDF officiel n’est généré qu’à votre demande, après validation.`,
+  admAdhesionsDenied:`Accès réservé aux responsables.`,
+  admAdhesionsEmpty:`Aucune demande d’adhésion enregistrée.`,
+  admAdhesionFallback:`Adhérent`,
+  admStatusPending:`En attente de validation`,
+  admStatusCompletion:`Complément demandé`,
+  admStatusValidated:`Validée`,
+  admStatusRefused:`Refusée`,
+  admAskCompletion:`Demander un complément`,
+  admRefuse:`Refuser`,
+  admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
 
 nextT:`Prochain rendez-vous`,
 recentT:`Communiqués récents`,
@@ -2963,7 +2973,55 @@ admStatusCompletion:`تم طلب معلومات إضافية`,
 admStatusValidated:`تمت المصادقة`,
 admStatusRefused:`مرفوض`,
 admAskCompletion:`طلب معلومات إضافية`,
-admRefuse:`رفض`,
+    admRefuse:`رفض`,
+adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
+adhStatusAccepted:`طلب الانخراط : تمت المصادقة عليه من طرف مسؤول.`,
+adhStatusRefused:`طلب الانخراط : مرفوض.`,
+adhStatusUnknown:`حالة الطلب : %1.`,
+  adhStatusChecking:`جار التحقق من حالة طلبكم…`,
+  adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
+  adhBlockedPending:`طلب الانخراط مسجل بالفعل وهو في انتظار توقيع أحد المسؤولين. سيتم إخباركم فور توقيعه.`,
+  adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
+
+/* Transmission à l'administration (le PDF est généré par le responsable) */
+adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
+adhSentFirst:`تم إرسال الطلب إلى الإدارة. سيتم إخباركم فور توقيع أحد المسؤولين عليه.`,
+adhSentCompleted:`تم إرسال المعلومات الإضافية. طلبكم عاد إلى قيد التوقيع.`,
+adhSentRenewal:`تم إرسال طلب التجديد : طلبكم عاد إلى قيد توقيع أحد المسؤولين.`,
+adhSaveError:`تعذر تسجيل الطلب.`,
+
+/* Espace responsable : signature électronique et génération du PDF */
+admSignValidate:`التوقيع والمصادقة`,
+admGeneratePdf:`إنشاء ملف PDF`,
+admSignTitle:`التوقيع الإلكتروني للمسؤول`,
+admDossierTitle:`ملف الانخراط`,
+admViewDossier:`استعراض`,
+admClose:`إغلاق`,
+admSignLoading:`جار تحميل الملف…`,
+admSignHint:`وقّعوا داخل الإطار باستعمال الإصبع : توقيعكم يصادق على الانخراط.`,
+admSignNote:`ملاحظة المعالجة (اختيارية)`,
+admSignCancel:`إلغاء`,
+admSignConfirm:`تأكيد التوقيع`,
+admSignMissing:`يرجى التوقيع قبل المصادقة على الانخراط.`,
+admSignSending:`جار تسجيل التوقيع…`,
+admSignDone:`تم توقيع الانخراط والمصادقة عليه.`,
+admSignErr:`تعذر تسجيل التوقيع.`,
+admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
+  admPdfGenerating:`جار إنشاء ملف PDF…`,
+  admPdfDone:`تم إنشاء ملف PDF وتسجيله على الجهاز.`,
+  admPdfErr:`تعذر إنشاء ملف PDF.`,
+  admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
+  admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
+admAdhesionSigned:`موقّع إلكترونياً`,
+admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة في Firestore. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
+admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
+admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
+admAdhesionFallback:`منخرط`,
+admStatusPending:`في انتظار المصادقة`,
+admStatusCompletion:`تم طلب معلومات إضافية`,
+admStatusValidated:`تمت المصادقة`,
+admStatusRefused:`مرفوض`,
+admAskCompletion:`طلب معلومات إضافية`,
 admGeneratePdfLong:`إنشاء / تحميل ملف PDF الموقّع`,
 
 nextT:`الموعد القادم`,
@@ -3759,12 +3817,19 @@ function showMyAdhesionStatus(request){
     accepted:t.adhStatusAccepted,
     refused:t.adhStatusRefused
   };
-  box.hidden=false;
-  box.textContent=labels[request.status]||
-    (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
-  if(request.adminNote)
-  box.textContent+=' '+(t.adhNote||'Note : ')+String(request.adminNote).slice(0,1000);
-  // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
+   box.hidden=false;
+   box.textContent=labels[request.status]||
+     (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
+   if(request.adminNote && request.status === 'accepted' && request.signedAt){
+     var age = Date.now() - request.signedAt;
+     if(age < 86400000){
+       var span = document.createElement('span');
+       span.className = 'adh-welcome';
+       span.textContent = String(request.adminNote).slice(0,1000);
+       box.appendChild(span);
+     }
+   }
+   // Un dossier existe : le PDF enregistré sur Firestore peut être (ré)envoyé.
 }
 function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
