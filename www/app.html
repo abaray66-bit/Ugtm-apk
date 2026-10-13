@@ -313,14 +313,17 @@ main{
   font-weight:800;
   font-size:18px;
   line-height:1.3;
-  margin:0 0 4px
+  margin:0 0 4px;
+  overflow-wrap:anywhere;
+  word-break:break-word
 }
 
 .hero p{
   margin:0 0 12px;
   font-size:13.5px;
   line-height:1.5;
-  color:rgba(255,255,255,.88)
+  color:rgba(255,255,255,.88);
+  overflow-wrap:anywhere
 }
 
 .hero .btn{
@@ -440,6 +443,11 @@ main{
 
     .home-actions .adhbtns .btn{
     flex:1 1 100%
+    }
+
+    .home-actions .hero h1{
+    font-size:15px;
+    line-height:1.25
     }
 
     @media(max-width:359px){
@@ -2003,6 +2011,8 @@ body {
 /* ---------- Header ---------- */
 
 .top {
+  position: relative;
+  z-index: 5;
   background: rgba(12,12,17,.76) !important;
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
@@ -2063,19 +2073,6 @@ body {
     inset 0 1px 0 rgba(255,255,255,.09);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-}
-
-#s-home .hero::before {
-  content: "";
-  position: absolute;
-  width: 170px;
-  height: 170px;
-  right: -70px;
-  top: -80px;
-  border-radius: 50%;
-  background: rgba(216,59,120,.16);
-  filter: blur(8px);
-  pointer-events: none;
 }
 
 #s-home .hero::after {
@@ -2383,7 +2380,11 @@ button.primary:active {
       var(--bg, #f6f6f8);
   }
 
-  .top,
+  .top {
+    background: rgba(255,255,255,.82) !important;
+    border-bottom: 1px solid var(--line) !important;
+  }
+
   .tabs {
     background: rgba(255,255,255,.82) !important;
   }
@@ -2440,10 +2441,6 @@ button.primary:active {
     box-shadow: 0 8px 24px rgba(184,50,104,.10);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-  }
-
-  #s-home .hero::before {
-    opacity: .45;
   }
 
   #s-home .hero h1 {
@@ -2537,12 +2534,12 @@ button.primary:active {
 </header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="home-actions"><div class="hero">
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
-<button class="btn gold" type="button" data-go="report" data-i18n="heroBtn"></button>
+<button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
 <div class="adhbtns">
-<button class="btn gold" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
+<button class="btn primary" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
 </div>
