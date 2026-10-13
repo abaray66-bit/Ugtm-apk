@@ -3055,7 +3055,7 @@ adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signa
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
-adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
+adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`, adhCommitRequired:`Veuillez cocher la déclaration d’engagement (étape 04).`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
@@ -3304,7 +3304,7 @@ adhDigitalIntro:`املأوا استمارة الانخراط مباشرة دا�
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
-adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
+adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`, adhCommitRequired:`يرجى تأشير تصريح الالتزام (الخطوة 04).`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
@@ -7461,8 +7461,14 @@ window.UGTM.failed();
         }
         if(missing){
           missing.focus();
-          setAdhStatus(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',false);
-          adm(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',4000);
+          /* La case d'engagement est un booléen : le message
+             générique « remplir les champs » ne dit pas quoi
+             faire — on la nomme explicitement. */
+          var msg=(missing.id==='adhCommit')
+            ?(t.adhCommitRequired||'Veuillez cocher la déclaration d’engagement (étape 04).')
+            :(t.adhRequired||'Veuillez remplir tous les champs obligatoires.');
+          setAdhStatus(msg,false);
+          adm(msg,4000);
           return;
         }
       }
