@@ -848,8 +848,15 @@ async function submitAdhesion(application,signature){
       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
+  }).then(function(result){
+    /* Le formulaire d'adhésion est la saisie de
+       référence du téléphone (le formulaire de profil
+       a été retiré) : le numéro saisi est reporté sur
+       la fiche membre, puis — quand le compte en porte
+       un — sur la fiche de responsable et le contact de
+       province (liste publique). */
+    return syncMemberPhone(u, clean.phone).then(function(){return result;});
   });
-  await syncMemberContact(uid, clean);
   return result;
 }
 
@@ -953,28 +960,33 @@ async function activateMemberFromRequest(uid){
 }
 
 /* =========================================================
-   SYNCHRONISATION D'UN CONTACT MEMBRE (PROVINCE/ETAB/TELEPHONE)
-   Synchronise les champs de contact du membre avec la demande
-   d'adhésion originale pour les provinces et les responsables.
+   SYNCHRONISATION DU TÉLÉPHONE SAISI DANS LA DEMANDE D'ADHÉSION
+   Le numéro est reporté sur la fiche membre, puis — quand le
+   compte en porte un — sur la fiche de responsable (permanence
+   syndicale) et le contact de province (sous-admin), publics.
    ========================================================= */
-async function syncMemberContact(uid, contactData){
-  if (!contactData || typeof contactData !== 'object') return;
-  var updates = {};
-  if (contactData.etab) updates.etab = String(contactData.etab).trim();
-  if (contactData.prov) updates.prov = String(contactData.prov).trim();
-  if (contactData.phone) updates.phone = String(contactData.phone).trim();
-  if (Object.keys(updates).length > 0) {
-    await updateDoc(doc(db, 'members', uid), {...updates, updatedAt: serverTimestamp()});
-    if (updates.prov && contactData.phone) {
-      await setDoc(doc(db, 'provinceContacts', updates.prov), {
-        uid: uid,
-        province: updates.prov,
-        name: contactData.name || '',
-        phone: updates.phone,
-        updatedAt: serverTimestamp()
-      });
-      await savePublicProvinceContact(updates.prov, contactData.name || '', updates.phone);
+async function syncMemberPhone(u, phone){
+  var uid=u.uid;
+  var tel=String(phone||'').trim().slice(0,30);
+  if(!tel)return;
+  var ref=doc(db,'members',uid);
+  var snap=await getDoc(ref);
+  if(!snap.exists())return;
+  var data=snap.data()||{};
+  var name=String(data.name||'').slice(0,120);
+  await updateDoc(ref,{phone:tel,updatedAt:serverTimestamp()});
+  if(data.role==='subadmin'&&data.adminProvince){
+    var cref=doc(db,'provinceContacts',data.adminProvince);
+    var csnap=await getDoc(cref);
+    if(csnap.exists()&&csnap.data().uid===uid){
+      await updateDoc(cref,{name:name,phone:tel});
+      await savePublicProvinceContact(data.adminProvince,name,tel);
     }
+  }
+  var rref=doc(db,'responsables',uid);
+  var rsnap=await getDoc(rref);
+  if(rsnap.exists()){
+    await updateDoc(rref,{name:name,phone:tel});
   }
 }
 
