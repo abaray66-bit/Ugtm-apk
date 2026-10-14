@@ -1067,50 +1067,69 @@ jobs:
 
       - name: Publication OTA automatique (update.json)
         run: |
-          set -e
+          set -euo pipefail
 
           APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
 
-          if [ ! -f "$APK_PATH" ] || [ ! -f "$APK_PATH.sha256" ]; then
-            echo "ERREUR : APK ou empreinte absente."
+          if [ ! -s "$APK_PATH" ]; then
+            echo "ERREUR : APK absent ou vide."
             exit 1
           fi
 
-          SHA256="$(awk '{print $1}' "$APK_PATH.sha256")"
+          APK_SIZE="$(wc -c < "$APK_PATH" | tr -d ' ')"
+          SHA256="$(sha256sum "$APK_PATH" | awk '{print $1}')"
+
+          if ! [[ "$SHA256" =~ ^[a-fA-F0-9]{64}$ ]]; then
+            echo "ERREUR : SHA-256 invalide."
+            exit 1
+          fi
+
           APK_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${UGTM_VERSION_NAME}/app-release.apk"
 
-          export SHA256 APK_URL
+          export SHA256 APK_URL APK_SIZE
 
-          python3 - <<'PY2'
+          python3 - <<'PY'
           import json
-          from pathlib import Path
           import os
+          from pathlib import Path
 
           manifest = {
               "versionCode": int(os.environ["UGTM_VERSION_CODE"]),
               "versionName": os.environ["UGTM_VERSION_NAME"],
               "apkUrl": os.environ["APK_URL"],
-              "sha256": os.environ["SHA256"].strip(),
+              "sha256": os.environ["SHA256"].lower(),
               "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
           }
 
-          Path("www/update.json").write_text(
+          assert len(manifest["sha256"]) == 64
+          assert manifest["versionCode"] > 0
+          assert manifest["versionName"]
+          assert manifest["apkUrl"].startswith("https://")
+
+          path = Path("www/update.json")
+          path.write_text(
               json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
               encoding="utf-8"
           )
 
-          print("update.json régénéré :")
-          print(json.dumps(manifest, indent=2, ensure_ascii=False))
-          PY2
+          # Relire et valider le fichier réellement écrit.
+          checked = json.loads(path.read_text(encoding="utf-8"))
+          assert checked == manifest
+
+          print("Manifeste OTA validé :")
+          print(json.dumps(checked, indent=2, ensure_ascii=False))
+          print("Taille APK local :", os.environ["APK_SIZE"], "octets")
+          PY
+
+          echo "SHA-256 calculé sur l'APK local : $SHA256"
 
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if git diff --quiet www/update.json; then
-            echo "update.json déjà à jour pour ${UGTM_VERSION_NAME} — rien à publier."
+          if git diff --quiet -- www/update.json; then
+            echo "update.json déjà à jour — aucun commit."
           else
             git add www/update.json
             git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
-            git push origin HEAD:${GITHUB_REF_NAME}
-            echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
