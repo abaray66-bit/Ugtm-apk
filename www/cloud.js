@@ -1142,37 +1142,47 @@ function syncPublicProvinceContacts(){
 }
 var admin = {
 
-  setSubAdmin:
+setSubAdmin:
     function(uid, province){
-      var assigned = String(province || '').slice(0,40);
-      return getDoc(doc(db, 'members', uid)).then(function(snap){
-        if (!snap.exists()) throw new Error('Membre introuvable');
-        var member = snap.data();
+      return runTransaction(db, async function(tx){
+        var memberRef = doc(db, 'members', uid);
+        var memberSnap = await tx.get(memberRef);
+        if (!memberSnap.exists()) throw new Error('Membre introuvable');
+        var member = memberSnap.data();
         if (member.status !== 'active') throw new Error('Seul un adhérent actif peut devenir sous-admin.');
-        if (!String(member.phone || '').trim()) throw new Error('Ce membre n’a pas renseigné de téléphone : il doit d’abord le saisir dans sa demande d’adhésion pour figurer dans la liste publique des responsables de province.');
+        if (!String(member.phone || '').trim()) throw new Error('Ce membre n\'a pas renseigné de téléphone : il doit d\'abord le saisir dans sa demande d\'adhésion pour figurer dans la liste publique des responsables de province.');
+
+        var assigned = String(province || '').slice(0,40);
         var old = member.adminProvince || '';
-        return getDoc(doc(db, 'provinceContacts', assigned)).then(function(existing){
-          if (existing.exists() && existing.data().uid !== uid)
-            throw new Error('Un sous-admin est déjà affecté à ce secteur. Retirez son rôle avant de le remplacer.');
-          return updateDoc(doc(db, 'members', uid), {role: 'subadmin', adminProvince: assigned});
-        }).then(function(){
-          return old && old !== assigned ? getDoc(doc(db, 'provinceContacts', old)) : null;
-        }).then(function(oldContact){
-          var ownsOld = oldContact && oldContact.exists() && oldContact.data().uid === uid;
-          var clearOld = ownsOld ? deleteDoc(doc(db, 'provinceContacts', old)) : Promise.resolve();
-          return clearOld.then(function(){
-            if (ownsOld && old && old !== assigned) return deletePublicProvinceContact(old);
-          }).then(function(){
-            return setDoc(doc(db, 'provinceContacts', assigned), {
-              uid: uid,
-              name: String(member.name || '').slice(0,120),
-              phone: String(member.phone || '').slice(0,30),
-              province: assigned
-            });
-          }).then(function(){
-            return savePublicProvinceContact(assigned, member.name, member.phone);
-          });
+
+        var contactRef = doc(db, 'provinceContacts', assigned);
+        var contactSnap = await tx.get(contactRef);
+        if (contactSnap.exists() && contactSnap.data().uid !== uid)
+          throw new Error('Un sous-admin est déjà affecté à ce secteur. Retirez son rôle avant de le remplacer.');
+
+        tx.update(doc(db, 'members', uid), {role: 'subadmin', adminProvince: assigned});
+
+        if (old && old !== assigned){
+          var oldRef = doc(db, 'provinceContacts', old);
+          var oldSnap = await tx.get(oldRef);
+          if (oldSnap.exists() && oldSnap.data().uid === uid)
+            tx.delete(doc(db, 'provinceContacts', old));
+        }
+
+        tx.set(doc(db, 'provinceContacts', assigned), {
+          uid: uid,
+          name: String(member.name || '').slice(0,120),
+          phone: String(member.phone || '').slice(0,30),
+          province: assigned,
+          updatedAt: serverTimestamp()
         });
+
+        return {old: old, assigned: assigned, name: member.name, phone: member.phone};
+      }).then(function(res){
+        if (res.old && res.old !== res.assigned)
+          return deletePublicProvinceContact(res.assigned);
+      }).then(function(res){
+        return savePublicProvinceContact(res.assigned, res.name, res.phone);
       });
     },
 
