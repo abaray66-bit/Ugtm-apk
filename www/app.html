@@ -3691,7 +3691,8 @@ html+="<ul class=\"list province-contact-list\">";
 contacts.forEach(function(c){
 var phone=String(c.phone||'').trim();
 var tel=phone.replace(/[^0-9+]/g,'');
-html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"tel:"+esc(tel)+"\">"+esc(phone)+"</a>":"")+"</div></li>";
+var wa=tel.replace(/^\+/, '');
+html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"wa.me/"+esc(wa)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
 });
 html+="</ul>";
 box.innerHTML=html;
@@ -3774,16 +3775,16 @@ if(!lb.hidden)closeLightbox();
 });
 
 document.addEventListener('click',function(e){
-
-var img=e.target.closest('img.news-photo');
-
-if(img)openLightbox(img.src);
-
-});
-
-})();
-
-function feedback(msg,ok){
+ 
+ var img=e.target.closest('img.news-photo');
+ 
+ if(img)openLightbox(img.src);
+ 
+ });
+ 
+ })();
+ 
+ function feedback(msg,ok){
 
 var el=$('rFeedback');
 
@@ -5732,8 +5733,11 @@ if(m)phone=String(m.phone||'').trim();
 }
 
 var tel=phone.replace(/[^0-9+]/g,'');
+var wa=tel.replace(/^\+/, '');
 
-return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+(phone&&tel?' <a dir="ltr" href="tel:'+esc(tel)+'">'+esc(phone)+'</a>':'')+'</li>';
+var phoneHtml=(phone&&tel)?'<a dir="ltr" href="wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>':'';
+
+return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
 
 }).join('');
 
