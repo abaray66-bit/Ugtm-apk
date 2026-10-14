@@ -3692,7 +3692,7 @@ contacts.forEach(function(c){
 var phone=String(c.phone||'').trim();
 var tel=phone.replace(/[^0-9+]/g,'');
 var wa=tel.replace(/^\+/, '');
-html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"wa.me/"+esc(wa)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
+html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"https://wa.me/212"+esc(wa)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
 });
 html+="</ul>";
 box.innerHTML=html;
@@ -5735,7 +5735,7 @@ if(m)phone=String(m.phone||'').trim();
 var tel=phone.replace(/[^0-9+]/g,'');
 var wa=tel.replace(/^\+/, '');
 
-var phoneHtml=(phone&&tel)?'<a dir="ltr" href="wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>':'';
+var phoneHtml=(phone&&tel)?'<a dir="ltr" href="https://wa.me/212'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>':'';
 
 return'<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
 
