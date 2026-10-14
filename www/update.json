@@ -1,7 +1,1 @@
-{
-  "versionCode": 10509,
-  "versionName": "1.5.9",
-  "apkUrl": "https://github.com/abaray66-bit/Ugtm-apk/releases/download/v1.5.9/app-release.apk",
-  "sha256": "3ac80c4dec3d459abeede9501d3f0aa698a82b19708f13054b65e5317fe29d13",
-  "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
-}
+{"versionCode": 10514, "versionName": "1.5.14", "apkUrl": "https://github.com/abaray66-bit/Ugtm-apk/releases/download/v1.5.9/app-release.apk", "sha256": "3ac80c4dec3d459abeede9501d3f0aa698a82b19708f13054b65e5317fe29d13", "message": "Mise à jour 1.5.14 : correction changement de province sous-admin."}
