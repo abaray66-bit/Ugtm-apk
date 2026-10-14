@@ -1044,6 +1044,156 @@ jobs:
 
       # ==========================================================
       # RELEASE GitHub (l'APK de update.json y est attaché)
+      # Une release existante n'est pas recréée : l'APK publié
+      # reste celui dont l'empreinte est enregistrée dans
+      # update.json (les reconstructions ne sont pas identiques
+      # à l'octet près → recréer la release casserait la
+      # vérification SHA-256 côté appareil).
+      # ==========================================================
+
+      - name: Vérifier si la release existe
+        id: release_check
+        run: |
+          set -e
+
+          if gh release view "v${UGTM_VERSION_NAME}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release v${UGTM_VERSION_NAME} déjà existante — APK conservé."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Release v${UGTM_VERSION_NAME} à créer."
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Créer la release GitHub
+        if: steps.release_check.outputs.exists != 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.UGTM_VERSION_NAME }}
+          name: UGTM Souss-Massa ${{ env.UGTM_VERSION_NAME }}
+          files: android/app/build/outputs/apk/release/app-release.apk
+          token: ${{ github.token }}
+          draft: false
+          prerelease: false
+
+      # ==========================================================
+      # PUBLICATION OTA AUTOMATIQUE
+      # Régénère www/update.json (versionCode, versionName, apkUrl,
+      # sha256) et le pousse sur main uniquement
+      # quand le versionCode change. Le déploiement Firebase
+      # Hosting (déclenché par le commit) rend update.json
+      # accessible en ligne : la mise à jour est alors
+      # automatique sur les appareils installés.
+      # ==========================================================
+
+      - name: Publication OTA automatique (update.json)
+        run: |
+          set -e
+
+          APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+
+          if [ ! -f "$APK_PATH" ] || [ ! -s "$APK_PATH" ]; then
+            echo "ERREUR : APK ou empreinte absente."
+            exit 1
+          fi
+
+          SHA256="$(awk '{print $1}' "$APK_PATH.sha256")"
+          APK_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${UGTM_VERSION_NAME}/app-release.apk"
+
+          # Version actuellement PUBLIÉE = celle du
+          # commit HEAD (update.json en ligne), et non
+          # le fichier qui serait régénéré ici.
+          CURRENT_CODE="$(git show HEAD:www/update.json | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+
+          if [ "$CURRENT_CODE" = "$UGTM_VERSION_CODE" ]; then
+            echo "update.json déjà à jour (versionCode ${CURRENT_CODE}) — rien à publier."
+            exit 0
+          fi
+
+          # Empreinte de l'APK réellement publié dans la
+          # release : l'APK est téléchargé depuis l'URL
+          # de la release (identique à l'APK construit
+          # si la release vient d'être créée, ou à
+          # l'APK existant si la release préexiste —
+          # les reconstructions ne sont pas
+          # reproductibles à l'octet près).
+          rm -rf /tmp/ugtm-ota
+          mkdir -p /tmp/ugtm-ota
+          if ! curl -sSL --fail --connect-timeout 20 --max-time 300 "$APK_URL" -o /tmp/ugtm-ota/app-release.apk || [ ! -s /tmp/ugtm-ota/app-release.apk ]; then
+            echo "Téléchargement de la release impossible — empreinte de l'APK construit utilisée."
+            cp "$APK_PATH" /tmp/ugtm-ota/app-release.apk
+          fi
+          RELEASE_SHA256="$(sha256sum /tmp/ugtm-ota/app-release.apk | awk '{print $1}')"
+
+          export APK_URL RELEASE_SHA256
+
+          python3 - <<'PY2'
+          import json
+          from pathlib import Path
+          import os
+
+          manifest = {
+              "versionCode": int(os.environ["UGTM_VERSION_CODE"]),
+              "versionName": os.environ["UGTM_VERSION_NAME"],
+              "apkUrl": os.environ["APK_URL"],
+              "sha256": os.environ["RELEASE_SHA256"].strip(),
+              "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
+          }
+
+          Path("www/update.json").write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "
+",
+              encoding="utf-8"
+          )
+
+          print("update.json régénéré :")
+          print(json.dumps(manifest, indent=2, ensure_ascii=False))
+          PY2
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add www/update.json
+          git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
+          git push origin HEAD:${GITHUB_REF_NAME}
+          echo "update.json publié : la mise à jour est désormais automatique pour les appareils installés."
+
+          # Un commit poussé avec le GITHUB_TOKEN ne
+          # déclenche pas les autres workflows : le
+          # déploiement Firebase Hosting est donc
+          # déclenché explicitement pour mettre
+          # update.json en ligne immédiatement.
+          # L'échec du déclenchement NE doit PAS être
+          # masqué (>/dev/null 2>&1 || true) : lors de
+          # la v1.5.3 il a échoué silencieusement et
+          # update.json en ligne est resté sur le
+          # commit précédent (1.5.2 / 10502).
+          OTA_SHA="$(git rev-parse HEAD)"
+          gh workflow run "Deploy Firebase Hosting"             --ref "${GITHUB_REF_NAME}"
+
+          # Attendre que le déploiement déclenché porte
+          # bien le commit OTA, puis surveiller sa
+          # réussite : sans cette vérification, le site
+          # peut continuer à servir l'ancien manifeste.
+          DEPLOY_RUN_ID=""
+          for _ in $(seq 1 30); do
+            DEPLOY_RUN_ID="$(gh run list               --workflow "Deploy Firebase Hosting"               --event workflow_dispatch               --limit 20               --json databaseId,headSha               --jq ".[] | select(.headSha == "${OTA_SHA}") | .databaseId"               | head -n 1)"
+            if [ -n "$DEPLOY_RUN_ID" ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ -z "$DEPLOY_RUN_ID" ]; then
+            echo "ERREUR : aucun déploiement Firebase Hosting déclenché pour le commit ${OTA_SHA}."
+            exit 1
+          fi
+
+          gh run watch "$DEPLOY_RUN_ID" --exit-status
+          echo "Firebase Hosting déployé pour le commit ${OTA_SHA} : update.json v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) est en ligne."
+        env:
+          GH_TOKEN: ${{ github.token }}
       # ==========================================================
 
       - name: Créer la release GitHub
