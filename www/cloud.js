@@ -1713,7 +1713,7 @@ async function loadCapacitorBrowser(){
    INITIALISATION
    ========================================================= */
 
-// export async function init(config, h){
+export async function init(config, h){
 
   hooks = h;
 
