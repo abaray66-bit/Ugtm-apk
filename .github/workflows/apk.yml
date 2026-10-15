@@ -1102,17 +1102,23 @@ jobs:
             exit 1
           fi
 
-          APK_SIZE="$(wc -c < "$APK_PATH" | tr -d ' ')"
-          SHA256="$(sha256sum "$APK_PATH" | awk '{print $1}')"
-
-          if ! [[ "$SHA256" =~ ^[a-fA-F0-9]{64}$ ]]; then
-            echo "ERREUR : SHA-256 invalide."
-            exit 1
-          fi
-
           APK_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/v${UGTM_VERSION_NAME}/app-release.apk"
 
-          export SHA256 APK_URL APK_SIZE
+          # Empreinte de l'APK réellement publié dans la release :
+          # on le télécharge depuis l'URL de la release (identique à l'APK
+          # construit si la release vient d'être créée, ou à l'APK existant
+          # si la release préexiste — les reconstructions ne sont pas
+          # reproductibles à l'octet près).
+          rm -rf /tmp/ugtm-ota
+          mkdir -p /tmp/ugtm-ota
+          if ! curl -sSL --fail --connect-timeout 20 --max-time 300 "$APK_URL" -o /tmp/ugtm-ota/app-release.apk || [ ! -s /tmp/ugtm-ota/app-release.apk ]; then
+            echo "Téléchargement de la release impossible — empreinte de l'APK construit utilisée."
+            cp "$APK_PATH" /tmp/ugtm-ota/app-release.apk
+          fi
+          RELEASE_SHA256="$(sha256sum /tmp/ugtm-ota/app-release.apk | awk '{print $1}')"
+          RELEASE_SIZE="$(wc -c < /tmp/ugtm-ota/app-release.apk | tr -d ' ')"
+
+          export APK_URL RELEASE_SHA256 RELEASE_SIZE
 
           python3 - <<'PY'
           import json
@@ -1123,7 +1129,7 @@ jobs:
               "versionCode": int(os.environ["UGTM_VERSION_CODE"]),
               "versionName": os.environ["UGTM_VERSION_NAME"],
               "apkUrl": os.environ["APK_URL"],
-              "sha256": os.environ["SHA256"].lower(),
+              "sha256": os.environ["RELEASE_SHA256"].strip().lower(),
               "message": "Une nouvelle version de l'application UGTM Souss-Massa est disponible."
           }
 
@@ -1138,31 +1144,29 @@ jobs:
               encoding="utf-8"
           )
 
-          # Relire et valider le fichier réellement écrit.
           checked = json.loads(path.read_text(encoding="utf-8"))
           assert checked == manifest
 
           print("Manifeste OTA validé :")
           print(json.dumps(checked, indent=2, ensure_ascii=False))
-          print("Taille APK local :", os.environ["APK_SIZE"], "octets")
+          print("Taille APK release :", os.environ["RELEASE_SIZE"], "octets")
           PY
 
-          echo "SHA-256 calculé sur l'APK local : $SHA256"
+          echo "SHA-256 de l'APK release : $RELEASE_SHA256"
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
-          # On récupère le sha256 du manifeste distant (si existe).
           REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
           if [ -n "$REMOTE_MANIFEST" ]; then
             CURRENT_REMOTE_CODE="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
             CURRENT_REMOTE_SHA="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['sha256'])" 2>/dev/null || echo '')"
-            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ] && [ "$CURRENT_REMOTE_SHA" = "$SHA256" ]; then
+            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ] && [ "$CURRENT_REMOTE_SHA" = "$RELEASE_SHA256" ]; then
               echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}, sha256 ${CURRENT_REMOTE_SHA}) — rien à publier."
               exit 0
             elif [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
-              echo "versionCode identique mais sha256 diffère (distant: ${CURRENT_REMOTE_SHA}, local: ${SHA256}) — mise à jour nécessaire."
+              echo "versionCode identique mais sha256 diffère (distant: ${CURRENT_REMOTE_SHA}, release: ${RELEASE_SHA256}) — mise à jour nécessaire."
             fi
           else
             CURRENT_REMOTE_CODE="0"
