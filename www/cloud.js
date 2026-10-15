@@ -551,9 +551,12 @@ async function signIn(){
 
 
       var idToken =
-        result &&
-        result.credential &&
-        result.credential.idToken;
+        (result && result.credential && result.credential.idToken) ||
+        (result && result.idToken) ||
+        (result && result.credential && result.credential.oauthIdToken) ||
+        (result && result.credential && result.credential.accessToken) ||
+        (result && result.user && result.user.getIdToken && (await result.user.getIdToken())) ||
+        null;
 
 
       if (!idToken){
@@ -1047,7 +1050,13 @@ async function reauthenticateForAccountDeletion(u){
       skipNativeAuth: true
     });
 
-    var idToken = result && result.credential && result.credential.idToken;
+    var idToken =
+      (result && result.credential && result.credential.idToken) ||
+      (result && result.idToken) ||
+      (result && result.credential && result.credential.oauthIdToken) ||
+      (result && result.credential && result.credential.accessToken) ||
+      (result && result.user && result.user.getIdToken && (await result.user.getIdToken())) ||
+      null;
     if (!idToken){
       throw new Error("Google n'a pas fourni de jeton d'authentification.");
     }
