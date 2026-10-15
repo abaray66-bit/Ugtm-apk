@@ -6213,7 +6213,7 @@ code.indexOf('permission-denied')>-1
 ?T().rDenied
 :T().errPrefix+' ('+(code||'erreur')+').');
 
-showError(err,true);
+console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
 
 
 });
@@ -6511,7 +6511,7 @@ window.UGTM
 
 .catch(function(err){
 
-showError(err,true);
+console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
 
 window.UGTM.failed();
 
