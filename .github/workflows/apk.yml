@@ -1152,12 +1152,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Vérifier la version distante AVANT d'écrire localement.
-          # Si la release distante a déjà le bon versionCode, ne rien faire.
-          CURRENT_REMOTE_CODE="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
-          if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
-            echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}) — rien à publier."
-            exit 0
+          # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
+          # On récupère le sha256 du manifeste distant (si existe).
+          REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
+          if [ -n "$REMOTE_MANIFEST" ]; then
+            CURRENT_REMOTE_CODE="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+            CURRENT_REMOTE_SHA="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['sha256'])" 2>/dev/null || echo '')"
+            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ] && [ "$CURRENT_REMOTE_SHA" = "$SHA256" ]; then
+              echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}, sha256 ${CURRENT_REMOTE_SHA}) — rien à publier."
+              exit 0
+            elif [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
+              echo "versionCode identique mais sha256 diffère (distant: ${CURRENT_REMOTE_SHA}, local: ${SHA256}) — mise à jour nécessaire."
+            fi
+          else
+            CURRENT_REMOTE_CODE="0"
+            CURRENT_REMOTE_SHA=""
           fi
 
           if git diff --quiet -- www/update.json; then
