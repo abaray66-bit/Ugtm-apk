@@ -1120,6 +1120,24 @@ jobs:
 
           export APK_URL RELEASE_SHA256 RELEASE_SIZE
 
+          # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
+          # Si la version distante est déjà correcte, ne rien faire.
+          REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
+          if [ -n "$REMOTE_MANIFEST" ]; then
+            CURRENT_REMOTE_CODE="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+            CURRENT_REMOTE_SHA="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['sha256'])" 2>/dev/null || echo '')"
+            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ] && [ "$CURRENT_REMOTE_SHA" = "$RELEASE_SHA256" ]; then
+              echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}, sha256 ${CURRENT_REMOTE_SHA}) — rien à publier."
+              exit 0
+            elif [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
+              echo "versionCode identique mais sha256 diffère (distant: ${CURRENT_REMOTE_SHA}, release: ${RELEASE_SHA256}) — mise à jour nécessaire."
+            fi
+          else
+            CURRENT_REMOTE_CODE="0"
+            CURRENT_REMOTE_SHA=""
+          fi
+
+          # Écrire le manifeste local seulement si une mise à jour est nécessaire.
           python3 - <<'PY'
           import json
           import os
@@ -1160,22 +1178,7 @@ jobs:
           # Récupérer les commits distants et rebaser avant de pousser.
           git pull --rebase origin "${GITHUB_REF_NAME}"
 
-          # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
-          REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
-          if [ -n "$REMOTE_MANIFEST" ]; then
-            CURRENT_REMOTE_CODE="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
-            CURRENT_REMOTE_SHA="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['sha256'])" 2>/dev/null || echo '')"
-            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ] && [ "$CURRENT_REMOTE_SHA" = "$RELEASE_SHA256" ]; then
-              echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}, sha256 ${CURRENT_REMOTE_SHA}) — rien à publier."
-              exit 0
-            elif [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
-              echo "versionCode identique mais sha256 diffère (distant: ${CURRENT_REMOTE_SHA}, release: ${RELEASE_SHA256}) — mise à jour nécessaire."
-            fi
-          else
-            CURRENT_REMOTE_CODE="0"
-            CURRENT_REMOTE_SHA=""
-          fi
-
+          # Mettre à jour le manifeste local, committer et pousser.
           if git diff --quiet -- www/update.json; then
             echo "update.json local déjà à jour — aucun commit."
           else
