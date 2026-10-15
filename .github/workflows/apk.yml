@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   build:
@@ -1181,7 +1182,7 @@ jobs:
             echo "update.json local identique à la version extraite — aucun commit."
           else
             git add www/update.json
-            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
+            git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE})"
           fi
 
           # Pousser ; en cas de rejet (push concurrent), récupérer puis rebaser
@@ -1195,3 +1196,37 @@ jobs:
             git stash pop || true
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
+
+          # Déclencher explicitement le déploiement Firebase Hosting pour mettre
+          # update.json en ligne immédiatement. Le workflow Hosting écoute
+          # workflow_dispatch ; sans ce déclenchement, le site continuerait à
+          # servir l'ancien manifeste (bug connu : v1.5.3/10503 jamais déployé).
+          OTA_SHA="$(git rev-parse HEAD)"
+          gh workflow run "Deploy Firebase Hosting" \
+            --ref "${GITHUB_REF_NAME}"
+
+          # Attendre que le déploiement déclenché porte bien le commit OTA,
+          # puis surveiller sa réussite : sans cette vérification, le site
+          # peut continuer à servir l'ancien manifeste.
+          DEPLOY_RUN_ID=""
+          for _ in $(seq 1 30); do
+            DEPLOY_RUN_ID="$(gh run list \
+              --workflow "Deploy Firebase Hosting" \
+              --event workflow_dispatch \
+              --limit 20 \
+              --json databaseId,headSha \
+              --jq ".[] | select(.headSha == \"${OTA_SHA}\") | .databaseId" \
+              | head -n 1)"
+            if [ -n "$DEPLOY_RUN_ID" ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ -z "$DEPLOY_RUN_ID" ]; then
+            echo "ERREUR : aucun déploiement Firebase Hosting déclenché pour le commit ${OTA_SHA}."
+            exit 1
+          fi
+
+          gh run watch "$DEPLOY_RUN_ID" --exit-status
+          echo "Firebase Hosting déployé pour le commit ${OTA_SHA} : update.json v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) est en ligne."

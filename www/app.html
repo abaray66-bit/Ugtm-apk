@@ -2707,6 +2707,7 @@ var CLOUD_ON = !!(D.firebase && D.firebase.apiKey);
 
 var S = {
 cloud:CLOUD_ON ? 'loading' : 'off',
+cloudError:'',
 user:null,
 member:null,
 isAdmin:false,
@@ -4080,7 +4081,7 @@ return;
 }
 
 if(S.cloud==='error'){
-msg.textContent=t.meOffline;
+msg.textContent=t.meOffline + (S.cloudError ? ' Diagnostic : ' + S.cloudError : '');
 msg.hidden=false;
 return;
 }
@@ -6286,9 +6287,10 @@ renderMe();
 
 },
 
-failed:function(){
+failed:function(err){
 
 S.cloud='error';
+S.cloudError=err ? [err.name || 'Error',err.code ? 'code='+err.code : '',err.message || String(err)].filter(Boolean).join(' | ').slice(0,500) : '';
 
 renderMe();
 
@@ -6513,7 +6515,7 @@ window.UGTM
 
 console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
 
-window.UGTM.failed();
+window.UGTM.failed(err);
 
 });
 

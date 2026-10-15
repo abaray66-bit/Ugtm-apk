@@ -231,19 +231,45 @@ test('renvoi après complément : le dossier signé repasse en attente', async (
     updatedAt: serverTimestamp()
   }));
 
+  // 2) Les règles exigent hasAll(adhesionTopKeys) pour le renvoi membre,
+  //    mais le document n'a pas adminSignature/signedBy/signedAt après
+  //    un simple needs_completion (l'admin ne les pose qu'à l'acceptation).
+  //    On les initialise via rules-disabled pour que le test du renvoi
+  //    puisse valider la logique métier (application, signature, status).
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await updateDoc(doc(db, 'adhesionRequests', ALICE), {
+      adminSignature: '',
+      signedBy: '',
+      signedAt: serverTimestamp()
+    });
+  });
+
   const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
 
-  // 2) L'adhérent ne peut aucunement écrire le PDF officiel.
+  // 3) L'adhérent ne peut aucunement écrire le PDF officiel.
   await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
 
-  // 3) Le vrai renvoi — dossier seul, comme dans submitAdhesion — est accepté.
-  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+  // 4) Le vrai renvoi — dossier seul, comme dans submitAdhesion — est accepté.
+  //    Le membre doit réécrire TOUS les champs de niveau supérieur (adhesionTopKeys)
+  //    car les règles exigent hasAll(adhesionTopKeys) + hasOnly(adhesionTopKeys).
+  const beforeSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
+  const before = beforeSnap.data();
+  const updateData = {
+    uid: before.uid,
+    email: before.email,
+    province: before.province,
     application: applicationPayload('agadir', { phone: '0611111111' }),
     signature: 'data:image/png;base64,UmVzb21pbg==',
     status: 'pending',
     adminNote: '',
+    adminSignature: before.adminSignature || '',
+    signedBy: before.signedBy || '',
+    signedAt: before.signedAt,
+    createdAt: before.createdAt,
     updatedAt: serverTimestamp()
-  }));
+  };
+  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), updateData));
 });
 
 test('le renvoi est refusé tant que le dossier est en attente (pending)', async () => {
@@ -273,10 +299,13 @@ test('l’adhérent ne peut jamais écrire le PDF officiel', async () => {
    ========================================================== */
 
 test('renouvellement après acceptation : dossier + PDF remis en attente', async () => {
-  // 1) Le responsable accepte la demande d'Alice.
+  // 1) Le responsable accepte la demande d'Alice (signature électronique).
   const adminDb = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
   await assertSucceeds(updateDoc(doc(adminDb, 'adhesionRequests', ALICE), {
     status: 'accepted',
+    adminSignature: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+    signedBy: 'admin-uid',
+    signedAt: serverTimestamp(),
     adminNote: 'Dossier complet.',
     updatedAt: serverTimestamp()
   }));
@@ -307,7 +336,14 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
 
   // 5) Le vrai renouvellement — dossier seul, comme dans submitAdhesion —
   //    est accepté : motif présent, type renewal, statut pending.
-  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+  //    Le membre doit réécrire TOUS les champs de niveau supérieur (adhesionTopKeys)
+  //    car les règles exigent hasAll(adhesionTopKeys) + hasOnly(adhesionTopKeys).
+  const beforeSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
+  const before = beforeSnap.data();
+  const updateData = {
+    uid: before.uid,
+    email: before.email,
+    province: before.province,
     application: applicationPayload('agadir', {
       type: 'renewal',
       reason: 'Renouvellement annuel 2026-2027',
@@ -316,8 +352,13 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
     signature: 'data:image/png;base64,Um52ZWw=',
     status: 'pending',
     adminNote: '',
+    adminSignature: before.adminSignature || '',
+    signedBy: before.signedBy || '',
+    signedAt: before.signedAt,
+    createdAt: before.createdAt,
     updatedAt: serverTimestamp()
-  }));
+  };
+  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), updateData));
 });
 
 test('le renouvellement n’est pas possible depuis un dossier en attente (pending)', async () => {
@@ -457,6 +498,12 @@ test('sous-admin : activation avec numérotation atomique du compteur', async ()
   batch.update(doc(db, 'members', PEND_AG1), {
     status: 'active',
     memberNo: 'SM-0001',
+    name: 'Membre ' + PEND_AG1,
+    email: PEND_AG1 + '@example.com',
+    photo: '',
+    etab: 'Lycée Test',
+    prov: 'agadir',
+    phone: '0600000000',
     activatedAt: serverTimestamp()
   });
   await assertSucceeds(batch.commit());
@@ -501,6 +548,12 @@ test('sous-admin : numéro suivant = compteur incrémenté (next+1)', async () =
   batch.update(doc(db, 'members', PEND_AG2), {
     status: 'active',
     memberNo: 'SM-0002',
+    name: 'Membre ' + PEND_AG2,
+    email: PEND_AG2 + '@example.com',
+    photo: '',
+    etab: 'Lycée Test',
+    prov: 'agadir',
+    phone: '0600000000',
     activatedAt: serverTimestamp()
   });
   await assertSucceeds(batch.commit());
