@@ -1230,3 +1230,5 @@ jobs:
 
           gh run watch "$DEPLOY_RUN_ID" --exit-status
           echo "Firebase Hosting déployé pour le commit ${OTA_SHA} : update.json v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) est en ligne."
+        env:
+          GH_TOKEN: ${{ github.token }}
