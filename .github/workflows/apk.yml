@@ -1152,9 +1152,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Récupérer les éventuels commits distants (ex: merge PR)
-          # avant de pousser notre commit OTA.
-          git pull --rebase origin "${GITHUB_REF_NAME}"
+          # Mettre de côté les modifications locales (www/update.json)
+          # pour pouvoir récupérer l'historique distant.
+          git stash push -m "ota-stash"
+
+          # Récupérer les derniers commits distants.
+          git fetch origin "${GITHUB_REF_NAME}"
+
+          # Rejouer nos commits locaux sur la base distante.
+          git rebase "origin/${GITHUB_REF_NAME}"
+
+          # Restaurer nos modifications locales.
+          git stash pop
 
           if git diff --quiet -- www/update.json; then
             echo "update.json déjà à jour — aucun commit."
