@@ -1175,14 +1175,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Récupérer les commits distants et rebaser avant de pousser.
-          git pull --rebase origin "${GITHUB_REF_NAME}"
-
-          # Mettre à jour le manifeste local, committer et pousser.
+          # Committer le nouveau manifeste AVANT toute opération distante :
+          # un `git pull --rebase` exige un arbre de travail propre.
           if git diff --quiet -- www/update.json; then
-            echo "update.json local déjà à jour — aucun commit."
+            echo "update.json local identique à la version extraite — aucun commit."
           else
             git add www/update.json
             git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
+          fi
+
+          # Pousser ; en cas de rejet (push concurrent), récupérer puis rebaser
+          # en gardant notre manifeste (le plus récent), puis repousser.
+          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            echo "Push rejeté — récupération de l'état distant et rebase."
+            git fetch origin "${GITHUB_REF_NAME}"
+            git rebase -X theirs "origin/${GITHUB_REF_NAME}"
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
