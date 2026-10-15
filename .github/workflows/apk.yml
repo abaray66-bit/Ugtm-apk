@@ -1157,6 +1157,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Récupérer les commits distants et rebaser avant de pousser.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+
           # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
           REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
           if [ -n "$REMOTE_MANIFEST" ]; then
