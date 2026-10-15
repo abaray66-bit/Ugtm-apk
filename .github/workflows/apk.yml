@@ -1152,36 +1152,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Mettre de côté les modifications locales (www/update.json)
-          # pour pouvoir récupérer l'historique distant.
-          git stash push -m "ota-stash"
-
-          # Récupérer les derniers commits distants.
-          git fetch origin "${GITHUB_REF_NAME}"
-
-          # Rejouer nos commits locaux sur la base distante.
-          # Si conflit (ex: update.json déjà mis à jour par un autre workflow),
-          # on abandonne notre commit OTA et on garde la version distante.
-          if ! git rebase "origin/${GITHUB_REF_NAME}"; then
-            echo "Conflit de rebase (probablement update.json déjà à jour) — abandon du commit OTA local."
-            git rebase --abort
-            # Restaurer nos modifications locales
-            git stash pop
-            # Vérifier si la version distante est déjà bonne
-            CURRENT_REMOTE_CODE="$(git show origin/${GITHUB_REF_NAME}:www/update.json 2>/dev/null | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
-            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
-              echo "La version distante est déjà v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) — rien à faire."
-              exit 0
-            fi
-            echo "Version distante différente — erreur inattendue."
-            exit 1
+          # Vérifier la version distante AVANT d'écrire localement.
+          # Si la release distante a déjà le bon versionCode, ne rien faire.
+          CURRENT_REMOTE_CODE="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+          if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
+            echo "update.json distant déjà à jour (versionCode ${CURRENT_REMOTE_CODE}) — rien à publier."
+            exit 0
           fi
 
-          # Restaurer nos modifications locales.
-          git stash pop
-
           if git diff --quiet -- www/update.json; then
-            echo "update.json déjà à jour — aucun commit."
+            echo "update.json local déjà à jour — aucun commit."
           else
             git add www/update.json
             git commit -m "Mise à jour OTA automatique : v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) [skip ci]"
