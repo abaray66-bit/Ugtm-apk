@@ -1160,7 +1160,22 @@ jobs:
           git fetch origin "${GITHUB_REF_NAME}"
 
           # Rejouer nos commits locaux sur la base distante.
-          git rebase "origin/${GITHUB_REF_NAME}"
+          # Si conflit (ex: update.json déjà mis à jour par un autre workflow),
+          # on abandonne notre commit OTA et on garde la version distante.
+          if ! git rebase "origin/${GITHUB_REF_NAME}"; then
+            echo "Conflit de rebase (probablement update.json déjà à jour) — abandon du commit OTA local."
+            git rebase --abort
+            # Restaurer nos modifications locales
+            git stash pop
+            # Vérifier si la version distante est déjà bonne
+            CURRENT_REMOTE_CODE="$(git show origin/${GITHUB_REF_NAME}:www/update.json 2>/dev/null | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
+            if [ "$CURRENT_REMOTE_CODE" = "$UGTM_VERSION_CODE" ]; then
+              echo "La version distante est déjà v${UGTM_VERSION_NAME} (versionCode ${UGTM_VERSION_CODE}) — rien à faire."
+              exit 0
+            fi
+            echo "Version distante différente — erreur inattendue."
+            exit 1
+          fi
 
           # Restaurer nos modifications locales.
           git stash pop
