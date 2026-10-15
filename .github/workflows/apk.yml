@@ -1152,6 +1152,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Récupérer les éventuels commits distants (ex: merge PR)
+          # avant de pousser notre commit OTA.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+
           if git diff --quiet -- www/update.json; then
             echo "update.json déjà à jour — aucun commit."
           else
