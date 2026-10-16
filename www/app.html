@@ -2391,6 +2391,7 @@ button.primary:active {
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
+ <button class="btn ghost" type="button" data-share-app data-i18n="heroShare"></button>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
@@ -2743,6 +2744,7 @@ tabContact:`Contact`,
 heroT:`Un dysfonctionnement à signaler ?`,
 heroP:`Décrivez les faits en 2 minutes, anonymement.`,
 heroBtn:`Faire un signalement`,
+ heroShare:`Partager l'application`,
 
 
 adhDigitalTitle:`Demande d'adhésion`,
@@ -2988,6 +2990,7 @@ tabContact:`اتصال`,
 heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
 heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
 heroBtn:`تقديم تبليغ`,
+ heroShare:`icipiter`
 
 
 adhDigitalTitle:`طلب الانخراط`,
@@ -3522,6 +3525,55 @@ function openUrl(url){
  }
  
  window.open(url,'_blank','noopener');
+ }
+ 
+ /* Partager l'application : invitation à installer l'APK UGTM
+    (le lien de la release GitHub en cours). Sur Android natif, on
+    utilise le plugin Capacitor Share si disponible, sinon on
+    ouvre le système de partage navigateur (navigator.share) ou
+    WhatsApp. */
+ function shareAppLink(){
+ 
+   var text=
+   'UGTM Souss-Massa\n'+
+   'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
+   'Téléchargez l’application : '+appShareUrl()+'\n'+
+   'Version : '+appShareVersion();
+ 
+   if(navigator.share){
+ 
+     navigator.share({title:'UGTM Souss-Massa',text:text})
+     .catch(function(){});
+ 
+     return;
+   }
+ 
+   openUrl('https://wa.me/?text='+encodeURIComponent(text));
+ }
+ 
+ function appShareUrl(){
+ 
+   var m=location.href.match(/\/v([0-9.]+)\//);
+   if(m)return 'https://github.com/abaray66-bit/Ugtm-apk/releases/download/v'+m[1]+'/app-release.apk';
+ 
+   return 'https://github.com/abaray66-bit/Ugtm-apk/releases/latest/download/app-release.apk';
+ }
+ 
+ function appShareVersion(){
+ 
+   try{
+ 
+     var s=location.pathname.split('/');
+ 
+     for(var i=0;i<s.length;i++){
+ 
+       if(/^v[0-9.]+$/.test(s[i]))return s[i].slice(1);
+ 
+     }
+ 
+   }catch(err){}
+ 
+   return '';
  }
  
  /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
@@ -5712,7 +5764,14 @@ renderAgenda();
 return;
 }
 
-if(el.hasAttribute('data-share')){
+if(el.hasAttribute('data-share-app')){
+ 
+   shareAppLink();
+ 
+   return;
+ }
+ 
+ if(el.hasAttribute('data-share')){
 
 var n=NEWS.filter(function(x){
 return x.id===el.getAttribute('data-share');
