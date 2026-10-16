@@ -566,8 +566,10 @@ main{
 }
 
 .tag.signed{
-  background:var(--ok);
-  color:#fff
+  background:var(--fp-pink-soft);
+  border:1px solid var(--fp-border-strong);
+  color:var(--fp-pink-2);
+  font-weight:700;
 }
 
 /* Modale de signature du responsable (espace administration) */
@@ -579,7 +581,7 @@ main{
   align-items:center;
   justify-content:center;
   padding:16px;
-  background:rgba(28,26,30,.55)
+  background:rgba(184,50,104,.35)
 }
 
 .signmodal-box{
@@ -587,10 +589,11 @@ main{
   max-width:520px;
   max-height:92vh;
   overflow:auto;
-  background:var(--card,#fff);
+  background:var(--surface,#fff);
   border-radius:18px;
   padding:18px;
-  box-shadow:0 18px 50px rgba(0,0,0,.28)
+  border:1px solid var(--fp-border);
+  box-shadow:var(--fp-shadow-lg)
 }
 
 .signmodal-canvas{
@@ -750,7 +753,7 @@ main{
   align-items:center;
   justify-content:center;
   padding:16px;
-  background:rgba(28,26,30,.55)
+  background:rgba(184,50,104,.38)
 }
 
 .attachmodal-box{
@@ -758,10 +761,11 @@ main{
   max-width:520px;
   max-height:92vh;
   overflow:auto;
-  background:var(--card);
+  background:var(--surface);
   border-radius:18px;
   padding:18px;
-  box-shadow:0 18px 50px rgba(0,0,0,.28);
+  border:1px solid var(--fp-border);
+  box-shadow:var(--fp-shadow-lg);
   display:flex;
   flex-direction:column
 }
@@ -1453,11 +1457,28 @@ main{
 }
 
 .danger{
-  color:var(--alert)
+  color:var(--alert);
+  font-weight:700;
 }
 
 .link.danger{
-  margin-top:4px
+  margin-top:4px;
+  font-weight:700;
+}
+
+.btn.danger,
+button.danger{
+  border:1px solid var(--alert) !important;
+  background:var(--alert-soft, #FDECEA) !important;
+  color:var(--alert, #B51F2A) !important;
+  font-weight:700;
+}
+
+.btn.danger:hover,
+button.danger:hover{
+  background:var(--alert, #B51F2A) !important;
+  color:#FFFFFF !important;
+  box-shadow:0 6px 16px rgba(181,31,42,.28);
 }
 
 .statusline{
@@ -1545,21 +1566,52 @@ main{
 }
 
 .tag.lock{
-  background:transparent;
-  border:1px solid var(--line);
-  color:var(--muted)
+  background:var(--fp-pink-soft);
+  border:1px solid var(--fp-border-strong);
+  color:var(--fp-pink-2);
+  font-weight:700;
 }
 
 .tag.st-active{
-  background:transparent;
-  border:1px solid var(--ok);
-  color:var(--ok)
+  background:var(--ok-soft, #EAF3EC);
+  border:1px solid var(--ok, #2E7D52);
+  color:var(--ok, #2E7D52);
+  font-weight:700;
 }
 
 .tag.st-blocked{
-  background:transparent;
-  border:1px solid var(--alert);
-  color:var(--alert)
+  background:var(--alert-soft, #FDECEA);
+  border:1px solid var(--alert, #B51F2A);
+  color:var(--alert, #B51F2A);
+  font-weight:700;
+}
+
+.tag.st-pending{
+  background:var(--fp-gold-soft, #F3E6CF);
+  border:1px solid var(--fp-gold, #C99B4A);
+  color:#7A5C14;
+  font-weight:700;
+}
+
+.tag.st-refused{
+  background:var(--alert-soft, #FDECEA);
+  border:1px solid var(--alert, #B51F2A);
+  color:var(--alert, #B51F2A);
+  font-weight:700;
+}
+
+.tag.st-needs_completion{
+  background:var(--fp-pink-soft);
+  border:1px solid var(--fp-border-strong);
+  color:var(--fp-pink-2);
+  font-weight:700;
+}
+
+.tag.st-validated{
+  background:var(--ok-soft, #EAF3EC);
+  border:1px solid var(--ok, #2E7D52);
+  color:var(--ok, #2E7D52);
+  font-weight:700;
 }
 
 .mrow{
@@ -1596,6 +1648,19 @@ main{
   margin-inline-start:6px
 }
 
+.mi-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:2px 10px;
+  margin-top:6px;
+  font-size:13px;
+}
+
+.mi-grid span{
+  color:var(--muted);
+  font-size:12px;
+}
+
 .mact{
   display:flex;
   flex-direction:column;
@@ -1615,153 +1680,257 @@ main{
 <style id="admin-dashboard-style">
 
 .admin-dashboard-head{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:16px;
-margin:8px 0 18px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:16px;
+ margin:8px 0 18px;
+ padding:18px 20px;
+ border:1px solid var(--fp-border);
+ border-radius:18px;
+ background:
+   linear-gradient(135deg, #FFFFFF, #FFF5FA);
+ box-shadow:var(--fp-shadow);
 }
 
 .admin-dashboard-head h2{
-margin:0;
-font-size:1.35rem;
+ margin:0;
+ font-size:1.35rem;
+ font-family:var(--font-head);
+ color:var(--ink);
 }
 
 .admin-dashboard-head p{
-margin:5px 0 0;
-opacity:.7;
+ margin:5px 0 0;
+ color:var(--muted);
+ font-size:.9rem;
 }
 
 .admin-kpis{
-display:grid;
-grid-template-columns:repeat(5,minmax(0,1fr));
-gap:12px;
-margin-bottom:18px;
+ display:grid;
+ grid-template-columns:repeat(5,minmax(0,1fr));
+ gap:12px;
+ margin-bottom:18px;
 }
 
 .admin-kpi{
-min-height:88px;
-padding:14px;
-border:1px solid rgba(127,127,127,.18);
-border-radius:14px;
-background:var(--surface);
-display:flex;
-flex-direction:column;
-justify-content:space-between;
+ min-height:92px;
+ padding:16px 18px;
+ border:1px solid var(--fp-border);
+ border-radius:16px;
+ background:
+   linear-gradient(180deg, #FFFFFF, #FFF5FA);
+ box-shadow:var(--fp-shadow);
+ display:flex;
+ flex-direction:column;
+ justify-content:space-between;
+ position:relative;
+ overflow:hidden;
+}
+
+.admin-kpi::before{
+ content:"";
+ position:absolute;
+ left:0;
+ right:0;
+ top:0;
+ height:4px;
+ background:linear-gradient(90deg, var(--fp-pink), var(--fp-gold));
 }
 
 .admin-kpi span{
-font-size:.82rem;
-opacity:.7;
+ font-size:.8rem;
+ color:var(--muted);
+ font-weight:600;
+ letter-spacing:.02em;
+ text-transform:uppercase;
 }
 
 .admin-kpi strong{
-font-size:1.7rem;
+ font-size:1.75rem;
+ font-family:var(--font-head);
+ color:var(--ink);
+ line-height:1.1;
 }
 
 .admin-kpi strong.ok{
-color:var(--ok);
+ color:var(--ok, #B83268);
 }
 
 .admin-kpi strong.warn{
-color:var(--accent);
+ color:var(--accent, #C99B4A);
+}
+
+.admin-kpi strong.info{
+ color:#8E2450;
 }
 
 .admin-dashboard-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:16px;
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:16px;
 }
 
 .admin-panel{
-border:1px solid rgba(127,127,127,.18);
-border-radius:16px;
-padding:16px;
-background:var(--surface);
+ border:1px solid var(--fp-border);
+ border-radius:18px;
+ padding:18px 20px;
+ background:
+   linear-gradient(180deg, #FFFFFF, #FFF5FA);
+ box-shadow:var(--fp-shadow);
 }
 
 .admin-panel h3{
-margin:0 0 16px;
-font-size:1rem;
+ margin:0 0 16px;
+ font-size:.95rem;
+ font-family:var(--font-head);
+ color:var(--ink);
+ display:flex;
+ align-items:center;
+ gap:8px;
+}
+
+.admin-panel h3::before{
+ content:"";
+ width:8px;
+ height:8px;
+ border-radius:50%;
+ background:var(--fp-pink);
+ box-shadow:0 0 8px rgba(184,50,104,.35);
 }
 
 .admin-prov{
-margin:0 0 13px;
+ margin:0 0 14px;
+ border:1px solid var(--fp-border);
+ border-radius:12px;
+ padding:12px 14px;
+ background:#FFFFFF;
+ transition:box-shadow .2s ease;
+}
+
+.admin-prov:hover{
+ box-shadow:var(--fp-shadow);
 }
 
 .admin-prov>div:first-child{
-display:flex;
-justify-content:space-between;
-gap:10px;
-margin-bottom:6px;
-font-size:.9rem;
+ display:flex;
+ justify-content:space-between;
+ gap:10px;
+ margin-bottom:8px;
+ font-size:.9rem;
 }
 
-.admin-prov b{
-font-weight:700;
+.admin-prov>div:first-child b{
+ font-weight:700;
+ color:var(--ink);
+}
+
+.admin-prov>div:first-child span{
+ color:var(--muted);
+ font-weight:600;
+ font-variant-numeric:tabular-nums;
 }
 
 .admin-bar{
-height:7px;
-border-radius:99px;
-background:rgba(127,127,127,.16);
-overflow:hidden;
+ height:7px;
+ border-radius:99px;
+ background:var(--fp-pink-soft);
+ overflow:hidden;
 }
 
 .admin-bar i{
-display:block;
-height:100%;
-border-radius:99px;
-background:var(--primary,#B83268);
+ display:block;
+ height:100%;
+ border-radius:99px;
+ background:linear-gradient(90deg, var(--fp-pink), var(--fp-gold));
 }
 
 .admin-todo{
-width:100%;
-display:grid;
-grid-template-columns:auto 1fr auto;
-align-items:center;
-gap:10px;
-text-align:left;
-padding:12px;
-margin-bottom:8px;
-border:1px solid rgba(127,127,127,.16);
-border-radius:12px;
-background:transparent;
-color:inherit;
-cursor:pointer;
+ width:100%;
+ display:grid;
+ grid-template-columns:auto 1fr auto;
+ align-items:center;
+ gap:10px;
+ text-align:left;
+ padding:12px 14px;
+ margin-bottom:8px;
+ border:1px solid var(--fp-border);
+ border-radius:12px;
+ background:#FFFFFF;
+ color:var(--ink);
+ cursor:pointer;
+ transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.admin-todo:hover{
+ border-color:var(--fp-border-strong);
+ box-shadow:var(--fp-shadow);
+ transform:translateY(-1px);
 }
 
 .admin-todo b{
-min-width:30px;
-text-align:center;
-font-size:1.15rem;
+ min-width:30px;
+ text-align:center;
+ font-size:1.15rem;
+ color:var(--fp-pink);
 }
 
 .admin-todo span{
-font-size:.9rem;
+ font-size:.9rem;
+ color:var(--ink);
 }
 
 .admin-todo em{
-font-style:normal;
-color:var(--primary,#B83268);
-font-weight:700;
-font-size:.82rem;
+ font-style:normal;
+ color:var(--fp-pink);
+ font-weight:700;
+ font-size:.82rem;
+}
+
+.admin-section{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid var(--fp-border);
+}
+
+.admin-section-head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.admin-section-head .adhtag{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  background:var(--fp-pink-soft);
+  color:var(--fp-pink-2);
+  font-size:16px;
+  font-weight:800;
+}
+
+.admin-section-head h2{
+  margin:0;
 }
 
 .admin-todo.empty{
-display:block;
-cursor:default;
-opacity:.65;
+  display:block;
+  cursor:default;
+  color:var(--muted);
+  background:var(--fp-pink-soft);
 }
 
 @media(max-width:800px){
 
 .admin-kpis{
-grid-template-columns:repeat(2,minmax(0,1fr));
+ grid-template-columns:repeat(2,minmax(0,1fr));
 }
 
 .admin-dashboard-grid{
-grid-template-columns:1fr;
+ grid-template-columns:1fr;
 }
 
 }
@@ -1769,17 +1938,17 @@ grid-template-columns:1fr;
 @media(max-width:430px){
 
 .admin-kpis{
-grid-template-columns:1fr 1fr;
-gap:8px;
+ grid-template-columns:1fr 1fr;
+ gap:8px;
 }
 
 .admin-kpi{
-min-height:76px;
-padding:11px;
+ min-height:76px;
+ padding:11px;
 }
 
 .admin-kpi strong{
-font-size:1.4rem;
+ font-size:1.4rem;
 }
 
 }
@@ -1883,22 +2052,24 @@ font-size:1.4rem;
    ========================================================= */
 
 :root {
-  --fp-pink: #d83b78;
-  --fp-pink-2: #a91f58;
-  --fp-gold: #d6ad5b;
-  --fp-glass: rgba(255,255,255,.075);
-  --fp-border: rgba(255,255,255,.13);
-  --fp-shadow: 0 18px 45px rgba(0,0,0,.22);
+  --fp-pink: #B83268;
+  --fp-pink-2: #8E2450;
+  --fp-pink-soft: #F7E1EA;
+  --fp-gold: #C99B4A;
+  --fp-gold-soft: #F3E6CF;
+  --fp-border: rgba(184,50,104,.18);
+  --fp-border-strong: rgba(184,50,104,.32);
+  --fp-shadow: 0 10px 30px rgba(184,50,104,.10);
+  --fp-shadow-lg: 0 18px 44px rgba(184,50,104,.14);
 }
 
 /* ---------- Global atmosphere ---------- */
 
 body {
   background:
-    radial-gradient(circle at 12% 8%, rgba(216,59,120,.18), transparent 28%),
-    radial-gradient(circle at 88% 20%, rgba(214,173,91,.10), transparent 24%),
-    radial-gradient(circle at 50% 100%, rgba(169,31,88,.13), transparent 35%),
-    var(--bg, #101014);
+    radial-gradient(circle at 12% 8%, rgba(184,50,104,.07), transparent 30%),
+    radial-gradient(circle at 88% 20%, rgba(201,155,74,.06), transparent 26%),
+    var(--bg, #FFF7FA);
 }
 
 .app {
@@ -1915,26 +2086,22 @@ body {
   background:
     linear-gradient(
       135deg,
-      rgba(255,255,255,.025),
-      transparent 35%,
-      rgba(216,59,120,.025)
+      rgba(184,50,104,.04),
+      transparent 40%,
+      rgba(201,155,74,.03)
     );
 }
 
 /* ---------- Header ---------- */
 
 .top {
-  background: rgba(12,12,17,.76) !important;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: #FFFFFF !important;
   border-bottom: 1px solid var(--fp-border) !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  box-shadow: 0 2px 14px rgba(184,50,104,.08);
 }
 
 .mark {
-  filter:
-    drop-shadow(0 0 10px rgba(216,59,120,.28))
-    drop-shadow(0 0 22px rgba(216,59,120,.12));
+  filter: none;
 }
 
 /* ---------- Main screens ---------- */
@@ -1971,7 +2138,7 @@ body {
 
 .title {
   letter-spacing: -.025em;
-  text-shadow: 0 3px 18px rgba(216,59,120,.12);
+  text-shadow: 0 2px 12px rgba(184,50,104,.10);
 }
 
 /* ---------- Home / first page ---------- */
@@ -1988,17 +2155,15 @@ body {
   position: relative;
   overflow: hidden;
   padding: 24px 21px;
-  border: 1px solid rgba(255,255,255,.13);
+  border: 1px solid var(--fp-border);
   border-radius: 25px;
   background:
-    radial-gradient(circle at 88% 8%, rgba(214,173,91,.17), transparent 30%),
-    radial-gradient(circle at 8% 90%, rgba(216,59,120,.22), transparent 34%),
-    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.035));
+    radial-gradient(circle at 88% 8%, rgba(201,155,74,.14), transparent 30%),
+    radial-gradient(circle at 8% 90%, rgba(184,50,104,.12), transparent 34%),
+    linear-gradient(145deg, #FFFFFF, #FFF0F6);
   box-shadow:
-    0 22px 55px rgba(0,0,0,.25),
-    inset 0 1px 0 rgba(255,255,255,.09);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+    0 18px 44px rgba(184,50,104,.12),
+    inset 0 1px 0 rgba(255,255,255,.6);
 }
 
 #s-home .hero::before {
@@ -2009,7 +2174,7 @@ body {
   right: -70px;
   top: -80px;
   border-radius: 50%;
-  background: rgba(216,59,120,.16);
+  background: rgba(184,50,104,.10);
   filter: blur(8px);
   pointer-events: none;
 }
@@ -2024,8 +2189,8 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(214,173,91,.5),
-    rgba(216,59,120,.55),
+    rgba(201,155,74,.5),
+    rgba(184,50,104,.55),
     transparent
   );
 }
@@ -2042,12 +2207,10 @@ body {
   background:
     linear-gradient(
       145deg,
-      rgba(255,255,255,.075),
-      rgba(255,255,255,.025)
+      #FFFFFF,
+      #FFF5FA
     ) !important;
-  box-shadow: 0 12px 32px rgba(0,0,0,.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--fp-shadow);
   transition:
     transform .22s ease,
     border-color .22s ease,
@@ -2057,8 +2220,8 @@ body {
 .list > li:hover,
 .card:hover {
   transform: translateY(-2px);
-  border-color: rgba(216,59,120,.34) !important;
-  box-shadow: 0 16px 38px rgba(0,0,0,.20);
+  border-color: var(--fp-border-strong) !important;
+  box-shadow: var(--fp-shadow-lg);
 }
 
 /* ---------- Signalement ---------- */
@@ -2077,15 +2240,13 @@ body {
   margin-bottom: 20px;
   padding: 17px;
   border-radius: 21px;
-  border: 1px solid rgba(216,59,120,.22);
+  border: 1px solid var(--fp-border);
   background:
-    radial-gradient(circle at 100% 0%, rgba(214,173,91,.12), transparent 34%),
-    linear-gradient(145deg, rgba(216,59,120,.11), rgba(255,255,255,.035));
+    radial-gradient(circle at 100% 0%, var(--fp-gold-soft), transparent 34%),
+    linear-gradient(145deg, var(--fp-pink-soft), #FFFFFF);
   box-shadow:
-    0 16px 40px rgba(0,0,0,.16),
-    inset 0 1px 0 rgba(255,255,255,.07);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    0 12px 34px rgba(184,50,104,.10),
+    inset 0 1px 0 rgba(255,255,255,.7);
 }
 
 #s-report .rpintro::before {
@@ -2101,7 +2262,7 @@ body {
     var(--fp-pink),
     var(--fp-gold)
   );
-  box-shadow: 0 0 15px rgba(216,59,120,.45);
+  box-shadow: 0 0 12px rgba(184,50,104,.22);
 }
 
 #s-report .rplead {
@@ -2119,12 +2280,12 @@ body {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  color: #fff;
+  color: #FFFFFF;
   background:
     linear-gradient(145deg, var(--fp-pink), var(--fp-pink-2));
   box-shadow:
-    0 8px 20px rgba(216,59,120,.28),
-    inset 0 1px 0 rgba(255,255,255,.18);
+    0 6px 16px rgba(184,50,104,.22),
+    inset 0 1px 0 rgba(255,255,255,.2);
 }
 
 #s-report .points {
@@ -2138,8 +2299,8 @@ body {
   list-style: none;
   padding: 10px 12px;
   border-radius: 13px;
-  background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.07);
+  background: var(--fp-pink-soft);
+  border: 1px solid var(--fp-border);
 }
 
 /* ---------- Report form ---------- */
@@ -2147,18 +2308,16 @@ body {
 #reportForm {
   padding: 18px;
   border-radius: 23px;
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--fp-border);
   background:
     linear-gradient(
       145deg,
-      rgba(255,255,255,.075),
-      rgba(255,255,255,.025)
+      #FFFFFF,
+      #FFF5FA
     );
   box-shadow:
-    0 20px 50px rgba(0,0,0,.18),
-    inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+    0 14px 36px rgba(184,50,104,.10),
+    inset 0 1px 0 rgba(255,255,255,.6);
 }
 
 #reportForm .field {
@@ -2174,10 +2333,11 @@ body {
 #reportForm input,
 #reportForm select,
 #reportForm textarea {
-  border: 1px solid rgba(255,255,255,.12) !important;
+  border: 1px solid var(--fp-border) !important;
   border-radius: 14px !important;
-  background: rgba(0,0,0,.18) !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  background: #FFFFFF !important;
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 rgba(184,50,104,.04);
   transition:
     border-color .2s ease,
     box-shadow .2s ease,
@@ -2187,10 +2347,10 @@ body {
 #reportForm input:focus,
 #reportForm select:focus,
 #reportForm textarea:focus {
-  border-color: rgba(216,59,120,.68) !important;
+  border-color: var(--fp-pink) !important;
   box-shadow:
-    0 0 0 3px rgba(216,59,120,.12),
-    0 8px 25px rgba(216,59,120,.08) !important;
+    0 0 0 3px rgba(184,50,104,.14),
+    0 8px 24px rgba(184,50,104,.10) !important;
   transform: translateY(-1px);
   outline: none;
 }
@@ -2206,8 +2366,9 @@ button.primary {
       var(--fp-pink),
       var(--fp-pink-2)
     ) !important;
+  color: #FFFFFF !important;
   box-shadow:
-    0 10px 25px rgba(216,59,120,.25),
+    0 10px 26px rgba(184,50,104,.24),
     inset 0 1px 0 rgba(255,255,255,.18);
   transition:
     transform .2s ease,
@@ -2218,9 +2379,9 @@ button.primary {
 .btn.primary:hover,
 button.primary:hover {
   transform: translateY(-2px);
-  filter: brightness(1.06);
+  filter: brightness(1.04);
   box-shadow:
-    0 15px 32px rgba(216,59,120,.32),
+    0 16px 34px rgba(184,50,104,.30),
     inset 0 1px 0 rgba(255,255,255,.2);
 }
 
@@ -2234,10 +2395,9 @@ button.primary:active {
 .filters {
   padding: 5px;
   border-radius: 16px;
-  background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: #FFFFFF;
+  border: 1px solid var(--fp-border);
+  box-shadow: 0 2px 10px rgba(184,50,104,.06);
 }
 
 .filters button,
@@ -2248,13 +2408,11 @@ button.primary:active {
 /* ---------- Bottom navigation ---------- */
 
 .tabs {
-  background: rgba(12,12,17,.82) !important;
-  border-top: 1px solid rgba(255,255,255,.11) !important;
+  background: #FFFFFF !important;
+  border-top: 1px solid var(--fp-border) !important;
   box-shadow:
-    0 -12px 35px rgba(0,0,0,.20),
-    0 -1px 0 rgba(255,255,255,.025);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+    0 -8px 26px rgba(184,50,104,.08),
+    0 -1px 0 rgba(255,255,255,.6);
 }
 
 .tab {
@@ -2266,7 +2424,7 @@ button.primary:active {
 
 .tab[aria-selected="true"] {
   color: var(--fp-pink) !important;
-  text-shadow: 0 0 16px rgba(216,59,120,.30);
+  text-shadow: none;
 }
 
 .tab[aria-selected="true"]::after {
@@ -2282,7 +2440,7 @@ button.primary:active {
     var(--fp-pink),
     var(--fp-gold)
   );
-  box-shadow: 0 0 12px rgba(216,59,120,.35);
+  box-shadow: 0 0 8px rgba(184,50,104,.22);
 }
 
 .tab:active {
@@ -2291,7 +2449,7 @@ button.primary:active {
 
 .bubble {
   box-shadow:
-    0 4px 12px rgba(216,59,120,.25);
+    0 4px 12px rgba(184,50,104,.18);
 }
 
 /* ---------- Secondary headings / hints ---------- */
@@ -2310,20 +2468,20 @@ button.primary:active {
 @media (prefers-color-scheme: light) {
   body {
     background:
-      radial-gradient(circle at 10% 0%, rgba(216,59,120,.10), transparent 30%),
-      radial-gradient(circle at 90% 15%, rgba(214,173,91,.08), transparent 25%),
-      var(--bg, #f6f6f8);
+      radial-gradient(circle at 10% 0%, rgba(184,50,104,.08), transparent 30%),
+      radial-gradient(circle at 90% 15%, rgba(201,155,74,.06), transparent 25%),
+      var(--bg, #FFF7FA);
   }
 
   .top,
   .tabs {
-    background: rgba(255,255,255,.82) !important;
+    background: #FFFFFF !important;
   }
 
   #reportForm input,
   #reportForm select,
   #reportForm textarea {
-    background: rgba(255,255,255,.72) !important;
+    background: #FFFFFF !important;
   }
 }
 
@@ -2347,16 +2505,17 @@ button.primary:active {
 .digital-adhesion{max-width:760px;margin:0 auto;padding-bottom:32px}
 .adh-digital-head{margin-bottom:18px}
 .adh-digital-sub{color:var(--muted);line-height:1.6;margin:6px 0 0}
-.adh-step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:0 8px 25px rgba(0,0,0,.06)}
+.adh-step{background:var(--surface);border:1px solid var(--fp-border);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:var(--fp-shadow)}
 .adh-step-title{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-family:var(--font-head)}
-.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--soft);color:var(--link);font-size:12px;font-weight:800}
+.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--fp-pink-soft);color:var(--fp-pink-2);font-size:12px;font-weight:800}
 .adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .adh-full{grid-column:1/-1}
 .adh-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
+.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--fp-border);border-radius:12px;padding:12px;cursor:pointer;background:#FFFFFF;transition:border-color .2s ease, box-shadow .2s ease}
+.adh-choice label:hover,.adh-commit:hover{border-color:var(--fp-border-strong);box-shadow:var(--fp-shadow)}
 .adh-commit{line-height:1.5}
 .adh-sign-hint{font-size:13px;color:var(--muted);margin:0 0 10px}
-.adh-signbox{height:180px;border:1.5px dashed var(--link);border-radius:14px;background:rgba(255,255,255,.035);overflow:hidden;touch-action:none}
+.adh-signbox{height:180px;border:1.5px dashed var(--fp-pink);border-radius:14px;background:var(--fp-pink-soft);overflow:hidden;touch-action:none}
 .adh-signbox canvas{width:100%;height:100%;display:block}
 .adh-sign-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
 .adh-sign-state{font-size:12px;color:var(--muted)}
@@ -2365,10 +2524,10 @@ button.primary:active {
     width:100%;
     min-height:46px;
     padding:10px 12px;
-    border:1px solid var(--line);
+    border:1px solid var(--fp-border);
     border-radius:10px;
     background:var(--surface);
-    color:var(--text);
+    color:var(--ink);
     font-size:16px;
     appearance:auto;
     -webkit-appearance:auto;
@@ -2599,9 +2758,9 @@ button.primary:active {
 </div>
 
 </div>
-</div><div id="adm-members"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
+</div><div id="adm-members" class="admin-section"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
-</p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
+</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2">Nouveau communiqué</h2></div><div class="field">
 <label for="nCat">Catégorie</label>
 <select id="nCat">
 <option value="urgent">Communiqué</option>
@@ -2637,7 +2796,7 @@ button.primary:active {
 <p class="hint" id="nEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" hidden><h2 class="h2">Nouvel événement</h2><div class="field">
+<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2">Nouvel événement</h2></div><div class="field">
 <label for="eDate">Date</label>
 <input id="eDate" type="date">
 </div><div class="field">
@@ -2659,7 +2818,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
