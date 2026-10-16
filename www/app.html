@@ -2599,7 +2599,7 @@ button.primary:active {
 </div>
 
 </div>
-</div><div id="adm-members"><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
+</div><div id="adm-members"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
 <label for="nCat">Catégorie</label>
@@ -2715,6 +2715,7 @@ isAdmin:false,
 isSubAdmin:false,
 members:[],
 memFilter:'pending',
+ memSearch:'',
 reports:[],
 adhesions:[],
 provinceContacts:[],
@@ -2968,11 +2969,14 @@ delData:`Supprimer mes données`,
 delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive. Les signalements déjà envoyés restent conservés et peuvent contenir des éléments permettant de vous identifier.`,
 
 deleted:`Données supprimées`,
-adminOpen:`Espace administrateur`,
-errPrefix:`Une erreur est survenue`
-},
+ adminOpen:`Espace administrateur`,
+ errPrefix:`Une erreur est survenue`,
 
-ar:{
+admMemSearch:`Rechercher un adhérent`,
+ admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
+ },
+
+ ar:{
 brandName:`الاتحاد العام للشغالين بالمغرب`,
 brandSub:`الجامعة الوطنية للصحة`,
 brandL3:`جهة سوس ماسة`,
@@ -3264,8 +3268,11 @@ delData:`حذف بياناتي`,
 delConfirm:`هل تريدون حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي. ستظل التبليغات المرسلة محفوظة، وقد يتضمن محتواها معلومات تكشف هويتكم.`,
 
 deleted:`تم حذف البيانات`,
-adminOpen:`فضاء المسؤول`,
-errPrefix:`حدث خطأ`
+ adminOpen:`فضاء المسؤول`,
+ errPrefix:`حدث خطأ`,
+
+ admMemSearch:`البحث عن عضو`,
+ admMemSearchHint:`البحث بالاسم أو البريد الإلكتروني أو المؤسسة أو الإقليم.`,
 }
 
 };
@@ -4382,12 +4389,18 @@ k[1]+' ('+c[k[0]]+')'+
 }).join('');
 
 var list=S.members
-.filter(function(m){
-return S.memFilter==='all'||m.status===S.memFilter;
-})
-.sort(function(a,b){
-return(b.createdAt||0)-(a.createdAt||0);
-});
+ .filter(function(m){
+ if(S.memFilter!=='all'&&m.status!==S.memFilter)return false;
+ if(!S.memSearch)return true;
+ var q=S.memSearch.toLowerCase();
+ return (m.name||'').toLowerCase().indexOf(q)!==-1
+ ||(m.email||'').toLowerCase().indexOf(q)!==-1
+ ||(m.etab||'').toLowerCase().indexOf(q)!==-1
+ ||(m.prov||'').toLowerCase().indexOf(q)!==-1;
+ })
+ .sort(function(a,b){
+ return(b.createdAt||0)-(a.createdAt||0);
+ });
 
 $('admMemList').innerHTML=list.length
 
@@ -5051,6 +5064,14 @@ function generateAdhesionPdfForAdmin(id){
   var confirmBtn=$('admSignConfirm');
   if(confirmBtn)confirmBtn.addEventListener('click',confirmSignAdhesion);
 })();
+
+var admMemSearchEl=$('admMemSearch');
+if(admMemSearchEl){
+ admMemSearchEl.addEventListener('input',function(){
+ S.memSearch=this.value.trim();
+ renderAdminMembers();
+ });
+}
 
 function showAdmTab(name){
 
