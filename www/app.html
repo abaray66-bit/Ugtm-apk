@@ -569,10 +569,8 @@ main{
 }
 
 .tag.signed{
-  background:var(--fp-pink-soft);
-  border:1px solid var(--fp-border-strong);
-  color:var(--fp-pink-2);
-  font-weight:700;
+  background:var(--ok);
+  color:#fff
 }
 
 /* Modale de signature du responsable (espace administration) */
@@ -584,7 +582,7 @@ main{
   align-items:center;
   justify-content:center;
   padding:16px;
-  background:rgba(184,50,104,.35)
+  background:rgba(28,26,30,.55)
 }
 
 .signmodal-box{
@@ -592,11 +590,10 @@ main{
   max-width:520px;
   max-height:92vh;
   overflow:auto;
-  background:var(--surface,#fff);
+  background:var(--card,#fff);
   border-radius:18px;
   padding:18px;
-  border:1px solid var(--fp-border);
-  box-shadow:var(--fp-shadow-lg)
+  box-shadow:0 18px 50px rgba(0,0,0,.28)
 }
 
 .signmodal-canvas{
@@ -758,7 +755,7 @@ main{
   align-items:center;
   justify-content:center;
   padding:16px;
-  background:rgba(184,50,104,.38)
+  background:rgba(28,26,30,.55)
 }
 
 .attachmodal-box{
@@ -766,11 +763,10 @@ main{
   max-width:520px;
   max-height:92vh;
   overflow:auto;
-  background:var(--surface);
+  background:var(--card);
   border-radius:18px;
   padding:18px;
-  border:1px solid var(--fp-border);
-  box-shadow:var(--fp-shadow-lg);
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
   display:flex;
   flex-direction:column
 }
@@ -1462,28 +1458,11 @@ main{
 }
 
 .danger{
-  color:var(--alert);
-  font-weight:700;
+  color:var(--alert)
 }
 
 .link.danger{
-  margin-top:4px;
-  font-weight:700;
-}
-
-.btn.danger,
-button.danger{
-  border:1px solid var(--alert) !important;
-  background:var(--alert-soft, #FDECEA) !important;
-  color:var(--alert, #B51F2A) !important;
-  font-weight:700;
-}
-
-.btn.danger:hover,
-button.danger:hover{
-  background:var(--alert, #B51F2A) !important;
-  color:#FFFFFF !important;
-  box-shadow:0 6px 16px rgba(181,31,42,.28);
+  margin-top:4px
 }
 
 .statusline{
@@ -1571,52 +1550,21 @@ button.danger:hover{
 }
 
 .tag.lock{
-  background:var(--fp-pink-soft);
-  border:1px solid var(--fp-border-strong);
-  color:var(--fp-pink-2);
-  font-weight:700;
+  background:transparent;
+  border:1px solid var(--line);
+  color:var(--muted)
 }
 
 .tag.st-active{
-  background:var(--ok-soft, #EAF3EC);
-  border:1px solid var(--ok, #2E7D52);
-  color:var(--ok, #2E7D52);
-  font-weight:700;
+  background:transparent;
+  border:1px solid var(--ok);
+  color:var(--ok)
 }
 
 .tag.st-blocked{
-  background:var(--alert-soft, #FDECEA);
-  border:1px solid var(--alert, #B51F2A);
-  color:var(--alert, #B51F2A);
-  font-weight:700;
-}
-
-.tag.st-pending{
-  background:var(--fp-gold-soft, #F3E6CF);
-  border:1px solid var(--fp-gold, #C99B4A);
-  color:#7A5C14;
-  font-weight:700;
-}
-
-.tag.st-refused{
-  background:var(--alert-soft, #FDECEA);
-  border:1px solid var(--alert, #B51F2A);
-  color:var(--alert, #B51F2A);
-  font-weight:700;
-}
-
-.tag.st-needs_completion{
-  background:var(--fp-pink-soft);
-  border:1px solid var(--fp-border-strong);
-  color:var(--fp-pink-2);
-  font-weight:700;
-}
-
-.tag.st-validated{
-  background:var(--ok-soft, #EAF3EC);
-  border:1px solid var(--ok, #2E7D52);
-  color:var(--ok, #2E7D52);
-  font-weight:700;
+  background:transparent;
+  border:1px solid var(--alert);
+  color:var(--alert)
 }
 
 .mrow{
@@ -1653,19 +1601,6 @@ button.danger:hover{
   margin-inline-start:6px
 }
 
-.mi-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:2px 10px;
-  margin-top:6px;
-  font-size:13px;
-}
-
-.mi-grid span{
-  color:var(--muted);
-  font-size:12px;
-}
-
 .mact{
   display:flex;
   flex-direction:column;
@@ -1685,213 +1620,177 @@ button.danger:hover{
 <style id="admin-dashboard-style">
 
 .admin-dashboard-head{
- display:flex;
- align-items:center;
- justify-content:space-between;
- gap:16px;
- margin:8px 0 18px;
- padding:18px 20px;
- border:1px solid var(--fp-border);
- border-radius:18px;
- background:
-   linear-gradient(135deg, #FFFFFF, #FFF5FA);
- box-shadow:var(--fp-shadow);
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:16px;
+margin:8px 0 18px;
 }
 
 .admin-dashboard-head h2{
- margin:0;
- font-size:1.35rem;
- font-family:var(--font-head);
- color:var(--ink);
+margin:0;
+font-size:1.35rem;
 }
 
 .admin-dashboard-head p{
- margin:5px 0 0;
- color:var(--muted);
- font-size:.9rem;
+margin:5px 0 0;
+opacity:.7;
 }
 
 .admin-kpis{
- display:grid;
- grid-template-columns:repeat(5,minmax(0,1fr));
- gap:12px;
- margin-bottom:18px;
+display:grid;
+grid-template-columns:repeat(5,minmax(0,1fr));
+gap:12px;
+margin-bottom:18px;
 }
 
 .admin-kpi{
- min-height:92px;
- padding:16px 18px;
- border:1px solid var(--fp-border);
- border-radius:16px;
- background:
-   linear-gradient(180deg, #FFFFFF, #FFF5FA);
- box-shadow:var(--fp-shadow);
- display:flex;
- flex-direction:column;
- justify-content:space-between;
- position:relative;
- overflow:hidden;
-}
-
-.admin-kpi::before{
- content:"";
- position:absolute;
- left:0;
- right:0;
- top:0;
- height:4px;
- background:linear-gradient(90deg, var(--fp-pink), var(--fp-gold));
+min-height:88px;
+padding:14px;
+border:1px solid rgba(127,127,127,.18);
+border-radius:14px;
+background:var(--surface);
+display:flex;
+flex-direction:column;
+justify-content:space-between;
 }
 
 .admin-kpi span{
- font-size:.8rem;
- color:var(--muted);
- font-weight:600;
- letter-spacing:.02em;
- text-transform:uppercase;
+font-size:.82rem;
+opacity:.7;
 }
 
 .admin-kpi strong{
- font-size:1.75rem;
- font-family:var(--font-head);
- color:var(--ink);
- line-height:1.1;
+font-size:1.7rem;
 }
 
 .admin-kpi strong.ok{
- color:var(--ok, #B83268);
+color:var(--ok);
 }
 
 .admin-kpi strong.warn{
- color:var(--accent, #C99B4A);
-}
-
-.admin-kpi strong.info{
- color:#8E2450;
+color:var(--accent);
 }
 
 .admin-dashboard-grid{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:16px;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:16px;
 }
 
 .admin-panel{
- border:1px solid var(--fp-border);
- border-radius:18px;
- padding:18px 20px;
- background:
-   linear-gradient(180deg, #FFFFFF, #FFF5FA);
- box-shadow:var(--fp-shadow);
+border:1px solid rgba(127,127,127,.18);
+border-radius:16px;
+padding:16px;
+background:var(--surface);
 }
 
 .admin-panel h3{
- margin:0 0 16px;
- font-size:.95rem;
- font-family:var(--font-head);
- color:var(--ink);
- display:flex;
- align-items:center;
- gap:8px;
-}
-
-.admin-panel h3::before{
- content:"";
- width:8px;
- height:8px;
- border-radius:50%;
- background:var(--fp-pink);
- box-shadow:0 0 8px rgba(184,50,104,.35);
+margin:0 0 16px;
+font-size:1rem;
 }
 
 .admin-prov{
- margin:0 0 14px;
- border:1px solid var(--fp-border);
- border-radius:12px;
- padding:12px 14px;
- background:#FFFFFF;
- transition:box-shadow .2s ease;
-}
-
-.admin-prov:hover{
- box-shadow:var(--fp-shadow);
+margin:0 0 13px;
 }
 
 .admin-prov>div:first-child{
- display:flex;
- justify-content:space-between;
- gap:10px;
- margin-bottom:8px;
- font-size:.9rem;
+display:flex;
+justify-content:space-between;
+gap:10px;
+margin-bottom:6px;
+font-size:.9rem;
 }
 
-.admin-prov>div:first-child b{
- font-weight:700;
- color:var(--ink);
-}
-
-.admin-prov>div:first-child span{
- color:var(--muted);
- font-weight:600;
- font-variant-numeric:tabular-nums;
+.admin-prov b{
+font-weight:700;
 }
 
 .admin-bar{
- height:7px;
- border-radius:99px;
- background:var(--fp-pink-soft);
- overflow:hidden;
+height:7px;
+border-radius:99px;
+background:rgba(127,127,127,.16);
+overflow:hidden;
 }
 
 .admin-bar i{
- display:block;
- height:100%;
- border-radius:99px;
- background:linear-gradient(90deg, var(--fp-pink), var(--fp-gold));
+display:block;
+height:100%;
+border-radius:99px;
+background:var(--primary,#B83268);
 }
 
 .admin-todo{
- width:100%;
- display:grid;
- grid-template-columns:auto 1fr auto;
- align-items:center;
- gap:10px;
- text-align:left;
- padding:12px 14px;
- margin-bottom:8px;
- border:1px solid var(--fp-border);
- border-radius:12px;
- background:#FFFFFF;
- color:var(--ink);
- cursor:pointer;
- transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-}
-
-.admin-todo:hover{
- border-color:var(--fp-border-strong);
- box-shadow:var(--fp-shadow);
- transform:translateY(-1px);
+width:100%;
+display:grid;
+grid-template-columns:auto 1fr auto;
+align-items:center;
+gap:10px;
+text-align:left;
+padding:12px;
+margin-bottom:8px;
+border:1px solid rgba(127,127,127,.16);
+border-radius:12px;
+background:transparent;
+color:inherit;
+cursor:pointer;
 }
 
 .admin-todo b{
- min-width:30px;
- text-align:center;
- font-size:1.15rem;
- color:var(--fp-pink);
+min-width:30px;
+text-align:center;
+font-size:1.15rem;
 }
 
 .admin-todo span{
- font-size:.9rem;
- color:var(--ink);
+font-size:.9rem;
 }
 
 .admin-todo em{
- font-style:normal;
- color:var(--fp-pink);
- font-weight:700;
- font-size:.82rem;
+font-style:normal;
+color:var(--primary,#B83268);
+font-weight:700;
+font-size:.82rem;
 }
 
+.admin-todo.empty{
+display:block;
+cursor:default;
+opacity:.65;
+}
+
+@media(max-width:800px){
+
+.admin-kpis{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.admin-dashboard-grid{
+grid-template-columns:1fr;
+}
+
+}
+
+@media(max-width:430px){
+
+.admin-kpis{
+grid-template-columns:1fr 1fr;
+gap:8px;
+}
+
+.admin-kpi{
+min-height:76px;
+padding:11px;
+}
+
+.admin-kpi strong{
+font-size:1.4rem;
+}
+
+}
+
+</style>
+<style id="admin-members-mobile-fix">
 .admin-section{
   margin-top:22px;
   padding-top:18px;
@@ -1905,61 +1804,6 @@ button.danger:hover{
   margin-bottom:18px;
 }
 
-.admin-section-head .adhtag{
-  display:grid;
-  place-items:center;
-  width:34px;
-  height:34px;
-  border-radius:10px;
-  background:var(--fp-pink-soft);
-  color:var(--fp-pink-2);
-  font-size:16px;
-  font-weight:800;
-}
-
-.admin-section-head h2{
-  margin:0;
-}
-
-.admin-todo.empty{
-  display:block;
-  cursor:default;
-  color:var(--muted);
-  background:var(--fp-pink-soft);
-}
-
-@media(max-width:800px){
-
-.admin-kpis{
- grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-.admin-dashboard-grid{
- grid-template-columns:1fr;
-}
-
-}
-
-@media(max-width:430px){
-
-.admin-kpis{
- grid-template-columns:1fr 1fr;
- gap:8px;
-}
-
-.admin-kpi{
- min-height:76px;
- padding:11px;
-}
-
-.admin-kpi strong{
- font-size:1.4rem;
-}
-
-}
-
-</style>
-<style id="admin-members-mobile-fix">
 #adm-members .mrow{
   display:flex !important;
   flex-direction:column !important;
@@ -2057,24 +1901,22 @@ button.danger:hover{
    ========================================================= */
 
 :root {
-  --fp-pink: #B83268;
-  --fp-pink-2: #8E2450;
-  --fp-pink-soft: #F7E1EA;
-  --fp-gold: #C99B4A;
-  --fp-gold-soft: #F3E6CF;
-  --fp-border: rgba(184,50,104,.18);
-  --fp-border-strong: rgba(184,50,104,.32);
-  --fp-shadow: 0 10px 30px rgba(184,50,104,.10);
-  --fp-shadow-lg: 0 18px 44px rgba(184,50,104,.14);
+  --fp-pink: #d83b78;
+  --fp-pink-2: #a91f58;
+  --fp-gold: #d6ad5b;
+  --fp-glass: rgba(255,255,255,.075);
+  --fp-border: rgba(255,255,255,.13);
+  --fp-shadow: 0 18px 45px rgba(0,0,0,.22);
 }
 
 /* ---------- Global atmosphere ---------- */
 
 body {
   background:
-    radial-gradient(circle at 12% 8%, rgba(184,50,104,.07), transparent 30%),
-    radial-gradient(circle at 88% 20%, rgba(201,155,74,.06), transparent 26%),
-    var(--bg, #FFF7FA);
+    radial-gradient(circle at 12% 8%, rgba(216,59,120,.18), transparent 28%),
+    radial-gradient(circle at 88% 20%, rgba(214,173,91,.10), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(169,31,88,.13), transparent 35%),
+    var(--bg, #101014);
 }
 
 .app {
@@ -2091,22 +1933,26 @@ body {
   background:
     linear-gradient(
       135deg,
-      rgba(184,50,104,.04),
-      transparent 40%,
-      rgba(201,155,74,.03)
+      rgba(255,255,255,.025),
+      transparent 35%,
+      rgba(216,59,120,.025)
     );
 }
 
 /* ---------- Header ---------- */
 
 .top {
-  background: #FFFFFF !important;
+  background: rgba(12,12,17,.76) !important;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--fp-border) !important;
-  box-shadow: 0 2px 14px rgba(184,50,104,.08);
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
 }
 
 .mark {
-  filter: none;
+  filter:
+    drop-shadow(0 0 10px rgba(216,59,120,.28))
+    drop-shadow(0 0 22px rgba(216,59,120,.12));
 }
 
 /* ---------- Main screens ---------- */
@@ -2143,7 +1989,7 @@ body {
 
 .title {
   letter-spacing: -.025em;
-  text-shadow: 0 2px 12px rgba(184,50,104,.10);
+  text-shadow: 0 3px 18px rgba(216,59,120,.12);
 }
 
 /* ---------- Home / first page ---------- */
@@ -2160,15 +2006,17 @@ body {
   position: relative;
   overflow: hidden;
   padding: 24px 21px;
-  border: 1px solid var(--fp-border);
+  border: 1px solid rgba(255,255,255,.13);
   border-radius: 25px;
   background:
-    radial-gradient(circle at 88% 8%, rgba(201,155,74,.14), transparent 30%),
-    radial-gradient(circle at 8% 90%, rgba(184,50,104,.12), transparent 34%),
-    linear-gradient(145deg, #FFFFFF, #FFF0F6);
+    radial-gradient(circle at 88% 8%, rgba(214,173,91,.17), transparent 30%),
+    radial-gradient(circle at 8% 90%, rgba(216,59,120,.22), transparent 34%),
+    linear-gradient(145deg, rgba(255,255,255,.10), rgba(255,255,255,.035));
   box-shadow:
-    0 18px 44px rgba(184,50,104,.12),
-    inset 0 1px 0 rgba(255,255,255,.6);
+    0 22px 55px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.09);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 #s-home .hero::before {
@@ -2179,7 +2027,7 @@ body {
   right: -70px;
   top: -80px;
   border-radius: 50%;
-  background: rgba(184,50,104,.10);
+  background: rgba(216,59,120,.16);
   filter: blur(8px);
   pointer-events: none;
 }
@@ -2194,8 +2042,8 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(201,155,74,.5),
-    rgba(184,50,104,.55),
+    rgba(214,173,91,.5),
+    rgba(216,59,120,.55),
     transparent
   );
 }
@@ -2212,10 +2060,12 @@ body {
   background:
     linear-gradient(
       145deg,
-      #FFFFFF,
-      #FFF5FA
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
     ) !important;
-  box-shadow: var(--fp-shadow);
+  box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   transition:
     transform .22s ease,
     border-color .22s ease,
@@ -2225,8 +2075,8 @@ body {
 .list > li:hover,
 .card:hover {
   transform: translateY(-2px);
-  border-color: var(--fp-border-strong) !important;
-  box-shadow: var(--fp-shadow-lg);
+  border-color: rgba(216,59,120,.34) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.20);
 }
 
 /* ---------- Signalement ---------- */
@@ -2245,13 +2095,15 @@ body {
   margin-bottom: 20px;
   padding: 17px;
   border-radius: 21px;
-  border: 1px solid var(--fp-border);
+  border: 1px solid rgba(216,59,120,.22);
   background:
-    radial-gradient(circle at 100% 0%, var(--fp-gold-soft), transparent 34%),
-    linear-gradient(145deg, var(--fp-pink-soft), #FFFFFF);
+    radial-gradient(circle at 100% 0%, rgba(214,173,91,.12), transparent 34%),
+    linear-gradient(145deg, rgba(216,59,120,.11), rgba(255,255,255,.035));
   box-shadow:
-    0 12px 34px rgba(184,50,104,.10),
-    inset 0 1px 0 rgba(255,255,255,.7);
+    0 16px 40px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 #s-report .rpintro::before {
@@ -2267,7 +2119,7 @@ body {
     var(--fp-pink),
     var(--fp-gold)
   );
-  box-shadow: 0 0 12px rgba(184,50,104,.22);
+  box-shadow: 0 0 15px rgba(216,59,120,.45);
 }
 
 #s-report .rplead {
@@ -2285,12 +2137,12 @@ body {
   display: grid;
   place-items: center;
   border-radius: 12px;
-  color: #FFFFFF;
+  color: #fff;
   background:
     linear-gradient(145deg, var(--fp-pink), var(--fp-pink-2));
   box-shadow:
-    0 6px 16px rgba(184,50,104,.22),
-    inset 0 1px 0 rgba(255,255,255,.2);
+    0 8px 20px rgba(216,59,120,.28),
+    inset 0 1px 0 rgba(255,255,255,.18);
 }
 
 #s-report .points {
@@ -2304,8 +2156,8 @@ body {
   list-style: none;
   padding: 10px 12px;
   border-radius: 13px;
-  background: var(--fp-pink-soft);
-  border: 1px solid var(--fp-border);
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.07);
 }
 
 /* ---------- Report form ---------- */
@@ -2313,16 +2165,18 @@ body {
 #reportForm {
   padding: 18px;
   border-radius: 23px;
-  border: 1px solid var(--fp-border);
+  border: 1px solid rgba(255,255,255,.12);
   background:
     linear-gradient(
       145deg,
-      #FFFFFF,
-      #FFF5FA
+      rgba(255,255,255,.075),
+      rgba(255,255,255,.025)
     );
   box-shadow:
-    0 14px 36px rgba(184,50,104,.10),
-    inset 0 1px 0 rgba(255,255,255,.6);
+    0 20px 50px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 #reportForm .field {
@@ -2338,11 +2192,10 @@ body {
 #reportForm input,
 #reportForm select,
 #reportForm textarea {
-  border: 1px solid var(--fp-border) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
   border-radius: 14px !important;
-  background: #FFFFFF !important;
-  color: var(--ink);
-  box-shadow: inset 0 1px 0 rgba(184,50,104,.04);
+  background: rgba(0,0,0,.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
   transition:
     border-color .2s ease,
     box-shadow .2s ease,
@@ -2352,10 +2205,10 @@ body {
 #reportForm input:focus,
 #reportForm select:focus,
 #reportForm textarea:focus {
-  border-color: var(--fp-pink) !important;
+  border-color: rgba(216,59,120,.68) !important;
   box-shadow:
-    0 0 0 3px rgba(184,50,104,.14),
-    0 8px 24px rgba(184,50,104,.10) !important;
+    0 0 0 3px rgba(216,59,120,.12),
+    0 8px 25px rgba(216,59,120,.08) !important;
   transform: translateY(-1px);
   outline: none;
 }
@@ -2371,9 +2224,8 @@ button.primary {
       var(--fp-pink),
       var(--fp-pink-2)
     ) !important;
-  color: #FFFFFF !important;
   box-shadow:
-    0 10px 26px rgba(184,50,104,.24),
+    0 10px 25px rgba(216,59,120,.25),
     inset 0 1px 0 rgba(255,255,255,.18);
   transition:
     transform .2s ease,
@@ -2384,9 +2236,9 @@ button.primary {
 .btn.primary:hover,
 button.primary:hover {
   transform: translateY(-2px);
-  filter: brightness(1.04);
+  filter: brightness(1.06);
   box-shadow:
-    0 16px 34px rgba(184,50,104,.30),
+    0 15px 32px rgba(216,59,120,.32),
     inset 0 1px 0 rgba(255,255,255,.2);
 }
 
@@ -2400,9 +2252,10 @@ button.primary:active {
 .filters {
   padding: 5px;
   border-radius: 16px;
-  background: #FFFFFF;
-  border: 1px solid var(--fp-border);
-  box-shadow: 0 2px 10px rgba(184,50,104,.06);
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .filters button,
@@ -2413,11 +2266,13 @@ button.primary:active {
 /* ---------- Bottom navigation ---------- */
 
 .tabs {
-  background: #FFFFFF !important;
-  border-top: 1px solid var(--fp-border) !important;
+  background: rgba(12,12,17,.82) !important;
+  border-top: 1px solid rgba(255,255,255,.11) !important;
   box-shadow:
-    0 -8px 26px rgba(184,50,104,.08),
-    0 -1px 0 rgba(255,255,255,.6);
+    0 -12px 35px rgba(0,0,0,.20),
+    0 -1px 0 rgba(255,255,255,.025);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
 .tab {
@@ -2429,7 +2284,7 @@ button.primary:active {
 
 .tab[aria-selected="true"] {
   color: var(--fp-pink) !important;
-  text-shadow: none;
+  text-shadow: 0 0 16px rgba(216,59,120,.30);
 }
 
 .tab[aria-selected="true"]::after {
@@ -2445,7 +2300,7 @@ button.primary:active {
     var(--fp-pink),
     var(--fp-gold)
   );
-  box-shadow: 0 0 8px rgba(184,50,104,.22);
+  box-shadow: 0 0 12px rgba(216,59,120,.35);
 }
 
 .tab:active {
@@ -2454,7 +2309,7 @@ button.primary:active {
 
 .bubble {
   box-shadow:
-    0 4px 12px rgba(184,50,104,.18);
+    0 4px 12px rgba(216,59,120,.25);
 }
 
 /* ---------- Secondary headings / hints ---------- */
@@ -2473,20 +2328,20 @@ button.primary:active {
 @media (prefers-color-scheme: light) {
   body {
     background:
-      radial-gradient(circle at 10% 0%, rgba(184,50,104,.08), transparent 30%),
-      radial-gradient(circle at 90% 15%, rgba(201,155,74,.06), transparent 25%),
-      var(--bg, #FFF7FA);
+      radial-gradient(circle at 10% 0%, rgba(216,59,120,.10), transparent 30%),
+      radial-gradient(circle at 90% 15%, rgba(214,173,91,.08), transparent 25%),
+      var(--bg, #f6f6f8);
   }
 
   .top,
   .tabs {
-    background: #FFFFFF !important;
+    background: rgba(255,255,255,.82) !important;
   }
 
   #reportForm input,
   #reportForm select,
   #reportForm textarea {
-    background: #FFFFFF !important;
+    background: rgba(255,255,255,.72) !important;
   }
 }
 
@@ -2511,17 +2366,16 @@ button.primary:active {
 .adh-digital-form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .adh-digital-head{margin-bottom:18px}
 .adh-digital-sub{color:var(--muted);line-height:1.6;margin:6px 0 0}
-.adh-step{background:var(--surface);border:1px solid var(--fp-border);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:var(--fp-shadow)}
+.adh-step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:0 4px 15px rgba(0,0,0,.04)}
 .adh-step-title{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-family:var(--font-head)}
-.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--fp-pink-soft);color:var(--fp-pink-2);font-size:12px;font-weight:800}
+.adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--soft);color:var(--link);font-size:12px;font-weight:800}
 .adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .adh-full{grid-column:1/-1}
 .adh-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--fp-border);border-radius:12px;padding:12px;cursor:pointer;background:#FFFFFF;transition:border-color .2s ease, box-shadow .2s ease}
-.adh-choice label:hover,.adh-commit:hover{border-color:var(--fp-border-strong);box-shadow:var(--fp-shadow)}
+.adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer}
 .adh-commit{line-height:1.5}
 .adh-sign-hint{font-size:13px;color:var(--muted);margin:0 0 10px}
-.adh-signbox{height:180px;border:1.5px dashed var(--fp-pink);border-radius:14px;background:var(--fp-pink-soft);overflow:hidden;touch-action:none}
+.adh-signbox{height:180px;border:1.5px dashed var(--link);border-radius:14px;background:rgba(255,255,255,.035);overflow:hidden;touch-action:none}
 .adh-signbox canvas{width:100%;height:100%;display:block}
 .adh-sign-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
 .adh-sign-state{font-size:12px;color:var(--muted)}
@@ -2530,10 +2384,10 @@ button.primary:active {
     width:100%;
     min-height:46px;
     padding:10px 12px;
-    border:1px solid var(--fp-border);
+    border:1px solid var(--line);
     border-radius:10px;
     background:var(--surface);
-    color:var(--ink);
+    color:var(--text);
     font-size:16px;
     appearance:auto;
     -webkit-appearance:auto;
@@ -2595,7 +2449,6 @@ button.primary:active {
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
- <button class="btn ghost" type="button" data-share-app data-i18n="heroShare"></button>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
@@ -2805,7 +2658,8 @@ button.primary:active {
 </div>
 </div><div id="adm-members" class="admin-section"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
-</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2">Nouveau communiqué</h2></div><div class="field">
+<button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
+</p></div><div id="adm-news" class="admin-section" hidden><h2 class="h2">Nouveau communiqué</h2><div class="field">
 <label for="nCat">Catégorie</label>
 <select id="nCat">
 <option value="urgent">Communiqué</option>
@@ -2841,7 +2695,7 @@ button.primary:active {
 <p class="hint" id="nEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2">Nouvel événement</h2></div><div class="field">
+<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><h2 class="h2">Nouvel événement</h2><div class="field">
 <label for="eDate">Date</label>
 <input id="eDate" type="date">
 </div><div class="field">
@@ -2863,7 +2717,7 @@ button.primary:active {
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -2919,7 +2773,6 @@ isAdmin:false,
 isSubAdmin:false,
 members:[],
 memFilter:'pending',
- memSearch:'',
 reports:[],
 adhesions:[],
 provinceContacts:[],
@@ -2949,7 +2802,6 @@ tabContact:`Contact`,
 heroT:`Un dysfonctionnement à signaler ?`,
 heroP:`Décrivez les faits en 2 minutes, anonymement.`,
 heroBtn:`Faire un signalement`,
-heroShare:`Partager l'application`,
 
 
 adhDigitalTitle:`Demande d'adhésion`,
@@ -2957,7 +2809,7 @@ adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signa
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
 adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
-adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
+admMemSearch:`Rechercher un adhérent`, admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`, adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
@@ -3188,14 +3040,11 @@ delData:`Supprimer mes données`,
 delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive. Les signalements déjà envoyés restent conservés et peuvent contenir des éléments permettant de vous identifier.`,
 
 deleted:`Données supprimées`,
- adminOpen:`Espace administrateur`,
- errPrefix:`Une erreur est survenue`,
+adminOpen:`Espace administrateur`,
+errPrefix:`Une erreur est survenue`
+},
 
-admMemSearch:`Rechercher un adhérent`,
- admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
- },
-
- ar:{
+ar:{
 brandName:`الاتحاد العام للشغالين بالمغرب`,
 brandSub:`الجامعة الوطنية للصحة`,
 brandL3:`جهة سوس ماسة`,
@@ -3213,7 +3062,6 @@ tabContact:`اتصال`,
 heroT:`هل لديكم اختلال تودون التبليغ عنه؟`,
 heroP:`صفوا الوقائع في دقيقتين. يمكنكم عدم الكشف عن هويتكم.`,
 heroBtn:`تقديم تبليغ`,
-heroShare:`شاركون التطبيقة`,
 
 
 adhDigitalTitle:`طلب الانخراط`,
@@ -3221,7 +3069,7 @@ adhDigitalIntro:`املأوا استمارة الانخراط مباشرة دا�
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
 adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
-adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
+adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`, admMemSearchHint:`البحث بالاسم أو البريد الإلكتروني أو المؤسسة أو الإقليم.`, admMemSearch:`البحث عن عضو`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
@@ -3502,11 +3350,8 @@ delData:`حذف بياناتي`,
 delConfirm:`هل تريدون حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي. ستظل التبليغات المرسلة محفوظة، وقد يتضمن محتواها معلومات تكشف هويتكم.`,
 
 deleted:`تم حذف البيانات`,
- adminOpen:`فضاء المسؤول`,
- errPrefix:`حدث خطأ`,
-
- admMemSearch:`البحث عن عضو`,
- admMemSearchHint:`البحث بالاسم أو البريد الإلكتروني أو المؤسسة أو الإقليم.`,
+adminOpen:`فضاء المسؤول`,
+errPrefix:`حدث خطأ`
 }
 
 };
@@ -3860,6 +3705,8 @@ function openUrl(url){
    return '';
  }
  
+ /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
+    les navigateurs bloquent les data: en navigation de premier plan. */
  /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
     les navigateurs bloquent les data: en navigation de premier plan. */
  var attachUrl='';
@@ -4649,6 +4496,14 @@ k[1]+' ('+c[k[0]]+')'+
 
 }).join('');
 
+$('admMemFilters').innerHTML=keys.map(function(k){
+
+return '<button type="button" class="fbtn" data-memf="'+k[0]+'" aria-pressed="'+(S.memFilter===k[0])+'">'+
+k[1]+' ('+c[k[0]]+')'+
+'</button>';
+
+}).join('');
+
 var list=S.members
  .filter(function(m){
  if(S.memFilter!=='all'&&m.status!==S.memFilter)return false;
@@ -4956,38 +4811,29 @@ function renderAdminAdhesions(){
     s==='accepted'?t.admStatusValidated:
     s==='refused'?t.admStatusRefused:t.admStatusPending;
   }
-el.innerHTML=list.length?list.map(function(a){
-     var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
-     if(a.status==='pending'||a.status==='needs_completion'){
-       actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
-       actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
-       actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
-     }
-     /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
-     if(a.status==='accepted'&&a.signed){
-       actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
-     }
-     var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
-     var nom=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);
-     var stLabel=esc(label(a.status));
-     var rows=[
-       '<span>CIN : '+esc(a.cin||'')+'</span>',
-       '<span>Téléphone : '+esc(a.phone||'')+'</span>',
-       '<span>Adresse : '+esc(a.address||'')+'</span>',
-       '<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>',
-       '<span>Service : '+esc(a.service||'')+(a.function?' · Fonction : '+esc(a.function):'')+'</span>',
-       a.ppr?'<span>PPR : '+esc(a.ppr)+'</span>':'',
-       a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'',
-       a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':''
-     ].filter(Boolean).join('');
-     return '<li class="mrow"><div class="mi">'+
-     '<strong>'+nom+' · '+stLabel+
-       (a.signed&&a.status==='accepted'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
-     (head?'<span>'+esc(head)+'</span>':'')+
-     '<div class="mi-grid">'+rows+'</div>'+
-     '</div><div class="mact">'+actions+'</div></li>';
-   }).join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
- }
+  el.innerHTML=list.length?list.map(function(a){
+    var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
+    if(a.status==='pending'||a.status==='needs_completion'){
+      actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+      actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
+    }
+    /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
+    if(a.status==='accepted'&&a.signed){
+      actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
+    }
+    var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
+    return '<li class="mrow"><div class="mi">'+
+    '<strong>'+esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback)+' · '+esc(label(a.status))+
+      (a.signed&&a.status==='accepted'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
+    (head?'<span>'+esc(head)+'</span>':'')+
+    '<span>CIN : '+esc(a.cin||'')+' · Téléphone : '+esc(a.phone||'')+'</span>'+
+    '<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>'+
+    (a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'')+
+    (a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':'')+
+    '</div><div class="mact">'+actions+'</div></li>';
+  }).join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
+}
 
 /* =========================
    SIGNATURE ÉLECTRONIQUE ET PDF DES ADHÉSIONS
@@ -6111,14 +5957,10 @@ renderAgenda();
 return;
 }
 
+if(el.hasAttribute('data-share')){
 if(el.hasAttribute('data-share-app')){
  
    shareAppLink();
- 
-   return;
- }
- 
- if(el.hasAttribute('data-share')){
 
 var n=NEWS.filter(function(x){
 return x.id===el.getAttribute('data-share');
