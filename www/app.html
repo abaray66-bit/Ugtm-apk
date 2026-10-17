@@ -581,17 +581,18 @@ main{
   inset:0;
   z-index:60;
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
-  padding:16px;
-  background:rgba(184,50,104,.35)
+  padding:40px 16px 16px;
+  background:rgba(184,50,104,.35);
+  overflow-y:auto
 }
 
 .signmodal-box{
   width:100%;
   max-width:520px;
-  max-height:92vh;
-  overflow:auto;
+  max-height:none;
+  overflow:visible;
   background:var(--surface,#fff);
   border-radius:18px;
   padding:18px;
@@ -5143,6 +5144,7 @@ function openAdhesionDossier(id,canSign){
   }
 
   modal.hidden=false;
+  modal.scrollTop=0;
 
   var c=cloud();
   if(!c||!c.getAdhesionDoc){if(info)info.innerHTML='';return;}
