@@ -1695,6 +1695,14 @@ button.danger:hover{
 .adm *{
   direction:ltr
 }
+#admMemSearch{
+  color:var(--ink) !important;
+  border-color:var(--fp-border-strong) !important;
+  background:var(--surface) !important;
+}
+#admMemSearch::placeholder{
+  color:rgba(255,255,255,.55) !important;
+}
 </style>
 
 <style id="admin-dashboard-style">
@@ -4651,7 +4659,7 @@ esc(STATUS_FR[m.status]||m.status)+
 :'')
 +
 (!m.prov
-?'<span class="hint">⚠ Province non renseignée : seul l\'administrateur principal peut valider cet adhérent.</span>'
+?'<span class="hint" style="display:inline-flex;align-items:flex-start;gap:6px"><span style="flex-shrink:0">⚠</span><span>Province non renseignée : seul l\'administrateur principal peut valider cet adhérent.</span></span>'
 :'')+
 
 (m.memberNo
