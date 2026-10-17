@@ -994,6 +994,10 @@ async function syncMemberPhone(u, phone){
    habilité, et uniquement pour une demande déjà signée (les règles
    Firestore vérifient le statut 'accepted' et la province).
    ========================================================= */
+async function getAdhesionDoc(uid){
+  var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
+  return snap.exists()?snap.data():null;
+}
 async function saveAdhesionPdf(uid,pdfBase64){
   var u=auth.currentUser;
   if(!u) throw new Error('Non connecté');

@@ -181,7 +181,7 @@ button,input,select,textarea{
   display:block;
   font-family:var(--font-head);
   font-weight:800;
-  font-size:11px;
+  font-size:10px;
   line-height:1.2;
   white-space:nowrap;
   overflow:hidden;
@@ -191,7 +191,7 @@ button,input,select,textarea{
 
 .brand span{
   display:block;
-  font-size:11px;
+  font-size:10px;
   color:var(--muted);
   line-height:1.2;
   white-space:nowrap;
@@ -200,7 +200,7 @@ button,input,select,textarea{
 }
 
 .brand span[data-i18n="brandSub"]{
-  font-size:12px;
+  font-size:11px;
   font-weight:800;
   color:var(--ink)
 }
@@ -308,9 +308,12 @@ main{
 .hero h1{
   font-family:var(--font-head);
   font-weight:800;
-  font-size:18px;
+  font-size:15px;
   line-height:1.3;
-  margin:0 0 4px
+  margin:0 0 4px;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  hyphens:auto
 }
 
 .hero p{
@@ -651,14 +654,15 @@ main{
 .adhdoc-grid{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:6px 14px
+  gap:10px 18px
 }
 
 .adhdoc-row{
   display:flex;
   flex-direction:column;
   font-size:13px;
-  min-width:0
+  min-width:0;
+  padding:7px 0
 }
 
 .adhdoc-row span{
@@ -669,8 +673,9 @@ main{
 }
 
 .adhdoc-row b{
-  font-weight:600;
-  overflow-wrap:anywhere
+  font-weight:700;
+  overflow-wrap:anywhere;
+  font-size:14px
 }
 
 .adhdoc-sign{
@@ -2503,9 +2508,10 @@ button.primary:active {
 
 <style id="digital-adhesion-style">
 .digital-adhesion{max-width:760px;margin:0 auto;padding-bottom:32px}
+.adh-digital-form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
 .adh-digital-head{margin-bottom:18px}
 .adh-digital-sub{color:var(--muted);line-height:1.6;margin:6px 0 0}
-.adh-step{background:var(--surface);border:1px solid var(--fp-border);border-radius:18px;padding:18px;margin:0 0 14px;box-shadow:var(--fp-shadow)}
+.adh-step{background:var(--surface);border:1px solid var(--fp-border);border-radius:14px;padding:16px;margin:0 0 14px;box-shadow:var(--fp-shadow)}
 .adh-step-title{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-family:var(--font-head)}
 .adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--fp-pink-soft);color:var(--fp-pink-2);font-size:12px;font-weight:800}
 .adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -2535,6 +2541,45 @@ button.primary:active {
     position:relative;
     z-index:5;
   }
+}
+
+.adhesion-info{
+  margin-top:12px;
+  padding:12px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:10px
+}
+
+.adhesion-info h3{
+  margin:0 0 8px;
+  font-size:15px;
+  font-weight:800
+}
+
+.adhesion-info-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:13px;
+  padding:4px 0;
+  border-bottom:1px solid var(--line)
+}
+
+.adhesion-info-row span{
+  color:var(--muted)
+}
+
+.adhesion-info-row b{
+  font-weight:800;
+  color:var(--ink)
+}
+
+.adhesion-info .ok{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--ok)
+}
 </style>
 </head><body><div class="app"><header class="top"><div class="mark" aria-hidden="true">
 <img src="icons/ugtm-mark.svg" alt="" width="30" height="30">
@@ -2719,7 +2764,7 @@ button.primary:active {
 
 </div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button>
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -2892,7 +2937,7 @@ brandName:`Union Générale des Travailleurs du Maroc`,
 brandSub:`Fédération nationale de la Santé`,
 brandL3:`Région Souss-Massa`,
 brandShort:`UGTM Souss-Massa`,
-langBtn:`العربية`,
+langBtn:`ع`,
 langAria:`Passer en arabe`,
 
 tabHome:`Accueil`,
@@ -3094,6 +3139,7 @@ mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votr
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
 editProfile:`Modifier mon profil`,
 fillAdhesion:`Remplir ma demande d’adhésion`,
+myAdhesionInfo:`Mes infos d'adhésion`,
 renewAdhesion:`Renouveler mon adhésion`,
 
 meLoading:`Chargement…`,
@@ -3106,6 +3152,20 @@ st_blocked:`Compte suspendu. Contactez la Fédération régionale de la Santé.`
 meReportsT:`Mes signalements`,
 meReportsNone:`Aucun signalement enregistré pour le moment.`,
 meReportsResp:`Réponse de l'union :`,
+meAdhesionLoading:`Chargement…`,
+meAdhesionNone:`Aucune demande d'adhésion trouvée.`,
+meAdhesionTitle:`Mes informations d'adhésion`,
+meAdhesionName:`Nom complet`,
+meAdhesionStatus:`Statut`,
+meAdhesionCIN:`CIN`,
+meAdhesionPhone:`Téléphone`,
+meAdhesionProvince:`Province`,
+meAdhesionType:`Type`,
+meAdhesionRenewal:`Renouvellement`,
+meAdhesionFirst:`Première adhésion`,
+meAdhesionValidated:`Adhésion validée`,
+meAdhesionError:`Impossible de charger les informations.`,
+meAdhesionFallback:`Adhérent`,
 rStNew:`Nouveau`,
 rStProgress:`En cours`,
 rStClosed:`Clos`,
@@ -3392,6 +3452,7 @@ mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤس�
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
 editProfile:`تعديل معلوماتي`,
 fillAdhesion:`ملء طلب الانخراط`,
+myAdhesionInfo:`معلومات انخراطي`,
 renewAdhesion:`تجديد الانخراط`,
 
 
@@ -3405,6 +3466,20 @@ st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوط
 meReportsT:`بلاغاتي`,
 meReportsNone:`لا توجد بلاغات مسجلة حتى الآن.`,
 meReportsResp:`رد الجامعة:`,
+meAdhesionLoading:`جار التحميل…`,
+meAdhesionNone:`لم يتم العثور على طلب انخراط.`,
+meAdhesionTitle:`معلومات انخراطي`,
+meAdhesionName:`الاسم الكامل`,
+meAdhesionStatus:`الحالة`,
+meAdhesionCIN:`البطاقة الوطنية`,
+meAdhesionPhone:`رقم الهاتف`,
+meAdhesionProvince:`الإقليم`,
+meAdhesionType:`النوع`,
+meAdhesionRenewal:`تجديد`,
+meAdhesionFirst:`انخراط أول`,
+meAdhesionValidated:`انخراط مصادق عليه`,
+meAdhesionError:`تعذر تحميل المعلومات.`,
+meAdhesionFallback:`منخرط`,
 rStNew:`جديد`,
 rStProgress:`قيد المعالجة`,
 rStClosed:`مغلق`,
@@ -4386,6 +4461,33 @@ $('meDelLink').hidden=!!S.isSubAdmin;
 
 renderMeReports();
 refreshMyAdhesionStatus(false);
+}
+
+function renderMyAdhesionInfo(){
+
+var t=T();
+var box=$('meAdhesionInfoBox');
+if(!box)return;
+if(!S.user){box.textContent='';return;}
+var c=cloud();
+if(!c||!c.getAdhesionDoc){box.textContent=t.adhServiceUnavailable;return;}
+box.innerHTML='<p class="hint">'+t.meAdhesionLoading+'</p>';
+c.getAdhesionDoc(String(S.user.uid)).then(function(doc){
+  if(!doc){box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';return;}
+  var a=doc.application||{};
+  function row(l,v){return '<div class="adhesion-info-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';}
+  var html='<h3>'+t.meAdhesionTitle+'</h3>';
+  html+=row(t.meAdhesionName,((a.nom||'')+' '+(a.prenom||'')).trim()||t.meAdhesionFallback);
+  html+=row(t.meAdhesionStatus,t['st_'+doc.status]||doc.status);
+  html+=row(t.meAdhesionCIN,a.cin||'—');
+  html+=row(t.meAdhesionPhone,a.phone||'—');
+  html+=row(t.meAdhesionProvince,provName(doc.province,'fr')||doc.province||'—');
+  html+=row(t.meAdhesionType,a.type==='renewal'?t.meAdhesionRenewal:t.meAdhesionFirst);
+  if(doc.status==='accepted')html+='<p class="hint ok">'+t.meAdhesionValidated+'</p>';
+  box.innerHTML=html;
+}).catch(function(){
+  box.textContent=t.meAdhesionError;
+});
 }
 
 function renderAccountButton(){
@@ -5877,6 +5979,19 @@ el.hidden=true;
 return;
 }
 
+if(el.id==='meAdhesionInfoBtn'){
+
+var box=$('meAdhesionInfoBox');
+if(box.hidden){
+  renderMyAdhesionInfo();
+  box.hidden=false;
+}else{
+  box.hidden=true;
+  box.textContent='';
+}
+return;
+}
+
 if(el.hasAttribute('data-go')){
 
 go(el.getAttribute('data-go'));
@@ -6029,6 +6144,24 @@ return;
    ESPACE MEMBRE
    ========================= */
 
+function purgeSession(){
+  S.user=null;
+  S.member=null;
+  S.isAdmin=false;
+  S.isSubAdmin=false;
+  S.members=[];
+  S.adhesions=[];
+  S.reports=[];
+  S.formDirty=false;
+  try{
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf('ugtm-adhesion-draft:')===0||k==='ugtm-report-last'){
+        localStorage.removeItem(k);
+      }
+    });
+  }catch(e){}
+}
+
 if(el.hasAttribute('data-act')){
 
 c=cloud();
@@ -6045,7 +6178,12 @@ c.signIn().catch(showError);
 
 else if(act==='signout'){
 
-c.signOut().catch(showError);
+c.signOut().then(function(){
+  purgeSession();
+}).catch(function(e){
+  purgeSession();
+  showError(e);
+});
 
 }
 
@@ -6655,8 +6793,7 @@ showAdmTab('members');
 
 if(!s.user){
 
-S.formDirty=false;
-S.members=[];
+purgeSession();
 
 }
 
