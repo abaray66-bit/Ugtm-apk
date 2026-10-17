@@ -1851,45 +1851,52 @@ button.danger:hover{
 }
 
 .admin-todo{
- width:100%;
- display:grid;
- grid-template-columns:auto 1fr auto;
- align-items:center;
- gap:10px;
- text-align:left;
- padding:12px 14px;
- margin-bottom:8px;
- border:1px solid var(--fp-border);
- border-radius:12px;
- background:#FFFFFF;
- color:var(--ink);
- cursor:pointer;
- transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  width:100%;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  padding:12px 14px;
+  margin-bottom:8px;
+  border:1px solid var(--fp-border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--ink);
+  cursor:pointer;
+  transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
 .admin-todo:hover{
- border-color:var(--fp-border-strong);
- box-shadow:var(--fp-shadow);
- transform:translateY(-1px);
+  border-color:var(--fp-border-strong);
+  box-shadow:var(--fp-shadow);
+  transform:translateY(-1px);
 }
 
 .admin-todo b{
- min-width:30px;
- text-align:center;
- font-size:1.15rem;
- color:var(--fp-pink);
+  min-width:30px;
+  text-align:center;
+  font-size:1.15rem;
+  color:var(--fp-pink);
 }
 
 .admin-todo span{
- font-size:.9rem;
- color:var(--ink);
+  font-size:.9rem;
+  color:var(--ink);
 }
 
 .admin-todo em{
- font-style:normal;
- color:var(--fp-pink);
- font-weight:700;
- font-size:.82rem;
+  font-style:normal;
+  color:var(--fp-pink);
+  font-weight:700;
+  font-size:.82rem;
+}
+
+.admin-todo .todo-arrow{
+  color:var(--fp-pink);
+  font-weight:800;
+  font-size:1.2rem;
+  line-height:1;
 }
 
 .admin-section{
@@ -1924,20 +1931,55 @@ button.danger:hover{
 .admin-todo.empty{
   display:block;
   cursor:default;
-  color:var(--muted);
+  color:var(--ink);
+  font-weight:600;
   background:var(--fp-pink-soft);
 }
 
+.admin-todo.empty em{
+  color:var(--ink);
+}
+
+.filter-status{
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.filter-status .active{
+  color:var(--fp-pink);
+}
+
+.empty{
+  padding:24px 0;
+  color:var(--muted);
+  text-align:center;
+  list-style:none;
+  margin:0;
+}
+
+.empty-denied{
+  color:var(--alert);
+  background:var(--soft);
+  padding:16px;
+  border-radius:8px;
+}
+
+@media(max-width:1024px){
+  .admin-kpis{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
 @media(max-width:800px){
+  .admin-kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
 
-.admin-kpis{
- grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-.admin-dashboard-grid{
- grid-template-columns:1fr;
-}
-
+  .admin-dashboard-grid{
+    grid-template-columns:1fr;
+  }
 }
 
 @media(max-width:430px){
@@ -2803,7 +2845,7 @@ button.primary:active {
 </div>
 
 </div>
-</div><div id="adm-members" class="admin-section"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
+</div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" aria-label="Rechercher un adhérent" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2">Nouveau communiqué</h2></div><div class="field">
 <label for="nCat">Catégorie</label>
@@ -3192,7 +3234,9 @@ deleted:`Données supprimées`,
  errPrefix:`Une erreur est survenue`,
 
 admMemSearch:`Rechercher un adhérent`,
- admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
+  admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
+  admMembersTitle:`Membres`,
+  admMemExportCsv:`Exporter la liste (CSV)`,
  },
 
  ar:{
