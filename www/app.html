@@ -1637,7 +1637,10 @@ button.danger:hover{
 .mi strong{
   display:block;
   font-size:16px;
-  line-height:1.45
+  line-height:1.45;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
 }
 
 .mi span{
@@ -2009,10 +2012,10 @@ button.danger:hover{
 }
 
 #adm-members .subadmin-control select{
-  min-width:0 !important;
-  width:180px !important;
-  max-width:180px !important;
-  flex:0 1 180px !important;
+  min-width:150px !important;
+  width:auto !important;
+  max-width:260px !important;
+  flex:1 1 auto !important;
   background:var(--surface) !important;
   color:var(--ink) !important;
   border-color:var(--line) !important;
@@ -2037,9 +2040,10 @@ button.danger:hover{
   }
 
   #adm-members .subadmin-control select{
-    width:180px !important;
-    max-width:180px !important;
-    flex:0 1 180px !important;
+    min-width:0 !important;
+    width:100% !important;
+    max-width:100% !important;
+    flex:1 1 auto !important;
   }
 
   #adm-members .subadmin-control{
