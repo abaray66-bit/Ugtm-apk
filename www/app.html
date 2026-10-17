@@ -2406,6 +2406,29 @@ body {
     transform .2s ease;
 }
 
+#reportForm textarea {
+  min-height: 160px !important;
+  resize: vertical !important;
+}
+
+#reportForm input[type="file"],
+.field input[type="file"] {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 16px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.2);
+  cursor: pointer;
+}
+
 #reportForm input:focus,
 #reportForm select:focus,
 #reportForm textarea:focus {
