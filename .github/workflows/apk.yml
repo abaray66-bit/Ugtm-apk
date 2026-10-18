@@ -1125,7 +1125,7 @@ jobs:
 
           # Vérifier versionCode ET sha256 distants AVANT d'écrire localement.
           # Si la version distante est déjà correcte, ne rien faire.
-          REMOTE_MANIFEST="$(git ls-remote origin refs/heads/${GITHUB_REF_NAME} | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
+          REMOTE_MANIFEST="$(git ls-remote origin refs/heads/main | awk '{print $1}' | xargs -I {} git show {}:www/update.json 2>/dev/null || echo '')"
           if [ -n "$REMOTE_MANIFEST" ]; then
             CURRENT_REMOTE_CODE="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['versionCode'])" 2>/dev/null || echo 0)"
             CURRENT_REMOTE_SHA="$(echo "$REMOTE_MANIFEST" | python3 -c "import json,sys;print(json.load(sys.stdin)['sha256'])" 2>/dev/null || echo '')"
@@ -1189,14 +1189,14 @@ jobs:
 
           # Pousser ; en cas de rejet (push concurrent), récupérer puis rebaser
           # en gardant notre manifeste (le plus récent), puis repousser.
-          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+          if ! git push origin HEAD:main; then
             echo "Push rejeté — récupération de l'état distant et rebase."
-            git fetch origin "${GITHUB_REF_NAME}"
+            git fetch origin main
             # Stash any unstaged changes (e.g., version bump in build.gradle) before rebase
             git stash push -u -m "OTA workflow stash before rebase"
-            git rebase -X theirs "origin/${GITHUB_REF_NAME}"
+            git rebase -X theirs "origin/main"
             git stash pop || true
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin HEAD:main
           fi
 
           # Déclencher explicitement le déploiement Firebase Hosting pour mettre
@@ -1205,7 +1205,7 @@ jobs:
           # servir l'ancien manifeste (bug connu : v1.5.3/10503 jamais déployé).
           OTA_SHA="$(git rev-parse HEAD)"
           gh workflow run "Deploy Firebase Hosting" \
-            --ref "${GITHUB_REF_NAME}"
+            --ref main
 
           # Attendre que le déploiement déclenché porte bien le commit OTA,
           # puis surveiller sa réussite : sans cette vérification, le site
