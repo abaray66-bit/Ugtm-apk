@@ -333,6 +333,11 @@ main{
 .hero .btn:last-child{
   margin-inline-end:0
 }
+.hero .btn.ghost{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff
+}
 
 /* =========================
    ESPACE ADHÉRENT
@@ -3855,12 +3860,7 @@ $('lightboxImg').src='';
  
  $('attachDownload').addEventListener('click',function(){
  if(!attachUrl)return;
- var a=document.createElement('a');
- a.href=attachUrl;
- a.download=attachName||'piece-jointe';
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
+ window.open(attachUrl,'_blank');
  });
  
  document.addEventListener('keydown',function(e){
@@ -3927,7 +3927,7 @@ function openUrl(url){
     var text=
     'UGTM Souss-Massa\n'+
     'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
-    'Téléchargez l’application : '+appShareUrl()+'\n'+
+    'Télécharger l’application : '+appShareUrl()+'\n'+
     'Version : '+ver;
     shareTextNative(text,'UGTM Souss-Massa');
   }
@@ -3945,7 +3945,6 @@ function openUrl(url){
   
       capShare.share({text:text,dialogTitle:title})
       .catch(function(err){
-        /* Partage interrompu (utilisateur a annulé) : on ne toast pas. */
         if(err&&err.message&&/cancel|user/i.test(err.message))return;
         shareTextFallback(text);
       });
