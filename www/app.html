@@ -3036,7 +3036,7 @@ button.primary:active {
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button><button class="btn ghost small" id="attachDownloadHead" type="button" data-i18n="attachDownload">↓ Télécharger</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -7732,23 +7732,27 @@ window.UGTM.failed(err);
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
     if(b){
-      /* Le verrou renouvellement dépend du statut du dossier côté
-         serveur : on le (ré)évalue à chaque ouverture du formulaire. */
+      var blockOpen=false;
       if(typeof window.refreshMyAdhesionStatus==='function'){
         try{
           window.refreshMyAdhesionStatus(true).then(function(req){
             var st=req?String(req.status||'none'):'none';
+            var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+            var alreadyAdherent=(st==='accepted')||(memberActive&&st!=='needs_completion');
             if(st==='pending'||st==='refused'){
-              /* Statut confirmé côté serveur : une demande en
-                 double est bloquée — on quitte le formulaire
-                 (l'ouverture a pu précéder le rafraîchissement). */
               toast(adhesionFormBlockedMessage(),5500);
               go('me');
+              blockOpen=true;
+            }else if(alreadyAdherent){
+              toast(T().adhRenewalOnlyLock||'Votre adhésion est déjà active.',5500);
+              go('me');
+              blockOpen=true;
             }
           }).catch(function(){});
         }catch(errStatus){}
       }
       setTimeout(function(){
+        if(blockOpen)return;
         initDigitalAdhesion();
         if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
       },150);
