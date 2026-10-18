@@ -424,6 +424,20 @@ main{
     direction:rtl
     }
 
+    .home-actions .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px
+    }
+
+    .home-actions .hero-actions .btn{
+    flex:1 1 45%;
+    min-width:0;
+    width:auto;
+    padding-inline:12px
+    }
+
     .home-actions .adhbtns{
     flex-direction:column
     }
@@ -2636,8 +2650,10 @@ button.primary:active {
 </header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="home-actions"><div class="hero">
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
+<div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
- <button class="btn ghost" type="button" data-share-app data-i18n="heroShare"></button>
+<button class="btn gold" type="button" data-share-app data-i18n="heroShare"></button>
+</div>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
