@@ -8,7 +8,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  # =========================================================
+  # GATE : tests Firestore (bloque le déploiement si échec)
+  # =========================================================
+  test-firestore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dépendances
+        run: npm install
+
+      - name: Lancer les tests des règles Firestore
+        run: npm run test:firestore
+
+  # =========================================================
+  # DÉPLOIEMENT (conditionné à la réussite des tests)
+  # =========================================================
   deploy:
+    needs: test-firestore
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
