@@ -327,7 +327,11 @@ main{
   min-height:40px;
   padding:0 16px;
   font-size:14px;
-  border-radius:10px
+  border-radius:10px;
+  margin-inline-end:8px
+}
+.hero .btn:last-child{
+  margin-inline-end:0
 }
 
 /* =========================
@@ -1875,6 +1879,7 @@ button.danger:hover{
 }
 
 .admin-todo{
+<<<<<<< HEAD
  width:100%;
  display:grid;
  grid-template-columns:auto 1fr auto;
@@ -1889,31 +1894,54 @@ button.danger:hover{
  color:var(--ink);
  cursor:pointer;
  transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+=======
+  width:100%;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:10px;
+  text-align:left;
+  padding:12px 14px;
+  margin-bottom:8px;
+  border:1px solid var(--fp-border);
+  border-radius:12px;
+  background:var(--surface);
+  color:var(--ink);
+  cursor:pointer;
+  transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+>>>>>>> 4050693 (wip)
 }
 
 .admin-todo:hover{
- border-color:var(--fp-border-strong);
- box-shadow:var(--fp-shadow);
- transform:translateY(-1px);
+  border-color:var(--fp-border-strong);
+  box-shadow:var(--fp-shadow);
+  transform:translateY(-1px);
 }
 
 .admin-todo b{
- min-width:30px;
- text-align:center;
- font-size:1.15rem;
- color:var(--fp-pink);
+  min-width:30px;
+  text-align:center;
+  font-size:1.15rem;
+  color:var(--fp-pink);
 }
 
 .admin-todo span{
- font-size:.9rem;
- color:var(--ink);
+  font-size:.9rem;
+  color:var(--ink);
 }
 
 .admin-todo em{
- font-style:normal;
- color:var(--fp-pink);
- font-weight:700;
- font-size:.82rem;
+  font-style:normal;
+  color:var(--fp-pink);
+  font-weight:700;
+  font-size:.82rem;
+}
+
+.admin-todo .todo-arrow{
+  color:var(--fp-pink);
+  font-weight:800;
+  font-size:1.2rem;
+  line-height:1;
 }
 
 .admin-section{
@@ -1948,20 +1976,55 @@ button.danger:hover{
 .admin-todo.empty{
   display:block;
   cursor:default;
-  color:var(--muted);
+  color:var(--ink);
+  font-weight:600;
   background:var(--fp-pink-soft);
 }
 
+.admin-todo.empty em{
+  color:var(--ink);
+}
+
+.filter-status{
+  font-size:12.5px;
+  font-weight:600;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.filter-status .active{
+  color:var(--fp-pink);
+}
+
+.empty{
+  padding:24px 0;
+  color:var(--muted);
+  text-align:center;
+  list-style:none;
+  margin:0;
+}
+
+.empty-denied{
+  color:var(--alert);
+  background:var(--soft);
+  padding:16px;
+  border-radius:8px;
+}
+
+@media(max-width:1024px){
+  .admin-kpis{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+
 @media(max-width:800px){
+  .admin-kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
 
-.admin-kpis{
- grid-template-columns:repeat(2,minmax(0,1fr));
-}
-
-.admin-dashboard-grid{
- grid-template-columns:1fr;
-}
-
+  .admin-dashboard-grid{
+    grid-template-columns:1fr;
+  }
 }
 
 @media(max-width:430px){
@@ -2884,7 +2947,7 @@ button.primary:active {
 </div>
 
 </div>
-</div><div id="adm-members" class="admin-section"><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
+</div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" aria-label="Rechercher un adhérent" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2">Nouveau communiqué</h2></div><div class="field">
 <label for="nCat">Catégorie</label>
@@ -3273,7 +3336,9 @@ deleted:`Données supprimées`,
  errPrefix:`Une erreur est survenue`,
 
 admMemSearch:`Rechercher un adhérent`,
- admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
+  admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
+  admMembersTitle:`Membres`,
+  admMemExportCsv:`Exporter la liste (CSV)`,
  },
 
  ar:{
@@ -3360,7 +3425,7 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
 admAdhesionSigned:`موقّع إلكترونياً`,
-admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة في Firestore. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
+admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admAdhesionFallback:`منخرط`,
@@ -3368,6 +3433,8 @@ admStatusPending:`في انتظار المصادقة`,
 admStatusCompletion:`تم طلب معلومات إضافية`,
 admStatusValidated:`تمت المصادقة`,
 admStatusRefused:`مرفوض`,
+admMembersTitle:`أعضاء`,
+admMemExportCsv:`تصدير القائمة (CSV)`,
 admAskCompletion:`طلب معلومات إضافية`,
     admRefuse:`رفض`,
 adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
@@ -3409,7 +3476,7 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
 admAdhesionSigned:`موقّع إلكترونياً`,
-admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة في Firestore. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
+admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admAdhesionFallback:`منخرط`,
@@ -3500,12 +3567,12 @@ cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاص�
 cWaB:`انضموا إلى المجموعة`,
 
 cFb:`الصفحة الرسمية على فيسبوك`,
-cFbD:`تابعوا الصفحة الرسمية لفيدرالية الصحة الجهوية على فيسبوك.`,
+cFbD:`تابعوا الصفحة الرسمية لجامعة الصحة الجهوية على فيسبوك.`,
 cFbB:`زيارة الصفحة`,
 
  attachTitle:`الملف المرفق`,
  attachClose:`إغلاق`,
- attachDownload:`.Circle تحميل الملف المرفق`,
+ attachDownload:`تحميل الملف المرفق`,
  attachPdfNote:`إذا لم يظهر الملف PDF في المعاينة، استخدموا زر التحميل لفتحه بتطبيق خارجي.`,
 
 cNum:`رقم الكاتب الجهوي`,
@@ -3855,71 +3922,55 @@ function openUrl(url){
      sur Android natif (dialogue système de partage), avec un
      fallback navigateur (navigator.share) puis WhatsApp. */
   function shareAppLink(){
- 
-    fetch('update.json?t='+Date.now())
-    .then(function(r){return r.json();})
-    .then(function(m){
-      var url=(m&&m.apkUrl)?String(m.apkUrl):appShareUrl();
-      var ver=(m&&m.versionName)?String(m.versionName):appShareVersion();
-      var text=
-      'UGTM Souss-Massa\n'+
-      'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
-      'Téléchargez l’application : '+url+'\n'+
-      'Version : '+ver;
-      shareTextNative(text,'UGTM Souss-Massa');
-    })
-    .catch(function(){
-      var text=
-      'UGTM Souss-Massa\n'+
-      'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
-      'Téléchargez l’application : '+appShareUrl()+'\n'+
-      'Version : '+appShareVersion();
-      shareTextNative(text,'UGTM Souss-Massa');
-    });
+  
+    var ver=(typeof appVersion!=='undefined'&&appVersion)?String(appVersion):appShareVersion();
+    var text=
+    'UGTM Souss-Massa\n'+
+    'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
+    'Téléchargez l’application : '+appShareUrl()+'\n'+
+    'Version : '+ver;
+    shareTextNative(text,'UGTM Souss-Massa');
   }
- 
+  
   /* Partage natif Android (Capacitor Share) → dialogue système.
      Fallback navigateur (navigator.share) → partage Web API.
      Dernier recours : ouverture WhatsApp (wa.me). */
   function shareTextNative(text,title){
- 
+  
     var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
     var plugins=window.Capacitor&&window.Capacitor.Plugins;
     var capShare=isNative&&plugins?plugins.Share:null;
- 
+  
     if(capShare&&typeof capShare.share==='function'){
- 
+  
       capShare.share({text:text,dialogTitle:title})
       .catch(function(err){
         /* Partage interrompu (utilisateur a annulé) : on ne toast pas. */
         if(err&&err.message&&/cancel|user/i.test(err.message))return;
         shareTextFallback(text);
       });
- 
+  
       return;
     }
- 
+  
     if(navigator.share){
- 
+  
       try{
         navigator.share({title:title,text:text}).catch(function(){});
         return;
       }catch(e){}
- 
+  
     }
- 
+  
     shareTextFallback(text);
   }
- 
+  
   function shareTextFallback(text){
- 
+  
     openUrl('https://wa.me/?text='+encodeURIComponent(text));
   }
   
   function appShareUrl(){
-  
-    var m=location.href.match(/\/v([0-9.]+)\//);
-    if(m)return 'https://github.com/abaray66-bit/Ugtm-apk/releases/download/v'+m[1]+'/app-release.apk';
   
     return 'https://github.com/abaray66-bit/Ugtm-apk/releases/latest/download/app-release.apk';
   }
@@ -6026,7 +6077,7 @@ var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
 '[data-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
-'#installBtn,#langBtn'
+'#installBtn,#langBtn,#meAdhesionInfoBtn'
 );
 
 if(!el)return;
