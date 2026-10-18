@@ -3326,8 +3326,8 @@ admAdhesionSigned:`موقّع إلكترونياً`,
 admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة في Firestore. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
-admMembersTitle:اعضاء,
-admMemExportCsv:تصدير القائمة (CSV),
+admMembersTitle:`أعضاء`,
+admMemExportCsv:`تصدير القائمة (CSV)`,
 AdhesionFallback:`منخرط`,
 admStatusPending:`في انتظار المصادقة`,
 admStatusCompletion:`تم طلب معلومات إضافية`,
@@ -3883,10 +3883,9 @@ function openUrl(url){
   
   function appShareUrl(){
   
-    var m=location.href.match(/\/v([0-9.]+)\//);
-    if(m)return 'https://github.com/abaray66-bit/Ugtm-apk/releases/download/v'+m[1]+'/app-release.apk';
-  
-    return 'https://github.com/abaray66-bit/Ugtm-apk/releases/latest/download/app-release.apk';
+    /* Lien raccourci (masque le vrai lien GitHub).
+       Créez ce raccourci sur tinyurl.com, bit.ly, etc. et mettez l'URL ici. */
+    return 'https://tinyurl.com/ugtm-apk';
   }
   
   function appShareVersion(){
