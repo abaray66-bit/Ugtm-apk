@@ -3853,15 +3853,10 @@ $('lightboxImg').src='';
  
  $('attachClose').addEventListener('click',closeAttachModal);
  
- $('attachDownload').addEventListener('click',function(){
+$('attachDownload').addEventListener('click',function(){
  if(!attachUrl)return;
- var a=document.createElement('a');
- a.href=attachUrl;
- a.download=attachName||'piece-jointe';
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
- });
+ window.open(attachUrl,'_blank');
+});
  
  document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
