@@ -841,7 +841,11 @@ async function submitAdhesion(application,signature){
     if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
     if(existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
     if(existing){
-      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',updatedAt:serverTimestamp()});
+      /* NOUVELLE SOUMISSION (complément d'information ou renouvellement) :
+         la signature du responsable de la soumission précédente est
+         effacée. Le dossier repart avec UNE seule signature — celle de
+         l'adhérent — et la case du responsable à valider. */
+      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',updatedAt:serverTimestamp()});
     }else{
       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
@@ -998,7 +1002,17 @@ async function getAdhesionDoc(uid){
   var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
   return snap.exists()?snap.data():null;
 }
-async function saveAdhesionPdf(uid,pdfBase64){
+/* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
+   L'adhérent est identifié directement, sans passer par un code technique. */
+function adhesionPdfFileName(doc){
+  var a=(doc&&doc.application)||{};
+  var base=(String(a.nom||'').trim()+' '+String(a.prenom||'').trim()).replace(/\s+/g,' ').trim();
+  base=base.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
+  if(!base)base='demande-adhesion';
+  if(base.length>100)base=base.slice(0,100).trim();
+  return 'UGTM- '+base+'.pdf';
+}
+async function saveAdhesionPdf(uid,pdfBase64,fileName){
   var u=auth.currentUser;
   if(!u) throw new Error('Non connecté');
   var uidStr=String(uid||'');
@@ -1006,12 +1020,18 @@ async function saveAdhesionPdf(uid,pdfBase64){
   if(!uidStr) throw new Error('Dossier introuvable.');
   if(!b64) throw new Error('PDF vide : génération impossible.');
   if(b64.length>650000) throw new Error('Le PDF dépasse la taille maximale autorisée (650 Ko).');
-  var province=await getAdhesionDoc(uidStr).then(function(r){return r?r.province:'';});
+  var request=await getAdhesionDoc(uidStr);
+  var province=request?request.province:'';
   if(!province) throw new Error('Dossier introuvable.');
+  /* Nom du fichier : « UGTM- Nom Prénom.pdf » (borné par les règles
+     Firestore à 120 caractères). */
+  var name=String(fileName||adhesionPdfFileName(request)||'');
+  if(name.length>120) name=name.slice(0,120);
+  if(!name) name='demande-adhesion-'+uidStr+'.pdf';
   return setDoc(doc(db,'adhesionDocuments',uidStr),{
     uid:uidStr,
     province:province,
-    fileName:'demande-adhesion-'+uidStr+'.pdf',
+    fileName:name,
     mimeType:'application/pdf',
     data:b64,
     createdAt:serverTimestamp(),
@@ -1019,11 +1039,15 @@ async function saveAdhesionPdf(uid,pdfBase64){
   });
 }
 
-/* Récupération du PDF officiel enregistré (responsables habilités). */
+/* Récupération du PDF officiel enregistré (responsables habilités) :
+   le contenu, son nom de fichier et sa date d'enregistrement — cette
+   date permet de ne pas resservir un PDF périmé (renouvellement). */
 function getSavedAdhesionPdf(uid){
   return getDoc(doc(db,'adhesionDocuments',String(uid||''))).then(function(s){
-    return s.exists()?String(s.data().data||''):'';
-  }).catch(function(){return '';});
+    if(!s.exists())return null;
+    var d=s.data()||{};
+    return {data:String(d.data||''),fileName:String(d.fileName||''),updatedAt:ms(d.updatedAt)};
+  }).catch(function(){return null;});
 }
 
 /* =========================================================
@@ -1832,6 +1856,7 @@ export async function init(config, h){
     // PDF officiel : enregistrement et récupération (responsables habilités).
     saveAdhesionPdf: saveAdhesionPdf,
     getSavedAdhesionPdf: getSavedAdhesionPdf,
+    adhesionPdfFileName: adhesionPdfFileName,
 
     addReport: addReport,
     admin: admin,
