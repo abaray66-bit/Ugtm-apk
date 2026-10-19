@@ -446,6 +446,20 @@ main{
     flex:1 1 100%
     }
 
+    .home-actions .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px
+    }
+
+    .home-actions .hero-actions .btn{
+    flex:1 1 45%;
+    min-width:0;
+    width:auto;
+    padding-inline:12px
+    }
+
     @media(max-width:359px){
     .home-actions{
       grid-template-columns:minmax(0,1fr);
@@ -2738,8 +2752,10 @@ button.primary:active {
 </header><main id="main"><!-- Accueil --><section class="screen" id="s-home"><div class="home-actions"><div class="hero">
 <h1 data-i18n="heroT"></h1>
 <p data-i18n="heroP"></p>
+<div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
- <button class="btn ghost" type="button" data-share-app data-i18n="heroShare"></button>
+<button class="btn gold" type="button" data-share-app data-i18n="heroShare"></button>
+</div>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <p data-i18n="adhP"></p>
@@ -3855,7 +3871,11 @@ $('lightboxImg').src='';
  
 $('attachDownload').addEventListener('click',function(){
  if(!attachUrl)return;
- window.open(attachUrl,'_blank');
+ window.open(attachUrl,'_system');
+});
+$('attachDownloadHead').addEventListener('click',function(){
+ if(!attachUrl)return;
+ window.open(attachUrl,'_system');
 });
  
  document.addEventListener('keydown',function(e){
@@ -7732,7 +7752,6 @@ window.UGTM.failed(err);
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
     if(b){
-      var blockOpen=false;
       if(typeof window.refreshMyAdhesionStatus==='function'){
         try{
           window.refreshMyAdhesionStatus(true).then(function(req){
@@ -7742,20 +7761,35 @@ window.UGTM.failed(err);
             if(st==='pending'||st==='refused'){
               toast(adhesionFormBlockedMessage(),5500);
               go('me');
-              blockOpen=true;
-            }else if(alreadyAdherent){
+              return;
+            }
+            if(alreadyAdherent){
               toast(T().adhRenewalOnlyLock||'Votre adhésion est déjà active.',5500);
               go('me');
-              blockOpen=true;
+              return;
             }
-          }).catch(function(){});
-        }catch(errStatus){}
+            setTimeout(function(){
+              initDigitalAdhesion();
+              if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+            },150);
+          }).catch(function(){
+            setTimeout(function(){
+              initDigitalAdhesion();
+              if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+            },150);
+          });
+        }catch(errStatus){
+          setTimeout(function(){
+            initDigitalAdhesion();
+            if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+          },150);
+        }
+      } else {
+        setTimeout(function(){
+          initDigitalAdhesion();
+          if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+        },150);
       }
-      setTimeout(function(){
-        if(blockOpen)return;
-        initDigitalAdhesion();
-        if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-      },150);
     }
   });
 
