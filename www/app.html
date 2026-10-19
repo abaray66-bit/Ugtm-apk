@@ -322,7 +322,12 @@ main{
   margin:0 0 4px;
   overflow-wrap:break-word;
   word-break:normal;
-  hyphens:none;
+  /* Le titre tient dans une colonne étroite (« Un dysfonctionnement
+     à signaler ? ») : la césure évite qu'une lettre reste seule
+     en fin de ligne. En cas de dictionnaire indisponible,
+     overflow-wrap garantit que rien ne déborde de la carte. */
+  hyphens:auto;
+  -webkit-hyphens:auto;
   text-wrap:balance
 }
 
@@ -3274,6 +3279,7 @@ adhStatusUnknown:`Statut de la demande : %1.`,
   adhBlockedPending:`Votre demande est déjà enregistrée et en attente de traitement. Vous serez informé dès qu’un responsable la signera.`,
   adhBlockedRefused:`Une décision a déjà été prise concernant votre demande. Contactez la permanence pour toute démarche supplémentaire.`,
   adhBlockedActive:`Votre adhésion est déjà validée : le formulaire est réservé au renouvellement de votre adhésion.`,
+  adhRenewalEntryOnly:`Votre adhésion est déjà validée : le renouvellement est accessible uniquement dans « Mon espace » (bouton « Renouveler mon adhésion »).`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`Transmission de votre demande à l’administration…`,
@@ -3761,6 +3767,7 @@ adhNote:`ملاحظة : `,
   adhBlockedPending:`طلب الانخراط مسجل بالفعل وهو في انتظار توقيع أحد المسؤولين. سيتم إخباركم فور توقيعه.`,
   adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
   adhBlockedActive:`انخراطكم مصادق عليه بالفعل: النموذج مخصص حصريًا لتجديد انخراطكم.`,
+  adhRenewalEntryOnly:`انخراطكم مصادق عليه بالفعل: التجديد متاح حصريًا في «فضائي» (زر «تجديد الانخراط»).`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
@@ -6975,14 +6982,29 @@ if(box.hidden){
   box.hidden=true;
   box.textContent='';
 }
-return;
+  return;
 }
 
 if(el.hasAttribute('data-go')){
 
-go(el.getAttribute('data-go'));
+  var goTarget=el.getAttribute('data-go');
 
-return;
+  /* Le formulaire d'adhésion applique sa propre règle d'accès
+     (dossier en attente, refusé, adhérent déjà validé) : la
+     navigation passe par la porte d'entrée du parcours, qui
+     statue AVANT l'ouverture de l'écran. */
+  if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
+
+    window.adhesionOpenGate(el);
+
+    return;
+
+  }
+
+  go(goTarget);
+
+  return;
+
 }
 
 if(el.hasAttribute('data-tab')){
@@ -8629,29 +8651,75 @@ window.UGTM.failed(err);
   }
 
   /* Ouverture du formulaire d'adhésion : la règle d'accès est
-     décidée par l'application (window.adhesionAccessFor) à partir
-     du statut à jour du dossier :
-     - demande déjà envoyée (pending) ou décision prise (refused) :
-       accès refusé (une nouvelle demande créerait un doublon) ;
-     - adhérent déjà validé : renouvellement uniquement (motif
-       obligatoire), le formulaire s'ouvre verrouillé ;
-     - complément demandé ou première adhésion : formulaire libre. */
+     décidée AVANT l'ouverture de l'écran (le statut du dossier
+     est rechargé à jour), pour qu'un dossier en attente, refusé
+     ou déjà validé n'ouvre jamais le formulaire par le bouton
+     normal « Adhérer ».
+     - demande en attente (pending) ou refusée (refused) :
+       message explicatif, l'utilisateur reste sur l'écran
+       précédent (le formulaire n'est jamais ouvert) ;
+     - adhérent déjà validé (demande acceptée ou carte active) :
+       le renouvellement reste réservé au bouton « Renouveler
+       mon adhésion » de « Mon espace » ;
+     - complément demandé (needs_completion) ou première adhésion :
+       formulaire ouvert (le renouvellement est verrouillé sur
+       « renouvellement » quand l'adhésion est déjà validée). */
   function adhesionToast(msg,ms){
     if(typeof window.ugtmToast==='function')window.ugtmToast(msg,ms);
   }
   function adhesionGoBack(){
     if(typeof window.ugtmGo==='function')window.ugtmGo('me');
   }
+  function adhesionScreenVisible(){
+    var el=document.getElementById('s-adhesion');
+    return !!(el&&!el.hidden);
+  }
 
-  document.addEventListener('click',function(e){
-    var b=e.target.closest('[data-go="adhesion"]');
-    if(!b)return;
+  function adhesionOpenGate(trigger){
+
+    var t=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+
+    /* Le renouvellement ne passe que par le bouton dédié de
+       « Mon espace » (« Renouveler mon adhésion »). */
+    var renewalEntry=!!(trigger&&trigger.id==='meAdhesionButton');
 
     function openForm(){
+      if(typeof window.ugtmGo==='function')window.ugtmGo('adhesion');
       setTimeout(function(){
         initDigitalAdhesion();
         if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
       },150);
+    }
+
+    function refused(message){
+      adhesionToast(message||t.adhBlockedPending,5500);
+      /* Le formulaire n'a pas été ouvert : l'utilisateur reste
+         sur l'écran précédent (retour à « Mon espace » si
+         l'écran d'adhésion était déjà affiché). */
+      if(adhesionScreenVisible())adhesionGoBack();
+    }
+
+    function decide(access){
+      if(!access){openForm();return;}
+      if(access.mode==='blocked'){refused(access.message);return;}
+      if(access.mode==='renewal'&&!renewalEntry){
+        refused(t.adhRenewalEntryOnly||access.message);
+        return;
+      }
+      openForm();
+    }
+
+    /* Statut courant : dossier en ligne, sinon dernier statut
+       connu (cache local). */
+    function currentAccess(req){
+      if(req){
+        return (typeof window.adhesionAccessFor==='function')
+          ?window.adhesionAccessFor(String(req.status||'none'))
+          :{mode:'free',message:''};
+      }
+      return (typeof window.adhesionAccess==='function')
+        ?window.adhesionAccess()
+        :{mode:'free',message:''};
     }
 
     if(typeof window.refreshMyAdhesionStatus!=='function'){
@@ -8661,31 +8729,21 @@ window.UGTM.failed(err);
 
     try{
       window.refreshMyAdhesionStatus(true).then(function(req){
-        var st=req?String(req.status||'none'):'none';
-        var access=(typeof window.adhesionAccessFor==='function')
-          ?window.adhesionAccessFor(st)
-          :{mode:'free',message:''};
-
-        if(access.mode==='blocked'){
-          adhesionToast(access.message,5500);
-          adhesionGoBack();
-          return;
-        }
-
-        if(access.mode==='renewal'){
-          /* Adhérent déjà validé : le formulaire reste accessible
-             pour le renouvellement, verrouillé sur « renouvellement ». */
-          adhesionToast(access.message,5000);
-        }
-
-        openForm();
+        decide(currentAccess(req));
       }).catch(function(){
-        openForm();
+        /* Statut indisponible : la décision repose sur le dernier
+           statut connu ; sans information, le formulaire reste
+           accessible (la transaction Firestore refuse de toute
+           façon un doublon). */
+        decide(currentAccess(null));
       });
     }catch(errStatus){
       openForm();
     }
-  });
+
+  }
+
+  window.adhesionOpenGate=adhesionOpenGate;
 
   /* Point d'entrée pour l'ouverture automatique du
      formulaire après le premier enregistrement du profil
