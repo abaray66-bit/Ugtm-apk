@@ -3280,6 +3280,7 @@ adhStatusUnknown:`Statut de la demande : %1.`,
   adhBlockedRefused:`Une décision a déjà été prise concernant votre demande. Contactez la permanence pour toute démarche supplémentaire.`,
   adhBlockedActive:`Votre adhésion est déjà validée : le formulaire est réservé au renouvellement de votre adhésion.`,
   adhRenewalEntryOnly:`Votre adhésion est déjà validée : le renouvellement est accessible uniquement dans « Mon espace » (bouton « Renouveler mon adhésion »).`,
+  adhStatusUnknownBlock:`Impossible de vérifier le statut de votre demande : reconnectez-vous pour accéder au formulaire d'adhésion.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`Transmission de votre demande à l’administration…`,
@@ -3768,6 +3769,7 @@ adhNote:`ملاحظة : `,
   adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
   adhBlockedActive:`انخراطكم مصادق عليه بالفعل: النموذج مخصص حصريًا لتجديد انخراطكم.`,
   adhRenewalEntryOnly:`انخراطكم مصادق عليه بالفعل: التجديد متاح حصريًا في «فضائي» (زر «تجديد الانخراط»).`,
+  adhStatusUnknownBlock:`تعذّر التحقق من حالة طلبكم: أعيدوا الاتصال بالإنترنت لتعبئة استمارة الانخراط.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
@@ -6754,6 +6756,15 @@ function adhesionFormStatus(){
   return req?String(req.status||'none'):'none';
 }
 
+/* Statut du dossier réellement connu (cache local) : null quand
+   aucune information n'a encore pu être chargée (typiquement
+   hors ligne au premier clic). Le parcours d'adhésion s'en sert
+   pour ne pas ouvrir le formulaire d'un utilisateur connecté
+   dont le dossier reste inconnu. */
+function adhesionKnownStatus(){
+  return myAdhesionStatusCache?String(myAdhesionStatusCache.status||'none'):null;
+}
+
 /* Règle d'accès au formulaire, alignée sur les règles Firestore :
    - complément demandé (needs_completion) : formulaire ouvert ;
    - demande déjà envoyée (pending) ou décision prise (refused) :
@@ -6785,6 +6796,7 @@ function adhesionFormBlockedMessage(){
    règle : la fonction est exposée pour lui. */
 window.adhesionAccessFor=adhesionAccessFor;
 window.adhesionAccess=adhesionAccess;
+window.adhesionKnownStatus=adhesionKnownStatus;
 
 /* Le parcours d'adhésion (script dédié) a besoin d'afficher
    un message, de revenir à « Mon espace » et de lire les
@@ -6982,7 +6994,7 @@ if(box.hidden){
   box.hidden=true;
   box.textContent='';
 }
-  return;
+return;
 }
 
 if(el.hasAttribute('data-go')){
@@ -8663,7 +8675,10 @@ window.UGTM.failed(err);
        mon adhésion » de « Mon espace » ;
      - complément demandé (needs_completion) ou première adhésion :
        formulaire ouvert (le renouvellement est verrouillé sur
-       « renouvellement » quand l'adhésion est déjà validée). */
+       « renouvellement » quand l'adhésion est déjà validée) ;
+     - statut indisponible (hors ligne) pour un utilisateur
+       connecté : l'accès est refusé avec un message explicite,
+       faute de pouvoir garantir l'absence d'un dossier. */
   function adhesionToast(msg,ms){
     if(typeof window.ugtmToast==='function')window.ugtmToast(msg,ms);
   }
@@ -8682,6 +8697,15 @@ window.UGTM.failed(err);
     /* Le renouvellement ne passe que par le bouton dédié de
        « Mon espace » (« Renouveler mon adhésion »). */
     var renewalEntry=!!(trigger&&trigger.id==='meAdhesionButton');
+
+    /* Utilisateur connecté : un dossier peut déjà exister (en
+       attente, refusé, accepté) ; sans statut connu, l'accès au
+       formulaire ne peut pas être tranché. */
+    var connected=false;
+    try{
+      var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      connected=!!(session&&session.user&&session.user.uid);
+    }catch(eSession){}
 
     function openForm(){
       if(typeof window.ugtmGo==='function')window.ugtmGo('adhesion');
@@ -8702,6 +8726,7 @@ window.UGTM.failed(err);
     function decide(access){
       if(!access){openForm();return;}
       if(access.mode==='blocked'){refused(access.message);return;}
+      if(access.mode==='unknown'){refused(access.message);return;}
       if(access.mode==='renewal'&&!renewalEntry){
         refused(t.adhRenewalEntryOnly||access.message);
         return;
@@ -8717,9 +8742,28 @@ window.UGTM.failed(err);
           ?window.adhesionAccessFor(String(req.status||'none'))
           :{mode:'free',message:''};
       }
-      return (typeof window.adhesionAccess==='function')
+      /* Statut en ligne indisponible : dernier statut connu. */
+      var known=(typeof window.adhesionKnownStatus==='function')
+        ?window.adhesionKnownStatus()
+        :null;
+      var cached=(typeof window.adhesionAccess==='function')
         ?window.adhesionAccess()
         :{mode:'free',message:''};
+      if(known!==null&&known!==undefined&&known!==''){
+        /* Statut connu (même ancien) : la règle habituelle s'applique. */
+        return cached;
+      }
+      /* Aucun statut connu (hors ligne au premier clic). La fiche
+         membre en mémoire reste une information : un adhérent actif
+         reste soumis à la règle du renouvellement. */
+      if(cached.mode!=='free')return cached;
+      /* Utilisateur connecté sans aucune information sur son
+         dossier : on refuse l'ouverture, faute de pouvoir garantir
+         l'absence d'une demande en attente ou d'un renouvellement. */
+      if(connected)return{mode:'unknown',message:t.adhStatusUnknownBlock};
+      /* Sans compte, aucune demande n'existe : le formulaire reste
+         accessible (première adhésion). */
+      return{mode:'free',message:''};
     }
 
     if(typeof window.refreshMyAdhesionStatus!=='function'){
