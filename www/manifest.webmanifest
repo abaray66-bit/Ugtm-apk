@@ -2,7 +2,7 @@
   "id": "./",
   "name": "UGTM Souss-Massa",
   "short_name": "UGTM SM",
-  "description": "Application de la Fédération régionale de la Santé UGTM Souss-Massa : communiqués, agenda, signalements et contacts.",
+  "description": "Application de la Fédération nationale de la Santé UGTM Souss-Massa : communiqués, agenda, signalements et contacts.",
   "lang": "fr",
   "dir": "auto",
   "start_url": "./",
