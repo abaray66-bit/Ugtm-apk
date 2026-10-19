@@ -3945,11 +3945,21 @@ $('lightboxImg').src='';
  
 $('attachDownload').addEventListener('click',function(){
  if(!attachUrl)return;
- window.open(attachUrl,'_system');
+ var a=document.createElement('a');
+ a.href=attachUrl;
+ a.download=attachName||'piece-jointe';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
 });
 $('attachDownloadHead').addEventListener('click',function(){
  if(!attachUrl)return;
- window.open(attachUrl,'_system');
+ var a=document.createElement('a');
+ a.href=attachUrl;
+ a.download=attachName||'piece-jointe';
+ document.body.appendChild(a);
+ a.click();
+ document.body.removeChild(a);
 });
  
  document.addEventListener('keydown',function(e){
