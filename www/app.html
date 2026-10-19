@@ -6402,6 +6402,7 @@ else if(act==='signout'){
 
 c.signOut().then(function(){
   purgeSession();
+  location.reload();
 }).catch(function(e){
   purgeSession();
   showError(e);
