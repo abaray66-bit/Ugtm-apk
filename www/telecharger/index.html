@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Télécharger l'application — UGTM Souss-Massa</title>
-<meta name="description" content="Page officielle de téléchargement de l'application mobile UGTM Souss-Massa (Fédération régionale de la Santé, Souss-Massa). Version, empreinte SHA-256 et lien de téléchargement officiel.">
+<meta name="description" content="Page officielle de téléchargement de l'application mobile UGTM Souss-Massa (Fédération régionale de la Santé, Souss-Massa). Version publiée, lien de téléchargement officiel et notice d'installation.">
 <meta name="theme-color" content="#B83268">
 <link rel="icon" href="../icons/favicon-32.png">
 <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
@@ -77,7 +77,6 @@ h1{font-family:var(--font-head);font-size:clamp(1.5rem,4.4vw,2.2rem);line-height
 }
 .btn:hover{filter:brightness(1.06)}
 .btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);box-shadow:none}
 .btn[aria-busy="true"]{opacity:.7;pointer-events:none}
 .meta{margin:0;color:var(--muted);font-size:.9rem}
 
@@ -96,7 +95,6 @@ dl>div{
 dl>div:last-child{border-bottom:0}
 dt{font-weight:700;color:var(--muted);font-size:.88rem}
 dd{margin:0;min-width:0}
-.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;word-break:break-all}
 .badge{
   display:inline-block;background:var(--soft);color:var(--primary);
   font-weight:700;padding:2px 10px;border-radius:999px;font-size:.9rem;
@@ -160,7 +158,6 @@ footer b{color:var(--ink)}
     <p class="lead" data-i18n="lead"></p>
     <div class="actions">
       <a class="btn" id="dlBtn" href="https://github.com/abaray66-bit/Ugtm-apk/releases/latest" rel="noopener" aria-busy="true" data-i18n="download"></a>
-      <a class="btn ghost" href="https://github.com/abaray66-bit/Ugtm-apk/releases/latest" target="_blank" rel="noopener" data-i18n="releases"></a>
     </div>
     <p class="meta" id="meta" data-i18n="loading"></p>
   </section>
@@ -176,16 +173,7 @@ footer b{color:var(--ink)}
         <dt data-i18n="kCode"></dt>
         <dd id="vCode">—</dd>
       </div>
-      <div>
-        <dt data-i18n="kSha"></dt>
-        <dd class="mono" id="vSha">—</dd>
-      </div>
-      <div>
-        <dt data-i18n="kUrl"></dt>
-        <dd class="mono" id="vUrl">—</dd>
-      </div>
     </dl>
-    <p class="note" id="infoNote" data-i18n="infoNote"></p>
   </section>
 
   <section class="card">
@@ -215,7 +203,6 @@ footer b{color:var(--ink)}
     <p><b data-i18n="org1"></b> — <b data-i18n="org2"></b></p>
     <p data-i18n="region"></p>
     <p><span data-i18n="footerApp"></span> <span id="footerVersion"></span></p>
-    <p data-i18n="footerHost"></p>
   </div>
 </footer>
 
@@ -235,14 +222,10 @@ footer b{color:var(--ink)}
       title:"Télécharger l'application UGTM Souss-Massa",
       lead:"Les communiqués de la fédération, l'agenda des rencontres, les signalements et l'espace adhérent : tout l'application UGTM Souss-Massa, en français et en arabe.",
       download:"Télécharger l'APK",
-      releases:"Voir les versions publiées",
       loading:"Lecture de la version publiée…",
       infoTitle:"Informations sur la version",
       kVersion:"Version",
       kCode:"Code de version (mise à jour)",
-      kSha:"Empreinte SHA-256 du fichier",
-      kUrl:"Adresse du fichier APK",
-      infoNote:"Cette empreinte est celle du fichier publié dans la release officielle. L'application contrôle automatiquement le fichier lors d'une mise à jour.",
       installTitle:"Notice d'installation sur Android",
       step1:"Appuyez sur « Télécharger l'APK » ci-dessus : le fichier officiel est enregistré dans vos téléchargements.",
       step2:"Ouvrez le fichier téléchargé sur votre téléphone.",
@@ -253,7 +236,6 @@ footer b{color:var(--ink)}
       qrTitle:"Scanner le QR code",
       qrText:"Ouvrez l'appareil photo de votre téléphone et scannez ce QR code pour accéder à la page de téléchargement.",
       footerApp:"Application UGTM Souss-Massa — UGTM Souss-Massa — version",
-      footerHost:"Page officielle hébergée par Firebase Hosting. Le fichier APK est publié dans les releases officielles du projet sur GitHub.",
       manifestError:"Impossible de lire le manifeste de version : le bouton renvoie vers la liste des versions publiées.",
       ready:"Version %1 — fichier APK pour Android"
     },
@@ -265,14 +247,10 @@ footer b{color:var(--ink)}
       title:"تحميل تطبيق الاتحاد العام للشغالين — جهة سوس ماسة",
       lead:"بلاغات الفيدرالية، برنامج اللقاءات، التبليغات وفضاء المنخرطين: تطبيق الاتحاد العام للشغالين — جهة سوس ماسة، بالفرنسية والعربية.",
       download:"تحميل ملف التطبيق (APK)",
-      releases:"عرض النسخ المنشورة",
       loading:"جارٍ قراءة النسخة المنشورة…",
       infoTitle:"معلومات عن النسخة",
       kVersion:"النسخة",
       kCode:"رمز النسخة (التحديث)",
-      kSha:"بصمة SHA-256 للملف",
-      kUrl:"عنوان ملف التطبيق",
-      infoNote:"هذه البصمة تخص الملف المنشور في النسخة الرسمية. يتحقق التطبيق من الملف تلقائيًا عند كل تحديث.",
       installTitle:"تعليمات التثبيت على أندرويد",
       step1:"اضغط على «تحميل ملف التطبيق» أعلاه: يُحفظ الملف الرسمي في مجلد التنزيلات.",
       step2:"افتح الملف الذي تم تنزيله على هاتفك.",
@@ -283,7 +261,6 @@ footer b{color:var(--ink)}
       qrTitle:"مسح رمز QR",
       qrText:"افتحوا كاميرا الهاتف وامسحوا رمز QR للوصول إلى صفحة التحميل.",
       footerApp:"تطبيق الاتحاد العام للشغالين — جهة سوس ماسة — النسخة",
-      footerHost:"صفحة رسمية مستضافة على Firebase Hosting. يُنشر ملف التطبيق ضمن النسخ الرسمية للمشروع على GitHub.",
       manifestError:"تعذّر قراءة بيان النسخة: الزر يودع إلى قائمة النسخ المنشورة.",
       ready:"النسخة %1 — ملف تطبيق لأندرويد"
     }
@@ -353,7 +330,6 @@ footer b{color:var(--ink)}
   function renderManifestInfo(){
     var btn=$("dlBtn");
     var meta=$("meta");
-    var note=$("infoNote");
     var fv=$("footerVersion");
 
     if(!manifest){
@@ -364,7 +340,6 @@ footer b{color:var(--ink)}
         btn.textContent=t("download");
       }
       if(meta)meta.textContent=t("manifestError");
-      if(note)note.textContent=t("manifestError");
       if(fv)fv.textContent="";
       return;
     }
@@ -379,9 +354,6 @@ footer b{color:var(--ink)}
     if(meta)meta.textContent=String(t("ready")).replace("%1",manifest.versionName);
     if($("vVersion"))$("vVersion").textContent=manifest.versionName;
     if($("vCode"))$("vCode").textContent=manifest.versionCode!==undefined?String(manifest.versionCode):"—";
-    if($("vSha"))$("vSha").textContent=manifest.sha256||"—";
-    if($("vUrl"))$("vUrl").textContent=manifest.apkUrl||"—";
-    if(note)note.textContent=t("infoNote");
     if(fv)fv.textContent=manifest.versionName||"";
   }
 
