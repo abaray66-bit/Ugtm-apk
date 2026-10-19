@@ -568,6 +568,10 @@ service cloud.firestore {
           // (mêmes exigences qu'à la création via adhesionAppOk).
           // Province, e-mail et date de création restent figés ; la note
           // du responsable est effacée.
+          // La signature du responsable de la soumission précédente est
+          // elle aussi effacée : un renouvellement repart avec UNE seule
+          // signature (celle de l'adhérent), la case du responsable à
+          // valider. Elle ne peut qu'être VIDÉE, jamais posée.
           signedIn() && request.auth.uid == uid
           && resource.data.uid == uid
           && resource.data.status in ['needs_completion', 'accepted']
@@ -584,7 +588,11 @@ service cloud.firestore {
           && request.resource.data.status == 'pending'
           && request.resource.data.adminNote == ''
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['application', 'signature', 'status', 'adminNote', 'updatedAt'])
+            .hasOnly(['application', 'signature', 'status', 'adminNote',
+                      'adminSignature', 'signedBy', 'signedAt', 'updatedAt'])
+          && request.resource.data.get('adminSignature', '') == ''
+          && request.resource.data.get('signedBy', '') == ''
+          && request.resource.data.get('signedAt', '') == ''
           && okText(request.resource.data.email, 254)
           && request.resource.data.signature is string
           && request.resource.data.signature.size() > 0
