@@ -8275,130 +8275,10 @@ window.UGTM.failed(err);
       return new Promise(function(resolve,reject){
         var app=(request&&request.application)||{};
         var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-        if(!jsPDF){reject(new Error('PDF inaccessible'));return;}
+        if(!jsPDF){reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
-        var pageW=210,pageH=297,margin=18,contentW=pageW-margin*2;
-        var y=margin;
-        var PX=4;
-        var FAMILY='"Cairo","IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif';
-        var INK='#24191F',GRAY='#75656C',PINK='#B83268',SOFT='#F8EBF2';
-        var rtl=(typeof lang==='string'&&lang==='ar');
-
-        /* Libellés du dossier (FR/AR) : le PDF suit la langue active
-           de l'interface d'administration. */
-        var TR=((typeof T==='function')&&T()&&T().pdf)?T().pdf:{};
-        function L(key,fb){return (TR&&TR[key])?TR[key]:fb;}
-
-        /* Texte rasterisé sur canvas avec la police de la WebView
-           (Cairo / IBM Plex Sans Arabic) : jsPDF ne gère pas l'arabe
-           nativement, ses polices standard restent illisibles. Chaque
-           bloc de texte devient un JPEG : le script arabe et sa mise en
-           forme sont conservés. Repères : w en mm, taille en points,
-           PX = pixels par millimètre. */
-        function render(str,w,sizePt,opts){
-          opts=opts||{};
-          var weight=opts.weight||'normal';
-          var color=opts.color||INK;
-          var align=opts.align||(rtl?'right':'left');
-          var bg=opts.bg||'#ffffff';
-          var fontPx=Math.max(6,Math.round(sizePt*0.3528*PX));
-          var maxPx=Math.max(8,Math.round(w*PX));
-          var probe=document.createElement('canvas');
-          var pctx=probe.getContext('2d');
-          pctx.font=weight+' '+fontPx+'px '+FAMILY;
-          var lines=[];
-          var segments=String(str==null?'':str).split('\n');
-          for(var s=0;s<segments.length;s++){
-            var words=segments[s].split(/\s+/);
-            var cur='';
-            for(var i=0;i<words.length;i++){
-              if(!words[i])continue;
-              var test=cur?cur+' '+words[i]:words[i];
-              if(cur&&pctx.measureText(test).width>maxPx){lines.push(cur);cur=words[i];}
-              else cur=test;
-            }
-            if(cur)lines.push(cur);
-          }
-          if(!lines.length)lines=[''];
-          var linePx=Math.round(fontPx*1.35);
-          var c=document.createElement('canvas');
-          c.width=maxPx;
-          c.height=Math.max(1,linePx*lines.length);
-          var g=c.getContext('2d');
-          try{g.direction=rtl?'rtl':'ltr';}catch(eDir){}
-          g.fillStyle=bg;
-          g.fillRect(0,0,c.width,c.height);
-          g.font=weight+' '+fontPx+'px '+FAMILY;
-          g.textBaseline='top';
-          g.fillStyle=color;
-          g.textAlign=align;
-          for(var li=0;li<lines.length;li++){
-            var tw=g.measureText(lines[li]).width;
-            var tx=0;
-            if(align==='center')tx=(maxPx-tw)/2;
-            else if(align==='right')tx=maxPx-tw;
-            g.fillText(lines[li],Math.round(tx),li*linePx);
-          }
-          return {img:c.toDataURL('image/jpeg',0.92),w:w,h:(linePx*lines.length)/PX};
-        }
-
-        /* Place un bloc de texte et renvoie sa hauteur (mm). */
-        function put(str,px,py,w,sizePt,opts){
-          var o=render(str,w,sizePt,opts);
-          pdf.addImage(o.img,'JPEG',px,py,o.w,o.h);
-          return o.h;
-        }
-
-        function section(title){
-          if(y>pageH-70){pdf.addPage();y=margin;}
-          y+=put(title,margin,y,contentW,11,{color:PINK,weight:'bold',align:'center',bg:SOFT})+1.6;
-          pdf.setDrawColor(234,217,224);
-          pdf.setLineWidth(.2);
-          pdf.line(margin,y,pageW-margin,y);
-          y+=3.4;
-        }
-
-        function field(label,value){
-          if(y>pageH-42){pdf.addPage();y=margin;}
-          var labelW=46,gap=6;
-          var labelX=rtl?(pageW-margin-labelW):margin;
-          var valueX=rtl?margin:(margin+labelW+gap);
-          var valueW=rtl?(labelX-gap-margin):(pageW-margin-valueX);
-          var lh=put(label,labelX,y,labelW,9.5,{color:GRAY,weight:'bold',align:rtl?'right':'left'});
-          var vh=put(String(value==null?'':value),valueX,y,valueW,10.5,{color:INK,align:rtl?'right':'left'});
-          y+=Math.max(lh,vh)+2;
-          pdf.setDrawColor(234,217,224);
-          pdf.setLineWidth(.2);
-          pdf.line(margin,y-1,pageW-margin,y-1);
-          y+=3.2;
-        }
-
-        function drawSignatureBox(title,x,boxY,image){
-          var w=84,h=34;
-          var th=put(title,x,boxY,w,10,{color:'#3C3C3C',weight:'bold',align:rtl?'right':'left'});
-          pdf.setDrawColor(170,170,170);
-          pdf.setLineWidth(.5);
-          pdf.roundedRect(x,boxY+th+1,w,h,2,2,'S');
-          if(image){try{pdf.addImage(image,'JPEG',x+4,boxY+th+5,w-8,h-8);}catch(e){}}
-          put(L('sigCaption','Signature'),x+4,boxY+th+1+h+1.5,40,8.5,{color:'#787878',align:rtl?'right':'left'});
-        }
-
-        /* Pied de page sur chaque page : fil conducteur du document
-           et pagination. */
-        function footer(){
-          var pages=pdf.getNumberOfPages();
-          var fy=pageH-12;
-          var labW=46;
-          var labX=rtl?margin:(pageW-margin-labW);
-          var txtX=rtl?(margin+52):margin;
-          var txtW=contentW-52;
-          for(var p=1;p<=pages;p++){
-            pdf.setPage(p);
-            put(L('page','Page')+' '+p+'/'+pages,labX,fy,labW,8,{color:'#787878',align:rtl?'left':'right'});
-            put(L('footer','Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa'),txtX,fy,txtW,8,{color:'#787878',align:'center'});
-          }
-        }
+        var pageW=210,margin=18,y=18;
 
         function loadLogo(){
           return new Promise(function(resolve){
@@ -8413,8 +8293,11 @@ window.UGTM.failed(err);
               clearTimeout(timer);
               try{
                 var c=document.createElement('canvas');
-                c.width=420;c.height=420;
+                c.width=420;
+                c.height=140;
                 var cx=c.getContext('2d');
+                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut
+                   (420x140 = 176 Ko), un JPEG équivalent pèse quelques Ko. */
                 cx.fillStyle='#ffffff';
                 cx.fillRect(0,0,c.width,c.height);
                 cx.drawImage(img,0,0,c.width,c.height);
@@ -8426,80 +8309,179 @@ window.UGTM.failed(err);
           });
         }
 
-        loadLogo().then(function(logo){
-          var logoW=18;
-          var lx=rtl?(pageW-margin-logoW):margin;
-          if(logo)pdf.addImage(logo,'JPEG',lx,12,logoW,logoW);
-
-          var tx=rtl?margin:(margin+logoW+5);
-          var tw=rtl?(pageW-margin-logoW-5-margin):(pageW-margin-tx);
-          var ta=rtl?'right':'left';
-          var hy=12;
-          hy+=put(L('org1','Union Générale des Travailleurs du Maroc'),tx,hy,tw,12.5,{color:PINK,weight:'bold',align:ta})+0.4;
-          hy+=put(L('org2','Fédération nationale de la Santé'),tx,hy,tw,11,{color:PINK,align:ta})+0.4;
-          hy+=put(L('org3','Région Souss-Massa'),tx,hy,tw,9.5,{color:GRAY,align:ta})+2;
-
+        function line(){
           pdf.setDrawColor(184,50,104);
           pdf.setLineWidth(.6);
-          pdf.line(margin,hy,pageW-margin,hy);
-          hy+=6;
-          hy+=put(L('title',"DEMANDE D'ADHÉSION"),margin,hy,contentW,18,{color:PINK,weight:'bold',align:'center'})+1;
-          hy+=put(L('subtitle',"Formulaire d'adhésion à la Fédération nationale de la Santé"),margin,hy,contentW,9.5,{color:GRAY,align:'center'})+8;
-          y=hy;
+          pdf.line(margin,y,pageW-margin,y);
+          y+=7;
+        }
 
-          section(L('secId',"IDENTIFICATION DE L'ADHÉRENT"));
-          field(L('lblNom','Nom'),app.nom);
-          field(L('lblPrenom','Prénom'),app.prenom);
-          field(L('lblCin','CIN'),app.cin);
-          field(L('lblDob','Date de naissance'),app.dob);
-          field(L('lblPhone','Téléphone'),app.phone);
-          field(L('lblAddress','Adresse'),app.address);
-
-          section(L('secProf','SITUATION PROFESSIONNELLE'));
-          field(L('lblProvince','Province / Préfecture'),(typeof provName==='function')?provName(app.province,lang):app.province);
-          field(L('lblEstablishment','Établissement / structure'),app.establishment);
-          field(L('lblService','Service / unité'),app.service);
-          field(L('lblFunction','Fonction'),app['function']);
-          field(L('lblSpeciality','Spécialité'),app.specialty);
-          field(L('lblPPR','PPR'),app.ppr);
-
-          section(L('secAdh','ADHÉSION'));
-          field(L('lblType','Type'),app.type==='renewal'?L('typeRenewal','Renouvellement'):L('typeFirst','Première adhésion'));
-          if(app.type==='renewal')field(L('lblReason','Motif du renouvellement'),app.reason);
-          field(L('lblDate','Date'),app.date);
-
-          section(L('secEng','ENGAGEMENT'));
-          var eo=render(L('engagement',"Je déclare adhérer à la Fédération nationale de la Santé et accepter ses statuts ainsi que son règlement intérieur."),contentW-6,10,{color:GRAY,bg:SOFT});
-          pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-1,contentW,eo.h+2,2,2,'F');
-          pdf.addImage(eo.img,'JPEG',margin+3,y,eo.w,eo.h);
-          y+=eo.h+5;
-
-          section(L('secSign','SIGNATURES'));
-          if(y+58>pageH-22){pdf.addPage();y=margin;}
-          var boxW=84,boxGap=8;
-          var x1=rtl?(pageW-margin-boxW):margin;
-          var x2=rtl?(x1-boxGap-boxW):(margin+boxW+boxGap);
-          drawSignatureBox(L('sigAdherent',"Signature de l'adhérent"),x1,y,request&&request.signature);
-          drawSignatureBox(L('sigAdmin','Signature du responsable syndical'),x2,y,request&&request.adminSignature);
-          y+=54;
-
-          var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
-          section(L('secValid','VALIDATION'));
-          field(L('lblValidatedBy','Validée par'),signer);
-          if(request&&request.signedAt){
-            try{field(L('lblValidationDate','Date de validation'),new Date(request.signedAt).toLocaleDateString(rtl?'ar-MA':'fr-FR'));}catch(eDate){}
+        function section(title){
+          if(y>252){
+            pdf.addPage();
+            y=18;
           }
-          field(L('lblStatus','Statut du dossier'),L('statusValidated','VALIDÉE'));
-          field(L('lblRef','Référence'),request&&request.id?String(request.id):'');
+          pdf.setFillColor(248,235,242);
+          pdf.roundedRect(margin,y-5,pageW-margin*2,10,2,2,'F');
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(10.5);
+          pdf.setTextColor(184,50,104);
+          pdf.text(title,margin+4,y+1.5);
+          pdf.setTextColor(0,0,0);
+          y+=13;
+        }
 
-          footer();
+        function field(label,value){
+          if(y>264){
+            pdf.addPage();
+            y=18;
+          }
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(10);
+          pdf.setTextColor(90,90,90);
+          pdf.text(label,margin,y);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(10.5);
+          pdf.setTextColor(0,0,0);
+          var lines=pdf.splitTextToSize(String(value||''),116);
+          pdf.text(lines,70,y);
+          y+=Math.max(8,lines.length*5.4);
+          /* Filet de séparation : chaque ligne du dossier
+             est visuellement distincte, plus lisible. */
+          pdf.setDrawColor(232,222,228);
+          pdf.setLineWidth(.2);
+          pdf.line(margin,y-2.5,pageW-margin,y-2.5);
+        }
+
+        function drawSignatureBox(title,x,boxY,image){
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(10.5);
+          pdf.setTextColor(60,60,60);
+          pdf.text(title,x,boxY);
+          pdf.setDrawColor(170,170,170);
+          pdf.setLineWidth(.5);
+          pdf.roundedRect(x,boxY+5,84,36,2,2,'S');
+          if(image){
+            try{pdf.addImage(image,'JPEG',x+4,boxY+7,76,29);}catch(e){}
+          }
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8.5);
+          pdf.setTextColor(120,120,120);
+          pdf.text('Signature',x+4,boxY+45);
+          pdf.setTextColor(0,0,0);
+        }
+
+        loadLogo().then(function(logo){
+
+          if(logo)pdf.addImage(logo,'JPEG',margin,15,40,14);
+
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(12.5);
+          pdf.text('Union Générale des Travailleurs du Maroc',64,19);
+          pdf.setFontSize(11);
+          pdf.text('Fédération nationale de la Santé',64,24);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(95,95,95);
+          pdf.text('Région Souss-Massa',64,30);
+          pdf.setTextColor(0,0,0);
+
+          y=38;
+          line();
+
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(18);
+          pdf.setTextColor(184,50,104);
+          pdf.text("DEMANDE D'ADHÉSION",105,48,{align:'center'});
+          pdf.setTextColor(0,0,0);
+
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(95,95,95);
+          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,55,{align:'center'});
+          pdf.setTextColor(0,0,0);
+          y=63;
+
+          section('IDENTIFICATION DE L’ADHÉRENT');
+          field('Nom',app.nom);
+          field('Prénom',app.prenom);
+          field('CIN',app.cin);
+          field('Date de naissance',app.dob);
+          field('Téléphone',app.phone);
+          field('Adresse',app.address);
+
+          section('SITUATION PROFESSIONNELLE');
+          field('Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
+          field('Établissement / structure',app.establishment);
+          field('Service / unité',app.service);
+          field('Fonction',app['function']);
+          field('Spécialité',app.specialty);
+          field('PPR',app.ppr);
+
+          section('ADHÉSION');
+          field('Type',app.type==='renewal'?'Renouvellement':'Première adhésion');
+          if(app.type==='renewal')field('Motif du renouvellement',app.reason);
+          field('Date',app.date);
+
+          section('ENGAGEMENT');
+          pdf.setFillColor(248,235,242);
+          pdf.roundedRect(margin,y-4,pageW-margin*2,18,2,2,'F');
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(10);
+          pdf.setTextColor(60,60,60);
+          pdf.text([
+            "Je déclare adhérer à la Fédération nationale de la Santé",
+            "et accepter ses statuts ainsi que son règlement intérieur."
+          ],margin+4,y+4);
+          pdf.setTextColor(0,0,0);
+          y+=24;
+
+          section('SIGNATURES');
+          var signatureY=y;
+          /* Les deux cadres de signature tiennent sur la
+             même page : on force un saut avant de les
+             couper en deux. */
+          if(signatureY+52>282){
+            pdf.addPage();
+            signatureY=18;
+          }
+          drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
+          drawSignatureBox('Signature du responsable syndical',margin+90,signatureY,request&&request.adminSignature);
+
+          y=signatureY+52;
+
+          /* Identité du signataire et date de validation : le PDF officiel
+             porte la trace de qui a validé le dossier et quand. */
+          var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
+          section('VALIDATION');
+          field('Validée par',signer);
+          if(request&&request.signedAt){
+            try{
+              field('Date de validation',new Date(request.signedAt).toLocaleDateString('fr-FR'));
+            }catch(eDate){}
+          }
+          field('Statut du dossier','VALIDÉE');
+          field('Référence',request&&request.id?String(request.id):'');
+
+          /* Pied de page sur CHAQUE page : fil conducteur
+             du document, avec numérotation. */
+          var pages=pdf.getNumberOfPages();
+          for(var p=1;p<=pages;p++){
+            pdf.setPage(p);
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
+            pdf.text('Page '+p+'/'+pages,pageW-margin,287,{align:'right'});
+            pdf.setTextColor(0,0,0);
+          }
 
           var b64=String(pdf.output('datauristring')||'').split(',')[1]||'';
           resolve(b64);
         }).catch(reject);
       });
     }
+
     window.generateAdhesionPdf=adhesionPdfBase64;
 
     var submitting=false;
