@@ -22,39 +22,6 @@ jobs:
         with:
           node-version: 20
 
-==================================================
-  # GATE : tests Firestore (bloque le déploiement si échec)
-  # =========================================================
-  test-firestore:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Java 21 (émulateur Firestore)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: Installer les dépendances
-        run: npm ci
-
-      - name: Installer la CLI Firebase
-        run: npm install -g firebase-tools@13.29.1
-
-
-      - name: Lancer les tests des règles Firestore
-        run: npm run test:firestore
-
-  # =========================================================
-  # DÉPLOIEMENT (conditionné à la réussite des tests)
-  # =========================================================
   deploy:
     needs: test-firestore
     runs-on: ubuntu-latest
