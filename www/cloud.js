@@ -1002,7 +1002,7 @@ async function getAdhesionDoc(uid){
   var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
   return snap.exists()?snap.data():null;
 }
-/* Nom du fichier PDF d'un dossier : « UGTM-Nom Prénom.pdf ».
+/* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
    L'adhérent est identifié directement, sans passer par un code technique. */
 function adhesionPdfFileName(doc){
   var a=(doc&&doc.application)||{};
@@ -1010,7 +1010,7 @@ function adhesionPdfFileName(doc){
   base=base.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
   if(!base)base='demande-adhesion';
   if(base.length>100)base=base.slice(0,100).trim();
-  return 'UGTM-'+base+'.pdf';
+  return 'UGTM- '+base+'.pdf';
 }
 async function saveAdhesionPdf(uid,pdfBase64,fileName){
   var u=auth.currentUser;
@@ -1023,7 +1023,7 @@ async function saveAdhesionPdf(uid,pdfBase64,fileName){
   var request=await getAdhesionDoc(uidStr);
   var province=request?request.province:'';
   if(!province) throw new Error('Dossier introuvable.');
-  /* Nom du fichier : « UGTM-Nom Prénom.pdf » (borné par les règles
+  /* Nom du fichier : « UGTM- Nom Prénom.pdf » (borné par les règles
      Firestore à 120 caractères). */
   var name=String(fileName||adhesionPdfFileName(request)||'');
   if(name.length>120) name=name.slice(0,120);

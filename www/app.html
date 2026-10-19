@@ -6172,7 +6172,7 @@ function savePdfToDevice(b64,name){
   });
 }
 
-/* Nom du fichier PDF d'un dossier d'adhésion : « UGTM-Nom Prénom.pdf ».
+/* Nom du fichier PDF d'un dossier d'adhésion : « UGTM- Nom Prénom.pdf ».
    Identification directe du document par l'adhérent, sans code technique. */
 function adhesionPdfFileName(doc){
   var a=(doc&&doc.application)||{};
@@ -6181,7 +6181,7 @@ function adhesionPdfFileName(doc){
   base=base.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
   if(!base)base='demande-adhesion';
   if(base.length>100)base=base.slice(0,100).trim();
-  return 'UGTM-'+base+'.pdf';
+  return 'UGTM- '+base+'.pdf';
 }
 
 /* Un PDF enregistré n'est réutilisé que s'il est postérieur à la
@@ -6202,7 +6202,7 @@ function isAdhesionPdfFresh(saved,doc){
    - le PDF déjà généré est récupéré depuis Firestore (s'il n'est pas
      périmé) ;
    - sinon il est généré depuis le dossier validé, enregistré à côté de
-     celui-ci, puis proposé au téléchargement au nom « UGTM-Nom Prénom.pdf ». */
+     celui-ci, puis proposé au téléchargement au nom « UGTM- Nom Prénom.pdf ». */
 var pdfJobs={};
 function generateAdhesionPdfForAdmin(id){
   var t=T();
