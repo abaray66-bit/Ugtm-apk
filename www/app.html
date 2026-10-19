@@ -1733,12 +1733,18 @@ button.danger:hover{
   color:var(--ink)
 }
 
-.adm{
-  direction:ltr
+/* L'espace administration suit la direction de l'interface
+   (ltr en français, rtl en arabe) : la direction est fixée
+   par l'attribut dir de #s-admin, mis à jour par applyI18n.
+   Aucune direction forcée : les champs arabes gardent leur
+   propre attribut dir="rtl". */
+[dir="rtl"] .admin-todo{
+  text-align:right
 }
 
-.adm *{
-  direction:ltr
+[dir="rtl"] .back-arrow{
+  display:inline-block;
+  transform:scaleX(-1)
 }
 #admMemSearch{
   color:var(--ink) !important;
@@ -2918,7 +2924,7 @@ input[type=file]::file-selector-button{
     <div class="adh-step">
       <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
       <div class="adh-grid">
-        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="">Sélectionner la province</option><option value="agadir">Agadir Ida-Outanane</option><option value="inezgane">Inezgane-Aït Melloul</option><option value="chtouka">Chtouka-Aït Baha</option><option value="taroudant">Taroudant</option><option value="tiznit">Tiznit</option><option value="tata">Tata</option></select></div>
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
         <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><input id="adhFunction" required></div>
@@ -2974,15 +2980,15 @@ input[type=file]::file-selector-button{
 <li data-i18n="r3"></li>
 </ul></div><form id="reportForm" class="report-form">
 <fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="abuse_of_power" data-i18n="rCatAbuse"></option><option value="assault" data-i18n="rCatAssault"></option><option value="administrative_situation" data-i18n="rCatAdmin"></option><option value="leave" data-i18n="rCatLeave"></option><option value="promotion_grade" data-i18n="rCatPromotion"></option><option value="disciplinary_case" data-i18n="rCatDiscipline"></option><option value="housing" data-i18n="rCatHousing"></option><option value="rating" data-i18n="rCatRating"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
-<div class="field"><label for="rProvince">Province / préfecture concernée</label>
+<div class="field"><label for="rProvince" data-i18n="rProvinceLabel"></label>
 <select id="rProvince" required>
-<option value="">Sélectionner la province</option>
-<option value="Agadir Ida-Outanane">Agadir Ida-Outanane</option>
-<option value="Inezgane-Aït Melloul">Inezgane-Aït Melloul</option>
-<option value="Chtouka-Aït Baha">Chtouka-Aït Baha</option>
-<option value="Taroudant">Taroudant</option>
-<option value="Tiznit">Tiznit</option>
-<option value="Tata">Tata</option>
+<option value="" data-i18n="selectProvince"></option>
+<option value="Agadir Ida-Outanane" data-i18n="provAgadir"></option>
+<option value="Inezgane-Aït Melloul" data-i18n="provInezgane"></option>
+<option value="Chtouka-Aït Baha" data-i18n="provChtouka"></option>
+<option value="Taroudant" data-i18n="provTaroudant"></option>
+<option value="Tiznit" data-i18n="provTiznit"></option>
+<option value="Tata" data-i18n="provTata"></option>
 </select></div>
 <div class="field"><label for="rAge" data-i18n="rAge"></label><input id="rAge" type="text" inputmode="numeric" pattern="[0-9]{1,10}" maxlength="10" required></div>
 <div class="field"><label for="rDA" data-i18n="rDA"></label><select id="rDA" required><option value="" data-i18n="rSpecChoose"></option><option value="Médecin" data-i18n="rSpecDoctor"></option><option value="ITS" data-i18n="rSpecITS"></option><option value="Aide soignant" data-i18n="rSpecNurse"></option><option value="Personnel administratif" data-i18n="rSpecAdmin"></option><option value="Autre à préciser" data-i18n="rSpecOther"></option></select></div>
@@ -3054,19 +3060,19 @@ input[type=file]::file-selector-button{
 
 <button class="link danger" type="button" id="meDelLink" data-act="deldata" data-i18n="delData"></button>
 
-</div><div class="mesreports" id="meReportsWrap" hidden><h2 class="h2" data-i18n="meReportsT"></h2><p class="hint" id="meReportsNone" data-i18n="meReportsNone" hidden></p><ul id="meReports"></ul></div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me">‹ Retour à mon espace</button>
+</div><div class="mesreports" id="meReportsWrap" hidden><h2 class="h2" data-i18n="meReportsT"></h2><p class="hint" id="meReportsNone" data-i18n="meReportsNone" hidden></p><ul id="meReports"></ul></div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me"><span class="back-arrow" aria-hidden="true">‹</span> <span data-i18n="admBack"></span></button>
 
-<h1 class="title">Administration</h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false">Tableau de bord</button><button type="button" class="fbtn" data-adm="members" aria-pressed="true">Membres</button>
+<h1 class="title" data-i18n="admTitle"></h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false" data-i18n="admTabDashboard"></button><button type="button" class="fbtn" data-adm="members" aria-pressed="true" data-i18n="admTabMembers"></button>
 
-<button type="button" class="fbtn" data-adm="news" aria-pressed="false">Communiqués</button>
+<button type="button" class="fbtn" data-adm="news" aria-pressed="false" data-i18n="admTabNews"></button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false">Événements</button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false">Adhésions</button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n="admTabEvents"></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n="admTabAdhesions"></button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
 <div>
-<h2>Tableau de bord</h2>
-<p>Vue d'ensemble de la gestion de la Fédération régionale de la Santé</p>
+<h2 data-i18n="admDashTitle"></h2>
+<p data-i18n="admDashSubtitle"></p>
 </div>
 </div>
 
@@ -3075,79 +3081,79 @@ input[type=file]::file-selector-button{
 <div class="admin-dashboard-grid">
 
 <div class="admin-panel">
-<h3>Répartition des adhérents</h3>
+<h3 data-i18n="admDashRepartition"></h3>
 <div id="admDashProvs"></div>
 </div>
 
 <div class="admin-panel">
-<h3>À traiter</h3>
+<h3 data-i18n="admDashTodo"></h3>
 <div id="admDashTodo"></div>
 </div>
 
 </div>
 
-</div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" placeholder="Nom, e-mail ou province…" aria-label="Rechercher un adhérent" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
+</div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" data-i18n-ph="admMemSearchPh" aria-label="Rechercher un adhérent" data-i18n-aria="admMemSearchAria" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
  origin/main
-<button class="btn ghost small" type="button" data-adm-act="csv">Exporter la liste (CSV)</button>
-</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2">Nouveau communiqué</h2></div><div class="field">
-<label for="nCat">Catégorie</label>
+<button class="btn ghost small" type="button" data-adm-act="csv" data-i18n="admMemExportCsv">Exporter la liste (CSV)</button>
+</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouveau communiqué</h2></div><div class="field">
+<label for="nCat" data-i18n="admNewsCategory">Catégorie</label>
 <select id="nCat">
-<option value="urgent">Communiqué</option>
-<option value="statut" selected>Actualité</option>
-<option value="events">Rencontres</option>
+<option value="urgent" data-i18n="fUrgent">Communiqué</option>
+<option value="statut" selected data-i18n="fStatut">Actualité</option>
+<option value="events" data-i18n="fEvents">Rencontres</option>
 </select>
 </div><div class="field">
-<label for="nAud">Qui peut le lire ?</label>
+<label for="nAud" data-i18n="admNewsAudience">Qui peut le lire ?</label>
 <select id="nAud">
-<option value="public">Tout le monde</option>
-<option value="members">Adhérents validés seulement</option>
+<option value="public" data-i18n="admNewsAudiencePublic">Tout le monde</option>
+<option value="members" data-i18n="admNewsAudienceMembers">Adhérents validés seulement</option>
 </select>
 </div><div class="field">
-<label for="nDate">Date</label>
+<label for="nDate" data-i18n="admFieldDate">Date</label>
 <input id="nDate" type="date">
 </div><div class="field">
 <label for="nImage" data-i18n="newsPhoto"></label>
 <input id="nImage" type="file" accept="image/jpeg,image/png,image/webp">
 <p class="hint" data-i18n="newsPhotoHint"></p>
 </div><div class="field">
-<label for="nTFr">Titre (français)</label>
+<label for="nTFr" data-i18n="admNewsTitleFr">Titre (français)</label>
 <input id="nTFr" type="text">
 </div><div class="field">
-<label for="nBFr">Texte (français)</label>
+<label for="nBFr" data-i18n="admNewsTextFr">Texte (français)</label>
 <textarea id="nBFr" rows="4"></textarea>
 </div><div class="field">
-<label for="nTAr">العنوان (بالعربية)</label>
+<label for="nTAr" data-i18n="admNewsTitleAr">العنوان (بالعربية)</label>
 <input id="nTAr" type="text" dir="rtl">
 </div><div class="field">
-<label for="nBAr">النص (بالعربية)</label>
+<label for="nBAr" data-i18n="admNewsTextAr">النص (بالعربية)</label>
 <textarea id="nBAr" rows="4" dir="rtl"></textarea>
-</div><button class="btn primary block" type="button" data-adm-act="addNews" id="nSubmitBtn">Publier le communiqué</button>
+</div><button class="btn primary block" type="button" data-adm-act="addNews" id="nSubmitBtn" data-i18n="admNewsPublish">Publier le communiqué</button>
 <p class="hint" id="nEditHint" hidden></p>
-<button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden>Annuler la modification</button>
+<button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2">Nouvel événement</h2></div><div class="field">
-<label for="eDate">Date</label>
+<h2 class="h2" style="margin-top:28px" data-i18n="admNewsPublished">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2" data-i18n="admEventNew">Nouvel événement</h2></div><div class="field">
+<label for="eDate" data-i18n="admFieldDate">Date</label>
 <input id="eDate" type="date">
 </div><div class="field">
-<label for="eTime">Heure</label>
+<label for="eTime" data-i18n="admEventTime">Heure</label>
 <input id="eTime" type="time">
 </div><div class="field">
-<label for="eTFr">Titre (français)</label>
+<label for="eTFr" data-i18n="admNewsTitleFr">Titre (français)</label>
 <input id="eTFr" type="text">
 </div><div class="field">
-<label for="ePFr">Lieu (français)</label>
+<label for="ePFr" data-i18n="admEventPlaceFr">Lieu (français)</label>
 <input id="ePFr" type="text">
 </div><div class="field">
-<label for="eTAr">العنوان (بالعربية)</label>
+<label for="eTAr" data-i18n="admNewsTitleAr">العنوان (بالعربية)</label>
 <input id="eTAr" type="text" dir="rtl">
 </div><div class="field">
-<label for="ePAr">المكان (بالعربية)</label>
+<label for="ePAr" data-i18n="admEventPlaceAr">المكان (بالعربية)</label>
 <input id="ePAr" type="text" dir="rtl">
-</div><button class="btn primary block" type="button" data-adm-act="addEvent" id="eSubmitBtn">Publier l'événement</button>
+</div><button class="btn primary block" type="button" data-adm-act="addEvent" id="eSubmitBtn" data-i18n="admEventPublish">Publier l'événement</button>
 <p class="hint" id="eEditHint" hidden></p>
-<button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden>Annuler la modification</button>
+<button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><p class="hint" data-i18n="admAdhesionsHint"></p><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -3267,6 +3273,7 @@ adhStatusUnknown:`Statut de la demande : %1.`,
   adhStatusUnavailable:`Statut de la demande temporairement indisponible.`,
   adhBlockedPending:`Votre demande est déjà enregistrée et en attente de traitement. Vous serez informé dès qu’un responsable la signera.`,
   adhBlockedRefused:`Une décision a déjà été prise concernant votre demande. Contactez la permanence pour toute démarche supplémentaire.`,
+  adhBlockedActive:`Votre adhésion est déjà validée : le formulaire est réservé au renouvellement de votre adhésion.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`Transmission de votre demande à l’administration…`,
@@ -3397,6 +3404,12 @@ cFb:`Page officielle Facebook`,
  attachClose:`Fermer`,
  attachDownload:`Télécharger la pièce jointe`,
  attachPdfNote:`Si le PDF ne s'affiche pas dans l'aperçu, utilisez le bouton de téléchargement pour l'ouvrir avec une application.`,
+  attachUnavailable:`Pièce jointe indisponible.`,
+  attachOpenError:`Impossible d'ouvrir la pièce jointe.`,
+  attachTooBig:`La pièce jointe dépasse 300 Ko.`,
+  attachReadError:`Impossible de lire la pièce jointe.`,
+  signUnavailable:`Signature indisponible sur cet appareil.`,
+  attachLoadError:`Impossible de charger la pièce jointe.`,
  
  cNum:`Numéro du secrétaire régional`,
 cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
@@ -3474,11 +3487,181 @@ delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est défi
 deleted:`Données supprimées`,
  adminOpen:`Espace administrateur`,
  errPrefix:`Une erreur est survenue`,
+ errWord:`erreur`,
 
-admMemSearch:`Rechercher un adhérent`,
+ admMemSearch:`Rechercher un adhérent`,
   admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
   admMembersTitle:`Membres`,
   admMemExportCsv:`Exporter la liste (CSV)`,
+
+  /* Espace administration : libellés, onglets et actions */
+  admBack:`Retour à mon espace`,
+  admTitle:`Administration`,
+  admTabDashboard:`Tableau de bord`,
+  admTabMembers:`Membres`,
+  admTabNews:`Communiqués`,
+  admTabEvents:`Événements`,
+  admTabAdhesions:`Adhésions`,
+  admDashTitle:`Tableau de bord`,
+  admDashSubtitle:`Vue d'ensemble de la gestion de la Fédération régionale de la Santé`,
+  admDashRepartition:`Répartition des adhérents`,
+  admDashTodo:`À traiter`,
+  admKpiMembers:`Adhérents`,
+  admKpiActive:`Actifs`,
+  admKpiPending:`En attente`,
+  admKpiBlocked:`Suspendus`,
+  admKpiReports:`Signalements`,
+  admKpiNewCases:`Nouveaux dossiers`,
+  admKpiInProgress:`En cours`,
+  admKpiClosed:`Clôturés`,
+  admKpiNews:`Communiqués`,
+  admKpiEvents:`Événements`,
+  admTodoPendingAdh:`adhésion(s) en attente`,
+  admTodoNewReports:`signalement(s) nouveau(x)`,
+  admTodoInProgress:`dossier(s) en cours`,
+  admTodoView:`Voir`,
+  admTodoProcess:`Traiter`,
+  admTodoOpen:`Ouvrir`,
+  admTodoEmpty:`Aucun élément urgent à traiter.`,
+  admMemSearchPh:`Nom, e-mail ou province…`,
+  admMemSearchAria:`Rechercher un adhérent`,
+  admMemEmpty:`Aucun membre dans cette catégorie.`,
+  admMemNoName:`(sans nom)`,
+  admMemNoProv:`Province non renseignée : seul l'administrateur principal peut valider cet adhérent.`,
+  admMemNumber:`N°`,
+  admMemFilterPending:`En attente`,
+  admMemFilterActive:`Actifs`,
+  admMemFilterBlocked:`Suspendus`,
+  admMemFilterAll:`Tous`,
+  admMemValidate:`Valider`,
+  admMemSuspend:`Suspendre`,
+  admMemReactivate:`Réactiver`,
+  admMemSetSubAdmin:`Nommer sous-admin`,
+  admMemRemoveRole:`Retirer le rôle`,
+  admMemSetResp:`Désigner responsable`,
+  admMemRemoveResp:`Retirer responsable`,
+  admSubAdminProvAria:`Secteur du sous-admin`,
+  admNewsNew:`Nouveau communiqué`,
+  admNewsPublished:`Communiqués publiés`,
+  admNewsEmpty:`Aucun communiqué.`,
+  admNewsCategory:`Catégorie`,
+  admNewsAudience:`Qui peut le lire ?`,
+  admNewsAudiencePublic:`Tout le monde`,
+  admNewsAudienceMembers:`Adhérents validés seulement`,
+  admNewsMembersOnly:`réservé aux adhérents`,
+  admNewsTitleFr:`Titre (français)`,
+  admNewsTextFr:`Texte (français)`,
+  admNewsTitleAr:`Titre (arabe)`,
+  admNewsTextAr:`Texte (arabe)`,
+  admNewsPublish:`Publier le communiqué`,
+  admNewsSave:`Enregistrer les modifications`,
+  admCancelEdit:`Annuler la modification`,
+  admNewsEditHint:`Modification d'un communiqué publié : corrigez les champs puis enregistrez.`,
+  admNewsNeedDate:`Indiquez une date et au moins un titre.`,
+  admNewsPublishedToast:`Communiqué publié`,
+  admNewsEditedToast:`Communiqué modifié`,
+  admEventNew:`Nouvel événement`,
+  admEventPublished:`Événements publiés`,
+  admEventEmpty:`Aucun événement.`,
+  admEventTime:`Heure`,
+  admEventPlaceFr:`Lieu (français)`,
+  admEventPlaceAr:`Lieu (arabe)`,
+  admEventPublish:`Publier l'événement`,
+  admEventSave:`Enregistrer les modifications`,
+  admEventEditHint:`Modification d'un événement publié : corrigez les champs puis enregistrez.`,
+  admEventNeedDate:`Indiquez une date et au moins un titre.`,
+  admEventPublishedToast:`Événement publié`,
+  admEventEditedToast:`Événement modifié`,
+  admFieldDate:`Date`,
+  admEdit:`Modifier`,
+  admDelete:`Supprimer`,
+  admReportStart:`En cours`,
+  admReportClose:`Clore / répondre`,
+  admReportEtab:`Établissement :`,
+  admReportPpr:`PPR :`,
+  admReportSpecialty:`Spécialité :`,
+  admReportAnonymous:`Signalement anonyme`,
+  admReportResponse:`Réponse :`,
+  admPromptNote:`Note de traitement (facultatif) :`,
+  admPromptResponse:`Réponse / compte rendu du traitement :`,
+  admToastStatusUpdated:`Statut de la demande mis à jour.`,
+  admToastResponseLimit:`Réponse limitée à 3 000 caractères.`,
+  admToastMemberValidated:`Adhérent validé — numéro %1`,
+  admToastNumberAuto:`attribué automatiquement`,
+  admToastSubAdminNamed:`Sous-admin nommé pour %1`,
+  admToastSubAdminRemoved:`Rôle de sous-admin retiré`,
+  admToastRespNamed:`Responsable désigné : il apparaît sous la permanence syndicale`,
+  admToastRespRemoved:`Responsable retiré`,
+  admConfirmRemoveResp:`Retirer %1 de la liste des responsables ?`,
+  admPromptRespTitle:`Fonction du responsable (facultatif), par exemple Secrétaire :`,
+  admSelectProvince:`Sélectionnez la province concernée.`,
+  admConfirmSuspend:`Suspendre %1 ?`,
+  admConfirmDeleteMember:`Supprimer définitivement le profil de %1 ?`,
+  admConfirmDeleteNews:`Supprimer ce communiqué ?`,
+  admConfirmDeleteEvent:`Supprimer cet événement ?`,
+  admConfirmDeleteReport:`Supprimer définitivement ce signalement ?`,
+  admRowCin:`CIN :`,
+  admRowPhone:`Téléphone :`,
+  admRowAddress:`Adresse :`,
+  admRowEtab:`Établissement :`,
+  admRowSpecialty:`Spécialité :`,
+  admRowService:`Service :`,
+  admRowFunction:`Fonction :`,
+  admRowPpr:`PPR :`,
+  admRowReason:`Motif :`,
+  admRowNote:`Note :`,
+  admDossierUnavailable:`Dossier indisponible.`,
+  admDossierNotFound:`Dossier introuvable.`,
+  admDossierMember:`Adhérent`,
+  admDocCin:`CIN`,
+  admDocPhone:`Téléphone`,
+  admDocBirth:`Date de naissance`,
+  admDocAddress:`Adresse`,
+  admDocEtab:`Établissement`,
+  admDocService:`Service`,
+  admDocFunction:`Fonction`,
+  admDocSpecialty:`Spécialité`,
+  admDocPpr:`PPR`,
+  admDocType:`Type`,
+  admDocTypeFirst:`Première adhésion`,
+  admDocTypeRenewal:`Renouvellement`,
+  admDocReason:`Motif`,
+  admDocDate:`Date`,
+  admDocSignMember:`Signature de l’adhérent`,
+  admDocSignAdmin:`Signature du responsable`,
+  admCsvName:`Nom`,
+  admCsvEmail:`E-mail`,
+  admCsvEtab:`Établissement`,
+  admCsvProv:`Province`,
+  admCsvPhone:`Téléphone`,
+  admCsvStatus:`Statut`,
+  admCsvNumber:`N° adhérent`,
+  selectProvince:`Sélectionner la province`,
+  rProvinceLabel:`Province / préfecture concernée`,
+  provAgadir:`Agadir Ida-Outanane`,
+  provInezgane:`Inezgane-Aït Melloul`,
+  provChtouka:`Chtouka-Aït Baha`,
+  provTaroudant:`Taroudant`,
+  provTiznit:`Tiznit`,
+  provTata:`Tata`,
+  shareReportTitle:`Signalement UGTM`,
+  shareReportHeader:`UGTM Souss-Massa - Signalement`,
+  shareReportProvince:`Province :`,
+  shareReportCategory:`Catégorie :`,
+  shareReportEtab:`Établissement :`,
+  shareReportDate:`Date :`,
+  shareReportStatus:`Statut :`,
+  shareReportSummary:`Résumé :`,
+
+  /* Mise à jour OTA */
+  otaUpdateMsg:`Mise à jour disponible v%1 — %2`,
+  otaInstall:`Installer`,
+  otaDismiss:`Ignorer`,
+
+  /* Partage de l'application */
+  shareAppTitle:`UGTM Souss-Massa`,
+  shareAppText:`UGTM Souss-Massa\nApplication de la Fédération régionale de la Santé UGTM Souss-Massa.\nTéléchargez l'application : %1`,
+  shareAppVersionLine:`\nVersion : %1`,
  },
 
  ar:{
@@ -3534,6 +3717,7 @@ adhNote:`ملاحظة : `,
   adhStatusUnavailable:`حالة الطلب غير متوفرة مؤقتاً.`,
   adhBlockedPending:`طلب الانخراط مسجل بالفعل وهو في انتظار توقيع أحد المسؤولين. سيتم إخباركم فور توقيعه.`,
   adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
+  adhBlockedActive:`انخراطكم مصادق عليه بالفعل: النموذج مخصص حصريًا لتجديد انخراطكم.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
@@ -3568,14 +3752,14 @@ admAdhesionSigned:`موقّع إلكترونياً`,
 admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
-admMembersTitle:`أعضاء`,
+admMembersTitle:`الأعضاء`,
 admMemExportCsv:`تصدير القائمة (CSV)`,
 AdhesionFallback:`منخرط`,
 admStatusPending:`في انتظار المصادقة`,
 admStatusCompletion:`تم طلب معلومات إضافية`,
 admStatusValidated:`تمت المصادقة`,
 admStatusRefused:`مرفوض`,
-admMembersTitle:`أعضاء`,
+admMembersTitle:`الأعضاء`,
 admMemExportCsv:`تصدير القائمة (CSV)`,
 admAskCompletion:`طلب معلومات إضافية`,
     admRefuse:`رفض`,
@@ -3716,6 +3900,12 @@ cFbB:`زيارة الصفحة`,
  attachClose:`إغلاق`,
  attachDownload:`تحميل الملف المرفق`,
  attachPdfNote:`إذا لم يظهر الملف PDF في المعاينة، استخدموا زر التحميل لفتحه بتطبيق خارجي.`,
+  attachUnavailable:`الملف المرفق غير متوفر.`,
+  attachOpenError:`تعذر فتح الملف المرفق.`,
+  attachTooBig:`حجم الملف المرفق يتجاوز 300 كيلوبايت.`,
+  attachReadError:`تعذر قراءة الملف المرفق.`,
+  signUnavailable:`التوقيع غير متوفر على هذا الجهاز.`,
+  attachLoadError:`تعذر تحميل الملف المرفق.`,
 
 cNum:`رقم الكاتب الجهوي`,
 cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
@@ -3794,10 +3984,180 @@ delConfirm:`هل تريدون حذف ملفكم الشخصي وتسجيل الخ
 deleted:`تم حذف البيانات`,
  adminOpen:`فضاء المسؤول`,
  errPrefix:`حدث خطأ`,
+ errWord:`خطأ`,
 
- admMemSearch:`البحث عن عضو`,
- admMemSearchHint:`البحث بالاسم أو البريد الإلكتروني أو المؤسسة أو الإقليم.`,
-}
+  admMemSearch:`البحث عن عضو`,
+  admMemSearchHint:`البحث بالاسم أو البريد الإلكتروني أو المؤسسة أو الإقليم.`,
+
+  /* فضاء الإدارة : العناوين والتبويبات والإجراءات */
+  admBack:`العودة إلى فضائي`,
+  admTitle:`الإدارة`,
+  admTabDashboard:`لوحة القيادة`,
+  admTabMembers:`الأعضاء`,
+  admTabNews:`البلاغات`,
+  admTabEvents:`الأحداث`,
+  admTabAdhesions:`الانخراطات`,
+  admDashTitle:`لوحة القيادة`,
+  admDashSubtitle:`نظرة عامة على تسيير الجامعة الوطنية للصحة الجهوية`,
+  admDashRepartition:`توزيع المنخرطين`,
+  admDashTodo:`في انتظار المعالجة`,
+  admKpiMembers:`المنخرطون`,
+  admKpiActive:`نشطون`,
+  admKpiPending:`في انتظار المصادقة`,
+  admKpiBlocked:`موقوفون`,
+  admKpiReports:`التبليغات`,
+  admKpiNewCases:`ملفات جديدة`,
+  admKpiInProgress:`قيد المعالجة`,
+  admKpiClosed:`مغلقة`,
+  admKpiNews:`البلاغات`,
+  admKpiEvents:`الأحداث`,
+  admTodoPendingAdh:`انخراط في انتظار المصادقة`,
+  admTodoNewReports:`تبليغ جديد`,
+  admTodoInProgress:`ملف قيد المعالجة`,
+  admTodoView:`عرض`,
+  admTodoProcess:`معالجة`,
+  admTodoOpen:`فتح`,
+  admTodoEmpty:`لا يوجد أي عنصر عاجل للمعالجة.`,
+  admMemSearchPh:`الاسم أو البريد الإلكتروني أو الإقليم…`,
+  admMemSearchAria:`البحث عن منخرط`,
+  admMemEmpty:`لا يوجد أي عضو في هذه الفئة.`,
+  admMemNoName:`(بدون اسم)`,
+  admMemNoProv:`الإقليم غير محدد: لا يمكن إلا للمسؤول الرئيسي المصادقة على هذا المنخرط.`,
+  admMemNumber:`رقم`,
+  admMemFilterPending:`في انتظار المصادقة`,
+  admMemFilterActive:`نشطون`,
+  admMemFilterBlocked:`موقوفون`,
+  admMemFilterAll:`الكل`,
+  admMemValidate:`المصادقة`,
+  admMemSuspend:`تجميد`,
+  admMemReactivate:`إعادة التنشيط`,
+  admMemSetSubAdmin:`تعيين مسؤول فرعي`,
+  admMemRemoveRole:`سحب الدور`,
+  admMemSetResp:`تعيين مسؤول`,
+  admMemRemoveResp:`سحب صفة المسؤول`,
+  admSubAdminProvAria:`قطاع المسؤول الفرعي`,
+  admNewsNew:`بلاغ جديد`,
+  admNewsPublished:`البلاغات المنشورة`,
+  admNewsEmpty:`لا توجد أي بلاغات.`,
+  admNewsCategory:`الصنف`,
+  admNewsAudience:`من يمكنه قراءته؟`,
+  admNewsAudiencePublic:`الجميع`,
+  admNewsAudienceMembers:`المنخرطون المصادق عليهم فقط`,
+  admNewsMembersOnly:`مخصص للمنخرطين`,
+  admNewsTitleFr:`العنوان (بالفرنسية)`,
+  admNewsTextFr:`النص (بالفرنسية)`,
+  admNewsTitleAr:`العنوان (بالعربية)`,
+  admNewsTextAr:`النص (بالعربية)`,
+  admNewsPublish:`نشر البلاغ`,
+  admNewsSave:`حفظ التعديلات`,
+  admCancelEdit:`إلغاء التعديل`,
+  admNewsEditHint:`تعديل بلاغ منشور: صححوا الحقول ثم احفظوا.`,
+  admNewsNeedDate:`أدخلوا تاريخًا وعنوانًا واحدًا على الأقل.`,
+  admNewsPublishedToast:`تم نشر البلاغ`,
+  admNewsEditedToast:`تم تعديل البلاغ`,
+  admEventNew:`حدث جديد`,
+  admEventPublished:`الأحداث المنشورة`,
+  admEventEmpty:`لا توجد أي أحداث.`,
+  admEventTime:`التوقيت`,
+  admEventPlaceFr:`المكان (بالفرنسية)`,
+  admEventPlaceAr:`المكان (بالعربية)`,
+  admEventPublish:`نشر الحدث`,
+  admEventSave:`حفظ التعديلات`,
+  admEventEditHint:`تعديل حدث منشور: صححوا الحقول ثم احفظوا.`,
+  admEventNeedDate:`أدخلوا تاريخًا وعنوانًا واحدًا على الأقل.`,
+  admEventPublishedToast:`تم نشر الحدث`,
+  admEventEditedToast:`تم تعديل الحدث`,
+  admFieldDate:`التاريخ`,
+  admEdit:`تعديل`,
+  admDelete:`حذف`,
+  admReportStart:`قيد المعالجة`,
+  admReportClose:`إغلاق / الرد`,
+  admReportEtab:`المؤسسة:`,
+  admReportPpr:`PPR:`,
+  admReportSpecialty:`التخصص:`,
+  admReportAnonymous:`تبليغ مجهول`,
+  admReportResponse:`رد:`,
+  admPromptNote:`ملاحظة المعالجة (اختياري):`,
+  admPromptResponse:`رد / محضر المعالجة:`,
+  admToastStatusUpdated:`تم تحديث حالة الطلب.`,
+  admToastResponseLimit:`الرد محدود بـ 3000 حرف.`,
+  admToastMemberValidated:`تمت المصادقة على المنخرط — رقم %1`,
+  admToastNumberAuto:`يُمنح تلقائيا`,
+  admToastSubAdminNamed:`تم تعيين مسؤول فرعي لـ %1`,
+  admToastSubAdminRemoved:`سُحب دور المسؤول الفرعي`,
+  admToastRespNamed:`تم تعيين المسؤول: يظهر ضمن المداومة النقابية`,
+  admToastRespRemoved:`تم سحب المسؤول`,
+  admConfirmRemoveResp:`سحب %1 من قائمة المسؤولين؟`,
+  admPromptRespTitle:`وظيفة المسؤول (اختياري)، مثال: الكاتب الجهوي:`,
+  admSelectProvince:`اختروا الإقليم المعني.`,
+  admConfirmSuspend:`تجميد %1؟`,
+  admConfirmDeleteMember:`حذف ملف %1 نهائيًا؟`,
+  admConfirmDeleteNews:`حذف هذا البلاغ؟`,
+  admConfirmDeleteEvent:`حذف هذا الحدث؟`,
+  admConfirmDeleteReport:`حذف هذا التبليغ نهائيًا؟`,
+  admRowCin:`البطاقة الوطنية:`,
+  admRowPhone:`الهاتف:`,
+  admRowAddress:`العنوان:`,
+  admRowEtab:`المؤسسة:`,
+  admRowSpecialty:`التخصص:`,
+  admRowService:`المصلحة:`,
+  admRowFunction:`الوظيفة:`,
+  admRowPpr:`PPR:`,
+  admRowReason:`السبب:`,
+  admRowNote:`ملاحظة:`,
+  admDossierUnavailable:`الملف غير متوفر.`,
+  admDossierNotFound:`الملف غير موجود.`,
+  admDossierMember:`منخرط`,
+  admDocCin:`البطاقة الوطنية`,
+  admDocPhone:`الهاتف`,
+  admDocBirth:`تاريخ الازدياد`,
+  admDocAddress:`العنوان`,
+  admDocEtab:`المؤسسة`,
+  admDocService:`المصلحة`,
+  admDocFunction:`الوظيفة`,
+  admDocSpecialty:`التخصص`,
+  admDocPpr:`PPR`,
+  admDocType:`النوع`,
+  admDocTypeFirst:`انخراط جديد`,
+  admDocTypeRenewal:`تجديد`,
+  admDocReason:`السبب`,
+  admDocDate:`التاريخ`,
+  admDocSignMember:`توقيع المنخرط`,
+  admDocSignAdmin:`توقيع المسؤول`,
+  admCsvName:`الاسم`,
+  admCsvEmail:`البريد الإلكتروني`,
+  admCsvEtab:`المؤسسة`,
+  admCsvProv:`الإقليم`,
+  admCsvPhone:`الهاتف`,
+  admCsvStatus:`الحالة`,
+  admCsvNumber:`رقم المنخرط`,
+  selectProvince:`اختر الإقليم`,
+  rProvinceLabel:`الإقليم / العمارة المعنية`,
+  provAgadir:`أكادير إداوتنان`,
+  provInezgane:`إنزكان أيت ملول`,
+  provChtouka:`اشتوكة أيت باها`,
+  provTaroudant:`تارودانت`,
+  provTiznit:`تيزنيت`,
+  provTata:`طاطا`,
+  shareReportTitle:`تبليغ الاتحاد العام للشغالين`,
+  shareReportHeader:`الاتحاد العام للشغالين بالمغرب - تبليغ`,
+  shareReportProvince:`الإقليم:`,
+  shareReportCategory:`الصنف:`,
+  shareReportEtab:`المؤسسة:`,
+  shareReportDate:`التاريخ:`,
+  shareReportStatus:`الحالة:`,
+  shareReportSummary:`ملخص:`,
+
+  /* التحديث عبر الإنترنت */
+  otaUpdateMsg:`تحديث متوفر v%1 — %2`,
+  otaInstall:`تثبيت`,
+  otaDismiss:`تجاهل`,
+
+  /* مشاركة التطبيق */
+  shareAppTitle:`الاتحاد العام للشغالين بالمغرب – جهة سوس ماسة`,
+  shareAppText:`الاتحاد العام للشغالين بالمغرب – الجامعة الوطنية للصحة – جهة سوس ماسة\nتطبيق الجامعة الوطنية للصحة الجهوية لجهة سوس ماسة.\nحمّلوا التطبيق: %1`,
+  shareAppVersionLine:`\nالإصدار: %1`,
+ }
 
 };
 
@@ -3831,6 +4191,18 @@ pending:`En attente`,
 active:`Actif`,
 blocked:`Suspendu`
 };
+
+/* Statut d'un membre, traduit dans la langue de l'interface. */
+var STATUS={
+pending:{fr:`En attente`,ar:`في انتظار المصادقة`},
+active:{fr:`Actif`,ar:`نشط`},
+blocked:{fr:`Suspendu`,ar:`موقوف`}
+};
+
+function statusLabel(status){
+var o=STATUS[status];
+return o?String(L(o)||status||''):String(status||'');
+}
 
 var lang='fr';
 var filter='all';
@@ -3874,6 +4246,13 @@ return(o&&(o[lang]||o.fr||o.ar))||{};
 }
 
 function titleFr(o){
+return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
+}
+
+/* Titre d'un communiqué / événement dans la langue de l'interface
+   (repli sur le français quand la version arabe manque). */
+function titleFor(o){
+if(lang==='ar')return(o.ar&&o.ar.t)||(o.fr&&o.fr.t)||'';
 return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
 }
 
@@ -4099,21 +4478,117 @@ function openUrl(url){
  window.open(url,'_blank','noopener');
  }
  
-/* Partager l'application : invitation à installer l'APK UGTM.
-     On lit le manifeste OTA (www/update.json) pour obtenir le vrai
-     lien de la release, puis on utilise le plugin Capacitor Share
-     sur Android natif (dialogue système de partage), avec un
-     fallback navigateur (navigator.share) puis WhatsApp. */
-  function shareAppLink(){
-  
-    var ver=(typeof appVersion!=='undefined'&&appVersion)?String(appVersion):appShareVersion();
-    var text=
-    'UGTM Souss-Massa\n'+
-    'Application de la Fédération régionale de la Santé UGTM Souss-Massa.\n'+
-    'Téléchargez l’application : '+appShareUrl()+'\n'+
-    'Version : '+ver;
-    shareTextNative(text,'UGTM Souss-Massa');
-  }
+ /* =========================
+    VERSION DE L'APPLICATION
+    La version affichée dans le message de partage vient du
+    manifeste OTA (www/update.json), embarqué dans l'APK et
+    publié sur l'hébergement : versionName = version installée
+    (repli : manifeste distant, puis valeur en cache).
+    ========================= */
+ var APP_VERSION='';
+ var APP_VERSION_CODE=0;
+ var APP_VERSION_LOADED=false;
+ var APP_VERSION_PROMISE=null;
+ 
+ function setAppVersion(name,code){
+ 
+   if(name)APP_VERSION=String(name);
+ 
+   if(code)APP_VERSION_CODE=parseInt(code,10)||0;
+ 
+   APP_VERSION_LOADED=true;
+ 
+   try{
+     if(APP_VERSION)localStorage.setItem('ugtm_app_version_name',APP_VERSION);
+     if(APP_VERSION_CODE)localStorage.setItem('ugtm_app_version_code',String(APP_VERSION_CODE));
+   }catch(err){}
+ 
+ }
+ 
+ /* Version connue sans appel réseau (cache local). */
+ function appKnownVersion(){
+ 
+   if(APP_VERSION)return APP_VERSION;
+ 
+   try{
+     var cached=localStorage.getItem('ugtm_app_version_name');
+     if(cached){APP_VERSION=cached;return APP_VERSION;}
+     var cachedCode=parseInt(localStorage.getItem('ugtm_app_version_code')||'0',10);
+     if(cachedCode>0)APP_VERSION_CODE=cachedCode;
+   }catch(err){}
+ 
+   return APP_VERSION;
+ 
+ }
+ 
+ /* Charge le manifeste : d'abord la copie embarquée dans
+    l'application (fonctionne hors connexion), puis le manifeste
+    distant si la copie locale est absente. */
+ function loadAppVersion(){
+ 
+   if(APP_VERSION_LOADED)return Promise.resolve(appKnownVersion());
+ 
+   if(APP_VERSION_PROMISE)return APP_VERSION_PROMISE;
+ 
+   /* Pas de paramètre anti-cache : le manifeste est un fichier
+      embarqué (version installée), le service worker le sert
+      depuis le réseau en priorité. */
+   APP_VERSION_PROMISE=fetch('update.json')
+   .then(function(r){return r.ok?r.json():null;})
+   .catch(function(){return null;})
+   .then(function(m){
+ 
+     if(m&&m.versionName){
+       setAppVersion(m.versionName,m.versionCode);
+       return APP_VERSION;
+     }
+ 
+     return fetch('https://ugtm-fns-souss-massa.web.app/update.json?t='+Date.now())
+     .then(function(r){return r.ok?r.json():null;})
+     .catch(function(){return null;})
+     .then(function(remote){
+       if(remote&&remote.versionName)setAppVersion(remote.versionName,remote.versionCode);
+       return APP_VERSION;
+     });
+ 
+   })
+   .catch(function(){return appKnownVersion();});
+ 
+   return APP_VERSION_PROMISE;
+ 
+ }
+ 
+ /* Partager l'application : invitation à installer l'APK UGTM.
+    On lit le manifeste OTA (www/update.json) pour obtenir le vrai
+    lien de la release, puis on utilise le plugin Capacitor Share
+    sur Android natif (dialogue système de partage), avec un
+    fallback navigateur (navigator.share) puis WhatsApp. */
+   function shareAppLink(versionRetried){
+   
+     var t=T();
+     var ver=appKnownVersion();
+   
+     /* La version peut ne pas être encore chargée : on la récupère
+        une fois, puis on partage (le message porte le numéro de
+        version dès que le manifeste a été lu). */
+     if(!ver&&!versionRetried){
+       versionRetried=true;
+       loadAppVersion().then(function(){
+         shareAppLink(true);
+       });
+       return;
+     }
+   
+     var text=String(t.shareAppText||'')
+     .replace('%1',appShareUrl());
+   
+     /* La ligne « Version » n'est ajoutée que si la version est
+        connue (manifeste OTA lu). */
+     if(ver)text+=String(t.shareAppVersionLine||'').replace('%1',ver);
+   
+     shareTextNative(text,t.shareAppTitle||'UGTM Souss-Massa');
+   }
+
   
   /* Partage natif Android (Capacitor Share) → dialogue système.
      Fallback navigateur (navigator.share) → partage Web API.
@@ -4159,21 +4634,12 @@ function openUrl(url){
     return 'https://tinyurl.com/ugtm-apk';
   }
   
+  /* Version de l'application : celle du manifeste OTA
+     (www/update.json), avec le cache local en secours. */
   function appShareVersion(){
   
-    try{
+    return appKnownVersion();
   
-      var s=location.pathname.split('/');
-  
-      for(var i=0;i<s.length;i++){
- 
-       if(/^v[0-9.]+$/.test(s[i]))return s[i].slice(1);
- 
-     }
- 
-   }catch(err){}
- 
-   return '';
  }
  
  /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
@@ -4248,7 +4714,7 @@ function openUrl(url){
  var arr=new Uint8Array(binary.length);
  for(var i=0;i<binary.length;i++)arr[i]=binary.charCodeAt(i);
  url=URL.createObjectURL(new Blob([arr],{type:type}));
- }catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
+ }catch(err){toast(T().attachOpenError,4000);
  return;
  }
  openAttachModal(url,name||'',type,raw);
@@ -4686,6 +5152,25 @@ if(status==='closed')return t.rStClosed||'Clos';
 return t.rStNew||'Nouveau';
 }
 
+/* Catégorie d'un signalement, traduite (la valeur stockée
+   dans Firestore reste la clé technique). */
+function reportCategoryLabelI18n(cat){
+var t=T();
+var map={
+abuse_of_power:'rCatAbuse',
+assault:'rCatAssault',
+administrative_situation:'rCatAdmin',
+leave:'rCatLeave',
+promotion_grade:'rCatPromotion',
+disciplinary_case:'rCatDiscipline',
+housing:'rCatHousing',
+rating:'rCatRating',
+other:'rCatOther'
+};
+var key=map[cat];
+return key?(t[key]||cat):String(cat||'');
+}
+
 /* Mes signalements (Mon espace) : l'adhérent identifié suit ses propres
    dossiers et lit la réponse de l'union. */
 function renderMeReports(){
@@ -4858,30 +5343,32 @@ return m.uid===uid;
 
 function memberRow(m){
 
+var t=T();
+
 var uid=esc(m.uid);
 
 var acts='';
 
 if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin))
-acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">Valider</button>';
+acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">'+esc(t.admMemValidate)+'</button>';
 
 if(S.isAdmin&&m.status==='active')
-acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">Suspendre</button>';
+acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">'+esc(t.admMemSuspend)+'</button>';
 
 if(S.isAdmin&&m.status==='blocked')
-acts+='<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="'+uid+'">Réactiver</button>';
+acts+='<button type="button" class="btn ghost small" data-adm-act="unblock" data-uid="'+uid+'">'+esc(t.admMemReactivate)+'</button>';
 
 if(S.isAdmin&&m.status==='active'){
 var selected=m.adminProvince||m.prov||PROVS[0].v;
 
-acts+='<div class="subadmin-control"><select aria-label="Secteur du sous-admin" data-subprov="'+uid+'">'+
+acts+='<div class="subadmin-control"><select aria-label="'+esc(t.admSubAdminProvAria)+'" data-subprov="'+uid+'">'+
 PROVS.map(function(pr){
-return '<option value="'+esc(pr.v)+'" '+(pr.v===selected?'selected':'')+'>'+esc(pr.fr)+'</option>';
+return '<option value="'+esc(pr.v)+'" '+(pr.v===selected?'selected':'')+'>'+esc(L(pr))+'</option>';
 }).join('')+
 '</select><button type="button" class="btn ghost small" data-adm-act="'+
 (m.role==='subadmin'?'removeSubAdmin':'setSubAdmin')+
 '" data-uid="'+uid+'">'+
-(m.role==='subadmin'?'Retirer le rôle':'Nommer sous-admin')+
+esc(m.role==='subadmin'?t.admMemRemoveRole:t.admMemSetSubAdmin)+
 '</button></div>';
 }
 
@@ -4894,16 +5381,16 @@ return r&&r.uid===m.uid;
 acts+='<button type="button" class="btn ghost small" data-adm-act="'+
 (isResp?'delResp':'setResp')+
 '" data-uid="'+uid+'">'+
-(isResp?'Retirer responsable':'Désigner responsable')+
+esc(isResp?t.admMemRemoveResp:t.admMemSetResp)+
 '</button>';
 }
 
 if(S.isAdmin)
-acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">Supprimer</button>';
+acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">'+esc(t.admDelete)+'</button>';
 
 var info=[
 m.etab,
-provName(m.prov,'fr'),
+provName(m.prov,lang),
 m.phone
 ].filter(Boolean).join(' – ');
 
@@ -4912,9 +5399,9 @@ return '<li class="mrow">'+
 '<div class="mi">'+
 
 '<strong>'+
-esc(m.name||'(sans nom)')+
+esc(m.name||t.admMemNoName)+
 ' <span class="tag st-'+esc(m.status)+'">'+
-esc(STATUS_FR[m.status]||m.status)+
+esc(statusLabel(m.status))+
 '</span>'+
 '</strong>'+
 
@@ -4925,11 +5412,11 @@ esc(STATUS_FR[m.status]||m.status)+
 :'')
 +
 (!m.prov
-?'<span class="hint" style="display:inline-flex;align-items:flex-start;gap:6px"><span style="flex-shrink:0">⚠</span><span>Province non renseignée : seul l\'administrateur principal peut valider cet adhérent.</span></span>'
+?'<span class="hint" style="display:inline-flex;align-items:flex-start;gap:6px"><span style="flex-shrink:0">⚠</span><span>'+esc(t.admMemNoProv)+'</span></span>'
 :'')+
 
 (m.memberNo
-?'<span>N° '+esc(m.memberNo)+'</span>'
+?'<span>'+esc(t.admMemNumber)+' '+esc(m.memberNo)+'</span>'
 :'')+
 
 '</div>'+
@@ -4942,6 +5429,8 @@ acts+
 }
 
 function renderAdminMembers(){
+
+var t=T();
 
 var c={
 pending:0,
@@ -4958,10 +5447,10 @@ c[m.status]++;
 });
 
 var keys=[
-['pending','En attente'],
-['active','Actifs'],
-['blocked','Suspendus'],
-['all','Tous']
+['pending',t.admMemFilterPending],
+['active',t.admMemFilterActive],
+['blocked',t.admMemFilterBlocked],
+['all',t.admMemFilterAll]
 ];
 
 $('admMemFilters').innerHTML=keys.map(function(k){
@@ -4990,10 +5479,12 @@ $('admMemList').innerHTML=list.length
 
 ?list.map(memberRow).join('')
 
-:'<li class="empty">Aucun membre dans cette catégorie.</li>';
+:'<li class="empty">'+esc(t.admMemEmpty)+'</li>';
 }
 
 function renderAdminNews(){
+
+var t=T();
 
 var list=sortedNews();
 
@@ -5002,21 +5493,21 @@ $('admNewsList').innerHTML=list.length
 ?list.map(function(c){
 
 var cat=CATS[c.cat]
-?CATS[c.cat].fr
+?L(CATS[c.cat])
 :c.cat;
 
 return '<li class="mrow">'+
 
 '<div class="mi">'+
 
-'<strong>'+esc(titleFr(c))+'</strong>'+
+'<strong>'+esc(titleFor(c))+'</strong>'+
 
 '<span>'+
 fmtDateFr(c.date)+
 ' – '+
 esc(cat)+
 (c.audience==='members'
-?' – réservé aux adhérents'
+?' – '+esc(t.admNewsMembersOnly)
 :'')+
 '</span>'+
 
@@ -5024,9 +5515,9 @@ esc(cat)+
 
 '<div class="mact">'+
 
-'<button type="button" class="btn ghost small" data-adm-act="editNews" data-id="'+esc(c.id)+'">Modifier</button>'+
+'<button type="button" class="btn ghost small" data-adm-act="editNews" data-id="'+esc(c.id)+'">'+esc(t.admEdit)+'</button>'+
 
-'<button type="button" class="btn ghost small danger" data-adm-act="delNews" data-id="'+esc(c.id)+'">Supprimer</button>'+
+'<button type="button" class="btn ghost small danger" data-adm-act="delNews" data-id="'+esc(c.id)+'">'+esc(t.admDelete)+'</button>'+
 
 '</div>'+
 
@@ -5034,10 +5525,12 @@ esc(cat)+
 
 }).join('')
 
-:'<li class="empty">Aucun communiqué.</li>';
+:'<li class="empty">'+esc(t.admNewsEmpty)+'</li>';
 }
 
 function renderAdminEvents(){
+
+var t=T();
 
 var list=EVENTS.slice().sort(function(a,b){
 return a.date<b.date?1:-1;
@@ -5051,7 +5544,7 @@ return '<li class="mrow">'+
 
 '<div class="mi">'+
 
-'<strong>'+esc(titleFr(ev))+'</strong>'+
+'<strong>'+esc(titleFor(ev))+'</strong>'+
 
 '<span>'+
 fmtDateFr(ev.date)+
@@ -5062,9 +5555,9 @@ fmtDateFr(ev.date)+
 
 '<div class="mact">'+
 
-'<button type="button" class="btn ghost small" data-adm-act="editEvent" data-id="'+esc(ev.id)+'">Modifier</button>'+
+'<button type="button" class="btn ghost small" data-adm-act="editEvent" data-id="'+esc(ev.id)+'">'+esc(t.admEdit)+'</button>'+
 
-'<button type="button" class="btn ghost small danger" data-adm-act="delEvent" data-id="'+esc(ev.id)+'">Supprimer</button>'+
+'<button type="button" class="btn ghost small danger" data-adm-act="delEvent" data-id="'+esc(ev.id)+'">'+esc(t.admDelete)+'</button>'+
 
 '</div>'+
 
@@ -5072,45 +5565,41 @@ fmtDateFr(ev.date)+
 
 }).join('')
 
-:'<li class="empty">Aucun événement.</li>';
+:'<li class="empty">'+esc(t.admEventEmpty)+'</li>';
 }
 
 function renderAdminReports(){
+var t=T();
+
 var list=S.reports||[];
 
-function reportStatusLabel(status){
-if(status==='in_progress')return 'En cours';
-if(status==='closed')return 'Clos';
-return 'Nouveau';
-}
-
 $('admReportList').innerHTML=list.length?list.map(function(r){
-var status=reportStatusLabel(r.status);
+var status=reportStatusLabelI18n(r.status);
 var actions='';
 
 if(r.status!=='closed'){
-actions+='<button type="button" class="btn ghost small" data-adm-act="startReport" data-id="'+esc(r.id)+'">En cours</button>';
-actions+='<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">Clore / répondre</button>';
+actions+='<button type="button" class="btn ghost small" data-adm-act="startReport" data-id="'+esc(r.id)+'">'+esc(t.admReportStart)+'</button>';
+actions+='<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+esc(t.admReportClose)+'</button>';
 }
 
 actions+='<button type="button" class="btn ghost small" data-adm-act="shareReport" data-id="'+esc(r.id)+'">WhatsApp</button>';
 
 if(S.isAdmin){
-actions+='<button type="button" class="btn ghost small danger" data-adm-act="delReport" data-id="'+esc(r.id)+'">Supprimer</button>';
+actions+='<button type="button" class="btn ghost small danger" data-adm-act="delReport" data-id="'+esc(r.id)+'">'+esc(t.admDelete)+'</button>';
 }
 
 return '<li class="mrow"><div class="mi">'+
-'<strong>'+esc(r.category)+' · '+esc(status)+'</strong>'+
-'<span>'+esc(r.province||'')+' · '+esc(r.date)+'</span>'+
-(r.etab?'<span>Établissement : '+esc(r.etab)+'</span>':'')+
-((r.age!=='' || r.da)?'<span>'+(r.age!==''?'PPR : '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?'Spécialité : '+esc(r.da):'')+'</span>':'')+
+'<strong>'+esc(reportCategoryLabelI18n(r.category))+' · '+esc(status)+'</strong>'+
+'<span>'+esc(provName(r.province,lang)||r.province||'')+' · '+esc(r.date)+'</span>'+
+(r.etab?'<span>'+esc(t.admReportEtab)+' '+esc(r.etab)+'</span>':'')+
+((r.age!=='' || r.da)?'<span>'+(r.age!==''?esc(t.admReportPpr)+' '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?esc(t.admReportSpecialty)+' '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
 (r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
-'<span>'+(r.anonymous?'Signalement anonyme':esc(r.name||''))+'</span>'+
-(r.response?'<span><strong>Réponse :</strong> '+esc(r.response)+'</span>':'')+
+'<span>'+(r.anonymous?esc(t.admReportAnonymous):esc(r.name||''))+'</span>'+
+(r.response?'<span><strong>'+esc(t.admReportResponse)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div><div class="mact">'+actions+'</div></li>';
 
-}).join(''):'<li class="empty">'+T().rNoReports+'</li>';
+}).join(''):'<li class="empty">'+t.rNoReports+'</li>';
 }
 
 function fmtDateFr(str){
@@ -5131,6 +5620,7 @@ renderAdminMembers();
 renderAdminNews();
 renderAdminEvents();
 renderAdminReports();
+renderAdminAdhesions();
 
 }
 
@@ -5138,6 +5628,8 @@ renderAdminReports();
 function renderAdminDashboard(){
 
 if(!$('admDashKpis'))return;
+
+var t=T();
 
 var members=S.members||[];
 var reports=S.reports||[];
@@ -5177,16 +5669,16 @@ return '<div class="admin-kpi">'+
 
 $('admDashKpis').innerHTML=
 
-kpi('Adhérents',members.length)+
-kpi('Actifs',active,'ok')+
-kpi('En attente',pending,'warn')+
-kpi('Suspendus',blocked)+
-kpi('Signalements',reports.length)+
-kpi('Nouveaux dossiers',newReports,'warn')+
-kpi('En cours',inProgress)+
-kpi('Clôturés',closed,'ok')+
-kpi('Communiqués',NEWS.length)+
-kpi('Événements',EVENTS.length);
+kpi(t.admKpiMembers,members.length)+
+kpi(t.admKpiActive,active,'ok')+
+kpi(t.admKpiPending,pending,'warn')+
+kpi(t.admKpiBlocked,blocked)+
+kpi(t.admKpiReports,reports.length)+
+kpi(t.admKpiNewCases,newReports,'warn')+
+kpi(t.admKpiInProgress,inProgress)+
+kpi(t.admKpiClosed,closed,'ok')+
+kpi(t.admKpiNews,NEWS.length)+
+kpi(t.admKpiEvents,EVENTS.length);
 
 var counts={};
 
@@ -5210,7 +5702,7 @@ var pct=members.length?
 Math.round(n*100/members.length):0;
 
 return '<div class="admin-prov">'+
-'<div><span>'+esc(p.fr)+'</span><b>'+n+'</b></div>'+
+'<div><span>'+esc(L(p))+'</span><b>'+n+'</b></div>'+
 '<div class="admin-bar"><i style="width:'+pct+'%"></i></div>'+
 '</div>';
 
@@ -5223,8 +5715,8 @@ if(pending){
 todo.push(
 '<button type="button" class="admin-todo" data-adm="members">'+
 '<b>'+pending+'</b>'+
-'<span>adhésion(s) en attente</span>'+
-'<em>Voir</em>'+
+'<span>'+esc(t.admTodoPendingAdh)+'</span>'+
+'<em>'+esc(t.admTodoView)+'</em>'+
 '</button>'
 );
 
@@ -5235,8 +5727,8 @@ if(newReports){
 todo.push(
 '<button type="button" class="admin-todo" data-adm="reports">'+
 '<b>'+newReports+'</b>'+
-'<span>signalement(s) nouveau(x)</span>'+
-'<em>Traiter</em>'+
+'<span>'+esc(t.admTodoNewReports)+'</span>'+
+'<em>'+esc(t.admTodoProcess)+'</em>'+
 '</button>'
 );
 
@@ -5247,8 +5739,8 @@ if(inProgress){
 todo.push(
 '<button type="button" class="admin-todo" data-adm="reports">'+
 '<b>'+inProgress+'</b>'+
-'<span>dossier(s) en cours</span>'+
-'<em>Ouvrir</em>'+
+'<span>'+esc(t.admTodoInProgress)+'</span>'+
+'<em>'+esc(t.admTodoOpen)+'</em>'+
 '</button>'
 );
 
@@ -5258,7 +5750,7 @@ if(!todo.length){
 
 todo.push(
 '<div class="admin-todo empty">'+
-'<span>Aucun élément urgent à traiter.</span>'+
+'<span>'+esc(t.admTodoEmpty)+'</span>'+
 '</div>'
 );
 
@@ -5290,18 +5782,18 @@ el.innerHTML=list.length?list.map(function(a){
      if(a.status==='accepted'&&a.signed){
        actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
      }
-     var head=[a.date?fmtDateFr(a.date):'',provName(a.province,'fr')||a.province||''].filter(Boolean).join(' · ');
+     var head=[a.date?fmtDateFr(a.date):'',provName(a.province,lang)||a.province||''].filter(Boolean).join(' · ');
      var nom=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);
      var stLabel=esc(label(a.status));
      var rows=[
-       '<span>CIN : '+esc(a.cin||'')+'</span>',
-       '<span>Téléphone : '+esc(a.phone||'')+'</span>',
-       '<span>Adresse : '+esc(a.address||'')+'</span>',
-       '<span>Établissement : '+esc(a.establishment||'')+(a.specialty?' · Spécialité : '+esc(a.specialty):'')+'</span>',
-       '<span>Service : '+esc(a.service||'')+(a.function?' · Fonction : '+esc(a.function):'')+'</span>',
-       a.ppr?'<span>PPR : '+esc(a.ppr)+'</span>':'',
-       a.type==='renewal'&&a.reason?'<span>Motif : '+esc(a.reason)+'</span>':'',
-       a.adminNote?'<span>Note : '+esc(a.adminNote)+'</span>':''
+       '<span>'+esc(t.admRowCin)+' '+esc(a.cin||'')+'</span>',
+       '<span>'+esc(t.admRowPhone)+' '+esc(a.phone||'')+'</span>',
+       '<span>'+esc(t.admRowAddress)+' '+esc(a.address||'')+'</span>',
+       '<span>'+esc(t.admRowEtab)+' '+esc(a.establishment||'')+(a.specialty?' · '+esc(t.admRowSpecialty)+' '+esc(a.specialty):'')+'</span>',
+       '<span>'+esc(t.admRowService)+' '+esc(a.service||'')+(a.function?' · '+esc(t.admRowFunction)+' '+esc(a.function):'')+'</span>',
+       a.ppr?'<span>'+esc(t.admRowPpr)+' '+esc(a.ppr)+'</span>':'',
+       a.type==='renewal'&&a.reason?'<span>'+esc(t.admRowReason)+' '+esc(a.reason)+'</span>':'',
+       a.adminNote?'<span>'+esc(t.admRowNote)+' '+esc(a.adminNote)+'</span>':''
      ].filter(Boolean).join('');
      return '<li class="mrow"><div class="mi">'+
      '<strong>'+nom+' · '+stLabel+
@@ -5380,7 +5872,7 @@ function openAdhesionDossier(id,canSign){
   if(confirmBtn)confirmBtn.hidden=!signModalCanSign;
 
   if(signModalCanSign){
-    if(!signCanvasReset()){toast('Signature indisponible sur cet appareil.',4000);return;}
+    if(!signCanvasReset()){toast(T().signUnavailable,4000);return;}
     var note=$('admSignNote');
     if(note)note.value='';
   }
@@ -5395,40 +5887,41 @@ function openAdhesionDossier(id,canSign){
     renderAdhesionDossierInfo(doc);
   }).catch(function(){
     if(signModalId!==id)return;
-    if(info)info.innerHTML='<p class="hint">Dossier indisponible.</p>';
+    if(info)info.innerHTML='<p class="hint">'+esc(T().admDossierUnavailable)+'</p>';
   });
 }
 
 function renderAdhesionDossierInfo(doc){
   var el=$('admDossierInfo');
   if(!el)return;
-  if(!doc){el.innerHTML='<p class="hint">Dossier introuvable.</p>';return;}
+  if(!doc){el.innerHTML='<p class="hint">'+esc(T().admDossierNotFound)+'</p>';return;}
   var a=doc.application||{};
   function row(l,v){
     return '<div class="adhdoc-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';
   }
+  var t=T();
   el.innerHTML='<div class="adhdoc-head"><strong>'+
-    esc(((a.nom||'')+' '+(a.prenom||'')).trim()||'Adhérent')+'</strong><span>'+
-    esc(provName(doc.province,'fr')||doc.province||'')+'</span></div>'+
+    esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admDossierMember)+'</strong><span>'+
+    esc(provName(doc.province,lang)||doc.province||'')+'</span></div>'+
     '<div class="adhdoc-grid">'+
-    row('CIN',a.cin)+
-    row('Téléphone',a.phone)+
-    row('Date de naissance',a.dob)+
-    row('Adresse',a.address)+
-    row('Établissement',a.establishment)+
-    row('Service',a.service)+
-    row('Fonction',a['function'])+
-    row('Spécialité',a.specialty)+
-    row('PPR',a.ppr)+
-    row('Type',a.type==='renewal'?'Renouvellement':'Première adhésion')+
-    (a.type==='renewal'?row('Motif',a.reason):'')+
-    row('Date',a.date?fmtDateFr(a.date):'')+
+    row(t.admDocCin,a.cin)+
+    row(t.admDocPhone,a.phone)+
+    row(t.admDocBirth,a.dob)+
+    row(t.admDocAddress,a.address)+
+    row(t.admDocEtab,a.establishment)+
+    row(t.admDocService,a.service)+
+    row(t.admDocFunction,a['function'])+
+    row(t.admDocSpecialty,a.specialty)+
+    row(t.admDocPpr,a.ppr)+
+    row(t.admDocType,a.type==='renewal'?t.admDocTypeRenewal:t.admDocTypeFirst)+
+    (a.type==='renewal'?row(t.admDocReason,a.reason):'')+
+    row(t.admDocDate,a.date?fmtDateFr(a.date):'')+
     '</div>'+
     (doc.signature
-      ?'<div class="adhdoc-sign"><span>Signature de l’adhérent</span><img src="'+esc(doc.signature)+'" alt="Signature de l’adhérent"></div>'
+      ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignMember)+'</span><img src="'+esc(doc.signature)+'" alt="'+esc(t.admDocSignMember)+'"></div>'
       :'')+
     (doc.adminSignature
-      ?'<div class="adhdoc-sign"><span>Signature du responsable</span><img src="'+esc(doc.adminSignature)+'" alt="Signature du responsable"></div>'
+      ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignAdmin)+'</span><img src="'+esc(doc.adminSignature)+'" alt="'+esc(t.admDocSignAdmin)+'"></div>'
       :'');
 }
 
@@ -5702,15 +6195,17 @@ return '"'+v.replace(/"/g,'""')+'"';
 
 function exportCsv(){
 
+var t=T();
+
 var rows=[
 [
-'Nom',
-'E-mail',
-'Établissement',
-'Province',
-'Téléphone',
-'Statut',
-'N° adhérent'
+t.admCsvName,
+t.admCsvEmail,
+t.admCsvEtab,
+t.admCsvProv,
+t.admCsvPhone,
+t.admCsvStatus,
+t.admCsvNumber
 ]
 ];
 
@@ -5720,9 +6215,9 @@ rows.push([
 m.name,
 m.email,
 m.etab,
-provName(m.prov,'fr'),
+provName(m.prov,lang),
 m.phone,
-STATUS_FR[m.status]||m.status,
+statusLabel(m.status),
 m.memberNo
 ]);
 
@@ -5812,7 +6307,7 @@ b:val('nBAr')
 if(!o.date||!(fr.t||ar.t)){
 
 toast(
-'Indiquez une date et au moins un titre.',
+T().admNewsNeedDate,
 4000
 );
 
@@ -5835,7 +6330,7 @@ return editing
 
 if(editing){
 endEditNews();
-toast('Communiqué modifié');
+toast(T().admNewsEditedToast);
 return;
 }
 
@@ -5846,7 +6341,7 @@ $(id).value='';
 
 $('nImage').value='';
 
-toast('Communiqué publié');
+toast(T().admNewsPublishedToast);
 
 })
 .catch(showError);
@@ -5876,7 +6371,7 @@ p:val('ePAr')
 if(!o.date||!(fr.t||ar.t)){
 
 toast(
-'Indiquez une date et au moins un titre.',
+T().admEventNeedDate,
 4000
 );
 
@@ -5896,7 +6391,7 @@ var editing=S.editEventId;
 
 if(editing){
 endEditEvent();
-toast('Événement modifié');
+toast(T().admEventEditedToast);
 return;
 }
 
@@ -5905,7 +6400,7 @@ return;
 $(id).value='';
 });
 
-toast('Événement publié');
+toast(T().admEventPublishedToast);
 
 })
 .catch(showError);
@@ -5921,14 +6416,14 @@ function newsEditState(){
 var editing=!!S.editNewsId;
 
 $('nSubmitBtn').textContent=editing
-?'Enregistrer les modifications'
-:'Publier le communiqué';
+?T().admNewsSave
+:T().admNewsPublish;
 
 $('nCancelEdit').hidden=!editing;
 $('nEditHint').hidden=!editing;
 
 if(editing)
-$('nEditHint').textContent='Modification d\'un communiqué publié : corrigez les champs puis enregistrez.';
+$('nEditHint').textContent=T().admNewsEditHint;
 
 }
 
@@ -5972,14 +6467,14 @@ function eventEditState(){
 var editing=!!S.editEventId;
 
 $('eSubmitBtn').textContent=editing
-?'Enregistrer les modifications'
-:"Publier l'événement";
+?T().admEventSave
+:T().admEventPublish;
 
 $('eCancelEdit').hidden=!editing;
 $('eEditHint').hidden=!editing;
 
 if(editing)
-$('eEditHint').textContent='Modification d\'un événement publié : corrigez les champs puis enregistrez.';
+$('eEditHint').textContent=T().admEventEditHint;
 
 }
 
@@ -6080,6 +6575,38 @@ t[el.getAttribute('data-i18n')];
 
 });
 
+/* Placeholders et libellés accessibles : le texte seul
+   n'est pas traduit par data-i18n (il remplace le contenu
+   de l'élément, pas son attribut). */
+document
+.querySelectorAll('[data-i18n-ph]')
+.forEach(function(el){
+
+var v=t[el.getAttribute('data-i18n-ph')];
+
+if(v)el.setAttribute('placeholder',v);
+
+});
+
+document
+.querySelectorAll('[data-i18n-aria]')
+.forEach(function(el){
+
+var v=t[el.getAttribute('data-i18n-aria')];
+
+if(v)el.setAttribute('aria-label',v);
+
+});
+
+/* L'espace administration suit la langue de l'interface
+   (direction et langue du document). */
+var admin=$('s-admin');
+
+if(admin){
+admin.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+admin.setAttribute('lang',lang);
+}
+
 $('permDesc').textContent=
 [PERM.hours,PERM.address,PERM.phone]
 .filter(Boolean)
@@ -6096,6 +6623,12 @@ renderNews();
 renderAgenda();
 renderAccountButton();
 renderMe();
+
+/* Espace administration : les listes et le tableau de bord
+   sont régénérés dans la nouvelle langue. */
+renderAdminAll();
+newsEditState();
+eventEditState();
 
 }
 
@@ -6126,15 +6659,57 @@ function adhesionFormStatus(){
   var req=myAdhesionStatusCache;
   return req?String(req.status||'none'):'none';
 }
+
+/* Règle d'accès au formulaire, alignée sur les règles Firestore :
+   - complément demandé (needs_completion) : formulaire ouvert ;
+   - demande déjà envoyée (pending) ou décision prise (refused) :
+     formulaire fermé (une nouvelle demande créerait un doublon) ;
+   - adhérent déjà validé (demande acceptée ou carte active) :
+     renouvellement uniquement, motif obligatoire ;
+   - sinon : première adhésion libre. */
+function adhesionAccessFor(status){
+  var t=T();
+  var st=status?String(status||'none'):'none';
+  var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+  if(st==='needs_completion')return{mode:'completion',message:''};
+  if(st==='pending')return{mode:'blocked',message:t.adhBlockedPending};
+  if(st==='refused')return{mode:'blocked',message:t.adhBlockedRefused};
+  if(st==='accepted'||memberActive)return{mode:'renewal',message:t.adhBlockedActive};
+  return{mode:'free',message:''};
+}
+function adhesionAccess(){
+  return adhesionAccessFor(adhesionFormStatus());
+}
 function adhesionFormBlocked(){
-  var st=adhesionFormStatus();
-  return st==='pending'||st==='refused';
+  return adhesionAccess().mode==='blocked';
 }
 function adhesionFormBlockedMessage(){
-  var t=T();
-  if(adhesionFormStatus()==='refused')return t.adhBlockedRefused;
-  return t.adhBlockedPending;
+  return adhesionAccess().message;
 }
+
+/* Le parcours d'adhésion (script dédié) applique la même
+   règle : la fonction est exposée pour lui. */
+window.adhesionAccessFor=adhesionAccessFor;
+window.adhesionAccess=adhesionAccess;
+
+/* Le parcours d'adhésion (script dédié) a besoin d'afficher
+   un message, de revenir à « Mon espace » et de lire les
+   libellés dans la langue de l'interface. */
+window.ugtmToast=toast;
+window.ugtmGo=go;
+window.ugtmT=T;
+
+/* Session courante (utilisateur + fiche membre) : le parcours
+   d'adHISION (script dédié) s'en sert pour pré-remplir le
+   formulaire et pour purger le brouillon au changement de compte. */
+window.ugtmSession=function(){
+  return {
+    user:S.user||null,
+    member:S.member||null
+  };
+};
+window.ugtmLoadAppVersion=loadAppVersion;
+window.ugtmEsc=esc;
 
 function go(name){
 
@@ -6570,11 +7145,11 @@ if(!repItem)return;
  .then(function(data){
  el.disabled=false;
  if(data)openDataUrl(data,repItem.attachmentName);
- else toast('Pièce jointe indisponible.',4000);
+ else toast(T().attachUnavailable,4000);
  })
  .catch(function(){
  el.disabled=false;
- toast('Impossible de charger la pièce jointe.',4000);
+ toast(T().attachLoadError,4000);
  });
  
  return;
@@ -6600,6 +7175,8 @@ if(!c)return;
 
 var a=el.getAttribute('data-adm-act');
 
+var t=T();
+
 uid=el.getAttribute('data-uid');
 
 id=el.getAttribute('data-id');
@@ -6613,7 +7190,7 @@ var assigned=selector?selector.value:(m.prov||'');
 
 c.admin.setSubAdmin(uid,assigned)
 .then(function(){
-toast('Sous-admin nommé pour '+provName(assigned,'fr'));
+toast(String(t.admToastSubAdminNamed).replace('%1',provName(assigned,lang)||assigned));
 })
 .catch(showError);
 
@@ -6623,7 +7200,7 @@ else if(a==='removeSubAdmin'&&m&&S.isAdmin){
 
 c.admin.removeSubAdmin(uid)
 .then(function(){
-toast('Rôle de sous-admin retiré');
+toast(t.admToastSubAdminRemoved);
 })
 .catch(showError);
 
@@ -6632,7 +7209,7 @@ toast('Rôle de sous-admin retiré');
 else if(a==='setResp'&&S.isAdmin&&m){
 
 var respTitle=window.prompt(
-'Fonction du responsable (facultatif), par exemple Secrétaire :',
+t.admPromptRespTitle,
 ''
 );
 
@@ -6640,7 +7217,7 @@ if(respTitle===null)return;
 
 c.admin.setResponsable(uid,respTitle.trim())
 .then(function(){
-toast('Responsable désigné : il apparaît sous la permanence syndicale');
+toast(t.admToastRespNamed);
 })
 .catch(showError);
 
@@ -6649,10 +7226,10 @@ toast('Responsable désigné : il apparaît sous la permanence syndicale');
 else if(a==='delResp'&&S.isAdmin&&m){
 
 if(window.confirm(
-'Retirer '+(m.name||m.email)+' de la liste des responsables ?'
+String(t.admConfirmRemoveResp).replace('%1',m.name||m.email)
 ))
 c.admin.removeResponsable(uid)
-.then(function(){toast('Responsable retiré');})
+.then(function(){toast(t.admToastRespRemoved);})
 .catch(showError);
 
 }
@@ -6664,7 +7241,7 @@ uid,
 'active'
 )
 .then(function(no){
-toast('Adhérent validé — numéro '+(no||'attribué automatiquement'));
+toast(String(t.admToastMemberValidated).replace('%1',no||t.admToastNumberAuto));
 })
 .catch(showError);
 
@@ -6673,7 +7250,7 @@ toast('Adhérent validé — numéro '+(no||'attribué automatiquement'));
 else if(a==='block'&&S.isAdmin&&m){
 
 if(window.confirm(
-'Suspendre '+(m.name||m.email)+' ?'
+String(t.admConfirmSuspend).replace('%1',m.name||m.email)
 ))
 
 c.admin
@@ -6693,9 +7270,7 @@ c.admin
 else if(a==='delMember'&&S.isAdmin&&m){
 
 if(window.confirm(
-'Supprimer définitivement le profil de '+
-(m.name||m.email)+
-' ?'
+String(t.admConfirmDeleteMember).replace('%1',m.name||m.email)
 ))
 
 c.admin
@@ -6718,7 +7293,7 @@ publishEvent();
 
 else if(a==='delNews'&&S.isAdmin){
 
-if(window.confirm('Supprimer ce communiqué ?'))
+if(window.confirm(t.admConfirmDeleteNews))
 
 c.admin
 .deleteNews(id)
@@ -6750,8 +7325,8 @@ generateAdhesionPdfForAdmin(id);
 else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
 var adhesion=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
 if(adhesion&&c.admin.updateAdhesionStatus){
-var note=window.prompt('Note de traitement (facultatif) :',adhesion.adminNote||'');
-if(note!==null)c.admin.updateAdhesionStatus(id,el.getAttribute('data-status'),note).then(function(){toast('Statut de la demande mis à jour.');}).catch(showError);
+var note=window.prompt(t.admPromptNote,adhesion.adminNote||'');
+if(note!==null)c.admin.updateAdhesionStatus(id,el.getAttribute('data-status'),note).then(function(){toast(t.admToastStatusUpdated);}).catch(showError);
 }
 }
 
@@ -6766,13 +7341,13 @@ else if(a==='closeReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
 var response=window.prompt(
-'Réponse / compte rendu du traitement :',
+t.admPromptResponse,
 report.response||''
 );
 if(response===null)return;
 if(response.length>3000){
 response=response.slice(0,3000);
-toast('Réponse limitée à 3 000 caractères.',4500);
+toast(t.admToastResponseLimit,4500);
 }
 c.admin.updateReport(id,'closed',response).catch(showError);
 }
@@ -6782,17 +7357,17 @@ else if(a==='shareReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
 var text=
-'UGTM Souss-Massa - Signalement\n'+
-'Province : '+(report.province||'')+'\n'+
-'Catégorie : '+(report.category||'')+'\n'+
-'Établissement : '+(report.etab||'')+'\n'+
-'Date : '+(report.date||'')+'\n'+
-'Statut : '+(report.status==='closed'?'Clos':(report.status==='in_progress'?'En cours':'Nouveau'))+'\n'+
-'Résumé : '+String(report.description||'').slice(0,500);
+t.shareReportHeader+'\n'+
+t.shareReportProvince+' '+(provName(report.province,lang)||report.province||'')+'\n'+
+t.shareReportCategory+' '+reportCategoryLabelI18n(report.category)+'\n'+
+t.shareReportEtab+' '+(report.etab||'')+'\n'+
+t.shareReportDate+' '+(report.date||'')+'\n'+
+t.shareReportStatus+' '+reportStatusLabelI18n(report.status)+'\n'+
+t.shareReportSummary+' '+String(report.description||'').slice(0,500);
 
 if(navigator.share){
 navigator.share({
-title:'Signalement UGTM',
+title:t.shareReportTitle,
 text:text
 }).catch(function(){});
 }else{
@@ -6806,14 +7381,14 @@ window.open(
 
 else if(a==='delReport'&&S.isAdmin){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
-if(report&&window.confirm('Supprimer définitivement ce signalement ?')){
+if(report&&window.confirm(t.admConfirmDeleteReport)){
 c.admin.deleteReport(id).catch(showError);
 }
 }
 
 else if(a==='delEvent'&&S.isAdmin){
 
-if(window.confirm('Supprimer cet événement ?'))
+if(window.confirm(t.admConfirmDeleteEvent))
 
 c.admin
 .deleteEvent(id)
@@ -6892,8 +7467,8 @@ return;
 var province=val('rProvince');
 
 if(!province){
-toast('Sélectionnez la province concernée.',4000);
-feedback('Sélectionnez la province concernée.');
+toast(T().admSelectProvince,4000);
+feedback(T().admSelectProvince);
 return;
 }
 
@@ -6966,7 +7541,7 @@ var code=String((err&&(err.code||err.message))||'');
 done(false,
 code.indexOf('permission-denied')>-1
 ?T().rDenied
-:T().errPrefix+' ('+(code||'erreur')+').');
+:T().errPrefix+' ('+(code||T().errWord)+').');
 
 console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
 
@@ -6981,8 +7556,8 @@ if(file){
 
 if(file.size>300*1024){
 
-done(false,'La pièce jointe dépasse 300 Ko.');
-toast('La pièce jointe dépasse 300 Ko.',5000);
+done(false,T().attachTooBig);
+toast(T().attachTooBig,5000);
 return;
 }
 
@@ -6997,8 +7572,8 @@ data:String(reader.result||'')
 };
 
 reader.onerror=function(){
-done(false,'Impossible de lire la pièce jointe.');
-toast('Impossible de lire la pièce jointe.',4500);
+done(false,T().attachReadError);
+toast(T().attachReadError,4500);
 };
 
 reader.readAsDataURL(file);
@@ -7167,7 +7742,13 @@ go('me');
 
       var st=req?String(req.status||'none'):'none';
 
-      if(st==='pending'||st==='refused')return;
+      /* Ouverture automatique uniquement pour une première
+         adhésion ou un complément demandé : une demande déjà
+         envoyée reste bloquée, un adhérent déjà validé passe
+         par le renouvellement (bouton « Mon espace »). */
+      var access=adhesionAccessFor(st);
+
+      if(access.mode!=='free'&&access.mode!=='completion')return;
 
       if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
 
@@ -7251,6 +7832,11 @@ applyI18n();
 
 go('home');
 
+/* Version de l'application : le manifeste OTA embarqué est lu
+   au démarrage pour que le message de partage porte le numéro
+   de version, même hors connexion. */
+loadAppVersion();
+
 if(CLOUD_ON){
 
 import('./cloud.js')
@@ -7297,8 +7883,19 @@ window.UGTM.failed(err);
     var drawing=false, signed=false;
     var lastAdhesionUid=null;
 
+    function adhesionSession(){
+      if(typeof window.ugtmSession==='function'){
+        try{
+          var s=window.ugtmSession();
+          if(s)return s;
+        }catch(e){}
+      }
+      return {};
+    }
+
     function currentAdhesionUid(){
-      var user=(typeof S!=='undefined' && S.user) ? S.user : {};
+      var session=adhesionSession();
+      var user=session.user||((typeof S!=='undefined' && S.user) ? S.user : {});
       return user.uid ? String(user.uid) : '';
     }
 
@@ -7337,8 +7934,8 @@ window.UGTM.failed(err);
       if(state){
         var langText='Signature non renseignée';
         try{
-          if(typeof T==='function' && T().adhNoSignature){
-            langText=T().adhNoSignature;
+          if(typeof window.ugtmT==='function' && window.ugtmT().adhNoSignature){
+            langText=window.ugtmT().adhNoSignature;
           }
         }catch(e){}
         state.textContent=langText;
@@ -7378,7 +7975,7 @@ window.UGTM.failed(err);
           signed=true;
           var state=document.getElementById('adhSignState');
           if(state)state.textContent=
-            (typeof T==='function'?T().adhSigned:'Signature enregistrée');
+            (typeof window.ugtmT==='function'?window.ugtmT().adhSigned:'Signature enregistrée');
         });
 
         window.addEventListener('pointerup',function(){
@@ -7396,7 +7993,7 @@ window.UGTM.failed(err);
             signed=false;
             var state=document.getElementById('adhSignState');
             if(state)state.textContent=
-              (typeof T==='function'?T().adhNoSignature:'Signature non renseignée');
+              (typeof window.ugtmT==='function'?window.ugtmT().adhNoSignature:'Signature non renseignée');
           });
         }
       }catch(signatureError){
@@ -7433,15 +8030,15 @@ window.UGTM.failed(err);
       resetAdhesionForAccount(uid);
       if(!uid)return;
 
-      var member =
-        (typeof S!=='undefined' && S.member)
-          ? S.member
-          : {};
+      var session=adhesionSession();
 
-      var currentUser =
-        (typeof S!=='undefined' && S.user)
-          ? S.user
-          : {};
+      var member=
+        session.member
+        ||((typeof S!=='undefined' && S.member)?S.member:{});
+
+      var currentUser=
+        session.user
+        ||((typeof S!=='undefined' && S.user)?S.user:{});
 
       try{
         var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
@@ -7810,16 +8407,30 @@ window.UGTM.failed(err);
       if(submitting)return;
       submitting=true;
 
-      var t=(typeof T==='function')?T():{};
+      var t=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
 
       function adm(msg,ms){
-        if(typeof toast==='function')toast(msg,ms);
+        if(typeof window.ugtmToast==='function')window.ugtmToast(msg,ms);
+        else if(typeof toast==='function')toast(msg,ms);
       }
 
       /* Message d'état immédiat : quoi qu'il arrive ensuite, un retour
          s'affiche dès le clic (validation, téléversement, partage). */
       adm(t.adhProcessing||'Traitement de la demande en cours…',2500);
       setAdhStatus(t.adhProcessing||'Traitement de la demande en cours…');
+
+      /* Un dossier en attente de signature ou déjà traité ne peut pas
+         être soumis une seconde fois : la règle Firestore l'interdit
+         également (dernier rempart côté serveur). */
+      if(typeof window.adhesionAccess==='function'){
+        var access=window.adhesionAccess();
+        if(access.mode==='blocked'){
+          submitting=false;
+          setAdhStatus(access.message,false);
+          adm(access.message,5000);
+          return;
+        }
+      }
 
       var requiredFields=Array.from(form.querySelectorAll('[required]'));
       var missing=requiredFields.find(function(field){
@@ -7834,6 +8445,7 @@ window.UGTM.failed(err);
           if(chosen!=='renewal')missing=null;
         }
         if(missing){
+          submitting=false;
           missing.focus();
           setAdhStatus(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',false);
           adm(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',4000);
@@ -7842,6 +8454,7 @@ window.UGTM.failed(err);
       }
 
       if(!signed){
+        submitting=false;
         setAdhStatus(t.adhSignRequired||'Veuillez signer la fiche avant de continuer.',false);
         adm(t.adhSignRequired||'Veuillez signer la fiche avant de continuer.',3500);
         return;
@@ -7851,10 +8464,12 @@ window.UGTM.failed(err);
       var reason=renewalInput.value.trim();
       /* Un adhérent déjà accepté ne peut soumettre qu'un renouvellement. */
       if(window.ADH_RENEWAL_ONLY&&type!=='renewal'){
+        submitting=false;
         setAdhStatus(t.adhRenewalOnlyLock||'Votre adhésion est déjà validée : seul un renouvellement avec motif est possible.',false);
         return;
       }
       if(type==='renewal'&&!reason){
+        submitting=false;
         renewalInput.required=true;
         renewalInput.focus();
         setAdhStatus(t.adhRenewalReasonRequired||'Veuillez préciser le motif du renouvellement.',false);
@@ -7926,47 +8541,62 @@ window.UGTM.failed(err);
     });
   }
 
+  /* Ouverture du formulaire d'adhésion : la règle d'accès est
+     décidée par l'application (window.adhesionAccessFor) à partir
+     du statut à jour du dossier :
+     - demande déjà envoyée (pending) ou décision prise (refused) :
+       accès refusé (une nouvelle demande créerait un doublon) ;
+     - adhérent déjà validé : renouvellement uniquement (motif
+       obligatoire), le formulaire s'ouvre verrouillé ;
+     - complément demandé ou première adhésion : formulaire libre. */
+  function adhesionToast(msg,ms){
+    if(typeof window.ugtmToast==='function')window.ugtmToast(msg,ms);
+  }
+  function adhesionGoBack(){
+    if(typeof window.ugtmGo==='function')window.ugtmGo('me');
+  }
+
   document.addEventListener('click',function(e){
     var b=e.target.closest('[data-go="adhesion"]');
-    if(b){
-      if(typeof window.refreshMyAdhesionStatus==='function'){
-        try{
-          window.refreshMyAdhesionStatus(true).then(function(req){
-            var st=req?String(req.status||'none'):'none';
-            var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
-            var alreadyAdherent=(st==='accepted')||(memberActive&&st!=='needs_completion');
-            if(st==='pending'||st==='refused'){
-              toast(adhesionFormBlockedMessage(),5500);
-              go('me');
-              return;
-            }
-            if(alreadyAdherent){
-              toast(T().adhRenewalOnlyLock||'Votre adhésion est déjà active.',5500);
-              go('me');
-              return;
-            }
-            setTimeout(function(){
-              initDigitalAdhesion();
-              if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-            },150);
-          }).catch(function(){
-            setTimeout(function(){
-              initDigitalAdhesion();
-              if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-            },150);
-          });
-        }catch(errStatus){
-          setTimeout(function(){
-            initDigitalAdhesion();
-            if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-          },150);
+    if(!b)return;
+
+    function openForm(){
+      setTimeout(function(){
+        initDigitalAdhesion();
+        if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+      },150);
+    }
+
+    if(typeof window.refreshMyAdhesionStatus!=='function'){
+      openForm();
+      return;
+    }
+
+    try{
+      window.refreshMyAdhesionStatus(true).then(function(req){
+        var st=req?String(req.status||'none'):'none';
+        var access=(typeof window.adhesionAccessFor==='function')
+          ?window.adhesionAccessFor(st)
+          :{mode:'free',message:''};
+
+        if(access.mode==='blocked'){
+          adhesionToast(access.message,5500);
+          adhesionGoBack();
+          return;
         }
-      } else {
-        setTimeout(function(){
-          initDigitalAdhesion();
-          if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-        },150);
-      }
+
+        if(access.mode==='renewal'){
+          /* Adhérent déjà validé : le formulaire reste accessible
+             pour le renouvellement, verrouillé sur « renouvellement ». */
+          adhesionToast(access.message,5000);
+        }
+
+        openForm();
+      }).catch(function(){
+        openForm();
+      });
+    }catch(errStatus){
+      openForm();
     }
   });
 
@@ -7982,40 +8612,66 @@ window.UGTM.failed(err);
   /* Détection OTA : compare la version installée avec le manifeste Firebase Hosting.
      Affiche une bannière si une version plus récente est disponible.
      URL absolue + paramètre anti-cache : lit le manifeste distant, pas l'ancien fichier
-     embarqué dans l'APK. Le contrôle SHA-256 est conservé côté natif (UpdateManager.java). */
+     embarqué dans l'APK. Le contrôle SHA-256 est conservé côté natif (UpdateManager.java).
+     La version installée est celle du manifeste embarqué (www/update.json) ;
+     sans elle, le dernier versionCode connu en cache fait référence. */
   (function checkOTA(){
     var stored = parseInt(localStorage.getItem('ugtm_app_version_code') || '0', 10);
-    fetch('https://ugtm-fns-souss-massa.web.app/update.json?t=' + Date.now())
-    .then(function(r){return r.ok ? r.json() : null;})
-    .then(function(m){
-      if(!m || !m.versionCode) return;
-      var remote = parseInt(m.versionCode, 10);
-      if(remote > stored){
-        var el = document.createElement('div');
-        el.className = 'ota-banner';
-        el.innerHTML =
-          '<div class="ota-msg">Mise à jour disponible v'+(m.versionName||'')+' — '+(m.message||'')+'</div>'+
-          '<div class="ota-actions">'+
-          '<button class="ota-btn ota-install" id="otaUpdateBtn">Installer</button>'+
-          '<button class="ota-btn ota-dismiss" id="otaDismissBtn">Ignorer</button>'+
-          '</div>';
-        document.body.appendChild(el);
-        document.getElementById('otaUpdateBtn').onclick=function(){
-          if(m.apkUrl){
-            // Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
-            window.open(m.apkUrl,'_system');
-          }
-        };
-        document.getElementById('otaDismissBtn').onclick=function(){
-          el.hidden = true;
-        };
-      }
-    })
-    .catch(function(){});
+
+    /* Le manifeste embarqué donne la version réellement installée. */
+    if(typeof window.ugtmLoadAppVersion==='function'){
+      window.ugtmLoadAppVersion().then(function(){
+        stored=parseInt(localStorage.getItem('ugtm_app_version_code') || '0', 10);
+        checkRemote(stored);
+      });
+    }else{
+      checkRemote(stored);
+    }
+
+    function checkRemote(storedCode){
+      fetch('https://ugtm-fns-souss-massa.web.app/update.json?t=' + Date.now())
+      .then(function(r){return r.ok ? r.json() : null;})
+      .then(function(m){
+        if(!m || !m.versionCode) return;
+        var remote = parseInt(m.versionCode, 10);
+        if(remote > storedCode){
+          var el = document.createElement('div');
+          el.className = 'ota-banner';
+          var tt=(typeof window.ugtmT==='function')?window.ugtmT():{};
+          var escFn=(typeof window.ugtmEsc==='function')?window.ugtmEsc:function(v){
+            return String(v==null?'':v)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;')
+            .replace(/'/g,'&#39;');
+          };
+          el.innerHTML =
+            '<div class="ota-msg">'+escFn(String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
+              .replace('%1',m.versionName||'')
+              .replace('%2',m.message||''))+'</div>'+
+            '<div class="ota-actions">'+
+            '<button class="ota-btn ota-install" id="otaUpdateBtn">'+escFn(tt.otaInstall||'Installer')+'</button>'+
+            '<button class="ota-btn ota-dismiss" id="otaDismissBtn">'+escFn(tt.otaDismiss||'Ignorer')+'</button>'+
+            '</div>';
+          document.body.appendChild(el);
+          document.getElementById('otaUpdateBtn').onclick=function(){
+            if(m.apkUrl){
+              // Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
+              window.open(m.apkUrl,'_system');
+            }
+          };
+          document.getElementById('otaDismissBtn').onclick=function(){
+            el.hidden = true;
+          };
+        }
+      })
+      .catch(function(){});
+    }
   })();
 
 })();
-</style>
+</script>
 <style>
 .ota-banner{
   position:fixed;
