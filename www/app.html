@@ -3767,10 +3767,55 @@ $('lightboxImg').src='';
  
  $('attachClose').addEventListener('click',closeAttachModal);
  
- $('attachDownload').addEventListener('click',function(){
- if(!attachUrl)return;
+ $('attachDownload').addEventListener('click',async function(){
+ if(!attachUrl && !attachDataUri)return;
+ var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+ if(isNative&&window.Capacitor&&window.Capacitor.Plugins){
+  try{
+   var fs=window.Capacitor.Plugins.Filesystem;
+   var share=window.Capacitor.Plugins.Share;
+   if(fs&&share){
+    var ext='.bin';
+    if(attachName){
+     var m=attachName.match(/\.[a-zA-Z0-9]+$/);
+     if(m) ext=m[0];
+     else if(attachType&&attachType.indexOf('pdf')>-1) ext='.pdf';
+     else if(attachType&&attachType.indexOf('image')>-1){
+      if(attachType.indexOf('png')>-1) ext='.png';
+      else if(attachType.indexOf('jpeg')>-1||attachType.indexOf('jpg')>-1) ext='.jpg';
+      else ext='.jpg';
+     }
+    }
+    var base64Data=attachDataUri;
+    if(base64Data){
+     var comma=base64Data.indexOf(',');
+     if(comma>-1) base64Data=base64Data.slice(comma+1);
+    }
+    if(!base64Data && attachUrl){
+     // fallback rare
+    }
+    var fileName='piece-jointe-'+Date.now()+ext;
+    var dir=fs.DIRECTORY?fs.DIRECTORY.Documents:fs.DocumentsDirectory||'Documents';
+    await fs.writeFile({
+     path: fileName,
+     data: base64Data||'',
+     directory: dir,
+     encoding: fs.Encoding?fs.Encoding.UTF8:undefined
+    });
+    var uriRes=await fs.getUri({path:fileName,directory:dir});
+    await share.share({
+     title: attachName||'Pièce jointe',
+     text: attachName||'Pièce jointe',
+     url: uriRes.uri,
+     dialogTitle: 'Partager la pièce jointe'
+    });
+    return;
+   }
+  }catch(e){console.warn('Share natif échoué',e);}
+ }
+ // fallback web
  var a=document.createElement('a');
- a.href=attachUrl;
+ a.href=attachUrl||attachDataUri;
  a.download=attachName||'piece-jointe';
  document.body.appendChild(a);
  a.click();
@@ -3925,9 +3970,11 @@ function openUrl(url){
     les navigateurs bloquent les data: en navigation de premier plan. */
  var attachUrl='';
  var attachName='';
+ var attachDataUri='';
+ var attachType='';
  var attachTrigger=null;
  
- function openAttachModal(url,name,type){
+ function openAttachModal(url,name,type,dataUri){
  var body=$('attachBody');
  body.innerHTML='';
  if(type&&type.indexOf('image/')===0){
@@ -3948,6 +3995,8 @@ function openUrl(url){
  }
  }
  attachName=name||'';
+ attachType=type||'';
+ attachDataUri=dataUri||'';
  
  if(attachUrl){
  try{URL.revokeObjectURL(attachUrl);}catch(e){}
@@ -3969,6 +4018,9 @@ function openUrl(url){
  try{URL.revokeObjectURL(attachUrl);}catch(e){}
  attachUrl='';
  }
+ attachDataUri='';
+ attachType='';
+ attachName='';
  if(attachTrigger&&attachTrigger.focus)attachTrigger.focus();
  attachTrigger=null;
  }
@@ -3989,7 +4041,7 @@ function openUrl(url){
  }catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
  return;
  }
- openAttachModal(url,name||'',type);
+ openAttachModal(url,name||'',type,raw);
  setTimeout(function(){
  if($('attachModal').hidden&&url){
  try{URL.revokeObjectURL(url);}catch(e){}
