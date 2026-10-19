@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Télécharger l'application — UGTM Souss-Massa</title>
+<meta name="description" content="Page officielle de téléchargement de l'application mobile UGTM Souss-Massa (Fédération régionale de la Santé, Souss-Massa). Version, empreinte SHA-256 et lien de téléchargement officiel.">
+<meta name="theme-color" content="#B83268">
+<link rel="icon" href="../icons/favicon-32.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<style>
+:root{
+  --bg:#FFF7FA;
+  --surface:#FFFFFF;
+  --ink:#24191F;
+  --muted:#75656C;
+  --line:#EAD9E0;
+  --primary:#B83268;
+  --on-primary:#FFFFFF;
+  --accent:#D7A72C;
+  --on-accent:#241C08;
+  --soft:#FCECF3;
+  --ok-soft:#FCECF3;
+  --radius-s:8px;
+  --radius-m:12px;
+  --radius-l:16px;
+  --font-body:"IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+  --font-head:"Cairo","IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.65;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:960px;margin:0 auto;padding:0 18px}
+
+/* ---------- En-tête ---------- */
+.top{
+  background:var(--primary);
+  color:var(--on-primary);
+  padding:18px 0;
+  box-shadow:0 2px 10px rgba(36,25,31,.12);
+}
+.top .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;flex:1 1 320px;min-width:0}
+.brand img{width:54px;height:54px;border-radius:12px;background:#fff;padding:4px;flex-shrink:0}
+.brand p{margin:0;line-height:1.35}
+.org{font-weight:700;font-size:.95rem}
+.region{font-size:.85rem;opacity:.92}
+.lang{display:flex;gap:6px;background:rgba(255,255,255,.14);padding:4px;border-radius:999px}
+.lang button{
+  border:0;background:transparent;color:inherit;font:inherit;font-size:.85rem;font-weight:600;
+  padding:7px 15px;border-radius:999px;cursor:pointer;min-height:38px;
+}
+.lang button[aria-pressed="true"]{background:#fff;color:var(--primary)}
+
+/* ---------- Héros ---------- */
+.hero{padding:34px 0 10px;text-align:center}
+.kicker{
+  display:inline-block;margin:0 0 10px;padding:5px 14px;border-radius:999px;
+  background:var(--soft);color:var(--primary);font-weight:700;font-size:.8rem;
+}
+h1{font-family:var(--font-head);font-size:clamp(1.5rem,4.4vw,2.2rem);line-height:1.3;margin:0 0 12px}
+.lead{max-width:60ch;margin:0 auto 22px;color:var(--muted)}
+.actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--primary);color:var(--on-primary);
+  text-decoration:none;font-weight:700;font-size:1.02rem;
+  padding:14px 26px;border-radius:var(--radius-m);border:0;
+  min-height:52px;box-shadow:0 4px 14px rgba(184,50,104,.25);
+}
+.btn:hover{filter:brightness(1.06)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);box-shadow:none}
+.btn[aria-busy="true"]{opacity:.7;pointer-events:none}
+.meta{margin:0;color:var(--muted);font-size:.9rem}
+
+/* ---------- Cartes ---------- */
+section.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-l);
+  padding:22px;margin:22px 0;box-shadow:0 2px 8px rgba(36,25,31,.05);
+}
+h2{font-family:var(--font-head);font-size:1.15rem;margin:0 0 14px}
+h3{font-family:var(--font-head);font-size:1rem;margin:18px 0 8px}
+dl{margin:0;display:grid;gap:0}
+dl>div{
+  display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:6px 16px;
+  padding:11px 0;border-bottom:1px solid var(--line);
+}
+dl>div:last-child{border-bottom:0}
+dt{font-weight:700;color:var(--muted);font-size:.88rem}
+dd{margin:0;min-width:0}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.82rem;word-break:break-all}
+.badge{
+  display:inline-block;background:var(--soft);color:var(--primary);
+  font-weight:700;padding:2px 10px;border-radius:999px;font-size:.9rem;
+}
+.note{
+  margin:14px 0 0;padding:12px 14px;border-inline-start:4px solid var(--accent);
+  background:#FFFBF0;border-radius:var(--radius-s);font-size:.88rem;color:var(--muted);
+}
+ol.steps{margin:0;padding-inline-start:22px}
+ol.steps li{margin-bottom:10px}
+ol.steps li:last-child{margin-bottom:0}
+ol.steps b{color:var(--primary)}
+
+/* ---------- QR ---------- */
+.qr{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.qr .txt{flex:1 1 240px}
+.qr img{width:190px;height:190px;flex-shrink:0;border:1px solid var(--line);border-radius:var(--radius-m);background:#fff;padding:10px}
+
+/* ---------- Pied ---------- */
+footer{
+  margin-top:30px;padding:26px 0 34px;background:#fff;
+  border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;
+}
+footer p{margin:0 0 6px}
+footer b{color:var(--ink)}
+
+@media (max-width:560px){
+  dl>div{grid-template-columns:1fr}
+  .qr{justify-content:center;text-align:center}
+  .btn{width:100%;justify-content:center}
+}
+@media (prefers-reduced-motion:no-preference){
+  .btn{transition:filter .15s ease}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <img src="../icons/ugtm-mark.svg" alt="" width="54" height="54">
+      <div>
+        <p class="org" data-i18n="org1"></p>
+        <p class="org" data-i18n="org2"></p>
+        <p class="region" data-i18n="region"></p>
+      </div>
+    </div>
+    <div class="lang" role="group" aria-label="Langue / اللغة">
+      <button type="button" data-lang="fr" aria-pressed="true">Français</button>
+      <button type="button" data-lang="ar" aria-pressed="false">العربية</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <p class="kicker" data-i18n="kicker"></p>
+    <h1 data-i18n="title"></h1>
+    <p class="lead" data-i18n="lead"></p>
+    <div class="actions">
+      <a class="btn" id="dlBtn" href="https://github.com/abaray66-bit/Ugtm-apk/releases/latest" rel="noopener" aria-busy="true" data-i18n="download"></a>
+      <a class="btn ghost" href="https://github.com/abaray66-bit/Ugtm-apk/releases/latest" target="_blank" rel="noopener" data-i18n="releases"></a>
+    </div>
+    <p class="meta" id="meta" data-i18n="loading"></p>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="infoTitle"></h2>
+    <dl>
+      <div>
+        <dt data-i18n="kVersion"></dt>
+        <dd><span class="badge" id="vVersion">—</span></dd>
+      </div>
+      <div>
+        <dt data-i18n="kCode"></dt>
+        <dd id="vCode">—</dd>
+      </div>
+      <div>
+        <dt data-i18n="kSha"></dt>
+        <dd class="mono" id="vSha">—</dd>
+      </div>
+      <div>
+        <dt data-i18n="kUrl"></dt>
+        <dd class="mono" id="vUrl">—</dd>
+      </div>
+    </dl>
+    <p class="note" id="infoNote" data-i18n="infoNote"></p>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="installTitle"></h2>
+    <ol class="steps">
+      <li data-i18n="step1"></li>
+      <li data-i18n="step2"></li>
+      <li data-i18n="step3"></li>
+      <li data-i18n="step4"></li>
+      <li data-i18n="step5"></li>
+    </ol>
+    <p class="note" data-i18n="installNote"></p>
+  </section>
+
+  <section class="card qr">
+    <div class="txt">
+      <h2 data-i18n="qrTitle"></h2>
+      <p class="lead" style="margin:0" data-i18n="qrText"></p>
+    </div>
+    <img src="qr-telechargement.svg" alt="QR code de la page de téléchargement" width="190" height="190">
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b data-i18n="org1"></b> — <b data-i18n="org2"></b></p>
+    <p data-i18n="region"></p>
+    <p><span data-i18n="footerApp"></span> <span id="footerVersion"></span></p>
+    <p data-i18n="footerHost"></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================
+     TEXTES (FR / AR)
+     ========================= */
+  var I18N={
+    fr:{
+      org1:"Union Générale des Travailleurs du Maroc",
+      org2:"Union Nationale de la Santé",
+      region:"Fédération régionale de la Santé — Souss-Massa",
+      kicker:"Application mobile officielle",
+      title:"Télécharger l'application UGTM Souss-Massa",
+      lead:"Les communiqués de la fédération, l'agenda des rencontres, les signalements et l'espace adhérent : tout l'application UGTM Souss-Massa, en français et en arabe.",
+      download:"Télécharger l'APK",
+      releases:"Voir les versions publiées",
+      loading:"Lecture de la version publiée…",
+      infoTitle:"Informations sur la version",
+      kVersion:"Version",
+      kCode:"Code de version (mise à jour)",
+      kSha:"Empreinte SHA-256 du fichier",
+      kUrl:"Adresse du fichier APK",
+      infoNote:"Cette empreinte est celle du fichier publié dans la release officielle. L'application contrôle automatiquement le fichier lors d'une mise à jour.",
+      installTitle:"Notice d'installation sur Android",
+      step1:"Appuyez sur « Télécharger l'APK » ci-dessus : le fichier officiel est enregistré dans vos téléchargements.",
+      step2:"Ouvrez le fichier téléchargé sur votre téléphone.",
+      step3:"Android affiche un avertissement de sécurité : autorisez l'installation depuis cette application (Paramètres → Applications → Accès spécial → Installer des applications inconnues), puis revenez au fichier.",
+      step4:"Confirmez l'installation. L'application UGTM Souss-Massa s'ouvre ensuite.",
+      step5:"Connectez-vous avec votre compte Google pour accéder à « Mon espace », aux communiqués réservés aux adhérents et à votre carte numérique.",
+      installNote:"Le fichier APK est signé par l'Union Nationale de la Santé. N'installez que le fichier téléchargé depuis cette page ou depuis les releases officielles du projet.",
+      qrTitle:"Scanner le QR code",
+      qrText:"Ouvrez l'appareil photo de votre téléphone et scannez ce QR code pour accéder à la page de téléchargement.",
+      footerApp:"Application UGTM Souss-Massa — UGTM Souss-Massa — version",
+      footerHost:"Page officielle hébergée par Firebase Hosting. Le fichier APK est publié dans les releases officielles du projet sur GitHub.",
+      manifestError:"Impossible de lire le manifeste de version : le bouton renvoie vers la liste des versions publiées.",
+      ready:"Version %1 — fichier APK pour Android"
+    },
+    ar:{
+      org1:"الاتحاد العام للشغالين بالمغرب",
+      org2:"الجامعة الوطنية للصحة",
+      region:"الجامعة الوطنية للصحة الجهوية — جهة سوس ماسة",
+      kicker:"التطبيق الرسمي",
+      title:"تحميل تطبيق الاتحاد العام للشغالين — جهة سوس ماسة",
+      lead:"بلاغات الفيدرالية، برنامج اللقاءات، التبليغات وفضاء المنخرطين: تطبيق الاتحاد العام للشغالين — جهة سوس ماسة، بالفرنسية والعربية.",
+      download:"تحميل ملف التطبيق (APK)",
+      releases:"عرض النسخ المنشورة",
+      loading:"جارٍ قراءة النسخة المنشورة…",
+      infoTitle:"معلومات عن النسخة",
+      kVersion:"النسخة",
+      kCode:"رمز النسخة (التحديث)",
+      kSha:"بصمة SHA-256 للملف",
+      kUrl:"عنوان ملف التطبيق",
+      infoNote:"هذه البصمة تخص الملف المنشور في النسخة الرسمية. يتحقق التطبيق من الملف تلقائيًا عند كل تحديث.",
+      installTitle:"تعليمات التثبيت على أندرويد",
+      step1:"اضغط على «تحميل ملف التطبيق» أعلاه: يُحفظ الملف الرسمي في مجلد التنزيلات.",
+      step2:"افتح الملف الذي تم تنزيله على هاتفك.",
+      step3:"يعرض أندرويد تحذيرًا أمنيًا: اسمحوا بالتثبيت من هذا التطبيق (الإعدادات ← التطبيقات ← وصول خاص ← تثبيت تطبيقات غير معروفة)، ثم عدوا إلى الملف.",
+      step4:"أكّدوا التثبيت. بعدها يُفتح تطبيق الاتحاد العام للشغالين — جهة سوس ماسة.",
+      step5:"سجّلوا الدخول بحساب Google للوصول إلى «فضائي»، والبلاغات المخصصة للمنخرطين وبطاقة المنخرط الرقمية.",
+      installNote:"ملف التطبيق موقّع من طرف الجامعة الوطنية للصحة. لا تثبّتوا إلا الملف المُنزَّل من هذه الصفحة أو من النسخ الرسمية للمشروع.",
+      qrTitle:"مسح رمز QR",
+      qrText:"افتحوا كاميرا الهاتف وامسحوا رمز QR للوصول إلى صفحة التحميل.",
+      footerApp:"تطبيق الاتحاد العام للشغالين — جهة سوس ماسة — النسخة",
+      footerHost:"صفحة رسمية مستضافة على Firebase Hosting. يُنشر ملف التطبيق ضمن النسخ الرسمية للمشروع على GitHub.",
+      manifestError:"تعذّر قراءة بيان النسخة: الزر يودع إلى قائمة النسخ المنشورة.",
+      ready:"النسخة %1 — ملف تطبيق لأندرويد"
+    }
+  };
+
+  var PAGE_URL="https://ugtm-fns-souss-massa.web.app/telecharger";
+  var RELEASES_URL="https://github.com/abaray66-bit/Ugtm-apk/releases/latest";
+  var MANIFEST_URLS=["../update.json","/update.json","update.json"];
+
+  var lang="fr";
+  var manifest=null;
+
+  function $(id){return document.getElementById(id);}
+
+  function t(key){
+    var d=I18N[lang]||I18N.fr;
+    return d[key]!==undefined?d[key]:(I18N.fr[key]||key);
+  }
+
+  /* =========================
+     LANGUE (FR / AR + RTL)
+     ========================= */
+  function applyLang(next){
+    lang=(next==="ar")?"ar":"fr";
+    try{localStorage.setItem("ugtm-dl-lang",lang);}catch(e){}
+
+    var html=document.documentElement;
+    html.setAttribute("lang",lang);
+    html.setAttribute("dir",lang==="ar"?"rtl":"ltr");
+
+    var nodes=document.querySelectorAll("[data-i18n]");
+    for(var i=0;i<nodes.length;i++){
+      nodes[i].textContent=t(nodes[i].getAttribute("data-i18n"));
+    }
+
+    var btns=document.querySelectorAll("[data-lang]");
+    for(var j=0;j<btns.length;j++){
+      btns[j].setAttribute("aria-pressed",btns[j].getAttribute("data-lang")===lang?"true":"false");
+    }
+
+    renderManifestInfo();
+  }
+
+  /* =========================
+     MANIFESTE DE VERSION
+     ========================= */
+  function fetchManifest(){
+    var i=0;
+
+    function attempt(){
+      if(i>=MANIFEST_URLS.length)return Promise.resolve(null);
+
+      var url=MANIFEST_URLS[i++];
+
+      return fetch(url,{cache:"no-store"})
+      .then(function(r){return r.ok?r.json():null;})
+      .catch(function(){return null;})
+      .then(function(m){
+        if(m&&m.apkUrl&&m.versionName)return m;
+        return attempt();
+      });
+    }
+
+    return attempt();
+  }
+
+  function renderManifestInfo(){
+    var btn=$("dlBtn");
+    var meta=$("meta");
+    var note=$("infoNote");
+    var fv=$("footerVersion");
+
+    if(!manifest){
+      if(btn){
+        btn.setAttribute("href",RELEASES_URL);
+        btn.setAttribute("aria-busy","false");
+        btn.setAttribute("data-i18n","download");
+        btn.textContent=t("download");
+      }
+      if(meta)meta.textContent=t("manifestError");
+      if(note)note.textContent=t("manifestError");
+      if(fv)fv.textContent="";
+      return;
+    }
+
+    if(btn){
+      btn.setAttribute("href",manifest.apkUrl);
+      btn.setAttribute("aria-busy","false");
+      btn.setAttribute("type","application/vnd.android.package-archive");
+      btn.textContent=t("download");
+    }
+
+    if(meta)meta.textContent=String(t("ready")).replace("%1",manifest.versionName);
+    if($("vVersion"))$("vVersion").textContent=manifest.versionName;
+    if($("vCode"))$("vCode").textContent=manifest.versionCode!==undefined?String(manifest.versionCode):"—";
+    if($("vSha"))$("vSha").textContent=manifest.sha256||"—";
+    if($("vUrl"))$("vUrl").textContent=manifest.apkUrl||"—";
+    if(note)note.textContent=t("infoNote");
+    if(fv)fv.textContent=manifest.versionName||"";
+  }
+
+  /* =========================
+     DÉMARRAGE
+     ========================= */
+  function init(){
+    var stored=null;
+    try{stored=localStorage.getItem("ugtm-dl-lang");}catch(e){}
+    if(stored!=="ar"&&stored!=="fr"){
+      stored=(navigator.language||"fr").toLowerCase().indexOf("ar")===0?"ar":"fr";
+    }
+    applyLang(stored);
+
+    var langBtns=document.querySelectorAll("[data-lang]");
+    for(var i=0;i<langBtns.length;i++){
+      langBtns[i].addEventListener("click",function(e){
+        applyLang(e.currentTarget.getAttribute("data-lang"));
+      });
+    }
+
+    fetchManifest()
+    .then(function(m){manifest=m;renderManifestInfo();})
+    .catch(function(){renderManifestInfo();});
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",init);
+  }else{
+    init();
+  }
+})();
+</script>
+</body>
+</html>

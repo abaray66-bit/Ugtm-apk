@@ -60,22 +60,25 @@ try {
   fail('www/cloud.js', e.message);
 }
 
-/* --- Scripts en ligne de app.html --- */
-try {
-  var html = read('www/app.html');
-  var re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g;
-  var m;
-  var n = 0;
-  while ((m = re.exec(html)) !== null) {
-    n += 1;
-    var body = m[1];
-    if (!body.trim()) continue;
-    checkJs('www/app.html <script #' + n + '>', body, '.js');
+/* --- Scripts en ligne des pages HTML --- */
+var HTML_FILES = ['www/app.html', 'www/telecharger/index.html'];
+HTML_FILES.forEach(function (rel) {
+  try {
+    var html = read(rel);
+    var re = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g;
+    var m;
+    var n = 0;
+    while ((m = re.exec(html)) !== null) {
+      n += 1;
+      var body = m[1];
+      if (!body.trim()) continue;
+      checkJs(rel + ' <script #' + n + '>', body, '.js');
+    }
+    if (n === 0) fail(rel, 'aucun <script> en ligne détecté');
+  } catch (e) {
+    fail(rel, e.message);
   }
-  if (n === 0) fail('www/app.html', 'aucun <script> en ligne détecté');
-} catch (e) {
-  fail('www/app.html', e.message);
-}
+});
 
 /* --- Fichiers JSON --- */
 [
@@ -136,17 +139,17 @@ try {
   // plusieurs blocs <script> (app principale + parcours d'adhésion).
   var mainScript = scripts.join('\n');
 
-  function dictBody(name) {
-    var open = mainScript.search(new RegExp('(?:^|\\n)[ \\t]*' + name + '\\s*:\\s*\\{'));
+  function dictBody(source, name) {
+    var open = source.search(new RegExp('(?:^|\\n)[ \\t]*' + name + '\\s*:\\s*\\{'));
     if (open < 0) return null;
-    open = mainScript.indexOf('{', open);
+    open = source.indexOf('{', open);
     var depth = 0;
-    for (var i = open; i < mainScript.length; i++) {
-      var ch = mainScript[i];
+    for (var i = open; i < source.length; i++) {
+      var ch = source[i];
       if (ch === '{') depth++;
       else if (ch === '}') {
         depth--;
-        if (depth === 0) return mainScript.slice(open, i + 1);
+        if (depth === 0) return source.slice(open, i + 1);
       }
     }
     return null;
@@ -162,8 +165,8 @@ try {
     return out;
   }
 
-  var frBody = dictBody('fr');
-  var arBody = dictBody('ar');
+  var frBody = dictBody(mainScript, 'fr');
+  var arBody = dictBody(mainScript, 'ar');
   if (!frBody || !arBody) {
     fail('i18n app.html', 'dictionnaires fr/ar introuvables');
   } else {
@@ -196,6 +199,72 @@ try {
   }
 } catch (e) {
   fail('i18n app.html', e.message);
+}
+
+/* --- Parité des traductions (page de téléchargement) ---
+   La page officielle de téléchargement est bilingue FR/AR : une clé
+   absente d'un dictionnaire afficherait le nom de la clé en clair. */
+try {
+  var dlHtml = read('www/telecharger/index.html');
+  var dlScripts = [];
+  var dlRe = /<script(?![^>]*\ssrc=)[^>]*>([\s\S]*?)<\/script>/g;
+  var dm;
+  while ((dm = dlRe.exec(dlHtml)) !== null) {
+    if (dm[1].trim()) dlScripts.push(dm[1]);
+  }
+  var dlScript = dlScripts.join('\n');
+
+  function dlDictBody(name) {
+    var open = dlScript.search(new RegExp('(?:^|[\\n,{])[ \\t]*' + name + '\\s*:\\s*\\{'));
+    if (open < 0) return null;
+    open = dlScript.indexOf('{', open);
+    var depth = 0;
+    for (var i = open; i < dlScript.length; i++) {
+      var ch = dlScript[i];
+      if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) return dlScript.slice(open, i + 1);
+      }
+    }
+    return null;
+  }
+
+  function dlKeysOf(body) {
+    var out = [];
+    var re = /(?:^|[{,\n])[ \t]*([A-Za-z_$][\w$]*)[ \t]*:/g;
+    var m;
+    while ((m = re.exec(body)) !== null) out.push(m[1]);
+    return out;
+  }
+
+  var dlFr = dlDictBody('fr');
+  var dlAr = dlDictBody('ar');
+  if (!dlFr || !dlAr) {
+    fail('i18n telecharger', 'dictionnaires fr/ar introuvables');
+  } else {
+    var dlFrSet = {};
+    dlKeysOf(dlFr).forEach(function (k) { dlFrSet[k] = true; });
+    var dlArSet = {};
+    dlKeysOf(dlAr).forEach(function (k) { dlArSet[k] = true; });
+
+    var dlUsed = {};
+    function dlUse(k) { if (k) dlUsed[k] = true; }
+    var dim;
+    var dlI18nRe = /data-i18n="([^"]+)"/g;
+    while ((dim = dlI18nRe.exec(dlHtml)) !== null) dlUse(dim[1]);
+    var dlCallRe = /\bt\(\s*["']([A-Za-z0-9_]+)["']\s*\)/g;
+    while ((dim = dlCallRe.exec(dlScript)) !== null) dlUse(dim[1]);
+
+    var dlMissFr = Object.keys(dlUsed).filter(function (k) { return !dlFrSet[k]; });
+    var dlMissAr = Object.keys(dlUsed).filter(function (k) { return !dlArSet[k]; });
+
+    if (dlMissFr.length) fail('i18n telecharger fr', 'clés utilisées absentes : ' + dlMissFr.join(', '));
+    else if (dlMissAr.length) fail('i18n telecharger ar', 'clés utilisées absentes : ' + dlMissAr.join(', '));
+    else ok('i18n telecharger/index.html : ' + Object.keys(dlUsed).length + ' clés utilisées présentes en fr et ar');
+  }
+} catch (e) {
+  fail('i18n telecharger', e.message);
 }
 
 if (failures) {
