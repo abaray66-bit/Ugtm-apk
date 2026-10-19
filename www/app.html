@@ -3126,7 +3126,7 @@ input[type=file]::file-selector-button{
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button><button class="btn ghost small" id="attachDownloadHead" type="button" data-i18n="attachDownload">↓ Télécharger</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -3944,23 +3944,39 @@ $('lightboxImg').src='';
  $('attachClose').addEventListener('click',closeAttachModal);
  
 $('attachDownload').addEventListener('click',function(){
- if(!attachUrl)return;
- var a=document.createElement('a');
- a.href=attachUrl;
- a.download=attachName||'piece-jointe';
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
+ if(!attachData && !attachUrl)return;
+ // Try native download with Capacitor if available
+ var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+ var plugins=window.Capacitor&&window.Capacitor.Plugins;
+ if(isNative && plugins && plugins.Filesystem && plugins.Share && attachData){
+  try{
+   var raw=attachData;
+   var comma=raw.indexOf(',');
+   if(comma>0){
+    var head=raw.slice(0,comma);
+    var payload=raw.slice(comma+1);
+    var isB64=head.indexOf(';base64')>-1;
+    var base64=isB64?payload:(function(){try{return btoa(decodeURIComponent(payload));}catch(e){return payload;}})();
+    var type=head.replace(/^data:/,'').split(';')[0]||'application/octet-stream';
+    var fname=(attachName||'piece-jointe');
+    plugins.Filesystem.writeFile({path:fname, data:base64, directory:plugins.Filesystem.Directory.Documents, encoding:plugins.Filesystem.Encoding.Base64}).then(function(r){
+     return plugins.Share.share({url:r.uri, title:fname});
+    }).catch(function(e){ console.warn(e); fallbackDownload(); });
+    return;
+   }
+  }catch(e){ console.warn(e); }
+ }
+ fallbackDownload();
+ function fallbackDownload(){
+  var a=document.createElement('a');
+  a.href=attachUrl||attachData;
+  a.download=attachName||'piece-jointe';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+ }
 });
-$('attachDownloadHead').addEventListener('click',function(){
- if(!attachUrl)return;
- var a=document.createElement('a');
- a.href=attachUrl;
- a.download=attachName||'piece-jointe';
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
-});
+
  
  document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
@@ -4094,7 +4110,11 @@ function openUrl(url){
  /* Ouvre un contenu encodé (data:...) dans un nouvel onglet via une URL blob :
     les navigateurs bloquent les data: en navigation de premier plan. */
  var attachUrl='';
+ var attachType='';
+ var attachData='';
  var attachName='';
+ var attachType='';
+ var attachData='';
  var attachTrigger=null;
  
  function openAttachModal(url,name,type){
@@ -4139,6 +4159,9 @@ function openUrl(url){
  try{URL.revokeObjectURL(attachUrl);}catch(e){}
  attachUrl='';
  }
+ attachData='';
+ attachType='';
+ attachName='';
  if(attachTrigger&&attachTrigger.focus)attachTrigger.focus();
  attachTrigger=null;
  }
@@ -4156,6 +4179,8 @@ function openUrl(url){
  var arr=new Uint8Array(binary.length);
  for(var i=0;i<binary.length;i++)arr[i]=binary.charCodeAt(i);
  url=URL.createObjectURL(new Blob([arr],{type:type}));
+ attachData=raw;
+ attachType=type;
  }catch(err){toast("Impossible d'ouvrir la pièce jointe.",4000);
  return;
  }
