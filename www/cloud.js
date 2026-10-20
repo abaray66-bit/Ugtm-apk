@@ -1604,6 +1604,20 @@ var admin = {
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     });
+  },
+
+  /* Suppression définitive d'un dossier d'adhésion (administrateur
+     général seulement — cf. firestore.rules). Le PDF officiel rangé à
+     part est effacé en premier : sans cela, le dossier supprimé
+     laisserait un PDF signé et un état « signée électroniquement »
+     orphelins. */
+  deleteAdhesion: function(uid){
+    var key = String(uid || '');
+    return deleteDoc(doc(db, 'adhesionDocuments', key))
+      .catch(function(){})
+      .then(function(){
+        return deleteDoc(doc(db, 'adhesionRequests', key));
+      });
   }
 
 };
