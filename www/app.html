@@ -2416,21 +2416,38 @@ body {
   color:var(--primary)
 }
 
+/* En mode sombre, --primary sur --surface descend à 2,77:1
+   (insuffisant pour un texte de 15 px). On emploie --link, déjà
+   défini pour les liens, qui conserve l'identité rose du titre
+   avec un contraste suffisant. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) #s-home .hero h1{
+    color:var(--link)
+  }
+}
+
+:root[data-theme="dark"] #s-home .hero h1{
+  color:var(--link)
+}
+
+/* Séparateur dégradé au-dessus des publications récentes.
+   Le filet est peint en fond du <ul> et non via `height:1px` :
+   cette ancienne valeur écrasait la boîte de la liste (hauteur
+   1 px) et tronquait l'affichage des publications. */
 #s-home .list {
-  right: 20px;
-  bottom: 0;
-  height: 1px;
-  background: linear-gradient(
+  margin-top: 18px;
+  border-top-color: transparent;
+  background-image: linear-gradient(
     90deg,
     transparent,
     rgba(201,155,74,.5),
     rgba(184,50,104,.55),
     transparent
   );
-}
-
-#s-home .list {
-  margin-top: 18px;
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-size: 100% 1px;
+  background-origin: border-box;
 }
 
 /* ---------- Lists / cards ---------- */
