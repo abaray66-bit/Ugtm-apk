@@ -208,6 +208,88 @@ jobs:
           ls "$RES"/mipmap-*/ic_launcher.png
 
       # ==========================================================
+      # VERSION OTA + MANIFESTE EMBARQUÉ
+      # Le manifeste embarqué dans l'APK doit porter la version
+      # installée (versionCode == versionName), sinon l'app
+      # compare en boucle le manifeste distant au manifeste
+      # embarqué et affiche indéfiniment « mise à jour disponible »
+      # (10545 > 10544). L'empreinte SHA-256 définitive est
+      # injectée après le build par l'étape « Publication OTA
+      # automatique (update.json) », qui publie le même fichier.
+      # ==========================================================
+
+      - name: Préparer le manifeste OTA embarqué
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+          import re
+
+          version = json.loads(
+              Path("package.json").read_text(encoding="utf-8")
+          )["version"].strip()
+
+          m = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", version)
+          if not m:
+              raise SystemExit(f"Version invalide : {version}")
+
+          major, minor, patch = (int(g) for g in m.groups())
+          version_code = major * 10000 + minor * 100 + patch
+
+          repository = os.environ.get(
+              "GITHUB_REPOSITORY", "abaray66-bit/Ugtm-apk"
+          )
+
+          apk_url = (
+              f"https://github.com/{repository}/releases/download/"
+              f"v{version}/app-release.apk"
+          )
+
+          manifest = {
+              "versionCode": version_code,
+              "versionName": version,
+              "apkUrl": apk_url,
+              "sha256": "",
+              "message": (
+                  "Une nouvelle version de l'application UGTM "
+                  "Souss-Massa est disponible."
+              ),
+          }
+
+          assert manifest["versionCode"] > 0
+          assert manifest["versionName"]
+          assert manifest["apkUrl"].startswith("https://")
+
+          path = Path("www/update.json")
+          path.write_text(
+              json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+
+          checked = json.loads(path.read_text(encoding="utf-8"))
+          assert checked == manifest
+
+          with open(os.environ["GITHUB_ENV"], "a") as env:
+              env.write(f"UGTM_VERSION={version}\n")
+              env.write(f"UGTM_VERSION_CODE={version_code}\n")
+              env.write(f"UGTM_VERSION_NAME={version}\n")
+
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a") as f:
+                  f.write(
+                      f"Manifeste OTA embarqué : versionCode {version_code}"
+                      f" / versionName \"{version}\"\n"
+                  )
+
+          print("Manifeste OTA embarqué :")
+          print(json.dumps(checked, indent=2, ensure_ascii=False))
+          PY
+
+      # ==========================================================
       # CAPACITOR SYNC
       # ==========================================================
 
@@ -1010,42 +1092,6 @@ jobs:
             android/app/build/outputs/apk/release/app-release.apk
             android/app/build/outputs/apk/release/app-release.apk.sha256
           if-no-files-found: error
-
-      # ==========================================================
-      # VERSION OTA (calcul partagé)
-      # ==========================================================
-
-      - name: Calculer la version OTA
-        run: |
-          set -e
-
-          python3 - <<'PY2'
-          from pathlib import Path
-          import json
-          import os
-          import re
-
-          version = json.loads(
-              Path("package.json").read_text(encoding="utf-8")
-          )["version"].strip()
-
-          m = re.match(r"^(\d+)\.(\d+)\.(\d+)$", version)
-          if not m:
-              raise SystemExit(f"Version invalide : {version}")
-
-          major, minor, patch = (int(g) for g in m.groups())
-          version_code = major * 10000 + minor * 100 + patch
-
-          with open(os.environ["GITHUB_ENV"], "a") as env:
-              env.write(f"UGTM_VERSION={version}\n")
-              env.write(f"UGTM_VERSION_CODE={version_code}\n")
-              env.write(f"UGTM_VERSION_NAME={version}\n")
-
-          print(
-              f"OTA : versionName {version} / "
-              f"versionCode {version_code}"
-          )
-          PY2
 
       # ==========================================================
       # RELEASE GitHub (l'APK de update.json y est attaché)

@@ -13,6 +13,7 @@
    ============================================================ */
 
 import test, { after, before } from 'node:test';
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   initializeTestEnvironment,
@@ -253,6 +254,9 @@ test('renvoi après complément : le dossier signé repasse en attente', async (
   // 4) Le vrai renvoi — dossier seul, comme dans submitAdhesion — est accepté.
   //    Le membre doit réécrire TOUS les champs de niveau supérieur (adhesionTopKeys)
   //    car les règles exigent hasAll(adhesionTopKeys) + hasOnly(adhesionTopKeys).
+  //    Comme dans submitAdhesion, la signature du responsable de la
+  //    soumission précédente est VIDÉE : deux cases au total (celle de
+  //    l'adhérent + celle du responsable à valider).
   const beforeSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
   const before = beforeSnap.data();
   const updateData = {
@@ -263,13 +267,20 @@ test('renvoi après complément : le dossier signé repasse en attente', async (
     signature: 'data:image/png;base64,UmVzb21pbg==',
     status: 'pending',
     adminNote: '',
-    adminSignature: before.adminSignature || '',
-    signedBy: before.signedBy || '',
-    signedAt: before.signedAt,
+    adminSignature: '',
+    signedBy: '',
+    signedAt: '',
     createdAt: before.createdAt,
     updatedAt: serverTimestamp()
   };
   await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), updateData));
+
+  // 5) Le dossier repris ne porte plus que la signature de l'adhérent.
+  const afterSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
+  const after = afterSnap.data();
+  assert.equal(after.adminSignature, '');
+  assert.equal(after.signedBy, '');
+  assert.equal(after.status, 'pending');
 });
 
 test('le renvoi est refusé tant que le dossier est en attente (pending)', async () => {
@@ -312,6 +323,10 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
 
   const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
 
+  // État du dossier juste après l'acceptation (signatures du responsable).
+  const beforeSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
+  const before = beforeSnap.data();
+
   // 2) Un renouvellement sans motif est refusé (motif exigé).
   await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
     application: applicationPayload('agadir', { type: 'renewal', reason: '' }),
@@ -334,12 +349,53 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
   // 4) L'adhérent ne peut pas écrire le PDF officiel (statut accepted).
   await assertFails(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
 
-  // 5) Le vrai renouvellement — dossier seul, comme dans submitAdhesion —
+  // 5) Un renouvellement qui CONSERVE l'ancienne signature du responsable
+  //    est refusé : le membre ne peut ni la garder ni en forger une — la
+  //    nouvelle soumission repart avec UNE seule signature, la sienne.
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    uid: before.uid,
+    email: before.email,
+    province: before.province,
+    application: applicationPayload('agadir', {
+      type: 'renewal',
+      reason: 'Renouvellement annuel 2026-2027',
+      phone: '0633333333'
+    }),
+    signature: 'data:image/png;base64,Um52ZWw=',
+    status: 'pending',
+    adminNote: '',
+    adminSignature: before.adminSignature,
+    signedBy: before.signedBy,
+    signedAt: before.signedAt,
+    createdAt: before.createdAt,
+    updatedAt: serverTimestamp()
+  }));
+
+  // 6) Idem avec une signature forgée par l'adhérent : refusée.
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+    uid: before.uid,
+    email: before.email,
+    province: before.province,
+    application: applicationPayload('agadir', {
+      type: 'renewal',
+      reason: 'Renouvellement annuel 2026-2027',
+      phone: '0633333333'
+    }),
+    signature: 'data:image/png;base64,Um52ZWw=',
+    status: 'pending',
+    adminNote: '',
+    adminSignature: 'data:image/png;base64,Zm9yZ2Vk',
+    signedBy: 'admin-uid',
+    signedAt: serverTimestamp(),
+    createdAt: before.createdAt,
+    updatedAt: serverTimestamp()
+  }));
+
+  // 7) Le vrai renouvellement — dossier seul, comme dans submitAdhesion —
   //    est accepté : motif présent, type renewal, statut pending.
   //    Le membre doit réécrire TOUS les champs de niveau supérieur (adhesionTopKeys)
   //    car les règles exigent hasAll(adhesionTopKeys) + hasOnly(adhesionTopKeys).
-  const beforeSnap = await getDoc(doc(db, 'adhesionRequests', ALICE));
-  const before = beforeSnap.data();
+  //    La signature du responsable précédent est vidée (submitAdhesion).
   const updateData = {
     uid: before.uid,
     email: before.email,
@@ -352,13 +408,20 @@ test('renouvellement après acceptation : dossier + PDF remis en attente', async
     signature: 'data:image/png;base64,Um52ZWw=',
     status: 'pending',
     adminNote: '',
-    adminSignature: before.adminSignature || '',
-    signedBy: before.signedBy || '',
-    signedAt: before.signedAt,
+    adminSignature: '',
+    signedBy: '',
+    signedAt: '',
     createdAt: before.createdAt,
     updatedAt: serverTimestamp()
   };
   await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), updateData));
+
+  // 8) Le dossier renouvelé ne porte plus que la signature de l'adhérent :
+  //    le responsable doit signer à nouveau pour le valider.
+  const renewed = (await getDoc(doc(db, 'adhesionRequests', ALICE))).data();
+  assert.equal(renewed.adminSignature, '');
+  assert.equal(renewed.signedBy, '');
+  assert.equal(renewed.status, 'pending');
 });
 
 test('le renouvellement n’est pas possible depuis un dossier en attente (pending)', async () => {

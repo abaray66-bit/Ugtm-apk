@@ -4,7 +4,7 @@
 window.APP_DATA = {
   // Titres et informations générales
   appTitle: "UGTM Souss-Massa",
-  appSubtitle: "Fédération régionale de la Santé",
+  appSubtitle: "Fédération nationale de la Santé",
   appDescription: "Plateforme de communication pour les adhérents et militants",
 
   // Firebase - Activé pour les comptes et administration
@@ -40,7 +40,7 @@ window.APP_DATA = {
 
   // Permanence
   permanence: {
-    title: "Permanence de la Fédération régionale de la Santé",
+    title: "Permanence de la Fédération nationale de la Santé",
     address: "Agadir, Souss-Massa",
     phone: "06 61 38 62 47",
     email: "abaray66@gmail.com",
@@ -54,7 +54,7 @@ window.APP_DATA = {
   contact: [
     {
       title: "Groupe de communication régional",
-      description: "Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.",
+      description: "Rejoignez le groupe WhatsApp de communication de la Fédération nationale de la Santé.",
       icon: "💬",
       url: "https://chat.whatsapp.com/HohMZIZCxylJFk3ugYUsfM?s=cl&p=a&ilr=4&iam=0",
       action: "openUrl"
@@ -68,14 +68,14 @@ window.APP_DATA = {
     },
     {
       title: "Page officielle Facebook",
-      description: "Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.",
+      description: "Suivez la Fédération nationale de la Santé sur sa page officielle Facebook.",
       icon: "f",
       url: "https://www.facebook.com/share/1DKBvHZqsN/",
       action: "openUrl"
     },
     {
       title: "Appeler",
-      description: "Permanence de la Fédération régionale de la Santé",
+      description: "Permanence de la Fédération nationale de la Santé",
       icon: "☎️",
       url: "tel:+212661386247",
       action: "openUrl"

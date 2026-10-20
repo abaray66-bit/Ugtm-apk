@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UGTM Souss-Massa</title>
-<meta name="description" content="Application de la Fédération régionale de la Santé UGTM Souss-Massa : publications, agenda, signalements et contacts.">
+<meta name="description" content="Application de la Fédération nationale de la Santé UGTM Souss-Massa : publications, agenda, signalements et contacts.">
 <meta name="theme-color" content="#B83268">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/ugtm-logo.svg">
@@ -990,6 +990,12 @@ main{
 .evb{
   flex:1;
   min-width:0
+}
+
+.evb .ev-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px
 }
 
 .evb strong{
@@ -3026,7 +3032,23 @@ input[type=file]::file-selector-button{
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
 </ul></div><form id="reportForm" class="report-form">
-<fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required><option value="abuse_of_power" data-i18n="rCatAbuse"></option><option value="assault" data-i18n="rCatAssault"></option><option value="administrative_situation" data-i18n="rCatAdmin"></option><option value="leave" data-i18n="rCatLeave"></option><option value="promotion_grade" data-i18n="rCatPromotion"></option><option value="disciplinary_case" data-i18n="rCatDiscipline"></option><option value="housing" data-i18n="rCatHousing"></option><option value="rating" data-i18n="rCatRating"></option><option value="other" data-i18n="rCatOther"></option></select></fieldset>
+<fieldset class="field"><legend data-i18n="rCategory"></legend><select id="rCategory" required>
+<option value="violence_harassment" data-i18n="rCatViolence"></option>
+<option value="health_safety" data-i18n="rCatHealth"></option>
+<option value="abuse_of_authority" data-i18n="rCatAuthority"></option>
+<option value="discipline_sanctions" data-i18n="rCatDisciplineSanctions"></option>
+<option value="union_rights" data-i18n="rCatUnionRights"></option>
+<option value="administrative_situation" data-i18n="rCatAdmin"></option>
+<option value="salary_allowances" data-i18n="rCatSalary"></option>
+<option value="promotion_career" data-i18n="rCatCareer"></option>
+<option value="transfer_assignment" data-i18n="rCatTransfer"></option>
+<option value="working_conditions" data-i18n="rCatWorkConditions"></option>
+<option value="sick_leave" data-i18n="rCatSickLeave"></option>
+<option value="administrative_leave_absence" data-i18n="rCatAdminLeave"></option>
+<option value="rating_evaluation" data-i18n="rCatRating"></option>
+<option value="housing" data-i18n="rCatHousing"></option>
+<option value="other" data-i18n="rCatOther"></option>
+</select></fieldset>
 <div class="field"><label for="rProvince" data-i18n="rProvinceLabel"></label>
 <select id="rProvince" required>
 <option value="" data-i18n="selectProvince"></option>
@@ -3322,6 +3344,7 @@ adhStatusUnknown:`Statut de la demande : %1.`,
   adhBlockedRefused:`Une décision a déjà été prise concernant votre demande. Contactez la permanence pour toute démarche supplémentaire.`,
   adhBlockedActive:`Votre adhésion est déjà validée : le formulaire est réservé au renouvellement de votre adhésion.`,
   adhRenewalEntryOnly:`Votre adhésion est déjà validée : le renouvellement est accessible uniquement dans « Mon espace » (bouton « Renouveler mon adhésion »).`,
+  adhStatusUnknownBlock:`Impossible de vérifier le statut de votre demande : reconnectez-vous pour accéder au formulaire d'adhésion.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`Transmission de votre demande à l’administration…`,
@@ -3377,7 +3400,12 @@ fStatut:`Actualités syndicales`,
 fEvents:`Rencontres et réunions`,
 
 share:`Partager sur WhatsApp`,
-aud:`Adhérents`,
+ shareNewsLabel:`Publication`,
+ shareEventLabel:`Événement`,
+ shareOrg:`Union Générale des Travailleurs du Maroc
+Fédération nationale de la Santé
+Région Souss-Massa`,
+ aud:`Adhérents`,
 newsPhoto:`Photo (facultative)`,
 newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
 newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
@@ -3385,20 +3413,27 @@ newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
 reportT:`Signaler un dysfonctionnement`,
 reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
 
-r1:`Les réponses sont réservées aux responsables désignés de la Fédération régionale de la Santé.`,
+r1:`Les réponses sont réservées aux responsables désignés de la Fédération nationale de la Santé.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
 r3:`Pour envoyer des photos ou des documents, écrivez au numéro du secrétaire régional sur WhatsApp.`,
 
 rCategory:`Type de problème`,
-rCatAbuse:`Abus de pouvoir`,
-rCatAssault:`Agression`,
+rCatViolence:`Violence et harcèlement`,
+rCatHealth:`Santé et sécurité`,
+rCatAuthority:`Abus d'autorité`,
+rCatDisciplineSanctions:`Discipline et sanctions`,
+rCatUnionRights:`Droits syndicaux`,
 rCatAdmin:`Situation administrative`,
+rCatSalary:`Salaire et indemnités`,
+rCatCareer:`Avancement et carrière`,
+rCatTransfer:`Mutation et affectation`,
+rCatWorkConditions:`Conditions de travail`,
+rCatSickLeave:`Congé maladie`,
+rCatAdminLeave:`Congés administratifs et absences`,
+rCatRating:`Notation et évaluation`,
+rCatHousing:`Logement de fonction`,
+rCatOther:`Autre problème`,
 rCatLeave:`Congé`,
-rCatPromotion:`Avancement et grade`,
-rCatDiscipline:`Affaire disciplinaire`,
-rCatHousing:`Logement`,
-rCatRating:`Notation`,
-rCatOther:`Autre`,
 rAge:`PPR`,
 rDA:`Spécialité`,
 rSpecChoose:`Choisir une spécialité`,
@@ -3441,11 +3476,11 @@ calNext:`Mois suivant`,
 contactT:`Nous joindre`,
 
 cWa:`Groupe de communication régional`,
-cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération régionale de la Santé.`,
+cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération nationale de la Santé.`,
 cWaB:`Rejoindre le groupe`,
 
 cFb:`Page officielle Facebook`,
- cFbD:`Suivez la Fédération régionale de la Santé sur sa page officielle Facebook.`,
+ cFbD:`Suivez la Fédération nationale de la Santé sur sa page officielle Facebook.`,
  cFbB:`Voir la page`,
  
  attachTitle:`Pièce jointe`,
@@ -3490,9 +3525,9 @@ renewAdhesion:`Renouveler mon adhésion`,
 meLoading:`Chargement…`,
 meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à internet et réessayez.`,
 
-st_pending:`Demande en cours de validation par la Fédération régionale de la Santé.`,
+st_pending:`Demande en cours de validation par la Fédération nationale de la Santé.`,
 st_active:`Adhésion validée.`,
-st_blocked:`Compte suspendu. Contactez la Fédération régionale de la Santé.`,
+st_blocked:`Compte suspendu. Contactez la Fédération nationale de la Santé.`,
 
 meReportsT:`Mes signalements`,
 meReportsNone:`Aucun signalement enregistré pour le moment.`,
@@ -3551,7 +3586,7 @@ deleted:`Données supprimées`,
   admTabEvents:`Agenda syndical`,
   admTabAdhesions:`Adhésions`,
   admDashTitle:`Tableau de bord`,
-  admDashSubtitle:`Vue d'ensemble de la gestion de la Fédération régionale de la Santé`,
+  admDashSubtitle:`Vue d'ensemble de la gestion de la Fédération nationale de la Santé`,
   admDashRepartition:`Répartition des adhérents`,
   admDashTodo:`À traiter`,
   admKpiMembers:`Adhérents`,
@@ -3714,7 +3749,7 @@ deleted:`Données supprimées`,
 
   /* Partage de l'application */
   shareAppTitle:`UGTM Souss-Massa`,
-  shareAppText:`UGTM Souss-Massa\nApplication de la Fédération régionale de la Santé UGTM Souss-Massa.\nTéléchargez l'application : %1`,
+  shareAppText:`Union Générale des Travailleurs du Maroc\nFédération nationale de la Santé\nRégion Souss-Massa\n\nTéléchargez l'application : %1`,
   shareAppVersionLine:`\nVersion : %1`,
 
   /* Dossier d'adhésion (PDF officiel) */
@@ -3816,6 +3851,7 @@ adhNote:`ملاحظة : `,
   adhBlockedRefused:`تم اتخاذ قرار بشأن طلبكم. اتصلوا بالدائمة لأي إجراء إضافي.`,
   adhBlockedActive:`انخراطكم مصادق عليه بالفعل: النموذج مخصص حصريًا لتجديد انخراطكم.`,
   adhRenewalEntryOnly:`انخراطكم مصادق عليه بالفعل: التجديد متاح حصريًا في «فضائي» (زر «تجديد الانخراط»).`,
+  adhStatusUnknownBlock:`تعذّر التحقق من حالة طلبكم: أعيدوا الاتصال بالإنترنت لتعبئة استمارة الانخراط.`,
 
 /* Transmission à l'administration (le PDF est généré par le responsable) */
 adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
@@ -3923,7 +3959,12 @@ fStatut:`مستجدات نقابية`,
 fEvents:`اللقاءات والاجتماعات`,
 
 share:`مشاركة عبر واتساب`,
-aud:`للمنخرطين`,
+ shareNewsLabel:`منشور`,
+ shareEventLabel:`حدث`,
+ shareOrg:`الاتحاد العام للشغالين بالمغرب
+الجامعة الوطنية للصحة
+جهة سوس ماسة`,
+ aud:`للمنخرطين`,
 newsPhoto:`صورة (اختياري)`,
 newsPhotoHint:`صورة JPG أو PNG أو WebP، سيتم تصغيرها تلقائيا.`,
 newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناسب.`,
@@ -3936,15 +3977,22 @@ r2:`اقتصروا على الوقائع: المكان والتاريخ والأ
 r3:`لإرسال صور أو وثائق، راسلوا رقم الكاتب الجهوي عبر واتساب.`,
 
 rCategory:`نوع المشكلة`,
-rCatAbuse:`الشطط في استعمال السلطة`,
-rCatAssault:`اعتداء`,
+rCatViolence:`العنف والتحرش`,
+rCatHealth:`الصحة والسلامة`,
+rCatAuthority:`الشطط في استعمال السلطة`,
+rCatDisciplineSanctions:`النظام والعقوبات`,
+rCatUnionRights:`الحقوق النقابية`,
 rCatAdmin:`الوضعية الإدارية`,
+rCatSalary:`الأجر والتعويضات`,
+rCatCareer:`الترقية والمسار المهني`,
+rCatTransfer:`الانتقال والإسناد`,
+rCatWorkConditions:`شروط العمل`,
+rCatSickLeave:`رخصة مرضية`,
+rCatAdminLeave:`رخص إدارية وغيابات`,
+rCatRating:`التنقيط والتقييم`,
+rCatHousing:`السكن الوظيفي`,
+rCatOther:`مشكلة أخرى`,
 rCatLeave:`رخصة`,
-rCatPromotion:`الترقية والدرجة`,
-rCatDiscipline:`قضية تأديبية`,
-rCatHousing:`السكن`,
-rCatRating:`التنقيط`,
-rCatOther:`أخرى`,
 rAge:`PPR`,
 rDA:`التخصص`,
 rSpecChoose:`اختر التخصص`,
@@ -3991,7 +4039,7 @@ cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاص�
 cWaB:`انضموا إلى المجموعة`,
 
 cFb:`الصفحة الرسمية على فيسبوك`,
-cFbD:`تابعوا الصفحة الرسمية لجامعة الصحة الجهوية على فيسبوك.`,
+cFbD:`تابعوا الصفحة الرسمية للجامعة الوطنية للصحة على فيسبوك.`,
 cFbB:`زيارة الصفحة`,
 
  attachTitle:`الملف المرفق`,
@@ -4096,7 +4144,7 @@ deleted:`تم حذف البيانات`,
   admTabEvents:`الأجندة النقابية`,
   admTabAdhesions:`الانخراطات`,
   admDashTitle:`لوحة القيادة`,
-  admDashSubtitle:`نظرة عامة على تسيير الجامعة الوطنية للصحة الجهوية`,
+  admDashSubtitle:`نظرة عامة على تسيير الجامعة الوطنية للصحة`,
   admDashRepartition:`توزيع المنخرطين`,
   admDashTodo:`في انتظار المعالجة`,
   admKpiMembers:`المنخرطون`,
@@ -4259,7 +4307,7 @@ deleted:`تم حذف البيانات`,
 
   /* مشاركة التطبيق */
   shareAppTitle:`الاتحاد العام للشغالين بالمغرب – جهة سوس ماسة`,
-  shareAppText:`الاتحاد العام للشغالين بالمغرب – الجامعة الوطنية للصحة – جهة سوس ماسة\nتطبيق الجامعة الوطنية للصحة الجهوية لجهة سوس ماسة.\nحمّلوا التطبيق: %1`,
+  shareAppText:`الاتحاد العام للشغالين بالمغرب\nالجامعة الوطنية للصحة\nجهة سوس ماسة\n\nحمّلوا التطبيق: %1`,
   shareAppVersionLine:`\nالإصدار: %1`,
 
   /* Dossier d'adhésion (PDF officiel) */
@@ -4795,6 +4843,71 @@ function openUrl(url){
     return 'https://ugtm-fns-souss-massa.web.app/telecharger';
   }
   
+  /* URL publique de l'application.
+     Dans l'application Android (WebView Capacitor), location.href vaut
+     « https://localhost/… » : un lien partagé depuis l'app doit pointer
+     vers l'hébergement, sinon le destinataire reçoit une adresse
+     injoignable. Même règle en développement local (127.0.0.1).
+     Sur le Web, on partage la page réellement consultée. */
+  function publicAppUrl(){
+
+    var base='https://ugtm-fns-souss-massa.web.app';
+    var loc=String(location.origin||'');
+    var local=/localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\]/i.test(loc)||loc.indexOf('file://')===0||loc==='null'||!loc;
+
+    if(!local){
+      return loc+String(location.pathname||'/')+String(location.search||'');
+    }
+
+    return base+'/app.html';
+  }
+
+  /* Message de partage d'une publication ou d'un événement :
+     identité institutionnelle, contenu, puis lien public. */
+  function shareContentText(label,title,dateLine,body){
+
+    var t=T();
+    var lines=[];
+    var b=String(body||'').replace(/\s+/g,' ').trim();
+
+    lines.push(String(t.shareOrg||''));
+    lines.push('');
+    lines.push(String(label||'')+' : '+String(title||''));
+
+    if(dateLine)lines.push(String(dateLine));
+
+    if(b)lines.push(b.length>300?b.slice(0,300).trim()+'…':b);
+
+    lines.push('');
+    lines.push(publicAppUrl());
+
+    return lines.join('\n');
+  }
+
+  /* Partage WhatsApp d'une publication. */
+  function shareNewsItem(n){
+
+    if(!n)return;
+
+    var title=L(n).t;
+    var dateLine=n.date?fmtDate(n.date,true):'';
+
+    shareTextFallback(shareContentText(T().shareNewsLabel,title,dateLine,L(n).b));
+  }
+
+  /* Partage WhatsApp d'un événement (rencontre, réunion, assembly). */
+  function shareEventItem(ev){
+
+    if(!ev)return;
+
+    var title=L(ev).t;
+    var dateLine=ev.date?fmtDate(ev.date,true):'';
+
+    if(ev.time)dateLine+=(dateLine?' – ':'')+fmtTime(ev.time);
+
+    shareTextFallback(shareContentText(T().shareEventLabel,title,dateLine,L(ev).p));
+  }
+
   /* Version de l'application : celle du manifeste OTA
      (www/update.json), avec le cache local en secours. */
   function appShareVersion(){
@@ -4997,9 +5110,12 @@ fmtDate(ev.date,true)+
 (x.p?'<br>'+esc(x.p):'')+
 '</p>'+
 
+'<div class="ev-actions">'+
 (withButton
 ?'<button type="button" class="btn ghost small" data-cal="'+esc(ev.id)+'">'+T().addCal+'</button>'
 :'')+
+'<button type="button" class="btn ghost small" data-share-event="'+esc(ev.id)+'">'+esc(T().share)+'</button>'+
+'</div>'+
 
 '</div>'+
 '</div>';
@@ -5343,19 +5459,33 @@ return t.rStNew||'Nouveau';
 }
 
 /* Catégorie d'un signalement, traduite (la valeur stockée
-   dans Firestore reste la clé technique). */
+   dans Firestore reste la clé technique). Les anciennes clés
+   (signalements déjà déposés avant l'élargissement de la liste)
+   restent mappées sur la catégorie la plus proche. */
 function reportCategoryLabelI18n(cat){
 var t=T();
 var map={
-abuse_of_power:'rCatAbuse',
-assault:'rCatAssault',
-administrative_situation:'rCatAdmin',
-leave:'rCatLeave',
-promotion_grade:'rCatPromotion',
-disciplinary_case:'rCatDiscipline',
-housing:'rCatHousing',
-rating:'rCatRating',
-other:'rCatOther'
+ violence_harassment:'rCatViolence',
+ health_safety:'rCatHealth',
+ abuse_of_authority:'rCatAuthority',
+ discipline_sanctions:'rCatDisciplineSanctions',
+ union_rights:'rCatUnionRights',
+ administrative_situation:'rCatAdmin',
+ salary_allowances:'rCatSalary',
+ promotion_career:'rCatCareer',
+ transfer_assignment:'rCatTransfer',
+ working_conditions:'rCatWorkConditions',
+ sick_leave:'rCatSickLeave',
+ administrative_leave_absence:'rCatAdminLeave',
+ rating_evaluation:'rCatRating',
+ housing:'rCatHousing',
+ other:'rCatOther',
+ abuse_of_power:'rCatAuthority',
+ assault:'rCatViolence',
+ leave:'rCatLeave',
+ promotion_grade:'rCatCareer',
+ disciplinary_case:'rCatDisciplineSanctions',
+ rating:'rCatRating'
 };
 var key=map[cat];
 return key?(t[key]||cat):String(cat||'');
@@ -5388,7 +5518,7 @@ none.hidden=mine.length>0;
 list.innerHTML=mine.map(function(r){
 var head=[r.date?fmtDateFr(r.date):'',r.province||''].filter(Boolean).join(' · ');
 return '<li class="mrow"><div class="mi">'+
-'<strong>'+esc(r.category||'')+' · '+esc(reportStatusLabelI18n(r.status))+'</strong>'+
+'<strong>'+esc(reportCategoryLabelI18n(r.category))+' · '+esc(reportStatusLabelI18n(r.status))+'</strong>'+
 (head?'<span>'+esc(head)+'</span>':'')+
 (r.etab?'<span>'+esc(r.etab)+'</span>':'')+
 '<span>'+esc(r.description||'')+'</span>'+
@@ -6135,7 +6265,10 @@ function renderAdhesionDossierInfo(doc){
     (doc.signature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignMember)+'</span><img src="'+esc(doc.signature)+'" alt="'+esc(t.admDocSignMember)+'"></div>'
       :'')+
-    (doc.adminSignature
+    /* La signature du responsable n'est affichée que pour un dossier
+       VALIDÉ : une nouvelle soumission (renouvellement) repart sans
+       l'ancienne signature — deux cases au total, pas trois. */
+    (doc.status==='accepted'&&doc.adminSignature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignAdmin)+'</span><img src="'+esc(doc.adminSignature)+'" alt="'+esc(t.admDocSignAdmin)+'"></div>'
       :'');
 }
@@ -6246,10 +6379,37 @@ function savePdfToDevice(b64,name){
   });
 }
 
+/* Nom du fichier PDF d'un dossier d'adhésion : « UGTM- Nom Prénom.pdf ».
+   Identification directe du document par l'adhérent, sans code technique. */
+function adhesionPdfFileName(doc){
+  var a=(doc&&doc.application)||{};
+  var base=(String(a.nom||'').trim()+' '+String(a.prenom||'').trim()).replace(/\s+/g,' ').trim();
+  /* Caractères interdits dans un nom de fichier. */
+  base=base.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
+  if(!base)base='demande-adhesion';
+  if(base.length>100)base=base.slice(0,100).trim();
+  return 'UGTM- '+base+'.pdf';
+}
+
+/* Un PDF enregistré n'est réutilisé que s'il est postérieur à la
+   dernière mise à jour du dossier : un renouvellement (nouveau dépôt)
+   invalide l'ancien PDF, qui ne doit jamais être resservi. */
+function isAdhesionPdfFresh(saved,doc){
+  if(!saved||!saved.data)return false;
+  var s=(typeof saved.updatedAt==='number')?saved.updatedAt:0;
+  if(!s)return false;
+  var d=0;
+  var ru=doc&&doc.updatedAt;
+  if(ru&&typeof ru.toMillis==='function')d=ru.toMillis();
+  else if(typeof ru==='number')d=ru;
+  return s>=d;
+}
+
 /* PDF officiel d'une demande VALIDÉE, à la demande du responsable :
-   - le PDF déjà généré est récupéré depuis Firestore ;
+   - le PDF déjà généré est récupéré depuis Firestore (s'il n'est pas
+     périmé) ;
    - sinon il est généré depuis le dossier validé, enregistré à côté de
-     celui-ci, puis proposé au téléchargement. */
+     celui-ci, puis proposé au téléchargement au nom « UGTM- Nom Prénom.pdf ». */
 var pdfJobs={};
 function generateAdhesionPdfForAdmin(id){
   var t=T();
@@ -6262,26 +6422,30 @@ function generateAdhesionPdfForAdmin(id){
   pdfJobs[id]=true;
   toast(t.admPdfGenerating,3500);
 
-  c.getSavedAdhesionPdf(id)
-  .then(function(stored){
-    if(stored)return{stored:stored};
-      return c.getAdhesionDoc(id).then(function(doc){
-      if(!doc)throw new Error(t.admPdfErr);
-      if(doc.status!=='accepted'||!doc.adminSignature)
-      throw new Error(t.admPdfOnlyValidated);
-      if(typeof window.generateAdhesionPdf!=='function')
-      throw new Error('PDF indisponible');
+  c.getAdhesionDoc(id)
+  .then(function(doc){
+    if(!doc)throw new Error(t.admPdfErr);
+    /* Seul un dossier VALIDÉ (statut 'accepted' ET signature du
+       responsable) donne droit à un PDF officiel. */
+    if(doc.status!=='accepted'||!doc.adminSignature)
+    throw new Error(t.admPdfOnlyValidated);
+    var fileName=adhesionPdfFileName(doc);
+    return c.getSavedAdhesionPdf(id)
+    .then(function(saved){
+      if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
       /* Identité lisible du signataire : son profil s'il est connu de
          l'administrateur connecté, sinon son identifiant Firebase. */
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerName=signer?((signer.name||signer.email||'')+(signer.email&&signer.name?' ('+signer.email+')':'')):doc.signedBy;
+      if(typeof window.generateAdhesionPdf!=='function')
+      throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
         if(!b64)throw new Error(t.admPdfErr);
         /* Enregistrement à côté du dossier : le PDF reste récupérable
            même si le téléchargement échoue. Best effort. */
-        return c.saveAdhesionPdf(id,b64)
+        return c.saveAdhesionPdf(id,b64,fileName)
         .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
-        .then(function(){return{fresh:b64};});
+        .then(function(){return{fresh:b64,fileName:fileName};});
       });
     });
   })
@@ -6289,7 +6453,7 @@ function generateAdhesionPdfForAdmin(id){
     var b64=res.stored||res.fresh;
     /* Le succès n'est affiché qu'après confirmation de
        l'enregistrement effectif du fichier sur l'appareil. */
-    return savePdfToDevice(b64,'demande-adhesion-'+id+'.pdf')
+    return savePdfToDevice(b64,res.fileName)
     .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
   })
   .catch(function(err){
@@ -6875,6 +7039,15 @@ function adhesionFormStatus(){
   return req?String(req.status||'none'):'none';
 }
 
+/* Statut du dossier réellement connu (cache local) : null quand
+   aucune information n'a encore pu être chargée (typiquement
+   hors ligne au premier clic). Le parcours d'adhésion s'en sert
+   pour ne pas ouvrir le formulaire d'un utilisateur connecté
+   dont le dossier reste inconnu. */
+function adhesionKnownStatus(){
+  return myAdhesionStatusCache?String(myAdhesionStatusCache.status||'none'):null;
+}
+
 /* Règle d'accès au formulaire, alignée sur les règles Firestore :
    - complément demandé (needs_completion) : formulaire ouvert ;
    - demande déjà envoyée (pending) ou décision prise (refused) :
@@ -6906,6 +7079,7 @@ function adhesionFormBlockedMessage(){
    règle : la fonction est exposée pour lui. */
 window.adhesionAccessFor=adhesionAccessFor;
 window.adhesionAccess=adhesionAccess;
+window.adhesionKnownStatus=adhesionKnownStatus;
 
 /* Le parcours d'adhésion (script dédié) a besoin d'afficher
    un message, de revenir à « Mon espace » et de lire les
@@ -7056,7 +7230,7 @@ document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
-'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
+'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-event],[data-share-app],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn,#meAdhesionInfoBtn'
 );
@@ -7103,7 +7277,7 @@ if(box.hidden){
   box.hidden=true;
   box.textContent='';
 }
-  return;
+return;
 }
 
 if(el.hasAttribute('data-go')){
@@ -7205,7 +7379,6 @@ renderNews();
 
 return;
 }
-
 if(el.hasAttribute('data-filter')){
 
 filter=el.getAttribute('data-filter');
@@ -7216,6 +7389,7 @@ renderFilters();
 renderNews();
 
 return;
+
 }
 
 /* Filtre de rubrique de l'espace administration (mêmes clés que la
@@ -7266,14 +7440,23 @@ return x.id===el.getAttribute('data-share');
 
 if(n){
 
-openUrl(
-'https://wa.me/?text='+
-encodeURIComponent(
-L(n).t+
-'\n'+
-location.href.split('#')[0]
-)
-);
+shareNewsItem(n);
+
+}
+
+return;
+}
+
+/* Partage WhatsApp d'un événement (agenda, rencontres, réunions). */
+if(el.hasAttribute('data-share-event')){
+
+var sharedEvent=EVENTS.filter(function(x){
+return x.id===el.getAttribute('data-share-event');
+})[0];
+
+if(sharedEvent){
+
+shareEventItem(sharedEvent);
 
 }
 
@@ -8431,7 +8614,9 @@ window.UGTM.failed(err);
     /* PDF de la demande, généré À LA DEMANDE de l'administrateur ou du
        sous-admin (onglet Adhésions > Générer le PDF). La fiche réunit
        la signature de l'adhérent et la signature électronique du
-       responsable. Retourne le base64 du PDF. */
+       responsable — DEUX cases de signature au total — et tient sur UNE
+       seule page A4 (mise en page compacte à deux colonnes).
+       Retourne le base64 du PDF. */
     function adhesionPdfBase64(request){
       return new Promise(function(resolve,reject){
         var app=(request&&request.application)||{};
@@ -8439,7 +8624,7 @@ window.UGTM.failed(err);
         if(!jsPDF){reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
-        var pageW=210,margin=18,y=18;
+        var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
 
         function loadLogo(){
           return new Promise(function(resolve){
@@ -8470,159 +8655,163 @@ window.UGTM.failed(err);
           });
         }
 
-        function line(){
-          pdf.setDrawColor(184,50,104);
-          pdf.setLineWidth(.6);
-          pdf.line(margin,y,pageW-margin,y);
-          y+=7;
-        }
-
+        /* Barre de titre de rubrique (8 mm) : la mise en page reste
+           compacte pour tenir sur UNE seule page A4. */
         function section(title){
-          if(y>252){
-            pdf.addPage();
-            y=18;
-          }
           pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-5,pageW-margin*2,10,2,2,'F');
+          pdf.roundedRect(margin,y-4,fullW,8,1.5,1.5,'F');
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(9.5);
           pdf.setTextColor(184,50,104);
-          pdf.text(title,margin+4,y+1.5);
+          pdf.text(title,margin+3,y+0.8);
           pdf.setTextColor(0,0,0);
-          y+=13;
+          y+=10.5;
         }
 
-        function field(label,value){
-          if(y>264){
-            pdf.addPage();
-            y=18;
-          }
+        /* Une case « libellé : valeur ». Renvoie la hauteur occupée (mm).
+           Une valeur trop longue pour la ligne passe sous son libellé. */
+        function cell(label,value,x,w){
+          w=w||colW;
+          var lbl=String(label||'')+' : ';
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10);
-          pdf.setTextColor(90,90,90);
-          pdf.text(label,margin,y);
+          pdf.setFontSize(8.6);
+          pdf.setTextColor(95,95,95);
+          var lw=pdf.getTextWidth(lbl);
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(9.2);
           pdf.setTextColor(0,0,0);
-          var lines=pdf.splitTextToSize(String(value||''),116);
-          pdf.text(lines,70,y);
-          y+=Math.max(8,lines.length*5.4);
-          /* Filet de séparation : chaque ligne du dossier
-             est visuellement distincte, plus lisible. */
-          pdf.setDrawColor(232,222,228);
-          pdf.setLineWidth(.2);
-          pdf.line(margin,y-2.5,pageW-margin,y-2.5);
+          var val=(value===undefined||value===null)?'':String(value);
+          var h=4.6;
+          if(val&&pdf.getTextWidth(val)>w-lw-1){
+            /* Valeur trop longue : libellé seul sur sa ligne, puis la
+               valeur sur la ou les lignes suivantes. */
+            pdf.setFont(undefined,'bold');
+            pdf.text(lbl,x,y);
+            var lines=pdf.splitTextToSize(val,w);
+            pdf.setFont(undefined,'normal');
+            for(var i=0;i<lines.length;i++)pdf.text(lines[i],x,y+4.4+i*4.1);
+            h=4.4+lines.length*4.1;
+          }else{
+            pdf.setFont(undefined,'bold');
+            pdf.text(lbl,x,y);
+            if(val){
+              pdf.setFont(undefined,'normal');
+              pdf.text(val,x+lw,y);
+            }
+          }
+          pdf.setTextColor(0,0,0);
+          return h;
         }
 
+        /* Une ligne à deux colonnes (la seconde est facultative). */
+        function row2(l1,v1,l2,v2){
+          var h1=cell(l1,v1,margin,colW);
+          var h2=(l2!==undefined&&l2!==null)?cell(l2,v2,col2,colW):0;
+          y+=Math.max(h1,h2)+1.6;
+        }
+
+        /* Une ligne pleine largeur. */
+        function row1(l,v){
+          y+=cell(l,v,margin,fullW)+1.6;
+        }
+
+        /* Les DEUX cases de signature (adhérent puis responsable) sont
+           dessinées côte à côte : elles tiennent toujours sur la même
+           page, l'une à côté de l'autre. */
         function drawSignatureBox(title,x,boxY,image){
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(10.5);
+          pdf.setFontSize(9.5);
           pdf.setTextColor(60,60,60);
           pdf.text(title,x,boxY);
           pdf.setDrawColor(170,170,170);
           pdf.setLineWidth(.5);
-          pdf.roundedRect(x,boxY+5,84,36,2,2,'S');
+          pdf.roundedRect(x,boxY+4,colW-3,32,1.5,1.5,'S');
           if(image){
-            try{pdf.addImage(image,'JPEG',x+4,boxY+7,76,29);}catch(e){}
+            try{pdf.addImage(image,'JPEG',x+3,boxY+6,colW-9,28);}catch(e){}
           }
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(8.5);
+          pdf.setFontSize(8);
           pdf.setTextColor(120,120,120);
-          pdf.text('Signature',x+4,boxY+45);
+          pdf.text('Signature',x+3,boxY+40);
           pdf.setTextColor(0,0,0);
         }
 
         loadLogo().then(function(logo){
 
-          if(logo)pdf.addImage(logo,'JPEG',margin,15,40,14);
+          if(logo)pdf.addImage(logo,'JPEG',margin,10,34,11);
 
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(12.5);
-          pdf.text('Union Générale des Travailleurs du Maroc',64,19);
           pdf.setFontSize(11);
-          pdf.text('Fédération nationale de la Santé',64,24);
+          pdf.text('Union Générale des Travailleurs du Maroc',56,15);
+          pdf.setFontSize(9.6);
+          pdf.text('Fédération nationale de la Santé',56,20);
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(9.5);
+          pdf.setFontSize(8.8);
           pdf.setTextColor(95,95,95);
-          pdf.text('Région Souss-Massa',64,30);
+          pdf.text('Région Souss-Massa',56,24.5);
           pdf.setTextColor(0,0,0);
-
-          y=38;
-          line();
 
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(18);
+          pdf.setFontSize(15);
           pdf.setTextColor(184,50,104);
-          pdf.text("DEMANDE D'ADHÉSION",105,48,{align:'center'});
+          pdf.text("DEMANDE D'ADHÉSION",pageW/2,35,{align:'center'});
           pdf.setTextColor(0,0,0);
 
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(9.5);
+          pdf.setFontSize(8.6);
           pdf.setTextColor(95,95,95);
-          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",105,55,{align:'center'});
+          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",pageW/2,40.5,{align:'center'});
           pdf.setTextColor(0,0,0);
-          y=63;
+          y=47;
 
           section('IDENTIFICATION DE L’ADHÉRENT');
-          field('Nom',app.nom);
-          field('Prénom',app.prenom);
-          field('CIN',app.cin);
-          field('Date de naissance',app.dob);
-          field('Téléphone',app.phone);
-          field('Adresse',app.address);
+          row2('Nom',app.nom,'Prénom',app.prenom);
+          row2('CIN',app.cin,'Date de naissance',app.dob);
+          row2('Téléphone',app.phone,'Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
+          row1('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
-          field('Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
-          field('Établissement / structure',app.establishment);
-          field('Service / unité',app.service);
-          field('Fonction',app['function']);
-          field('Spécialité',app.specialty);
-          field('PPR',app.ppr);
+          row1('Établissement / structure',app.establishment);
+          row2('Service / unité',app.service,'Fonction',app['function']);
+          row2('Spécialité',app.specialty,'PPR',app.ppr);
 
           section('ADHÉSION');
-          field('Type',app.type==='renewal'?'Renouvellement':'Première adhésion');
-          if(app.type==='renewal')field('Motif du renouvellement',app.reason);
-          field('Date',app.date);
+          row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
+          if(app.type==='renewal')row1('Motif du renouvellement',app.reason);
 
           section('ENGAGEMENT');
+          /* Engagement de l'adhérent : encadré sur toute la largeur. */
           pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-4,pageW-margin*2,18,2,2,'F');
+          pdf.roundedRect(margin,y-4,fullW,17,1.5,1.5,'F');
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(10);
+          pdf.setFontSize(9.2);
           pdf.setTextColor(60,60,60);
           pdf.text([
             "Je déclare adhérer à la Fédération nationale de la Santé",
             "et accepter ses statuts ainsi que son règlement intérieur."
-          ],margin+4,y+4);
+          ],margin+3,y+3);
           pdf.setTextColor(0,0,0);
-          y+=24;
+          y+=19;
 
           section('SIGNATURES');
           var signatureY=y;
-          /* Les deux cadres de signature tiennent sur la
-             même page : on force un saut avant de les
-             couper en deux. */
-          if(signatureY+52>282){
-            pdf.addPage();
-            signatureY=18;
-          }
+          /* Les deux cases de signature sont toujours dessinées côte à
+             côte : jamais l'une sur une page, l'autre sur l'autre. */
           drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
-          drawSignatureBox('Signature du responsable syndical',margin+90,signatureY,request&&request.adminSignature);
+          drawSignatureBox('Signature du responsable syndical',col2,signatureY,request&&request.adminSignature);
 
-          y=signatureY+52;
+          y=signatureY+44;
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
           var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
-          section('VALIDATION');
-          field('Validée par',signer);
+          var validationDate='';
           if(request&&request.signedAt){
-            try{
-              field('Date de validation',new Date(request.signedAt).toLocaleDateString('fr-FR'));
-            }catch(eDate){}
+            try{validationDate=new Date(request.signedAt).toLocaleDateString('fr-FR');}catch(eDate){}
           }
-          field('Statut du dossier','VALIDÉE');
-          field('Référence',request&&request.id?String(request.id):'');
+          section('VALIDATION');
+          row2('Validée par',signer,'Statut du dossier','VALIDÉE');
+          row2('Date de validation',validationDate,'Référence',request&&request.id?String(request.id):'');
 
           /* Pied de page sur CHAQUE page : fil conducteur
              du document, avec numérotation. */
@@ -8802,7 +8991,10 @@ window.UGTM.failed(err);
        mon adhésion » de « Mon espace » ;
      - complément demandé (needs_completion) ou première adhésion :
        formulaire ouvert (le renouvellement est verrouillé sur
-       « renouvellement » quand l'adhésion est déjà validée). */
+       « renouvellement » quand l'adhésion est déjà validée) ;
+     - statut indisponible (hors ligne) pour un utilisateur
+       connecté : l'accès est refusé avec un message explicite,
+       faute de pouvoir garantir l'absence d'un dossier. */
   function adhesionToast(msg,ms){
     if(typeof window.ugtmToast==='function')window.ugtmToast(msg,ms);
   }
@@ -8821,6 +9013,15 @@ window.UGTM.failed(err);
     /* Le renouvellement ne passe que par le bouton dédié de
        « Mon espace » (« Renouveler mon adhésion »). */
     var renewalEntry=!!(trigger&&trigger.id==='meAdhesionButton');
+
+    /* Utilisateur connecté : un dossier peut déjà exister (en
+       attente, refusé, accepté) ; sans statut connu, l'accès au
+       formulaire ne peut pas être tranché. */
+    var connected=false;
+    try{
+      var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      connected=!!(session&&session.user&&session.user.uid);
+    }catch(eSession){}
 
     function openForm(){
       if(typeof window.ugtmGo==='function')window.ugtmGo('adhesion');
@@ -8841,6 +9042,7 @@ window.UGTM.failed(err);
     function decide(access){
       if(!access){openForm();return;}
       if(access.mode==='blocked'){refused(access.message);return;}
+      if(access.mode==='unknown'){refused(access.message);return;}
       if(access.mode==='renewal'&&!renewalEntry){
         refused(t.adhRenewalEntryOnly||access.message);
         return;
@@ -8856,9 +9058,28 @@ window.UGTM.failed(err);
           ?window.adhesionAccessFor(String(req.status||'none'))
           :{mode:'free',message:''};
       }
-      return (typeof window.adhesionAccess==='function')
+      /* Statut en ligne indisponible : dernier statut connu. */
+      var known=(typeof window.adhesionKnownStatus==='function')
+        ?window.adhesionKnownStatus()
+        :null;
+      var cached=(typeof window.adhesionAccess==='function')
         ?window.adhesionAccess()
         :{mode:'free',message:''};
+      if(known!==null&&known!==undefined&&known!==''){
+        /* Statut connu (même ancien) : la règle habituelle s'applique. */
+        return cached;
+      }
+      /* Aucun statut connu (hors ligne au premier clic). La fiche
+         membre en mémoire reste une information : un adhérent actif
+         reste soumis à la règle du renouvellement. */
+      if(cached.mode!=='free')return cached;
+      /* Utilisateur connecté sans aucune information sur son
+         dossier : on refuse l'ouverture, faute de pouvoir garantir
+         l'absence d'une demande en attente ou d'un renouvellement. */
+      if(connected)return{mode:'unknown',message:t.adhStatusUnknownBlock};
+      /* Sans compte, aucune demande n'existe : le formulaire reste
+         accessible (première adhésion). */
+      return{mode:'free',message:''};
     }
 
     if(typeof window.refreshMyAdhesionStatus!=='function'){
