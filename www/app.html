@@ -3119,7 +3119,7 @@ input[type=file]::file-selector-button{
 </p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouveau communiqué</h2></div><div class="field">
 <label for="nCat" data-i18n="admNewsCategory">Catégorie</label>
 <select id="nCat">
-<option value="urgent" data-i18n="fUrgent">Communiqué</option>
+<option value="urgent" data-i18n="fUrgent">Déclarations</option>
 <option value="statut" selected data-i18n="fStatut">Actualité</option>
 <option value="events" data-i18n="fEvents">Rencontres</option>
 </select>
@@ -3152,7 +3152,7 @@ input[type=file]::file-selector-button{
 <p class="hint" id="nEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admNewsPublished">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2" data-i18n="admEventNew">Nouvel événement</h2></div><div class="field">
+<h2 class="h2" style="margin-top:28px" data-i18n="admNewsPublished">Communiqués publiés</h2><div class="filters" id="admNewsFilters" role="group" aria-label="Catégories des communiqués"></div><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2" data-i18n="admEventNew">Nouvel événement</h2></div><div class="field">
 <label for="eDate" data-i18n="admFieldDate">Date</label>
 <input id="eDate" type="date">
 </div><div class="field">
@@ -3347,7 +3347,7 @@ seeAgenda:`Voir l'agenda`,
 
 newsT:`Communiqués`,
 fAll:`Tous`,
-fUrgent:`Communiqué`,
+fUrgent:`Déclarations`,
 fStatut:`Actualité`,
 fEvents:`Rencontres`,
 
@@ -4296,7 +4296,7 @@ ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخ�
 };
 
 var CATS={
-urgent:{fr:`Communiqué`,ar:`بيانات`},
+urgent:{fr:`Déclarations`,ar:`بيانات`},
 statut:{fr:`Actualité`,ar:`مستجدات`},
 events:{fr:`Rencontres`,ar:`لقاءات`}
 };
@@ -4330,6 +4330,10 @@ return o?String(L(o)||status||''):String(status||'');
 
 var lang='fr';
 var filter='all';
+/* Filtre des communiqués publiés dans l'espace administration :
+   les mêmes catégories que la page publique (Tous / Déclarations /
+   Actualité / Rencontres). */
+var admNewsFilter='all';
 var openId=null;
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
@@ -5626,7 +5630,28 @@ function renderAdminNews(){
 
 var t=T();
 
-var list=sortedNews();
+var all=sortedNews();
+
+/* Onglets de catégories : l'administration retrouve ses communiqués,
+   ses actualités et ses rencontres comme sur la page publique. */
+var cats=[
+['all',t.fAll],
+['urgent',t.fUrgent],
+['statut',t.fStatut],
+['events',t.fEvents]
+];
+
+var box=$('admNewsFilters');
+
+if(box){
+box.innerHTML=cats.map(function(k){
+return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+esc(k[1])+'</button>';
+}).join('');
+}
+
+var list=all.filter(function(c){
+return admNewsFilter==='all'||c.cat===admNewsFilter;
+});
 
 $('admNewsList').innerHTML=list.length
 
@@ -7025,7 +7050,7 @@ document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
-'[data-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
+'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn,#meAdhesionInfoBtn'
 );
@@ -7174,7 +7199,6 @@ renderNews();
 
 return;
 }
-
 if(el.hasAttribute('data-filter')){
 
 filter=el.getAttribute('data-filter');
@@ -7185,6 +7209,18 @@ renderFilters();
 renderNews();
 
 return;
+
+}
+
+/* Onglets de catégories de l'espace administration. */
+if(el.hasAttribute('data-adm-news-filter')){
+
+admNewsFilter=el.getAttribute('data-adm-news-filter');
+
+renderAdminNews();
+
+return;
+
 }
 
 if(el.hasAttribute('data-cal')){

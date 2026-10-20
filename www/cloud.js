@@ -1357,6 +1357,8 @@ var admin = {
         });
       });
     },
+    /* Publication d'un communiqué (FR/AR + image éventuelle). */
+    addNews:
       function(o){
 
         var data = {
