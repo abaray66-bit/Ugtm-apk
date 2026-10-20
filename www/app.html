@@ -3,7 +3,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>UGTM Souss-Massa</title>
-<meta name="description" content="Application de la Fédération régionale de la Santé UGTM Souss-Massa : communiqués, agenda, signalements et contacts.">
+<meta name="description" content="Application de la Fédération régionale de la Santé UGTM Souss-Massa : publications, agenda, signalements et contacts.">
 <meta name="theme-color" content="#B83268">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/ugtm-logo.svg">
@@ -568,6 +568,17 @@ main{
   padding-inline-start:12px
 }
 
+/* Titre de rubrique dans les listes groupées de l'accueil */
+.rgroup{
+  list-style:none;
+  padding:16px 0 4px;
+  font-family:var(--font-head);
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.02em;
+  color:var(--muted)
+}
+
 .head{
   width:100%;
   background:none;
@@ -615,6 +626,20 @@ main{
   background:transparent;
   color:var(--alert);
   border:1px solid var(--alert)
+}
+
+/* Badges de rubrique (nomenclature harmonisée) : trois repères
+   visuellement distincts, dans la palette existante. */
+.tag.statut{
+  background:var(--soft);
+  color:var(--muted);
+  border:1px solid var(--line)
+}
+
+.tag.events{
+  background:color-mix(in srgb, var(--accent) 16%, transparent);
+  color:var(--ink);
+  border:1px solid var(--accent)
 }
 
 .tag.signed{
@@ -2979,7 +3004,7 @@ input[type=file]::file-selector-button{
     <p class="hint" id="adhFormStatus" role="status" aria-live="polite" hidden></p>
     <p class="hint" data-i18n="adhDigitalNext"></p>
   </form>
-</section><!-- Communiqués --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
+</section><!-- Publications --><section class="screen" id="s-news" hidden><h1 class="title" data-i18n="newsT"></h1><div class="filters" id="filters" role="group"></div><ul class="list" id="newsList"></ul></section><!-- Signalement --><section class="screen" id="s-report" hidden><h1 class="title" data-i18n="reportT"></h1><div class="rpintro"><div class="rplead"><span class="rpdot" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span><strong data-i18n="reportP"></strong></div><ul class="points">
 <li data-i18n="r1"></li>
 <li data-i18n="r2"></li>
 <li data-i18n="r3"></li>
@@ -3100,12 +3125,12 @@ input[type=file]::file-selector-button{
 </div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" data-i18n-ph="admMemSearchPh" aria-label="Rechercher un adhérent" data-i18n-aria="admMemSearchAria" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
  origin/main
 <button class="btn ghost small" type="button" data-adm-act="csv" data-i18n="admMemExportCsv">Exporter la liste (CSV)</button>
-</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouveau communiqué</h2></div><div class="field">
+</p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouvelle publication</h2></div><div class="field">
 <label for="nCat" data-i18n="admNewsCategory">Catégorie</label>
 <select id="nCat">
-<option value="urgent" data-i18n="fUrgent">Communiqué</option>
-<option value="statut" selected data-i18n="fStatut">Actualité</option>
-<option value="events" data-i18n="fEvents">Rencontres</option>
+<option value="urgent" data-i18n="fUrgent">Communiqués et déclarations</option>
+<option value="statut" selected data-i18n="fStatut">Actualités syndicales</option>
+<option value="events" data-i18n="fEvents">Rencontres et réunions</option>
 </select>
 </div><div class="field">
 <label for="nAud" data-i18n="admNewsAudience">Qui peut le lire ?</label>
@@ -3132,11 +3157,11 @@ input[type=file]::file-selector-button{
 </div><div class="field">
 <label for="nBAr" data-i18n="admNewsTextAr">النص (بالعربية)</label>
 <textarea id="nBAr" rows="4" dir="rtl"></textarea>
-</div><button class="btn primary block" type="button" data-adm-act="addNews" id="nSubmitBtn" data-i18n="admNewsPublish">Publier le communiqué</button>
+</div><button class="btn primary block" type="button" data-adm-act="addNews" id="nSubmitBtn" data-i18n="admNewsPublish">Publier la publication</button>
 <p class="hint" id="nEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelNews" id="nCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admNewsPublished">Communiqués publiés</h2><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2" data-i18n="admEventNew">Nouvel événement</h2></div><div class="field">
+<h2 class="h2" style="margin-top:28px" data-i18n="admNewsPublished">Publications publiées</h2><div class="filters" id="admNewsFilters" role="group" data-i18n-aria="admNewsFiltersAria"></div><p class="hint" data-i18n="admNewsFilterHint"></p><ul class="list" id="admNewsList"></ul></div><div id="adm-events" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📅</span><h2 class="h2" data-i18n="admEventNew">Nouvel événement</h2></div><p class="hint" data-i18n="admEventAgendaHint"></p><div class="field">
 <label for="eDate" data-i18n="admFieldDate">Date</label>
 <input id="eDate" type="date">
 </div><div class="field">
@@ -3236,7 +3261,7 @@ langBtn:`ع`,
 langAria:`Passer en arabe`,
 
 tabHome:`Accueil`,
-tabNews:`Communiqués`,
+tabNews:`Publications`,
 tabReport:`Signaler`,
 tabAgenda:`Agenda`,
 tabContact:`Contact`,
@@ -3324,15 +3349,15 @@ admSignedBadge:`Signée et validée électroniquement`,
   admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
 
 nextT:`Prochain rendez-vous`,
-recentT:`Communiqués récents`,
+recentT:`Publications récentes`,
 seeAll:`Tout voir`,
 seeAgenda:`Voir l'agenda`,
 
-newsT:`Communiqués`,
+newsT:`Publications`,
 fAll:`Tous`,
-fUrgent:`Communiqué`,
-fStatut:`Actualité`,
-fEvents:`Rencontres`,
+fUrgent:`Communiqués et déclarations`,
+fStatut:`Actualités syndicales`,
+fEvents:`Rencontres et réunions`,
 
 share:`Partager sur WhatsApp`,
 aud:`Adhérents`,
@@ -3436,7 +3461,7 @@ empty:`Rien pour le moment.`,
 noEvent:`Aucun rendez-vous prévu.`,
 
 meT:`Mon espace`,
-meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux communiqués réservés aux adhérents.`,
+meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux publications réservées aux adhérents.`,
 meBtnIn:`Se connecter avec Google`,
 mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
@@ -3505,8 +3530,8 @@ deleted:`Données supprimées`,
   admTitle:`Administration`,
   admTabDashboard:`Tableau de bord`,
   admTabMembers:`Membres`,
-  admTabNews:`Communiqués`,
-  admTabEvents:`Événements`,
+  admTabNews:`Publications`,
+  admTabEvents:`Agenda syndical`,
   admTabAdhesions:`Adhésions`,
   admDashTitle:`Tableau de bord`,
   admDashSubtitle:`Vue d'ensemble de la gestion de la Fédération régionale de la Santé`,
@@ -3520,8 +3545,8 @@ deleted:`Données supprimées`,
   admKpiNewCases:`Nouveaux dossiers`,
   admKpiInProgress:`En cours`,
   admKpiClosed:`Clôturés`,
-  admKpiNews:`Communiqués`,
-  admKpiEvents:`Événements`,
+  admKpiNews:`Publications`,
+  admKpiEvents:`Agenda`,
   admTodoPendingAdh:`adhésion(s) en attente`,
   admTodoNewReports:`signalement(s) nouveau(x)`,
   admTodoInProgress:`dossier(s) en cours`,
@@ -3547,9 +3572,11 @@ deleted:`Données supprimées`,
   admMemSetResp:`Désigner responsable`,
   admMemRemoveResp:`Retirer responsable`,
   admSubAdminProvAria:`Secteur du sous-admin`,
-  admNewsNew:`Nouveau communiqué`,
-  admNewsPublished:`Communiqués publiés`,
-  admNewsEmpty:`Aucun communiqué.`,
+  admNewsNew:`Nouvelle publication`,
+  admNewsPublished:`Publications publiées`,
+  admNewsEmpty:`Aucune publication.`,
+  admNewsFiltersAria:`Filtrer les publications par rubrique`,
+  admNewsFilterHint:`Ce filtre porte sur les publications. Les activités programmées sont gérées dans l'onglet Agenda.`,
   admNewsCategory:`Catégorie`,
   admNewsAudience:`Qui peut le lire ?`,
   admNewsAudiencePublic:`Tout le monde`,
@@ -3559,16 +3586,17 @@ deleted:`Données supprimées`,
   admNewsTextFr:`Texte (français)`,
   admNewsTitleAr:`Titre (arabe)`,
   admNewsTextAr:`Texte (arabe)`,
-  admNewsPublish:`Publier le communiqué`,
+  admNewsPublish:`Publier la publication`,
   admNewsSave:`Enregistrer les modifications`,
   admCancelEdit:`Annuler la modification`,
-  admNewsEditHint:`Modification d'un communiqué publié : corrigez les champs puis enregistrez.`,
+  admNewsEditHint:`Modification d'une publication : corrigez les champs puis enregistrez.`,
   admNewsNeedDate:`Indiquez une date et au moins un titre.`,
-  admNewsPublishedToast:`Communiqué publié`,
-  admNewsEditedToast:`Communiqué modifié`,
+  admNewsPublishedToast:`Publication publiée`,
+  admNewsEditedToast:`Publication modifiée`,
   admEventNew:`Nouvel événement`,
-  admEventPublished:`Événements publiés`,
+  admEventPublished:`Événements de l'agenda`,
   admEventEmpty:`Aucun événement.`,
+  admEventAgendaHint:`Les activités programmées (date, heure, lieu) se gèrent ici. Les activités passées se publient dans Publications → Rencontres et réunions.`,
   admEventTime:`Heure`,
   admEventPlaceFr:`Lieu (français)`,
   admEventPlaceAr:`Lieu (arabe)`,
@@ -3603,7 +3631,7 @@ deleted:`Données supprimées`,
   admSelectProvince:`Sélectionnez la province concernée.`,
   admConfirmSuspend:`Suspendre %1 ?`,
   admConfirmDeleteMember:`Supprimer définitivement le profil de %1 ?`,
-  admConfirmDeleteNews:`Supprimer ce communiqué ?`,
+  admConfirmDeleteNews:`Supprimer cette publication ?`,
   admConfirmDeleteEvent:`Supprimer cet événement ?`,
   admConfirmDeleteReport:`Supprimer définitivement ce signalement ?`,
   admDeleteAdhesion:`Supprimer l'adhésion`,
@@ -3726,7 +3754,7 @@ langBtn:`Français`,
 langAria:`التبديل إلى الفرنسية`,
 
 tabHome:`الرئيسية`,
-tabNews:`البلاغات`,
+tabNews:`المنشورات`,
 tabReport:`تبليغ`,
 tabAgenda:`الأجندة`,
 tabContact:`اتصال`,
@@ -3867,15 +3895,15 @@ admAskCompletion:`طلب معلومات إضافية`,
 admGeneratePdfLong:`إنشاء / تحميل ملف PDF الموقّع`,
 
 nextT:`الموعد القادم`,
-recentT:`أحدث البلاغات`,
+recentT:`أحدث المنشورات`,
 seeAll:`عرض الكل`,
 seeAgenda:`عرض الأجندة`,
 
-newsT:`البلاغات`,
+newsT:`المنشورات`,
 fAll:`الكل`,
 fUrgent:`بيانات`,
-fStatut:`مستجدات`,
-fEvents:`لقاءات`,
+fStatut:`مستجدات نقابية`,
+fEvents:`لقاءات واجتماعات`,
 
 share:`مشاركة عبر واتساب`,
 aud:`للمنخرطين`,
@@ -3979,7 +4007,7 @@ empty:`لا شيء حاليا.`,
 noEvent:`لا توجد مواعيد مبرمجة.`,
 
 meT:`فضائي`,
-meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والبلاغات المخصصة للمنخرطين.`,
+meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والمنشورات المخصصة للمنخرطين.`,
 meBtnIn:`الدخول بحساب Google`,
 mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
@@ -4047,8 +4075,8 @@ deleted:`تم حذف البيانات`,
   admTitle:`الإدارة`,
   admTabDashboard:`لوحة القيادة`,
   admTabMembers:`الأعضاء`,
-  admTabNews:`البلاغات`,
-  admTabEvents:`الأحداث`,
+  admTabNews:`المنشورات`,
+  admTabEvents:`الأجندة النقابية`,
   admTabAdhesions:`الانخراطات`,
   admDashTitle:`لوحة القيادة`,
   admDashSubtitle:`نظرة عامة على تسيير الجامعة الوطنية للصحة الجهوية`,
@@ -4062,8 +4090,8 @@ deleted:`تم حذف البيانات`,
   admKpiNewCases:`ملفات جديدة`,
   admKpiInProgress:`قيد المعالجة`,
   admKpiClosed:`مغلقة`,
-  admKpiNews:`البلاغات`,
-  admKpiEvents:`الأحداث`,
+  admKpiNews:`المنشورات`,
+  admKpiEvents:`الأجندة`,
   admTodoPendingAdh:`انخراط في انتظار المصادقة`,
   admTodoNewReports:`تبليغ جديد`,
   admTodoInProgress:`ملف قيد المعالجة`,
@@ -4089,9 +4117,11 @@ deleted:`تم حذف البيانات`,
   admMemSetResp:`تعيين مسؤول`,
   admMemRemoveResp:`سحب صفة المسؤول`,
   admSubAdminProvAria:`قطاع المسؤول الفرعي`,
-  admNewsNew:`بلاغ جديد`,
-  admNewsPublished:`البلاغات المنشورة`,
-  admNewsEmpty:`لا توجد أي بلاغات.`,
+  admNewsNew:`منشور جديد`,
+  admNewsPublished:`المنشورات المنشورة`,
+  admNewsEmpty:`لا توجد أي منشورات.`,
+  admNewsFiltersAria:`تصفية المنشورات حسب الصنف`,
+  admNewsFilterHint:`هذه التصفية تخص المنشورات. أما الأنشطة المجدولة فتُدار في تبويب الأجندة.`,
   admNewsCategory:`الصنف`,
   admNewsAudience:`من يمكنه قراءته؟`,
   admNewsAudiencePublic:`الجميع`,
@@ -4101,25 +4131,26 @@ deleted:`تم حذف البيانات`,
   admNewsTextFr:`النص (بالفرنسية)`,
   admNewsTitleAr:`العنوان (بالعربية)`,
   admNewsTextAr:`النص (بالعربية)`,
-  admNewsPublish:`نشر البلاغ`,
+  admNewsPublish:`نشر المنشور`,
   admNewsSave:`حفظ التعديلات`,
   admCancelEdit:`إلغاء التعديل`,
-  admNewsEditHint:`تعديل بلاغ منشور: صححوا الحقول ثم احفظوا.`,
+  admNewsEditHint:`تعديل منشور: صححوا الحقول ثم احفظوا.`,
   admNewsNeedDate:`أدخلوا تاريخًا وعنوانًا واحدًا على الأقل.`,
-  admNewsPublishedToast:`تم نشر البلاغ`,
-  admNewsEditedToast:`تم تعديل البلاغ`,
-  admEventNew:`حدث جديد`,
-  admEventPublished:`الأحداث المنشورة`,
-  admEventEmpty:`لا توجد أي أحداث.`,
+  admNewsPublishedToast:`تم نشر المنشور`,
+  admNewsEditedToast:`تم تعديل المنشور`,
+  admEventNew:`موعد جديد`,
+  admEventPublished:`مواعيد الأجندة`,
+  admEventEmpty:`لا توجد أي مواعيد.`,
+  admEventAgendaHint:`الأنشطة المجدولة (التاريخ، التوقيت، المكان) تُدار هنا. أما الأنشطة المنقضية فتُنشر في «المنشورات» ضمن «لقاءات واجتماعات».`,
   admEventTime:`التوقيت`,
   admEventPlaceFr:`المكان (بالفرنسية)`,
   admEventPlaceAr:`المكان (بالعربية)`,
-  admEventPublish:`نشر الحدث`,
+  admEventPublish:`نشر الموعد`,
   admEventSave:`حفظ التعديلات`,
-  admEventEditHint:`تعديل حدث منشور: صححوا الحقول ثم احفظوا.`,
+  admEventEditHint:`تعديل موعد منشور: صححوا الحقول ثم احفظوا.`,
   admEventNeedDate:`أدخلوا تاريخًا وعنوانًا واحدًا على الأقل.`,
-  admEventPublishedToast:`تم نشر الحدث`,
-  admEventEditedToast:`تم تعديل الحدث`,
+  admEventPublishedToast:`تم نشر الموعد`,
+  admEventEditedToast:`تم تعديل الموعد`,
   admFieldDate:`التاريخ`,
   admEdit:`تعديل`,
   admDelete:`حذف`,
@@ -4145,7 +4176,7 @@ deleted:`تم حذف البيانات`,
   admSelectProvince:`اختروا الإقليم المعني.`,
   admConfirmSuspend:`تجميد %1؟`,
   admConfirmDeleteMember:`حذف ملف %1 نهائيًا؟`,
-  admConfirmDeleteNews:`حذف هذا البلاغ؟`,
+  admConfirmDeleteNews:`حذف هذا المنشور؟`,
   admConfirmDeleteEvent:`حذف هذا الحدث؟`,
   admConfirmDeleteReport:`حذف هذا التبليغ نهائيًا؟`,
   admDeleteAdhesion:`حذف الانخراط`,
@@ -4269,11 +4300,20 @@ fr:['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'],
 ar:['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']
 };
 
+/* Nomenclature institutionnelle des rubriques de publication.
+   Les clés techniques (urgent / statut / events) sont CONSERVÉES :
+   seul le libellé affiché change, aucune publication n'est réclassée
+   ni migrée. Les libellés viennent des clés i18n : une seule source
+   pour la page publique, l'accueil et l'espace administration. */
 var CATS={
-urgent:{fr:`Communiqué`,ar:`بيانات`},
-statut:{fr:`Actualité`,ar:`مستجدات`},
-events:{fr:`Rencontres`,ar:`لقاءات`}
+urgent:{fr:I18N.fr.fUrgent,ar:I18N.ar.fUrgent},
+statut:{fr:I18N.fr.fStatut,ar:I18N.ar.fStatut},
+events:{fr:I18N.fr.fEvents,ar:I18N.ar.fEvents}
 };
+
+/* Ordre institutionnel des rubriques : communiqués et déclarations,
+   actualités syndicales, rencontres et réunions. */
+var CATS_ORDER=['urgent','statut','events'];
 
 var PROVS=[
 {v:'agadir',fr:`Agadir Ida-Outanane`,ar:`أكادير إداوتنان`},
@@ -4304,6 +4344,10 @@ return o?String(L(o)||status||''):String(status||'');
 
 var lang='fr';
 var filter='all';
+/* Filtre de rubrique dans l'espace administration : mêmes clés et
+   mêmes libellés que la page publique (Tous / Communiqués et
+   déclarations / Actualités syndicales / Rencontres et réunions). */
+var admNewsFilter='all';
 var openId=null;
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
@@ -4347,7 +4391,7 @@ function titleFr(o){
 return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
 }
 
-/* Titre d'un communiqué / événement dans la langue de l'interface
+/* Titre d'une publication / d'un événement dans la langue de l'interface
    (repli sur le français quand la version arabe manque). */
 function titleFor(o){
 if(lang==='ar')return(o.ar&&o.ar.t)||(o.fr&&o.fr.t)||'';
@@ -4951,12 +4995,26 @@ var next=upcoming()[0];
 $('nextEvent').innerHTML=next
 ?eventRow(next,false)
 :'<p class="empty">'+T().noEvent+'</p>';
+/* Accueil : les publications récentes de CHAQUE rubrique, pas seulement
+   les communiqués. Les rubriques sans publication visible pour
+   l'utilisateur sont omises ; l'ordre suit la nomenclature
+   institutionnelle. */
+var groups=CATS_ORDER.map(function(k){
 
-var recent=sortedNews().slice(0,3);
+return {
+key:k,
+items:sortedNews().filter(function(c){return c.cat===k;}).slice(0,3)
+};
 
-$('recentList').innerHTML=recent.length
+}).filter(function(g){return g.items.length;});
 
-?recent.map(function(c){
+var recentHtml='';
+
+groups.forEach(function(g){
+
+recentHtml+='<li class="rgroup">'+esc(CATS[g.key][lang]||CATS[g.key].fr)+'</li>';
+
+recentHtml+=g.items.map(function(c){
 
 return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
@@ -4965,6 +5023,7 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 '<span class="ht">'+
 
 '<span class="meta">'+
+
 tagHTML(c)+
 audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
@@ -4978,25 +5037,39 @@ audTag(c)+
 
 '</li>';
 
-}).join('')
+}).join('');
+
+});
+
+$('recentList').innerHTML=recentHtml
+
+?recentHtml
 
 :'<li class="empty">'+T().empty+'</li>';
 }
 
-function renderFilters(){
+/* Filtres de publication : « Tous » + les rubriques dans l'ordre
+   institutionnel. Même source pour la page publique et l'espace
+   administration : les libellés ne peuvent pas diverger. */
+function catFilters(){
 
 var t=T();
 
-var keys=[
-['all',t.fAll],
-['urgent',t.fUrgent],
-['statut',t.fStatut],
-['events',t.fEvents]
-];
+return [['all',t.fAll]].concat(CATS_ORDER.map(function(k){
+
+return [k,CATS[k][lang]||CATS[k].fr];
+
+}));
+
+}
+
+function renderFilters(){
+
+var keys=catFilters();
 
 $('filters').innerHTML=keys.map(function(k){
 
-return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+k[1]+'</button>';
+return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+esc(k[1])+'</button>';
 
 }).join('');
 }
@@ -5051,8 +5124,8 @@ t.share+
 :'<li class="empty">'+t.empty+'</li>';
 }
 
-/* L'image du communiqué est stockée à part : elle n'est chargée
-   que lorsque l'on déplie le communiqué. */
+/* L'image de la publication est stockée à part : elle n'est chargée
+   que lorsque l'on déplie la publication. */
 function loadNewsImage(item){
 if(!window.CLOUD||!window.CLOUD.getNewsImage)return;
 item.imageLoading=true;
@@ -5586,7 +5659,26 @@ function renderAdminNews(){
 
 var t=T();
 
-var list=sortedNews();
+/* Barre de rubriques : mêmes libellés que la page publique. */
+var box=$('admNewsFilters');
+
+if(box){
+
+box.innerHTML=catFilters().map(function(k){
+
+return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+esc(k[1])+'</button>';
+
+}).join('');
+
+}
+
+/* Seules les publications de la rubrique choisie sont listées :
+   les clés techniques restent inchangées, seul l'affichage est filtré. */
+var list=sortedNews().filter(function(c){
+
+return admNewsFilter==='all'||c.cat===admNewsFilter;
+
+});
 
 $('admNewsList').innerHTML=list.length
 
@@ -6947,7 +7039,7 @@ document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
-'[data-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
+'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-app],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#installBtn,#langBtn,#meAdhesionInfoBtn'
 );
@@ -7105,6 +7197,17 @@ openId=null;
 
 renderFilters();
 renderNews();
+
+return;
+}
+
+/* Filtre de rubrique de l'espace administration (mêmes clés que la
+   page publique : la liste est filtrée, rien n'est modifié). */
+if(el.hasAttribute('data-adm-news-filter')){
+
+admNewsFilter=el.getAttribute('data-adm-news-filter');
+
+renderAdminNews();
 
 return;
 }
