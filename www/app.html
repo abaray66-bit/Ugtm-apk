@@ -3746,7 +3746,7 @@ deleted:`Données supprimées`,
   otaUpdateMsg:`Mise à jour disponible v%1 — %2`,
   otaInstall:`Installer`,
   otaDismiss:`Ignorer`,
-  otaRestartRequired:`Mise à jour v%1 téléchargée — installez-la puis redémarrez l'application pour l'appliquer.`,
+  otaRestartRequired:`Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l'application pour l'appliquer.`,
   otaRetry:`Réessayer`,
 
   /* Partage de l'application */
@@ -4306,7 +4306,7 @@ deleted:`تم حذف البيانات`,
   otaUpdateMsg:`تحديث متوفر v%1 — %2`,
   otaInstall:`تثبيت`,
   otaDismiss:`تجاهل`,
-  otaRestartRequired:`تم تنزيل التحديث v%1 — ثبّتو ثم أعد تشغيل التطبيق لتطبيقه.`,
+  otaRestartRequired:`تم اقتراح تنزيل التحديث v%1 — ثبّتو ثم أعد تشغيل التطبيق لتطبيقه.`,
   otaRetry:`إعادة المحاولة`,
 
   /* مشاركة التطبيق */
@@ -9154,13 +9154,16 @@ window.UGTM.failed(err);
     }
 
     /* État de la mise à jour pour la version distante concernée.
-       'requested' : le téléchargement a été déclenché, l'installation
-                     et le redémarrage restent à faire.
-       'dismissed' : l'utilisateur a ignoré cette version : la bannière
-                     ne doit plus revenir pour elle.
-       L'état est conservé : sans lui, la bannière réapparaît à chaque
-       démarrage et continue d'annoncer « mise à jour disponible » alors
-       que le fichier a déjà été téléchargé. */
+        'requested' : le téléchargement a été PROPOSÉ à l'utilisateur ;
+                      l'installation et le redémarrage restent à faire.
+                      Le code ne peut pas vérifier que le fichier a
+                      réellement été récupéré : le message l'annonce donc
+                      comme « proposée au téléchargement ».
+        'dismissed' : l'utilisateur a ignoré cette version : la bannière
+                      ne doit plus revenir pour elle.
+        L'état est conservé : sans lui, la bannière réapparaît à chaque
+        démarrage et continue d'annoncer « mise à jour disponible » alors
+        que le fichier a déjà été proposé. */
     var STATE_KEY='ugtm_ota_state';
 
     function readState(){
@@ -9222,7 +9225,7 @@ window.UGTM.failed(err);
         if(stage==='requested'){
           /* Le fichier a déjà été proposé au téléchargement : il reste
              à l'installer puis à redémarrer l'application. */
-          msg=String(tt.otaRestartRequired||'Mise à jour v%1 téléchargée — installez-la puis redémarrez l\'application pour l\'appliquer.')
+          msg=String(tt.otaRestartRequired||'Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l\'application pour l\'appliquer.')
             .replace('%1',m.versionName||'');
         }else{
           msg=String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
