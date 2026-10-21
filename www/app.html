@@ -3746,6 +3746,8 @@ deleted:`Données supprimées`,
   otaUpdateMsg:`Mise à jour disponible v%1 — %2`,
   otaInstall:`Installer`,
   otaDismiss:`Ignorer`,
+  otaRestartRequired:`Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l'application pour l'appliquer.`,
+  otaRetry:`Réessayer`,
 
   /* Partage de l'application */
   shareAppTitle:`UGTM Souss-Massa`,
@@ -4304,6 +4306,8 @@ deleted:`تم حذف البيانات`,
   otaUpdateMsg:`تحديث متوفر v%1 — %2`,
   otaInstall:`تثبيت`,
   otaDismiss:`تجاهل`,
+  otaRestartRequired:`تم اقتراح تنزيل التحديث v%1 — ثبّتو ثم أعد تشغيل التطبيق لتطبيقه.`,
+  otaRetry:`إعادة المحاولة`,
 
   /* مشاركة التطبيق */
   shareAppTitle:`الاتحاد العام للشغالين بالمغرب – جهة سوس ماسة`,
@@ -7223,6 +7227,34 @@ ics
 }
 
 /* =========================
+   ESPACE MEMBRE
+   ========================= */
+
+/* Purge la session locale.
+   Cette fonction est utilisée par le gestionnaire de clic (déconnexion)
+   ET par window.UGTM.setSession, qui est appelé à chaque changement
+   d'état d'authentification : elle doit donc être déclarée à la portée
+   de l'IIFE, et non à l'intérieur du gestionnaire d'événements. */
+
+function purgeSession(){
+  S.user=null;
+  S.member=null;
+  S.isAdmin=false;
+  S.isSubAdmin=false;
+  S.members=[];
+  S.adhesions=[];
+  S.reports=[];
+  S.formDirty=false;
+  try{
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf('ugtm-adhesion-draft:')===0||k==='ugtm-report-last'){
+        localStorage.removeItem(k);
+      }
+    });
+  }catch(e){}
+}
+
+/* =========================
    CLICS
    ========================= */
 
@@ -7467,23 +7499,11 @@ return;
    ESPACE MEMBRE
    ========================= */
 
-function purgeSession(){
-  S.user=null;
-  S.member=null;
-  S.isAdmin=false;
-  S.isSubAdmin=false;
-  S.members=[];
-  S.adhesions=[];
-  S.reports=[];
-  S.formDirty=false;
-  try{
-    Object.keys(localStorage).forEach(function(k){
-      if(k.indexOf('ugtm-adhesion-draft:')===0||k==='ugtm-report-last'){
-        localStorage.removeItem(k);
-      }
-    });
-  }catch(e){}
-}
+/* Purge la session locale.
+   Cette fonction est utilisée par le gestionnaire de clic (déconnexion)
+   ET par window.UGTM.setSession, qui est appelé à chaque changement
+   d'état d'authentification : elle doit donc être déclarée à la portée
+   de l'IIFE, et non à l'intérieur du gestionnaire d'événements. */
 
 if(el.hasAttribute('data-act')){
 
@@ -9133,43 +9153,112 @@ window.UGTM.failed(err);
       checkRemote(stored);
     }
 
+    /* État de la mise à jour pour la version distante concernée.
+        'requested' : le téléchargement a été PROPOSÉ à l'utilisateur ;
+                      l'installation et le redémarrage restent à faire.
+                      Le code ne peut pas vérifier que le fichier a
+                      réellement été récupéré : le message l'annonce donc
+                      comme « proposée au téléchargement ».
+        'dismissed' : l'utilisateur a ignoré cette version : la bannière
+                      ne doit plus revenir pour elle.
+        L'état est conservé : sans lui, la bannière réapparaît à chaque
+        démarrage et continue d'annoncer « mise à jour disponible » alors
+        que le fichier a déjà été proposé. */
+    var STATE_KEY='ugtm_ota_state';
+
+    function readState(){
+      try{
+        var s=JSON.parse(localStorage.getItem(STATE_KEY)||'null');
+        return (s && s.code) ? s : null;
+      }catch(e){return null;}
+    }
+
+    function writeState(code,stage){
+      try{localStorage.setItem(STATE_KEY,JSON.stringify({code:code,stage:stage,ts:Date.now()}));}catch(e){}
+    }
+
+    function clearState(){
+      try{localStorage.removeItem(STATE_KEY);}catch(e){}
+    }
+
     function checkRemote(storedCode){
       fetch('https://ugtm-fns-souss-massa.web.app/update.json?t=' + Date.now())
       .then(function(r){return r.ok ? r.json() : null;})
       .then(function(m){
         if(!m || !m.versionCode) return;
         var remote = parseInt(m.versionCode, 10);
-        if(remote > storedCode){
-          var el = document.createElement('div');
-          el.className = 'ota-banner';
-          var tt=(typeof window.ugtmT==='function')?window.ugtmT():{};
-          var escFn=(typeof window.ugtmEsc==='function')?window.ugtmEsc:function(v){
-            return String(v==null?'':v)
-            .replace(/&/g,'&amp;')
-            .replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;')
-            .replace(/'/g,'&#39;');
-          };
-          el.innerHTML =
-            '<div class="ota-msg">'+escFn(String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
-              .replace('%1',m.versionName||'')
-              .replace('%2',m.message||''))+'</div>'+
-            '<div class="ota-actions">'+
-            '<button class="ota-btn ota-install" id="otaUpdateBtn">'+escFn(tt.otaInstall||'Installer')+'</button>'+
-            '<button class="ota-btn ota-dismiss" id="otaDismissBtn">'+escFn(tt.otaDismiss||'Ignorer')+'</button>'+
-            '</div>';
-          document.body.appendChild(el);
-          document.getElementById('otaUpdateBtn').onclick=function(){
-            if(m.apkUrl){
-              // Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
-              window.open(m.apkUrl,'_system');
-            }
-          };
-          document.getElementById('otaDismissBtn').onclick=function(){
-            el.hidden = true;
-          };
+
+        /* L'application tournant est à jour : plus rien à proposer et
+           l'éventuel état de la version précédente n'a plus lieu d'être. */
+        if(remote <= storedCode){
+          clearState();
+          return;
         }
+
+        var state=readState();
+        var stage=(state && state.code===remote) ? state.stage : '';
+
+        /* Version ignorée : la bannière ne réapparaît pas. */
+        if(stage==='dismissed') return;
+
+        var tt=(typeof window.ugtmT==='function')?window.ugtmT():{};
+        var escFn=(typeof window.ugtmEsc==='function')?window.ugtmEsc:function(v){
+          return String(v==null?'':v)
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;')
+          .replace(/'/g,'&#39;');
+        };
+
+        var el=document.createElement('div');
+        el.className='ota-banner';
+        el.setAttribute('role','status');
+        el.setAttribute('aria-live','polite');
+
+        /* Une seule bannière à la fois : l'état peut être redessiné
+           (après un téléchargement déclenché, par exemple). */
+        var previous=document.querySelectorAll('.ota-banner');
+        for(var i=0;i<previous.length;i++) previous[i].remove();
+
+        var msg;
+        if(stage==='requested'){
+          /* Le fichier a déjà été proposé au téléchargement : il reste
+             à l'installer puis à redémarrer l'application. */
+          msg=String(tt.otaRestartRequired||'Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l\'application pour l\'appliquer.')
+            .replace('%1',m.versionName||'');
+        }else{
+          msg=String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
+            .replace('%1',m.versionName||'')
+            .replace('%2',m.message||'');
+        }
+
+        el.innerHTML =
+          '<div class="ota-msg">'+escFn(msg)+'</div>'+
+          '<div class="ota-actions">'+
+          '<button class="ota-btn ota-install" id="otaUpdateBtn">'+
+          escFn(stage==='requested'?(tt.otaRetry||'Réessayer'):(tt.otaInstall||'Installer'))+
+          '</button>'+
+          '<button class="ota-btn ota-dismiss" id="otaDismissBtn">'+escFn(tt.otaDismiss||'Ignorer')+'</button>'+
+          '</div>';
+
+        document.body.appendChild(el);
+
+        document.getElementById('otaUpdateBtn').onclick=function(){
+          if(!m.apkUrl) return;
+          /* Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
+             et par l'installateur Android. La bannière passe alors en
+             état « téléchargée / redémarrage requis ». */
+          writeState(remote,'requested');
+          window.open(m.apkUrl,'_system');
+          el.hidden=true;
+          checkRemote(storedCode);
+        };
+
+        document.getElementById('otaDismissBtn').onclick=function(){
+          writeState(remote,'dismissed');
+          el.hidden=true;
+        };
       })
       .catch(function(){});
     }
