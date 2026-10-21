@@ -3117,9 +3117,7 @@ input[type=file]::file-selector-button{
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
 <ul class="resp" id="permResp" hidden></ul>
-</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
-
-</div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
+</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
 <p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
 
@@ -3505,7 +3503,6 @@ provinceContactsEmpty:`Aucun responsable provincial n’est désigné actuelleme
 installT:`Installer l'application`,
 installP:`Sur Android, ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».`,
 installIos:`Sur iPhone, ouvrez le lien dans Safari, touchez Partager puis « Sur l'écran d'accueil ».`,
-installBtn:`Installer maintenant`,
 
 toastLink:`Lien bientôt disponible`,
 
@@ -4066,7 +4063,6 @@ provinceContactsEmpty:`لا يوجد مسؤول نقابي معيّن حاليا
 installT:`تثبيت التطبيق`,
 installP:`على أندرويد: افتحوا قائمة ⋮ في Chrome ثم اختاروا «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».`,
 installIos:`على آيفون: افتحوا الرابط في Safari، ثم اضغطوا على «مشاركة» واختاروا «إضافة إلى الشاشة الرئيسية».`,
-installBtn:`التثبيت الآن`,
 
 toastLink:`الرابط متاح قريبا`,
 
@@ -4422,7 +4418,6 @@ var agendaCursor=new Date();
 agendaCursor.setDate(1);
 var agendaSelectedDate='';
 var toastTimer=null;
-var deferredInstall=null;
 
 try{
 var saved=localStorage.getItem('ugtm-lang');
@@ -7264,7 +7259,7 @@ var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
 '[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-event],[data-share-app],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
-'#installBtn,#langBtn,#meAdhesionInfoBtn'
+'#langBtn,#meAdhesionInfoBtn'
 );
 
 if(!el)return;
@@ -7280,21 +7275,6 @@ localStorage.setItem('ugtm-lang',lang);
 }catch(err){}
 
 applyI18n();
-
-return;
-}
-
-if(el.id==='installBtn'){
-
-if(deferredInstall){
-
-deferredInstall.prompt();
-
-deferredInstall=null;
-
-el.hidden=true;
-
-}
 
 return;
 }
@@ -8219,40 +8199,6 @@ toast:toast,
 error:showError
 
 };
-
-/* =========================
-   INSTALLATION PWA
-   ========================= */
-
-window.addEventListener(
-'beforeinstallprompt',
-function(e){
-
-e.preventDefault();
-
-deferredInstall=e;
-
-$('installBtn').hidden=false;
-
-});
-
-window.addEventListener(
-'appinstalled',
-function(){
-
-$('installCard').hidden=true;
-
-});
-
-if(
-(window.matchMedia&&
-window.matchMedia('(display-mode: standalone)').matches)||
-window.navigator.standalone
-){
-
-$('installCard').hidden=true;
-
-}
 
 /* =========================
    SERVICE WORKER
