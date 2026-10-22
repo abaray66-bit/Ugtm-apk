@@ -7852,8 +7852,7 @@ t.shareReportStatus+' '+reportStatusLabelI18n(report.status)+'\n'+
 t.shareReportSummary+' '+String(report.description||'').slice(0,500);
 
 if(report.attachmentName){
-text+='
-'+T().shareReportAttachHint+': '+report.attachmentName;
+text+='\n'+T().shareReportAttachHint+': '+report.attachmentName;
 }
 
 if(navigator.share){
