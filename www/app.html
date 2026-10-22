@@ -8016,8 +8016,21 @@ if(file){
 
 if(file.size>300*1024){
 
+if(/^image\/(jpeg|png|webp)$/.test(file.type||'')||/\.(jpe?g|png|webp)$/i.test(file.name||'')){
+reduceImage(file).then(function(red){
+sendReport({
+name:red.name,
+type:red.type||'application/octet-stream',
+data:String(red.data||'')
+});
+}).catch(function(){
 done(false,T().attachTooBig);
 toast(T().attachTooBig,5000);
+});
+}else{
+done(false,T().attachTooBig);
+toast(T().attachTooBig,5000);
+}
 return;
 }
 
@@ -8040,6 +8053,34 @@ reader.readAsDataURL(file);
 
 }else{
 sendReport(null);
+}
+
+function reduceImage(file){
+return new Promise(function(resolve,reject){
+var img=new Image();
+img.onload=function(){
+var scale=Math.min(1,1400/Math.max(img.width,img.height));
+var canvas=document.createElement('canvas');
+var quality=.82,data='';
+for(var attempt=0;attempt<20;attempt++){
+canvas.width=Math.max(1,Math.round(img.width*scale));
+canvas.height=Math.max(1,Math.round(img.height*scale));
+var ctx=canvas.getContext('2d');
+ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.drawImage(img,0,0,canvas.width,canvas.height);
+data=canvas.toDataURL('image/jpeg',quality);
+if(data.length<=300000)break;
+if(quality>.4){quality=Math.max(.4,quality-.1);}else{scale*=.82;quality=.72;}
+}
+if(data.length>300000){reject(new Error('too big'));return;}
+resolve({name:file.name.replace(/\.(jpe?g|png|webp)$/i,'.jpg'),type:'image/jpeg',data:data});
+};
+img.onerror=function(){reject(new Error('img'));};
+var reader=new FileReader();
+reader.onload=function(){img.src=reader.result;};
+reader.onerror=function(){reject(new Error('reader'));};
+reader.readAsDataURL(file);
+});
 }
 
 function renderAttachmentPreview(list){
