@@ -2621,6 +2621,28 @@ body {
   resize: vertical !important;
 }
 
+/* Pièces jointes : prévisualisation successives */
+.attachment-preview{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:8px;
+}
+.attachment-thumb{
+display:flex;
+align-items:center;
+gap:6px;
+padding:4px 8px;
+border:1px solid #ddd;
+border-radius:6px;
+font-size:.82rem;
+background:#fafafa;
+}
+.attachment-thumb button{
+padding:2px 6px;
+font-size:.72rem;
+}
+
 #reportForm input[type="file"],
 .field input[type="file"] {
   width: 100%;
@@ -3068,9 +3090,10 @@ input[type=file]::file-selector-button{
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" minlength="10" maxlength="4000" required></textarea></div>
-<div class="field"><label for="rAttachment">Pièce jointe (facultatif)</label>
-<input id="rAttachment" type="file" accept="image/*,.pdf">
-<p class="hint">Image ou PDF, taille maximale 300 Ko.</p></div>
+<div class="field"><label for="rAttachment">Pièces jointes (facultatif, jusqu'à 3)</label>
+<input id="rAttachment" type="file" accept="image/*,.pdf" multiple>
+<p class="hint">Image ou PDF, taille maximale 300 Ko chacune. Les pièces jointes s'affichent l'une après l'autre.</p>
+<div id="rAttachmentPreview" class="attachment-preview" hidden></div></div>
 <label class="chip"><input id="rAnonymous" type="checkbox"><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" id="rSubmitBtn" data-i18n="rSubmit"></button>
@@ -7907,7 +7930,9 @@ feedback(T().admSelectProvince);
 return;
 }
 
-var file=$('rAttachment').files&&$('rAttachment').files[0];
+var files=Array.prototype.slice.call($('rAttachment').files||[]).slice(0,3);
+var file=files[0]||null;
+renderAttachmentPreview(files);
 
 function setSending(on){
 
@@ -8015,6 +8040,36 @@ reader.readAsDataURL(file);
 
 }else{
 sendReport(null);
+}
+
+function renderAttachmentPreview(list){
+var box=$('rAttachmentPreview');
+if(!box)return;
+box.hidden=true;
+box.innerHTML='';
+list.forEach(function(f){
+if(!f)return;
+var div=document.createElement('div');
+div.className='attachment-thumb';
+var name=document.createElement('span');
+name.textContent=f.name+' ('+Math.round(f.size/1024)+' Ko)';
+div.appendChild(name);
+var remove=document.createElement('button');
+remove.type='button';
+remove.className='btn ghost small';
+remove.textContent='Retirer';
+remove.addEventListener('click',function(){
+var dt=new DataTransfer();
+Array.prototype.forEach.call($('rAttachment').files||[],function(f2){
+if(f2!==f)dt.items.add(f2);
+});
+$('rAttachment').files=dt.files;
+renderAttachmentPreview(Array.prototype.slice.call($('rAttachment').files||[]));
+});
+div.appendChild(remove);
+box.appendChild(div);
+box.hidden=false;
+});
 }
 });
 
