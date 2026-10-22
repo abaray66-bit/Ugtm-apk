@@ -3101,7 +3101,7 @@ input[type=file]::file-selector-button{
 </form>
 <div class="actions">
 
-<button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button>
+<button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button><p class="hint" data-i18n="sendDocsHint"></p>
 
 </div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><div class="calendar"><div class="calendar-head"><button class="calnav" type="button" data-calnav="-1" aria-label="Mois précédent">‹</button><strong id="agendaMonth"></strong><button class="calnav" type="button" data-calnav="1" aria-label="Mois suivant">›</button></div><div class="calendar-grid" id="calendarGrid" role="grid"></div><p class="calendar-note" data-i18n="calNotice"></p></div><h2 class="h2" data-i18n="calEvents"></h2><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row">
 <div class="ico" aria-hidden="true">
@@ -3492,6 +3492,7 @@ rAdminOnly:`Les signalements sont visibles uniquement par l’administration.`,
 
 openForm:`Ouvrir le formulaire`,
 sendDocs:`Envoyer des pièces sur WhatsApp`,
+  sendDocsHint:`Le numéro régional s'ouvre ; le secrétaire provincial (si configuré) est disponible dans l'onglet Contact.`,
 
 agendaT:`Agenda`,
 addCal:`Ajouter au calendrier`,
@@ -3768,6 +3769,7 @@ deleted:`Données supprimées`,
   shareReportDate:`Date :`,
   shareReportStatus:`Statut :`,
   shareReportSummary:`Résumé :`,
+  shareReportAttachHint:`Pièce jointe à joindre manuellement`,
 
   /* Mise à jour OTA */
   otaUpdateMsg:`Mise à jour disponible v%1 — %2`,
@@ -4051,6 +4053,7 @@ rAdminOnly:`التبليغات مخصصة للإدارة.`,
 
 openForm:`فتح الاستمارة`,
 sendDocs:`إرسال وثائق عبر واتساب`,
+  sendDocsHint:`الرقم الإقليمي يفتح تلقائيًا؛ المدير الإقليمي (إذا تم تعيينه) متاح في علامة تواصل`,
 
 agendaT:`الأجندة`,
 addCal:`إضافة إلى التقويم`,
@@ -4062,7 +4065,7 @@ calNext:`الشهر التالي`,
 contactT:`اتصلوا بنا`,
 
 cWa:`مجموعة التواصل الجهوية`,
-cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاصة بالجامعة الوطنية للصحة.`,
+cWaD:`الوصول مخصص للأعضاء المصادقين؛ يظهر الرابط فقط إذا كان اشتراكك نشطًا`,
 cWaB:`انضموا إلى المجموعة`,
 
 cFb:`الصفحة الرسمية على فيسبوك`,
@@ -4325,6 +4328,7 @@ deleted:`تم حذف البيانات`,
   shareReportEtab:`المؤسسة:`,
   shareReportDate:`التاريخ:`,
   shareReportStatus:`الحالة:`,
+  shareReportAttachHint:`المرفق الذي يجب إرفاقه يدويًا`,
   shareReportSummary:`ملخص:`,
 
   /* التحديث عبر الإنترنت */
@@ -5037,6 +5041,19 @@ function contactUrl(re){
   return hit?hit.url:'';
 }
 
+function provinceWhatsAppForMember(){
+var m=typeof S!=='undefined'&&S.member;
+if(!m||!m.prov)return '';
+var list=S.provinceContacts||[];
+for(var i=0;i<list.length;i++){
+var c=list[i];
+if(c&&c.prov===m.prov&&c.phone){
+return String(c.phone).replace(/[^0-9+]/g,'').replace(/^\+/,'');
+}
+}
+return '';
+}
+
 function linkFor(key){
 
   if(key==='wa')
@@ -5045,11 +5062,13 @@ function linkFor(key){
   if(key==='fb')
   return contactUrl(/facebook\.com/i);
 
-  if(key==='num')
-  return contactUrl(/wa\.me/i)||
-  ((PERM.phone||'').replace(/\D/g,'')
-  ?'https://wa.me/'+String(PERM.phone).replace(/\D/g,'')
-  :'');
+  if(key==='num'){
+  var reg=((PERM.phone||'').replace(/\D/g,''));
+  if(reg)return 'https://wa.me/'+reg;
+  var prov=provinceWhatsAppForMember();
+  if(prov)return 'https://wa.me/'+prov;
+  return '';
+  }
 
   return '';
 }
@@ -5148,8 +5167,16 @@ fmtDate(ev.date,true)+
 '</div>';
 }
 
-function renderHome(){
+function applyGroupAccess(){
+var allowed=whatsappGroupAllowed();
+document.querySelectorAll('[data-link="wa"]').forEach(function(b){
+b.hidden=!allowed;
+if(!allowed)b.setAttribute('aria-disabled','true');
+});
+}
 
+function renderHome(){
+  applyGroupAccess();
 var next=upcoming()[0];
 
 $('nextEvent').innerHTML=next
@@ -5556,6 +5583,7 @@ return '<li class="mrow"><div class="mi">'+
 }
 
 function renderMe(){
+  applyGroupAccess();
 
 var t=T();
 
@@ -7822,6 +7850,11 @@ t.shareReportEtab+' '+(report.etab||'')+'\n'+
 t.shareReportDate+' '+(report.date||'')+'\n'+
 t.shareReportStatus+' '+reportStatusLabelI18n(report.status)+'\n'+
 t.shareReportSummary+' '+String(report.description||'').slice(0,500);
+
+if(report.attachmentName){
+text+='
+'+T().shareReportAttachHint+': '+report.attachmentName;
+}
 
 if(navigator.share){
 navigator.share({
