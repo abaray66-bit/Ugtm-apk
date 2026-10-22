@@ -1326,14 +1326,27 @@ main{
    ========================= */
 
 .tabs{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-around;
+  align-items:stretch;
   background:var(--surface);
   border-top:1px solid var(--line);
-  padding:4px 4px 6px;
+  padding:4px 2px 6px;
   position:relative;
   z-index:2;
-  box-shadow:0 -4px 14px rgba(36,25,31,.06)
+  box-shadow:0 -4px 14px rgba(36,25,31,.06);
+  width:100%;
+  max-width:100%;
+  overflow:hidden
+}
+
+.tab{
+  flex:1 1 0;
+  min-width:0;
+  max-width:20%;
+  padding:4px 2px;
+}
 }
 
 .tab{
@@ -1346,10 +1359,10 @@ main{
   justify-content:flex-end;
   gap:3px;
   min-height:54px;
-  padding:4px 2px;
-  font-size:12px;
+  font-size:11px;
   font-weight:500;
-  cursor:pointer
+  cursor:pointer;
+  word-break:break-word
 }
 
 .tab[aria-selected="true"]{
