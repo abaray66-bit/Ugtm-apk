@@ -8811,7 +8811,13 @@ window.UGTM.failed(err);
           var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
           var validationDate='';
           if(request&&request.signedAt){
-            try{validationDate=new Date(request.signedAt).toLocaleDateString('fr-FR');}catch(eDate){}
+            try{
+              var sd=request.signedAt;
+              if(sd&&typeof sd==='object'&&typeof sd.seconds==='number'){sd=sd.seconds*1000;}
+              else if(sd&&typeof sd.toDate==='function'){sd=sd.toDate();}
+              validationDate=new Date(sd).toLocaleDateString('fr-FR');
+              if(validationDate==='Invalid Date')validationDate='';
+            }catch(eDate){validationDate='';}
           }
           section('VALIDATION');
           row2('Validée par',signer,'Statut du dossier','VALIDÉE');
