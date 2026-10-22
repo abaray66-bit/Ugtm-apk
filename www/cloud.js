@@ -1000,7 +1000,9 @@ async function syncMemberPhone(u, phone){
    ========================================================= */
 async function getAdhesionDoc(uid){
   var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
-  return snap.exists()?snap.data():null;
+  /* id = identifiant du document Firestore : c'est la référence unique
+     et la provenance du dossier, affichée sur le PDF officiel. */
+  return snap.exists()?Object.assign({},snap.data(),{id:snap.id}):null;
 }
 /* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
    L'adhérent est identifié directement, sans passer par un code technique. */

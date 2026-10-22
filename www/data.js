@@ -44,7 +44,7 @@ window.APP_DATA = {
     address: "Agadir, Souss-Massa",
     phone: "06 61 38 62 47",
     email: "abaray66@gmail.com",
-    hours: "Lundi - Vendredi, 09:00 - 17:00"
+    hours: "Lundi – Vendredi, 09:00 – 17:00"
     // Les responsables syndicaux ne se saisissent pas ici :
     // l'admin les désigne depuis l'espace administrateur (onglet Membres) et
     // ils apparaissent aussitôt sous « Permanence syndicale » (onglet Contact).

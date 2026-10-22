@@ -910,6 +910,10 @@ main{
 .filters{
   display:flex;
   gap:8px;
+  /* Tous les onglets restent visibles : sur petit écran les libellés
+     passent à la ligne au lieu de former une piste à défilement
+     horizontal (overflow-x conservé uniquement comme filet de sécurité). */
+  flex-wrap:wrap;
   overflow-x:auto;
   padding-bottom:12px
 }
@@ -1397,8 +1401,15 @@ main{
   background:var(--ink);
   color:var(--bg);
   padding:10px 16px;
-  border-radius:999px;
+  /* Rayon borné à 20px : sur un message long (2-4 lignes sur un
+     téléphone), l'ancien rayon de 999px transformait le bandeau en
+     ovale et le texte débordait du « cercle » dans l'APK. Sur un
+     message d'une ligne, 20px reste supérieur à la moitié de la
+     hauteur : la pastille reste strictement identique en PWA. */
+  border-radius:20px;
   font-size:14px;
+  line-height:1.4;
+  overflow-wrap:break-word;
   text-align:center;
   opacity:0;
   pointer-events:none;
@@ -1591,6 +1602,9 @@ button.danger:hover{
   border-radius:var(--radius-m);
   background:var(--soft);
   font-weight:500;
+  /* La note d'administration peut comporter plusieurs lignes. */
+  white-space:pre-line;
+  overflow-wrap:break-word;
   margin:0 0 16px;
   border-inline-start:4px solid var(--accent)
 }
@@ -2636,6 +2650,49 @@ body {
   resize: vertical !important;
 }
 
+/* Aperçu de la pièce jointe : miniature, poids réel après
+   redimensionnement et bouton de suppression. */
+.attach-preview{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:8px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:var(--radius-s);
+  background:var(--soft);
+}
+.attach-preview-img{
+  width:44px;
+  height:44px;
+  object-fit:cover;
+  border-radius:6px;
+  flex:none;
+}
+.attach-preview-ico{
+  font-size:24px;
+  line-height:1;
+}
+.attach-preview-meta{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+  flex:1;
+  font-size:13px;
+}
+.attach-preview-meta b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.attach-preview-meta span{color:var(--muted);}
+.attach-preview-err{
+  color:var(--alert);
+  font-size:13px;
+  font-weight:600;
+}
+
 /* Pièces jointes : prévisualisation successives */
 .attachment-preview{
 display:flex;
@@ -2988,7 +3045,7 @@ input[type=file]::file-selector-button{
 </div>
 </div>
 <div class="sechead">
-<h2 data-i18n="nextT"></h2>
+<h2 id="nextEventTitle" data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
 <h2 data-i18n="recentT"></h2>
@@ -3105,10 +3162,10 @@ input[type=file]::file-selector-button{
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" minlength="10" maxlength="4000" required></textarea></div>
-<div class="field"><label for="rAttachment">Pièces jointes (facultatif, jusqu'à 3)</label>
-<input id="rAttachment" type="file" accept="image/*,.pdf" multiple>
-<p class="hint">Image ou PDF, taille maximale 300 Ko chacune. Les pièces jointes s'affichent l'une après l'autre.</p>
-<div id="rAttachmentPreview" class="attachment-preview" hidden></div></div>
+<div class="field"><label for="rAttachment" data-i18n="rAttachLabel">Pièces jointes (facultatif, jusqu'à 3)</label>
+<input id="rAttachment" type="file" accept="image/*,.pdf,application/pdf" multiple>
+<div id="rAttachmentPreview" class="attach-preview" hidden></div>
+<p class="hint" data-i18n="rAttachHint">Image ou PDF, 300 Ko maximum : les photos sont automatiquement redimensionnées pour tenir dans cette limite. Les pièces jointes s'affichent l'une après l'autre.</p></div>
 <label class="chip"><input id="rAnonymous" type="checkbox"><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" id="rSubmitBtn" data-i18n="rSubmit"></button>
@@ -3116,9 +3173,11 @@ input[type=file]::file-selector-button{
 </form>
 <div class="actions">
 
-<button class="btn ghost block" type="button" data-link="num" data-i18n="sendDocs"></button><p class="hint" data-i18n="sendDocsHint"></p>
+<button class="btn ghost block" type="button" data-sendto="region" data-i18n="sendDocs"></button><p class="hint" data-i18n="sendDocsHint"></p>
 
-</div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><div class="calendar"><div class="calendar-head"><button class="calnav" type="button" data-calnav="-1" aria-label="Mois précédent">‹</button><strong id="agendaMonth"></strong><button class="calnav" type="button" data-calnav="1" aria-label="Mois suivant">›</button></div><div class="calendar-grid" id="calendarGrid" role="grid"></div><p class="calendar-note" data-i18n="calNotice"></p></div><h2 class="h2" data-i18n="calEvents"></h2><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row">
+<button class="btn ghost block" type="button" data-sendto="province" data-i18n="sendDocsProvince"></button>
+
+</div></section><!-- Agenda --><section class="screen" id="s-agenda" hidden><h1 class="title" data-i18n="agendaT"></h1><div class="calendar"><div class="calendar-head"><button class="calnav" type="button" data-calnav="-1" aria-label="Mois précédent">‹</button><strong id="agendaMonth"></strong><button class="calnav" type="button" data-calnav="1" aria-label="Mois suivant">›</button></div><div class="calendar-grid" id="calendarGrid" role="grid"></div><p class="calendar-note" data-i18n="calNotice"></p></div><h2 class="h2" data-i18n="calEvents"></h2><ul class="events" id="eventList"></ul></section><!-- Contact --><section class="screen" id="s-contact" hidden><h1 class="title" data-i18n="contactT"></h1><div class="rows"><div class="row" id="waGroupRow">
 <div class="ico" aria-hidden="true">
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 <path d="M4 5h16v11H9l-5 4z"/>
@@ -3159,9 +3218,7 @@ input[type=file]::file-selector-button{
 <strong data-i18n="cPerm"></strong>
 <p id="permDesc"></p>
 <ul class="resp" id="permResp" hidden></ul>
-</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div><div class="install" id="installCard"><button class="btn primary" type="button" id="installBtn" hidden data-i18n="installBtn"></button>
-
-</div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
+</div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
 <p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
 
@@ -3377,6 +3434,7 @@ adhRenewalReasonRequired:`Veuillez préciser le motif du renouvellement.`,
 adhServiceUnavailable:`Service Firebase d’adhésion indisponible.`,
 adhStatusPending:`Demande d’adhésion : en attente de signature d’un responsable.`,
 adhStatusCompletion:`Demande d’adhésion : un complément est demandé. Ouvrez le formulaire pour la compléter.`,
+  adhStatusNoNote:`Aucune précision ajoutée par l'administration pour ce complément.`,
 adhStatusAccepted:`Demande d’adhésion : validée par un responsable.`,
 adhStatusRefused:`Demande d’adhésion : refusée.`,
 adhStatusUnknown:`Statut de la demande : %1.`,
@@ -3418,7 +3476,6 @@ admSignedBadge:`Signée et validée électroniquement`,
   admPdfOnlyValidated:`Seule une demande signée et validée permet de générer le PDF.`,
   admPdfFetched:`PDF récupéré et enregistré sur l’appareil.`,
   admAdhesionSigned:`Signée électroniquement`,
-  admAdhesionsHint:`Demandes numériques enregistrées dans Firestore. Signez une demande pour la valider : le PDF officiel n’est généré qu’à votre demande, après validation.`,
   admAdhesionsDenied:`Accès réservé aux responsables.`,
   admAdhesionsEmpty:`Aucune demande d’adhésion enregistrée.`,
   admAdhesionFallback:`Adhérent`,
@@ -3431,6 +3488,7 @@ admSignedBadge:`Signée et validée électroniquement`,
   admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
 
 nextT:`Prochain rendez-vous`,
+lastEventT:`Dernier rendez-vous publié`,
 recentT:`Publications récentes`,
 seeAll:`Tout voir`,
 seeAgenda:`Voir l'agenda`,
@@ -3457,7 +3515,7 @@ reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester
 
 r1:`Les réponses sont réservées aux responsables désignés de la Fédération nationale de la Santé.`,
 r2:`Ne mentionnez que des faits : lieu, date, personnes concernées.`,
-r3:`Pour envoyer des photos ou des documents, écrivez au numéro du secrétaire régional sur WhatsApp.`,
+r3:`Pour envoyer des photos ou des documents, écrivez au secrétaire régional de la Fédération ou, pour votre province, à son secrétaire — le récapitulatif du signalement est pré-rempli ; la pièce jointe s'ajoute à la main dans WhatsApp.`,
 
 rCategory:`Type de problème`,
 rCatViolence:`Violence et harcèlement`,
@@ -3521,6 +3579,9 @@ contactT:`Nous joindre`,
 cWa:`Groupe de communication régional`,
 cWaD:`Rejoignez le groupe WhatsApp de communication de la Fédération nationale de la Santé.`,
 cWaB:`Rejoindre le groupe`,
+  waGroupSignIn:`Connectez-vous pour accéder au groupe WhatsApp régional.`,
+  waGroupDenied:`Accès au groupe réservé aux adhérents dont l'adhésion est validée par la Fédération (demande en attente, incomplète ou refusée).`,
+  waGroupChecking:`Vérification de votre adhésion en cours… réessayez dans un instant.`,
 
 cFb:`Page officielle Facebook`,
  cFbD:`Suivez la Fédération nationale de la Santé sur sa page officielle Facebook.`,
@@ -3536,6 +3597,9 @@ cFb:`Page officielle Facebook`,
   attachReadError:`Impossible de lire la pièce jointe.`,
   signUnavailable:`Signature indisponible sur cet appareil.`,
   attachLoadError:`Impossible de charger la pièce jointe.`,
+  rAttachLabel:`Pièce jointe (facultatif)`,
+  rAttachHint:`Image ou PDF, 300 Ko maximum : les photos sont automatiquement redimensionnées pour tenir dans cette limite.`,
+  rAttachRemove:`Retirer`,
  
  cNum:`Numéro du secrétaire régional`,
 cNumD:`Échanges directs et envoi de pièces, sur WhatsApp.`,
@@ -3548,7 +3612,6 @@ provinceContactsEmpty:`Aucun responsable provincial n’est désigné actuelleme
 installT:`Installer l'application`,
 installP:`Sur Android, ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».`,
 installIos:`Sur iPhone, ouvrez le lien dans Safari, touchez Partager puis « Sur l'écran d'accueil ».`,
-installBtn:`Installer maintenant`,
 
 toastLink:`Lien bientôt disponible`,
 
@@ -3570,6 +3633,8 @@ meOffline:`Connexion indisponible pour le moment. Vérifiez votre accès à inte
 
 st_pending:`Demande en cours de validation par la Fédération nationale de la Santé.`,
 st_active:`Adhésion validée.`,
+stActiveYear:`Adhésion validée pour l'année %1.`,
+st_pendingSigned:`Adhésion signée par un responsable : activation de votre compte en cours.`,
 st_blocked:`Compte suspendu. Contactez la Fédération nationale de la Santé.`,
 
 meReportsT:`Mes signalements`,
@@ -3768,6 +3833,8 @@ deleted:`Données supprimées`,
   admCsvPhone:`Téléphone`,
   admCsvStatus:`Statut`,
   admCsvNumber:`N° adhérent`,
+  admCsvEmpty:`Aucun membre à exporter.`,
+  admCsvError:`Impossible d'exporter la liste.`,
   selectProvince:`Sélectionner la province`,
   rProvinceLabel:`Province / préfecture concernée`,
   provAgadir:`Agadir Ida-Outanane`,
@@ -3784,12 +3851,19 @@ deleted:`Données supprimées`,
   shareReportDate:`Date :`,
   shareReportStatus:`Statut :`,
   shareReportSummary:`Résumé :`,
+  shareReportRef:`Référence :`,
+  shareReportAttach:`Pièce jointe à ajouter manuellement dans WhatsApp :`,
   shareReportAttachHint:`Pièce jointe à joindre manuellement`,
+  sendDocsProvince:`Envoyer des pièces au secrétaire de ma province`,
+  sendProvMissing:`Aucun numéro de secrétaire provincial n'est configuré pour votre province : utilisez l'envoi au secrétaire régional.`,
+  sendDocsIntro:`Je souhaite transmettre des photos ou des documents à la Fédération nationale de la Santé (UGTM Souss-Massa).`,
 
   /* Mise à jour OTA */
   otaUpdateMsg:`Mise à jour disponible v%1 — %2`,
   otaInstall:`Installer`,
   otaDismiss:`Ignorer`,
+  otaRestartRequired:`Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l'application pour l'appliquer.`,
+  otaRetry:`Réessayer`,
 
   /* Partage de l'application */
   shareAppTitle:`UGTM Souss-Massa`,
@@ -3885,6 +3959,7 @@ adhRenewalReasonRequired:`يرجى تحديد سبب تجديد الانخراط
 adhServiceUnavailable:`خدمة Firebase للانخراط غير متوفرة.`,
 adhStatusPending:`طلب الانخراط : في انتظار توقيع أحد المسؤولين.`,
 adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
+  adhStatusNoNote:`لم تُضف الإدارة أي توضيح لهذا الاستكمال.`,
 adhStatusAccepted:`طلب الانخراط : تمت المصادقة عليه من طرف مسؤول.`,
 adhStatusRefused:`طلب الانخراط : مرفوض.`,
 adhStatusUnknown:`حالة الطلب : %1.`,
@@ -3927,7 +4002,6 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
 admAdhesionSigned:`موقّع إلكترونياً`,
-admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admMembersTitle:`الأعضاء`,
@@ -3942,6 +4016,7 @@ admMemExportCsv:`تصدير القائمة (CSV)`,
 admAskCompletion:`طلب معلومات إضافية`,
     admRefuse:`رفض`,
 adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
+  adhStatusNoNote:`لم تُضف الإدارة أي توضيح لهذا الاستكمال.`,
 adhStatusAccepted:`طلب الانخراط : تمت المصادقة عليه من طرف مسؤول.`,
 adhStatusRefused:`طلب الانخراط : مرفوض.`,
 adhStatusUnknown:`حالة الطلب : %1.`,
@@ -3980,7 +4055,6 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
 admAdhesionSigned:`موقّع إلكترونياً`,
-admAdhesionsHint:`طلبات الانخراط الرقمية المسجلة. وقّعوا الطلب للمصادقة عليه : لا يتم إنشاء ملف PDF الرسمي إلا بطلب من الإدارة، بعد المصادقة.`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admAdhesionFallback:`منخرط`,
@@ -3992,6 +4066,7 @@ admAskCompletion:`طلب معلومات إضافية`,
 admGeneratePdfLong:`إنشاء / تحميل ملف PDF الموقّع`,
 
 nextT:`الموعد القادم`,
+lastEventT:`آخر موعد منشور`,
 recentT:`أحدث المنشورات`,
 seeAll:`عرض الكل`,
 seeAgenda:`عرض الأجندة`,
@@ -4018,7 +4093,7 @@ reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عد
 
 r1:`الإجابات مخصصة للمسؤولين المكلفين بالجامعة الوطنية للصحة بجهة سوس ماسة فقط.`,
 r2:`اقتصروا على الوقائع: المكان والتاريخ والأشخاص المعنيون.`,
-r3:`لإرسال صور أو وثائق، راسلوا رقم الكاتب الجهوي عبر واتساب.`,
+r3:`لإرسال صور أو وثائق، راسلوا الكاتب الجهوي للجامعة أو كاتب إقامتكم — يتم ملخص التبليغ تلقائيًا؛ أما المرفق فيُضاف يدويًا عبر واتساب.`,
 
 rCategory:`نوع المشكلة`,
 rCatViolence:`العنف والتحرش`,
@@ -4082,6 +4157,9 @@ contactT:`اتصلوا بنا`,
 cWa:`مجموعة التواصل الجهوية`,
 cWaD:`الوصول مخصص للأعضاء المصادقين؛ يظهر الرابط فقط إذا كان اشتراكك نشطًا`,
 cWaB:`انضموا إلى المجموعة`,
+  waGroupSignIn:`سجّلوا الدخول للوصول إلى مجموعة واتساب الجهوية.`,
+  waGroupDenied:`الولوج إلى المجموعة مخصص للمنخرطين المصادق عليهم من طرف الجامعة (الطلب في انتظار المصادقة، ناقص أو مرفوض).`,
+  waGroupChecking:`جارٍ التحقق من انخراطكم… أعيدوا المحاولة بعد قليل.`,
 
 cFb:`الصفحة الرسمية على فيسبوك`,
 cFbD:`تابعوا الصفحة الرسمية للجامعة الوطنية للصحة على فيسبوك.`,
@@ -4097,6 +4175,9 @@ cFbB:`زيارة الصفحة`,
   attachReadError:`تعذر قراءة الملف المرفق.`,
   signUnavailable:`التوقيع غير متوفر على هذا الجهاز.`,
   attachLoadError:`تعذر تحميل الملف المرفق.`,
+  rAttachLabel:`ملف مرفق (اختياري)`,
+  rAttachHint:`صورة أو ملف PDF، بحد أقصى 300 كيلوبايت : يتم تصغير الصور تلقائيًا لتناسب هذا الحجم.`,
+  rAttachRemove:`إزالة`,
 
 cNum:`رقم الكاتب الجهوي`,
 cNumD:`تواصل مباشر وإرسال الوثائق عبر واتساب.`,
@@ -4109,7 +4190,6 @@ provinceContactsEmpty:`لا يوجد مسؤول نقابي معيّن حاليا
 installT:`تثبيت التطبيق`,
 installP:`على أندرويد: افتحوا قائمة ⋮ في Chrome ثم اختاروا «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».`,
 installIos:`على آيفون: افتحوا الرابط في Safari، ثم اضغطوا على «مشاركة» واختاروا «إضافة إلى الشاشة الرئيسية».`,
-installBtn:`التثبيت الآن`,
 
 toastLink:`الرابط متاح قريبا`,
 
@@ -4132,6 +4212,8 @@ meOffline:`الاتصال غير متاح حاليا. تحققوا من الإن
 
 st_pending:`طلبكم قيد المصادقة من طرف الجامعة الوطنية للصحة.`,
 st_active:`تمت المصادقة على انخراطكم.`,
+stActiveYear:`تمت المصادقة على انخراطكم لسنة %1.`,
+st_pendingSigned:`تم توقيع انخراطكم من طرف المسؤول: بانتظار تفعيل حسابكم.`,
 st_blocked:`الحساب موقوف. تواصلوا مع الجامعة الوطنية للصحة.`,
 
 meReportsT:`بلاغاتي`,
@@ -4328,6 +4410,8 @@ deleted:`تم حذف البيانات`,
   admCsvPhone:`الهاتف`,
   admCsvStatus:`الحالة`,
   admCsvNumber:`رقم المنخرط`,
+  admCsvEmpty:`لا يوجد أعضاء لتصديرهم.`,
+  admCsvError:`تعذر تصدير القائمة.`,
   selectProvince:`اختر الإقليم`,
   rProvinceLabel:`الإقليم / العمارة المعنية`,
   provAgadir:`أكادير إداوتنان`,
@@ -4345,11 +4429,18 @@ deleted:`تم حذف البيانات`,
   shareReportStatus:`الحالة:`,
   shareReportAttachHint:`المرفق الذي يجب إرفاقه يدويًا`,
   shareReportSummary:`ملخص:`,
+  shareReportRef:`المرجع:`,
+  shareReportAttach:`مرفق يُضاف يدويًا عبر واتساب:`,
+  sendDocsProvince:`إرسال الوثائق نحو كاتب إقامتي`,
+  sendProvMissing:`لا يوجد رقم مسجّل لكاتب إقامتكم: استخدموا مراسلة الكاتب الجهوي.`,
+  sendDocsIntro:`أرغب في إرسال صور أو وثائق إلى الجامعة الوطنية للصحة (UGTM سوس ماسة).`,
 
   /* التحديث عبر الإنترنت */
   otaUpdateMsg:`تحديث متوفر v%1 — %2`,
   otaInstall:`تثبيت`,
   otaDismiss:`تجاهل`,
+  otaRestartRequired:`تم اقتراح تنزيل التحديث v%1 — ثبّتو ثم أعد تشغيل التطبيق لتطبيقه.`,
+  otaRetry:`إعادة المحاولة`,
 
   /* مشاركة التطبيق */
   shareAppTitle:`الاتحاد العام للشغالين بالمغرب – جهة سوس ماسة`,
@@ -4464,7 +4555,6 @@ var agendaCursor=new Date();
 agendaCursor.setDate(1);
 var agendaSelectedDate='';
 var toastTimer=null;
-var deferredInstall=null;
 
 try{
 var saved=localStorage.getItem('ugtm-lang');
@@ -4562,9 +4652,8 @@ if(!contacts.length){box.innerHTML=html+"<p class=\"hint\">"+esc(T().provinceCon
 html+="<ul class=\"list province-contact-list\">";
 contacts.forEach(function(c){
   var phone=String(c.phone||'').trim();
-  var tel=phone.replace(/[^0-9+]/g,'');
-  var wa=tel.replace(/^\+/, '');
-  html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&tel?"<a dir=\"ltr\" href=\"https://wa.me/"+esc(wa)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
+  var waUrl=waHref(phone);
+  html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provName(c.province,lang))+"</strong><span>"+esc(c.name||"")+"</span>"+(phone&&waUrl?"<a dir=\"ltr\" href=\""+esc(waUrl)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
 });
 html+="</ul>";
 box.innerHTML=html;
@@ -5045,6 +5134,44 @@ function openUrl(url){
  },120000);
  }
 
+/* Lien WhatsApp valide : numérateur international obligatoire.
+   Un numéro local marocain (06 61 38 62 47) devient 212661386247 ;
+   un numéro déjà international (+212…) est conservé tel quel.
+   Renvoie '' si le numéro est absent ou inexploitable : aucun lien
+   n'est fabriqué à partir d'un numéro invalide. */
+function waHref(phone){
+var raw=String(phone||'').trim();
+if(!raw)return '';
+var d=raw.replace(/\D/g,'');
+if(!d)return '';
+if(raw.charAt(0)!=='+'){
+if(/^0[5-7]\d{8}$/.test(d))d='212'+d.slice(1);
+else if(/^[5-7]\d{8}$/.test(d))d='212'+d;
+}
+if(d.length<8||d.length>15)return '';
+return 'https://wa.me/'+d;
+}
+
+/* =========================
+   GROUPE WhatsApp RÉGIONAL : accès réservé
+   La source de vérité est la fiche membre Firestore (status 'active')
+   ainsi que le rôle de responsable : une demande « en attente »,
+   « complément demandé » ou « refusée » n'autorise pas l'accès, et un   visiteur non connecté non plus.
+   Limite essentielle : l'application ne peut que masquer/refuser le   lien d'invitation ; elle ne peut PAS révoquer une invitation déjà   obtenue ni gérer les membres du groupe — les paramètres d'invitation   du groupe WhatsApp (« administrateurs uniquement ») restent à   vérifier dans WhatsApp.
+   ========================= */
+function whatsappGroupAllowed(){
+if(!S.user)return false;
+if(S.cloud==='loading')return null;
+if(S.isAdmin||S.isSubAdmin)return true;
+return !!(S.member&&S.member.status==='active');
+}
+
+function refreshWhatsAppGroupAccess(){
+var row=$('waGroupRow');
+if(!row)return;
+row.hidden=(whatsappGroupAllowed()!==true);
+}
+
 /* Recherche d'un contact par motif d'URL : l'ordre des entrées dans
    data.js peut changer sans casser les boutons WhatsApp / Facebook. */
 function contactUrl(re){
@@ -5078,14 +5205,94 @@ function linkFor(key){
   return contactUrl(/facebook\.com/i);
 
   if(key==='num'){
+
   var reg=((PERM.phone||'').replace(/\D/g,''));
   if(reg)return 'https://wa.me/'+reg;
   var prov=provinceWhatsAppForMember();
   if(prov)return 'https://wa.me/'+prov;
   return '';
-  }
+
 
   return '';
+}
+
+/* Ouverture d'un lien WhatsApp : sur Android (APK) le plugin Browser
+   ouvre réellement l'application, en PWA la fenêtre standard sert. */
+function openWaUrl(url){
+  if(!url){toast(T().toastLink,3500);return;}
+  var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+  var browser=isNative&&window.Capacitor&&window.Capacitor.Plugins?window.Capacitor.Plugins.Browser:null;
+  if(browser&&typeof browser.open==='function'){
+    browser.open({url:url}).catch(function(){openUrl(url);});
+    return;
+  }
+  openUrl(url);
+}
+
+/* Récapitulatif de signalement pré-rempli pour WhatsApp : référence du
+   document (identifiant Firestore du signalement), motif, établissement,
+   province, date, statut et résumé. Aucune donnée confidentielle (CIN,
+   PPR, téléphone) n'y figure, et la pièce jointe n'est JAMAIS présentée
+   comme envoyée : WhatsApp n'accepte aucun fichier via un lien wa.me,
+   le message rappelle donc qu'elle doit être jointe à la main. */
+function buildReportShareText(report){
+var t=T();
+if(!report)return '';
+var lines=[
+t.shareReportHeader,
+report.id?(t.shareReportRef+' '+String(report.id)):'',
+t.shareReportCategory+' '+reportCategoryLabelI18n(report.category),
+(report.etab?t.shareReportEtab+' '+String(report.etab):''),
+t.shareReportProvince+' '+(provName(report.province,lang)||report.province||''),
+(report.date?t.shareReportDate+' '+String(report.date):''),
+(report.status?t.shareReportStatus+' '+reportStatusLabelI18n(report.status):''),
+t.shareReportSummary+' '+String(report.description||'').slice(0,500)
+].filter(Boolean);
+if(report.attachmentName){
+lines.push(t.shareReportAttach+' '+String(report.attachmentName));
+}
+return lines.join('\n');
+}
+
+/* Envoi de pièces au secrétaire RÉGIONAL ou PROVINCIAL : le même
+   récapitulatif est pré-rempli pour le destinataire choisi.
+   Le numéro provincial vient de la source officielle existante
+   (publicProvinceContacts) et de la province du membre ; s'il n'est pas
+   configuré, un message explicite s'affiche et la proposition régionale
+   reste utilisable — aucun numéro n'est inventé. */
+function sendReportPieces(kind){
+var t=T();
+var base='';
+
+if(kind==='province'){
+var provKey=(S.member&&S.member.prov)?String(S.member.prov):'';
+var contact=(S.provinceContacts||[]).filter(function(c){
+return c&&provKey&&String(c.province||'')===provKey&&waHref(c.phone);
+})[0];
+if(!contact){
+toast(t.sendProvMissing,6500);
+return;
+}
+base=waHref(contact.phone);
+}else{
+var regional=linkFor('num')||'';
+var waNum=/wa\.me\/(\d+)/.exec(regional);
+base=waNum?waHref(waNum[1]):(regional.indexOf('wa.me')>-1?regional:'');
+}
+
+if(!base){toast(t.toastLink,4000);return;}
+
+/* Récapitulatif du dernier signalement identifié de l'adhérent ; à défaut,
+   un message d'introduction honnête (aucune référence inventée). */
+var uid=(S.user&&S.user.uid)?String(S.user.uid):'';
+var mine=(S.reports||[]).filter(function(r){
+return r&&!r.anonymous&&uid&&String(r.ownerUid||'')===uid;
+});
+mine.sort(function(a,b){return (b.createdAt||0)-(a.createdAt||0);});
+var text=mine.length?buildReportShareText(mine[0]):String(t.sendDocsIntro||'');
+
+var sep=base.indexOf('?')>-1?'&':'?';
+openWaUrl(base+sep+'text='+encodeURIComponent(text));
 }
 
 /* =========================
@@ -5182,6 +5389,7 @@ fmtDate(ev.date,true)+
 '</div>';
 }
 
+
 function applyGroupAccess(){
 var allowed=whatsappGroupAllowed();
 document.querySelectorAll('[data-link="wa"]').forEach(function(b){
@@ -5192,10 +5400,15 @@ if(!allowed)b.setAttribute('aria-disabled','true');
 
 function renderHome(){
   applyGroupAccess();
-var next=upcoming()[0];
+var home=homeEvents();
+var nextList=home.list;
+var fallback=home.fallback;
+var headBox=$('nextEventTitle');
+if(headBox)headBox.textContent=fallback?T().lastEventT:T().nextT;
 
-$('nextEvent').innerHTML=next
-?eventRow(next,false)
+
+$('nextEvent').innerHTML=nextList.length
+?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
 /* Accueil : les publications récentes de CHAQUE rubrique, pas seulement
    les communiqués. Les rubriques sans publication visible pour
@@ -5387,6 +5600,63 @@ $('eventList').innerHTML=list.length
    MON ESPACE
    ========================= */
 
+/* Année de validité de l'adhésion : valeur ENREGISTRÉE, jamais codée   en dur. Priorité à l'année de signature du dernier dossier accepté   (renouvellement compris), sinon à l'année d'activation du compte   (activatedAt). À défaut de date exploitable, aucun millésime n'est   affiché plutôt qu'une année inventée. */
+function adhesionYear(m){
+  var req=(typeof myAdhesionStatusCache!=='undefined')?myAdhesionStatusCache:null;
+  if(req&&req.status==='accepted'&&typeof req.signedAt==='number'&&req.signedAt>0){
+    var d2=new Date(req.signedAt);
+    if(!isNaN(d2.getTime()))return String(d2.getFullYear());
+  }
+  var at=m&&m.activatedAt;
+  if(typeof at==='number'&&at>0){
+    var d=new Date(at);
+    if(!isNaN(d.getTime()))return String(d.getFullYear());
+  }
+  return '';
+}
+
+function adhesionValidatedMessage(t,m){
+  var y=adhesionYear(m);
+  if(y&&t.stActiveYear)return String(t.stActiveYear).replace('%1',y);
+  return t.st_active;
+}
+
+/* Ligne de statut du COMPTE dans « Mon espace ».
+   #meAdhesionStatus porte l'état de la DEMANDE (attente de signature,   complément, signée, refusée) : la ligne de compte n'intervient que   lorsqu'elle apporte une information DISTINCTE — compte suspendu,   adhésion validée (+ année), ou dossier signé en attente   d'activation. Plus de doublon « en cours de validation » + « en   attente de signature » pour un même état. */
+function renderMyMemberStatus(){
+  var box=$('meStatus');
+  if(!box)return;
+  var t=T();
+  var m=S.member;
+  if(!m||!t['st_'+m.status]){
+    box.hidden=true;
+    box.textContent='';
+    return;
+  }
+  if(m.status==='blocked'){
+    box.hidden=false;
+    box.className='statusline blocked';
+    box.textContent=t.st_blocked;
+    return;
+  }
+  if(m.status==='active'){
+    box.hidden=false;
+    box.className='statusline active';
+    box.textContent=adhesionValidatedMessage(t,m);
+    return;
+  }
+  /* Compte « en attente » : le message n'a de sens que si une demande   existe déjà et est SIGNÉE (l'activation reste à faire). Sans   demande, aucune phrase ne prétend à une validation inexistante. */
+  var req=(typeof myAdhesionStatusCache!=='undefined')?myAdhesionStatusCache:null;
+  if(req&&req.status==='accepted'){
+    box.hidden=false;
+    box.className='statusline';
+    box.textContent=t.st_pendingSigned||t.st_pending;
+    return;
+  }
+  box.hidden=true;
+  box.textContent='';
+}
+
 function monthYear(ms){
 
 var d=new Date(ms);
@@ -5448,6 +5718,8 @@ function showMyAdhesionStatus(request){
   var box=$('meAdhesionStatus');if(!box)return;
   var fillBtn=$('meAdhesionButton');
   var t=T();
+  /* La ligne de statut du compte dépend de la demande connue : on la   recalcule à chaque état affiché. */
+  renderMyMemberStatus();
   var st=request?String(request.status||'none'):'none';
   /* Accès au formulaire conditionné au statut du dossier ET au
      profil : un adhérent déjà actif (carte validée, SM-XXXX) ne
@@ -5484,15 +5756,29 @@ if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
      }
      return;
    }
+   /* Dossier signé mais compte pas encore activé : la ligne de compte   (« activation de votre compte en cours ») est la plus précise —   un seul message, sans contradiction. */
+   if(request.status==='accepted'){
+     box.hidden=true;
+     box.textContent='';
+     return;
+   }
    var labels={
      pending:t.adhStatusPending,
      needs_completion:t.adhStatusCompletion,
      accepted:t.adhStatusAccepted,
      refused:t.adhStatusRefused
    };
-    box.hidden=false;
-    box.textContent=labels[request.status]||
+    var baseMsg=labels[request.status]||
       (t.adhStatusUnknown||'Statut de la demande : %1.').replace('%1',String(request.status||'inconnu'));
+    if(request.status==='needs_completion'){
+      /* Demande de complément : la NOTE de l'administration est le       message essentiel — elle dit précisément quoi compléter. Elle       provient du champ adminNote réellement enregistré sur Firestore,       reste affichée après rechargement et n'est servie qu'aux       personnes habilitées à lire le dossier (règles Firestore). */
+      var note=String(request.adminNote||'').slice(0,1000).trim();
+      box.hidden=false;
+      box.textContent=baseMsg+'\n'+(note||(t.adhStatusNoNote||''));
+    }else{
+    box.hidden=false;
+    box.textContent=baseMsg;
+    }
     if(request.adminNote && request.status === 'accepted' && request.signedAt){
       var age = Date.now() - request.signedAt;
       if(age < 86400000){
@@ -5592,6 +5878,7 @@ return '<li class="mrow"><div class="mi">'+
 (r.etab?'<span>'+esc(r.etab)+'</span>':'')+
 '<span>'+esc(r.description||'')+'</span>'+
 (r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+'<button type="button" class="btn ghost small" data-share-report="'+esc(r.id)+'">'+esc(t.share)+'</button>'+
 (r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div></li>';
 }).join('');
@@ -5601,6 +5888,10 @@ function renderMe(){
   applyGroupAccess();
 
 var t=T();
+
+/* Ligne du groupe WhatsApp : masquée tant que l'adhésion n'est pas
+   effectivement validée (le contrôle est refait au clic). */
+refreshWhatsAppGroupAccess();
 
 var msg=$('meMsg');
 var out=$('meOut');
@@ -5630,17 +5921,7 @@ inn.hidden=false;
 var m=S.member;
 var st=$('meStatus');
 
-if(m&&t['st_'+m.status]){
-
-st.hidden=false;
-st.className='statusline '+m.status;
-st.textContent=t['st_'+m.status];
-
-}else{
-
-st.hidden=true;
-
-}
+renderMyMemberStatus();
 
 $('meCard').innerHTML=
 (m&&m.status==='active')
@@ -5778,13 +6059,23 @@ esc(isResp?t.admMemRemoveResp:t.admMemSetResp)+
 if(S.isAdmin)
 acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">'+esc(t.admDelete)+'</button>';
 
-var phone=String(m.phone||'').trim();
-var tel=phone.replace(/[^0-9+]/g,'');
-var wa=tel.replace(/^\+/,'');
-var phoneHtml=(phone&&tel)
-  ?'<a dir="ltr" href="https://wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
-  : '';
-var infoParts=[m.etab,provName(m.prov,lang),phoneHtml].filter(Boolean);
+
+var infoParts=[
+m.etab,
+provName(m.prov,lang)
+].filter(Boolean);
+
+/* Téléphone de l'adhérent : visible et cliquable (WhatsApp) dans
+   l'espace réservé aux responsables, uniquement si le numéro est
+   exploitable ; sinon le numéro reste affiché en texte simple et
+   aucun lien n'est construit. */
+var memberWa=waHref(m.phone);
+var phoneHtml='';
+if(m.phone){
+phoneHtml=memberWa
+?'<span><a dir="ltr" href="'+esc(memberWa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(m.phone)+'</span></a></span>'
+:'<span>'+esc(m.phone)+'</span>';
+}
 
 return '<li class="mrow">'+
 
@@ -5802,6 +6093,8 @@ esc(statusLabel(m.status))+
 (infoParts.length
 ?'<span>'+infoParts.join(' – ')+'</span>'
 :'')
++
+phoneHtml
 +
 (!m.prov
 ?'<span class="hint" style="display:inline-flex;align-items:flex-start;gap:6px"><span style="flex-shrink:0">⚠</span><span>'+esc(t.admMemNoProv)+'</span></span>'
@@ -6466,10 +6759,16 @@ function adhesionPdfFileName(doc){
 /* Un PDF enregistré n'est réutilisé que s'il est postérieur à la
    dernière mise à jour du dossier : un renouvellement (nouveau dépôt)
    invalide l'ancien PDF, qui ne doit jamais être resservi. */
+/* Révision de mise en page (chevauchement libellés/valeur, logo carré,
+   référence) : tout PDF enregistré AVANT cette date est régénéré une
+   fois. Constante côté client — aucun champ supplémentaire, les règles
+   Firestore (hasOnly) restent inchangées. */
+var PDF_LAYOUT_SINCE=Date.UTC(2026,9,21);
 function isAdhesionPdfFresh(saved,doc){
   if(!saved||!saved.data)return false;
   var s=(typeof saved.updatedAt==='number')?saved.updatedAt:0;
   if(!s)return false;
+  if(s<PDF_LAYOUT_SINCE)return false;
   var d=0;
   var ru=doc&&doc.updatedAt;
   if(ru&&typeof ru.toMillis==='function')d=ru.toMillis();
@@ -6636,7 +6935,12 @@ function csvCell(v){
 
 v=String(v==null?'':v);
 
-if(/^[=@]/.test(v)||
+/* Injection de formules dans un tableur : toute valeur débutant par
+   = + - @ (ou tabulation / retour chariot) est neutralisée par une
+   apostrophe. Les valeurs purement numériques (+212 6 61 38 62 47,
+   dates, numéros) restent intactes : aucun légitime n'est corrompu. */
+if(/^[\t\r]/.test(v)||
+/^[=@]/.test(v)||
 (/^[+\-]/.test(v)&&
 !(/^[+\-][\d\s\-()]+$/.test(v))))
 v="'"+v;
@@ -6674,13 +6978,60 @@ m.memberNo
 
 });
 
-download(
-'membres-ugtm.csv',
-'text/csv;charset=utf-8',
-'\uFEFF'+
+if(rows.length<2){
+/* Liste vide : on n'écrit pas un fichier d'en-tête seul. */
+toast(t.admCsvEmpty||'Aucun membre à exporter.',4500);
+return;
+}
+
+var content='\uFEFF'+
 rows.map(function(r){
 return r.map(csvCell).join(';');
-}).join('\r\n')
+}).join('\r\n');
+
+var csvName='membres-ugtm.csv';
+
+/* APK (WebView Android) : l'attribut download d'une ancre n'ouvre
+   AUCUN téléchargement. Le CSV est alors écrit sur l'appareil puis
+   proposé au partage (Excel, Drive, messagerie…). En navigateur,
+   téléchargement direct comme avant. */
+var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+var capPlugins=window.Capacitor&&window.Capacitor.Plugins;
+var csvFs=isNative&&capPlugins?capPlugins.Filesystem:null;
+var csvShare=isNative&&capPlugins?capPlugins.Share:null;
+
+if(csvFs&&csvFs.writeFile&&csvShare&&typeof csvShare.share==='function'){
+try{
+var bytes=new TextEncoder().encode(content);
+var bin='';
+for(var bi=0;bi<bytes.length;bi++)bin+=String.fromCharCode(bytes[bi]);
+var csvB64=btoa(bin);
+csvFs.writeFile({
+path:csvName,
+data:csvB64,
+directory:(csvFs.DIRECTORY&&csvFs.DIRECTORY.Cache)?csvFs.DIRECTORY.Cache:'CACHE'
+})
+.then(function(saved){
+var uri=saved&&saved.uri;
+if(!uri)throw new Error('uri');
+return csvShare.share({files:[uri],dialogTitle:csvName});
+})
+.catch(function(errCsv){
+/* Partage annulé par l'utilisateur : aucun message d'erreur. */
+var msg=String((errCsv&&errCsv.message)||'');
+if(!/cancel|dismiss/i.test(msg))toast(t.admCsvError,5000);
+});
+return;
+}catch(errCsv2){
+toast(t.admCsvError,5000);
+return;
+}
+}
+
+download(
+csvName,
+'text/csv;charset=utf-8',
+content
 );
 }
 
@@ -6977,11 +7328,10 @@ $('permResp').innerHTML=list.map(function(r){
 var nom=r.name||'';
 var role=r.title||'';
 var phone=String(r.phone||'').trim();
-var tel=phone.replace(/[^0-9+]/g,'');
-var wa=tel.replace(/^\+/, '');
+var waUrl=waHref(phone);
 
-var phoneHtml=(phone&&tel)
-  ?'<a dir="ltr" href="https://wa.me/'+esc(wa)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
+var phoneHtml=(phone&&waUrl)
+  ?'<a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
   : '';
 
 return '<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
@@ -7295,6 +7645,34 @@ ics
 }
 
 /* =========================
+   ESPACE MEMBRE
+   ========================= */
+
+/* Purge la session locale.
+   Cette fonction est utilisée par le gestionnaire de clic (déconnexion)
+   ET par window.UGTM.setSession, qui est appelé à chaque changement
+   d'état d'authentification : elle doit donc être déclarée à la portée
+   de l'IIFE, et non à l'intérieur du gestionnaire d'événements. */
+
+function purgeSession(){
+  S.user=null;
+  S.member=null;
+  S.isAdmin=false;
+  S.isSubAdmin=false;
+  S.members=[];
+  S.adhesions=[];
+  S.reports=[];
+  S.formDirty=false;
+  try{
+    Object.keys(localStorage).forEach(function(k){
+      if(k.indexOf('ugtm-adhesion-draft:')===0||k==='ugtm-report-last'){
+        localStorage.removeItem(k);
+      }
+    });
+  }catch(e){}
+}
+
+/* =========================
    CLICS
    ========================= */
 
@@ -7302,9 +7680,9 @@ document.addEventListener('click',function(e){
 
 var el=e.target.closest(
 '[data-go],[data-tab],[data-item],[data-open],'+
-'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-event],[data-share-app],[data-attach],'+
+'[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-event],[data-share-app],[data-sendto],[data-share-report],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
-'#installBtn,#langBtn,#meAdhesionInfoBtn'
+'#langBtn,#meAdhesionInfoBtn'
 );
 
 if(!el)return;
@@ -7320,21 +7698,6 @@ localStorage.setItem('ugtm-lang',lang);
 }catch(err){}
 
 applyI18n();
-
-return;
-}
-
-if(el.id==='installBtn'){
-
-if(deferredInstall){
-
-deferredInstall.prompt();
-
-deferredInstall=null;
-
-el.hidden=true;
-
-}
 
 return;
 }
@@ -7406,11 +7769,43 @@ return;
 
 if(el.hasAttribute('data-link')){
 
+var linkKey=el.getAttribute('data-link');
+
+/* Groupe WhatsApp régional : contrôle réel au moment du clic
+   (un bouton masqué ne suffit pas). */
+if(linkKey==='wa'){
+var waAccess=whatsappGroupAllowed();
+if(waAccess!==true){
+toast(waAccess===null?T().waGroupChecking:T().waGroupDenied,6500);
+return;
+}
+openUrl(linkFor('wa'));
+return;
+}
+
 openUrl(
 linkFor(
-el.getAttribute('data-link')
+linkKey
 )
 );
+
+return;
+}
+
+/* Envoi de pièces au destinataire choisi (régional ou provincial)
+   avec le récapitulatif de signalement pré-rempli. */
+if(el.hasAttribute('data-sendto')){
+
+sendReportPieces(el.getAttribute('data-sendto'));
+
+return;
+}
+
+/* Partage WhatsApp d'UN de mes signalements (récapitulatif complet). */
+if(el.hasAttribute('data-share-report')){
+
+var shareRep=(S.reports||[]).filter(function(x){return x.id===el.getAttribute('data-share-report');})[0];
+if(shareRep)shareTextNative(buildReportShareText(shareRep),T().shareReportTitle);
 
 return;
 }
@@ -7539,23 +7934,11 @@ return;
    ESPACE MEMBRE
    ========================= */
 
-function purgeSession(){
-  S.user=null;
-  S.member=null;
-  S.isAdmin=false;
-  S.isSubAdmin=false;
-  S.members=[];
-  S.adhesions=[];
-  S.reports=[];
-  S.formDirty=false;
-  try{
-    Object.keys(localStorage).forEach(function(k){
-      if(k.indexOf('ugtm-adhesion-draft:')===0||k==='ugtm-report-last'){
-        localStorage.removeItem(k);
-      }
-    });
-  }catch(e){}
-}
+/* Purge la session locale.
+   Cette fonction est utilisée par le gestionnaire de clic (déconnexion)
+   ET par window.UGTM.setSession, qui est appelé à chaque changement
+   d'état d'authentification : elle doit donc être déclarée à la portée
+   de l'IIFE, et non à l'intérieur du gestionnaire d'événements. */
 
 if(el.hasAttribute('data-act')){
 
@@ -7859,14 +8242,9 @@ c.admin.updateReport(id,'closed',response).catch(showError);
 else if(a==='shareReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
-var text=
-t.shareReportHeader+'\n'+
-t.shareReportProvince+' '+(provName(report.province,lang)||report.province||'')+'\n'+
-t.shareReportCategory+' '+reportCategoryLabelI18n(report.category)+'\n'+
-t.shareReportEtab+' '+(report.etab||'')+'\n'+
-t.shareReportDate+' '+(report.date||'')+'\n'+
-t.shareReportStatus+' '+reportStatusLabelI18n(report.status)+'\n'+
-t.shareReportSummary+' '+String(report.description||'').slice(0,500);
+/* Même récapitulatif que l'adhérent : référence, motif, résumé,
+   date, statut et rappel de la pièce jointe à joindre à la main. */
+var text=buildReportShareText(report);
 
 if(report.attachmentName){
 text+='\n'+T().shareReportAttachHint+': '+report.attachmentName;
@@ -7936,6 +8314,119 @@ if(anonymous)ppr.value='';
 
 $('rAnonymous').addEventListener('change',syncAnonymousReportFields);
 syncAnonymousReportFields();
+
+/* =========================
+   PIÈCE JOINTE DU SIGNALEMENT
+   Sélection → redimensionnement réel de l'image → aperçu → suppression.
+   Une photo de plusieurs Mo est redimensionnée puis recompressée
+   (JPEG) jusqu'à entrer dans la limite de 300 Ko (règle Firestore :
+   420 000 caractères base64). Un PDF n'est pas modifiable : il doit
+   déjà tenir dans la limite, sinon l'erreur est explicite.
+   ========================= */
+var reportAttachment=null;
+var REPORT_ATTACH_MAX_CHARS=300*1024*4/3;
+
+function prepareReportAttachment(file){
+return new Promise(function(resolve,reject){
+if(!file){resolve(null);return;}
+var name=String(file.name||'');
+var isImage=/^image\//.test(file.type||'')||/\.(jpe?g|png|webp|gif|bmp|heic)$/i.test(name);
+var isPdf=/^application\/pdf$/.test(file.type||'')||/\.pdf$/i.test(name);
+
+if(!isImage){
+/* PDF (ou autre document) : aucun redimensionnement possible. */
+if(!isPdf||file.size>300*1024){
+reject(new Error(T().attachTooBig));
+return;
+}
+var rawReader=new FileReader();
+rawReader.onerror=function(){reject(new Error(T().attachReadError));};
+rawReader.onload=function(){
+resolve({name:name,type:file.type||'application/pdf',data:String(rawReader.result||'')});
+};
+rawReader.readAsDataURL(file);
+return;
+}
+
+var reader=new FileReader();
+reader.onerror=function(){reject(new Error(T().attachReadError));};
+reader.onload=function(){
+var img=new Image();
+img.onerror=function(){reject(new Error(T().attachReadError));};
+img.onload=function(){
+try{
+var scale=Math.min(1,1600/Math.max(img.width,img.height));
+var canvas=document.createElement('canvas');
+var quality=.82,data='';
+for(var attempt=0;attempt<25;attempt++){
+canvas.width=Math.max(1,Math.round(img.width*scale));
+canvas.height=Math.max(1,Math.round(img.height*scale));
+var ctx=canvas.getContext('2d');
+ctx.fillStyle='#ffffff';
+ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.drawImage(img,0,0,canvas.width,canvas.height);
+data=canvas.toDataURL('image/jpeg',quality);
+if(data.length<=REPORT_ATTACH_MAX_CHARS)break;
+if(quality>.4){quality=Math.max(.4,quality-.1);}
+else{scale*=.82;quality=.72;}
+}
+if(data.length>REPORT_ATTACH_MAX_CHARS){
+reject(new Error(T().attachTooBig));
+return;
+}
+var base=name.replace(/\.[^.]+$/,'')||'photo';
+/* Le fichier redevient un JPEG : le nom suit le contenu réel. */
+resolve({name:base+'.jpg',type:'image/jpeg',data:data});
+}catch(errImg){reject(new Error(T().attachReadError));}
+};
+img.src=reader.result;
+};
+reader.readAsDataURL(file);
+});
+}
+
+function renderReportAttachmentPreview(att,errMsg){
+var box=$('rAttachmentPreview');
+if(!box)return;
+if(errMsg){
+box.hidden=false;
+box.innerHTML='<span class="attach-preview-err">'+esc(errMsg)+'</span>';
+return;
+}
+if(!att){box.hidden=true;box.innerHTML='';return;}
+var isImg=String(att.type||'').indexOf('image/')===0;
+var ko=Math.max(1,Math.round((att.data.length*3/4)/1024));
+box.hidden=false;
+box.innerHTML=
+(isImg?'<img class="attach-preview-img" src="'+esc(att.data)+'" alt="">':'<span class="attach-preview-ico" aria-hidden="true">📄</span>')+
+'<span class="attach-preview-meta"><b>'+esc(att.name)+'</b><span>'+ko+' Ko</span></span>'+
+'<button type="button" class="btn ghost small" id="attachPreviewClear">'+esc(T().rAttachRemove||'Retirer')+'</button>';
+var clearBtn=$('attachPreviewClear');
+if(clearBtn)clearBtn.addEventListener('click',function(){
+var input=$('rAttachment');
+if(input)input.value='';
+reportAttachment=null;
+renderReportAttachmentPreview(null);
+});
+}
+
+$('rAttachment').addEventListener('change',function(){
+var file=this.files&&this.files[0];
+reportAttachment=null;
+renderReportAttachmentPreview(null);
+if(!file)return;
+prepareReportAttachment(file).then(function(att){
+reportAttachment=att;
+renderReportAttachmentPreview(att);
+}).catch(function(err){
+var msg=String((err&&err.message)||T().attachReadError);
+var input=$('rAttachment');
+if(input)input.value='';
+reportAttachment=null;
+renderReportAttachmentPreview(null,msg);
+toast(msg,5000);
+});
+});
 
 $('reportForm').addEventListener('submit',function(e){
 e.preventDefault();
@@ -8033,6 +8524,8 @@ $('rEtab').value='';
 $('rAge').value='';
 $('rDA').value='';
 $('rAttachment').value='';
+reportAttachment=null;
+renderReportAttachmentPreview(null);
 $('rAnonymous').checked=false;
 syncAnonymousReportFields();
 
@@ -8063,42 +8556,20 @@ feedback(T().rSending||'Envoi…');
 
 if(file){
 
-if(file.size>300*1024){
+/* Image : redimensionnée/compressée au besoin (déjà fait au choix du
+   fichier, sinon le traitement a lieu ici). PDF : simple contrôle. */
+var attachReady=reportAttachment
+?Promise.resolve(reportAttachment)
+:prepareReportAttachment(file);
 
-if(/^image\/(jpeg|png|webp)$/.test(file.type||'')||/\.(jpe?g|png|webp)$/i.test(file.name||'')){
-reduceImage(file).then(function(red){
-sendReport({
-name:red.name,
-type:red.type||'application/octet-stream',
-data:String(red.data||'')
+
+attachReady.then(function(att){
+sendReport(att);
+}).catch(function(errAtt){
+var msg=String((errAtt&&errAtt.message)||T().attachReadError);
+done(false,msg);
+toast(msg,5000);
 });
-}).catch(function(){
-done(false,T().attachTooBig);
-toast(T().attachTooBig,5000);
-});
-}else{
-done(false,T().attachTooBig);
-toast(T().attachTooBig,5000);
-}
-return;
-}
-
-var reader=new FileReader();
-
-reader.onload=function(){
-sendReport({
-name:file.name,
-type:file.type||'application/octet-stream',
-data:String(reader.result||'')
-});
-};
-
-reader.onerror=function(){
-done(false,T().attachReadError);
-toast(T().attachReadError,4500);
-};
-
-reader.readAsDataURL(file);
 
 }else{
 sendReport(null);
@@ -8350,40 +8821,6 @@ error:showError
 };
 
 /* =========================
-   INSTALLATION PWA
-   ========================= */
-
-window.addEventListener(
-'beforeinstallprompt',
-function(e){
-
-e.preventDefault();
-
-deferredInstall=e;
-
-$('installBtn').hidden=false;
-
-});
-
-window.addEventListener(
-'appinstalled',
-function(){
-
-$('installCard').hidden=true;
-
-});
-
-if(
-(window.matchMedia&&
-window.matchMedia('(display-mode: standalone)').matches)||
-window.navigator.standalone
-){
-
-$('installCard').hidden=true;
-
-}
-
-/* =========================
    SERVICE WORKER
    ========================= */
 
@@ -8439,8 +8876,6 @@ window.UGTM.failed(err);
 });
 
 }
-
-})();
 </script>
 
 
@@ -8605,6 +9040,27 @@ window.UGTM.failed(err);
       if(String(value).trim())el.value=String(value);
     }
 
+    /* Séparation Nom / Prénom d'un nom complet.
+       Règles :
+       - « NOM, Prénom » (marqueur explicite) → Nom = avant la virgule ;
+       - exactement deux mots → Nom = dernier, Prénom = premier ;
+       - un seul mot → Nom seul, Prénom vide ;
+       - trois mots ou plus (noms composés, prénoms arabes à plusieurs         mots) → AMBIGU : aucun découpage, le texte reste intact dans Nom.
+       Rien n'est inventé, aucun mot n'est déplacé arbitrairement. */
+    function splitFullName(full){
+      var raw=String(full||'').replace(/\s+/g,' ').trim();
+      if(!raw)return{nom:'',prenom:''};
+      var comma=raw.indexOf(',');
+      if(comma>-1){
+        var left=raw.slice(0,comma).trim();
+        var right=raw.slice(comma+1).trim();
+        if(left&&right)return{nom:left,prenom:right};
+      }
+      var words=raw.split(' ');
+      if(words.length===2)return{nom:words[1],prenom:words[0]};
+      return{nom:raw,prenom:''};
+    }
+
     function prefillDigitalAdhesion(){
       var uid=currentAdhesionUid();
       resetAdhesionForAccount(uid);
@@ -8642,10 +9098,24 @@ window.UGTM.failed(err);
         }
       }catch(e){}
 
-      prefillIfEmpty('adhNom',member.name||currentUser.name||'');
       prefillIfEmpty('adhPhone',member.phone||'');
       prefillIfEmpty('adhProvince',member.prov||'');
       prefillIfEmpty('adhEstablishment',member.etab||'');
+
+      /* Nom complet du profil Google : appliqué UNIQUEMENT après le       brouillon et le dossier existant, et seulement si les deux champs       d'identité sont encore vides — les informations déjà saisies par         l'adhérent ne sont jamais écrasées. */
+      var identityFilled=false;
+      function fillIdentityFromProfile(){
+        if(identityFilled)return;
+        identityFilled=true;
+        if(currentAdhesionUid()!==uid)return;
+        var nomEl=document.getElementById('adhNom');
+        var prenomEl=document.getElementById('adhPrenom');
+        if(!nomEl||!prenomEl)return;
+        if(String(nomEl.value||'').trim()||String(prenomEl.value||'').trim())return;
+        var split=splitFullName(member.name||currentUser.name||'');
+        if(split.nom)nomEl.value=split.nom;
+        if(split.prenom)prenomEl.value=split.prenom;
+      }
 
       var date=document.getElementById('adhDate');
       if(date&&!date.value)
@@ -8679,7 +9149,12 @@ window.UGTM.failed(err);
           }
           syncRenewalReason();
           if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
-        }).catch(function(){});
+        }).catch(function(){}).then(function(){
+          /* Dossier chargé (ou absent/indisponible) : le profil ne         comble que ce qui reste vide. */
+          fillIdentityFromProfile();
+        });
+      }else{
+        fillIdentityFromProfile();
       }
 
       /* Le reset du formulaire remet le choix « première adhésion » par
@@ -8778,6 +9253,7 @@ window.UGTM.failed(err);
         function loadLogo(){
           return new Promise(function(resolve){
             var done=false;
+            /* Résout {data,w,h} (rapport conservé) ou '' sans logo. */
             var finish=function(v){if(done)return;done=true;resolve(v);};
             /* Filet de sécurité : si l'image ne se charge jamais (WebView
                d'APK), on continue SANS logo plutôt que de bloquer la
@@ -8787,16 +9263,26 @@ window.UGTM.failed(err);
             img.onload=function(){
               clearTimeout(timer);
               try{
+                /* Le logo UGTM est carré (512x512) : on conserve SON
+                   rapport largeur/hauteur. L'ancienne version l'écrasait
+                   dans un canevas 420x140 — d'où le logo comprimé
+                   verticalement dans le PDF. */
+                var iw=Number(img.naturalWidth||img.width||0);
+                var ih=Number(img.naturalHeight||img.height||0);
+                /* Repli (WebView qui ne mesure pas le SVG) : format carré
+                   réel du logo du dépôt, jamais de déformation imposée. */
+                if(!(iw>0)||!(ih>0)){iw=512;ih=512;}
+                var s=Math.min(512/iw,512/ih);
                 var c=document.createElement('canvas');
-                c.width=420;
-                c.height=140;
+                c.width=Math.max(1,Math.round(iw*s));
+                c.height=Math.max(1,Math.round(ih*s));
                 var cx=c.getContext('2d');
-                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut
-                   (420x140 = 176 Ko), un JPEG équivalent pèse quelques Ko. */
+                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut,
+                   un JPEG équivalent pèse quelques Ko. */
                 cx.fillStyle='#ffffff';
                 cx.fillRect(0,0,c.width,c.height);
                 cx.drawImage(img,0,0,c.width,c.height);
-                finish(c.toDataURL('image/jpeg',0.85));
+                finish({data:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height});
               }catch(e){finish('');}
             };
             img.onerror=function(){clearTimeout(timer);finish('');};
@@ -8807,6 +9293,10 @@ window.UGTM.failed(err);
         /* Barre de titre de rubrique (8 mm) : la mise en page reste
            compacte pour tenir sur UNE seule page A4. */
         function section(title){
+          /* Filet de page : un contenu long ne doit jamais être dessiné
+             hors de la feuille (la section VALIDATION et sa référence
+             disparaissaient ainsi en pied de document). */
+          if(y+22>274){pdf.addPage();y=24;}
           pdf.setFillColor(248,235,242);
           pdf.roundedRect(margin,y-4,fullW,8,1.5,1.5,'F');
           pdf.setFont(undefined,'bold');
@@ -8822,38 +9312,53 @@ window.UGTM.failed(err);
         function cell(label,value,x,w){
           w=w||colW;
           var lbl=String(label||'')+' : ';
+          var lblSize=8.6,valSize=9.2,gap=0.8;
+          var val=(value===undefined||value===null)?'':String(value);
+          /* Le libellé est mesuré ET dessiné à la MÊME taille : l'ancienne
+             version mesurait en 8,6 pt puis redessinait en 9,2 pt (taille
+             laissée par la mesure de la valeur), ce qui faisait
+             chevaucher les intitulés et les informations. */
           pdf.setFont(undefined,'bold');
-          pdf.setFontSize(8.6);
-          pdf.setTextColor(95,95,95);
+          pdf.setFontSize(lblSize);
           var lw=pdf.getTextWidth(lbl);
           pdf.setFont(undefined,'normal');
-          pdf.setFontSize(9.2);
-          pdf.setTextColor(0,0,0);
-          var val=(value===undefined||value===null)?'':String(value);
+          pdf.setFontSize(valSize);
+          var vw=val?pdf.getTextWidth(val):0;
           var h=4.6;
-          if(val&&pdf.getTextWidth(val)>w-lw-1){
+          if(val&&lw+gap+vw>w-1){
             /* Valeur trop longue : libellé seul sur sa ligne, puis la
                valeur sur la ou les lignes suivantes. */
+            pdf.setTextColor(95,95,95);
             pdf.setFont(undefined,'bold');
+            pdf.setFontSize(lblSize);
             pdf.text(lbl,x,y);
-            var lines=pdf.splitTextToSize(val,w);
+            pdf.setTextColor(0,0,0);
             pdf.setFont(undefined,'normal');
+            pdf.setFontSize(valSize);
+            var lines=pdf.splitTextToSize(val,w);
             for(var i=0;i<lines.length;i++)pdf.text(lines[i],x,y+4.4+i*4.1);
             h=4.4+lines.length*4.1;
           }else{
+            pdf.setTextColor(95,95,95);
             pdf.setFont(undefined,'bold');
+            pdf.setFontSize(lblSize);
             pdf.text(lbl,x,y);
+            pdf.setTextColor(0,0,0);
             if(val){
               pdf.setFont(undefined,'normal');
-              pdf.text(val,x+lw,y);
+              pdf.setFontSize(valSize);
+              pdf.text(val,x+lw+gap,y);
             }
           }
           pdf.setTextColor(0,0,0);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(valSize);
           return h;
         }
 
         /* Une ligne à deux colonnes (la seconde est facultative). */
         function row2(l1,v1,l2,v2){
+          if(y+22>274){pdf.addPage();y=24;}
           var h1=cell(l1,v1,margin,colW);
           var h2=(l2!==undefined&&l2!==null)?cell(l2,v2,col2,colW):0;
           y+=Math.max(h1,h2)+1.6;
@@ -8861,6 +9366,7 @@ window.UGTM.failed(err);
 
         /* Une ligne pleine largeur. */
         function row1(l,v){
+          if(y+22>274){pdf.addPage();y=24;}
           y+=cell(l,v,margin,fullW)+1.6;
         }
 
@@ -8887,7 +9393,14 @@ window.UGTM.failed(err);
 
         loadLogo().then(function(logo){
 
-          if(logo)pdf.addImage(logo,'JPEG',margin,10,34,11);
+          if(logo&&logo.data){
+            /* Logo inscrit dans un carré de 16 mm, à SON rapport
+               largeur/hauteur (aucune déformation verticale). */
+            var ratio=(logo.w>0&&logo.h>0)?(logo.w/logo.h):1;
+            var boxL=Math.min(16,16*ratio);
+            var boxH=boxL/ratio;
+            pdf.addImage(logo.data,'JPEG',margin,10+(16-boxH)/2,boxL,boxH);
+          }
 
           pdf.setFont(undefined,'bold');
           pdf.setFontSize(11);
@@ -8899,6 +9412,19 @@ window.UGTM.failed(err);
           pdf.setTextColor(95,95,95);
           pdf.text('Région Souss-Massa',56,24.5);
           pdf.setTextColor(0,0,0);
+
+          /* Référence unique du document : identifiant du document
+             adhesionRequests/{id} (provenance réelle du dossier),
+             affichée en évidence en tête de page. */
+          var ref=(request&&request.id)?String(request.id)
+            :((request&&request.uid)?String(request.uid):'');
+          if(ref){
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8.4);
+            pdf.setTextColor(95,95,95);
+            pdf.text('Référence : '+ref,pageW-margin,15,{align:'right'});
+            pdf.setTextColor(0,0,0);
+          }
 
           pdf.setFont(undefined,'bold');
           pdf.setFontSize(15);
@@ -8942,6 +9468,9 @@ window.UGTM.failed(err);
           pdf.setTextColor(0,0,0);
           y+=19;
 
+          /* Les deux cases de signature (44 mm) doivent tenir sur la
+             MÊME page : bascule de page AVANT dessin si nécessaire. */
+          if(y+62>274){pdf.addPage();y=24;}
           section('SIGNATURES');
           var signatureY=y;
           /* Les deux cases de signature sont toujours dessinées côte à
@@ -8966,7 +9495,7 @@ window.UGTM.failed(err);
           }
           section('VALIDATION');
           row2('Validée par',signer,'Statut du dossier','VALIDÉE');
-          row2('Date de validation',validationDate,'Référence',request&&request.id?String(request.id):'');
+          row2('Date de validation',validationDate,'Référence',ref);
 
           /* Pied de page sur CHAQUE page : fil conducteur
              du document, avec numérotation. */
@@ -9288,48 +9817,116 @@ window.UGTM.failed(err);
       checkRemote(stored);
     }
 
+    /* État de la mise à jour pour la version distante concernée.
+        'requested' : le téléchargement a été PROPOSÉ à l'utilisateur ;
+                      l'installation et le redémarrage restent à faire.
+                      Le code ne peut pas vérifier que le fichier a
+                      réellement été récupéré : le message l'annonce donc
+                      comme « proposée au téléchargement ».
+        'dismissed' : l'utilisateur a ignoré cette version : la bannière
+                      ne doit plus revenir pour elle.
+        L'état est conservé : sans lui, la bannière réapparaît à chaque
+        démarrage et continue d'annoncer « mise à jour disponible » alors
+        que le fichier a déjà été proposé. */
+    var STATE_KEY='ugtm_ota_state';
+
+    function readState(){
+      try{
+        var s=JSON.parse(localStorage.getItem(STATE_KEY)||'null');
+        return (s && s.code) ? s : null;
+      }catch(e){return null;}
+    }
+
+    function writeState(code,stage){
+      try{localStorage.setItem(STATE_KEY,JSON.stringify({code:code,stage:stage,ts:Date.now()}));}catch(e){}
+    }
+
+    function clearState(){
+      try{localStorage.removeItem(STATE_KEY);}catch(e){}
+    }
+
     function checkRemote(storedCode){
       fetch('https://ugtm-fns-souss-massa.web.app/update.json?t=' + Date.now())
       .then(function(r){return r.ok ? r.json() : null;})
       .then(function(m){
         if(!m || !m.versionCode) return;
         var remote = parseInt(m.versionCode, 10);
-        if(remote > storedCode){
-          var el = document.createElement('div');
-          el.className = 'ota-banner';
-          var tt=(typeof window.ugtmT==='function')?window.ugtmT():{};
-          var escFn=(typeof window.ugtmEsc==='function')?window.ugtmEsc:function(v){
-            return String(v==null?'':v)
-            .replace(/&/g,'&amp;')
-            .replace(/</g,'&lt;')
-            .replace(/>/g,'&gt;')
-            .replace(/"/g,'&quot;')
-            .replace(/'/g,'&#39;');
-          };
-          el.innerHTML =
-            '<div class="ota-msg">'+escFn(String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
-              .replace('%1',m.versionName||'')
-              .replace('%2',m.message||''))+'</div>'+
-            '<div class="ota-actions">'+
-            '<button class="ota-btn ota-install" id="otaUpdateBtn">'+escFn(tt.otaInstall||'Installer')+'</button>'+
-            '<button class="ota-btn ota-dismiss" id="otaDismissBtn">'+escFn(tt.otaDismiss||'Ignorer')+'</button>'+
-            '</div>';
-          document.body.appendChild(el);
-          document.getElementById('otaUpdateBtn').onclick=function(){
-            if(m.apkUrl){
-              // Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
-              window.open(m.apkUrl,'_system');
-            }
-          };
-          document.getElementById('otaDismissBtn').onclick=function(){
-            el.hidden = true;
-          };
+
+        /* L'application tournant est à jour : plus rien à proposer et
+           l'éventuel état de la version précédente n'a plus lieu d'être. */
+        if(remote <= storedCode){
+          clearState();
+          return;
         }
+
+        var state=readState();
+        var stage=(state && state.code===remote) ? state.stage : '';
+
+        /* Version ignorée : la bannière ne réapparaît pas. */
+        if(stage==='dismissed') return;
+
+        var tt=(typeof window.ugtmT==='function')?window.ugtmT():{};
+        var escFn=(typeof window.ugtmEsc==='function')?window.ugtmEsc:function(v){
+          return String(v==null?'':v)
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;')
+          .replace(/'/g,'&#39;');
+        };
+
+        var el=document.createElement('div');
+        el.className='ota-banner';
+        el.setAttribute('role','status');
+        el.setAttribute('aria-live','polite');
+
+        /* Une seule bannière à la fois : l'état peut être redessiné
+           (après un téléchargement déclenché, par exemple). */
+        var previous=document.querySelectorAll('.ota-banner');
+        for(var i=0;i<previous.length;i++) previous[i].remove();
+
+        var msg;
+        if(stage==='requested'){
+          /* Le fichier a déjà été proposé au téléchargement : il reste
+             à l'installer puis à redémarrer l'application. */
+          msg=String(tt.otaRestartRequired||'Mise à jour v%1 proposée au téléchargement — installez-la puis redémarrez l\'application pour l\'appliquer.')
+            .replace('%1',m.versionName||'');
+        }else{
+          msg=String(tt.otaUpdateMsg||'Mise à jour disponible v%1 — %2')
+            .replace('%1',m.versionName||'')
+            .replace('%2',m.message||'');
+        }
+
+        el.innerHTML =
+          '<div class="ota-msg">'+escFn(msg)+'</div>'+
+          '<div class="ota-actions">'+
+          '<button class="ota-btn ota-install" id="otaUpdateBtn">'+
+          escFn(stage==='requested'?(tt.otaRetry||'Réessayer'):(tt.otaInstall||'Installer'))+
+          '</button>'+
+          '<button class="ota-btn ota-dismiss" id="otaDismissBtn">'+escFn(tt.otaDismiss||'Ignorer')+'</button>'+
+          '</div>';
+
+        document.body.appendChild(el);
+
+        document.getElementById('otaUpdateBtn').onclick=function(){
+          if(!m.apkUrl) return;
+          /* Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
+             et par l'installateur Android. La bannière passe alors en
+             état « téléchargée / redémarrage requis ». */
+          writeState(remote,'requested');
+          window.open(m.apkUrl,'_system');
+          el.hidden=true;
+          checkRemote(storedCode);
+        };
+
+        document.getElementById('otaDismissBtn').onclick=function(){
+          writeState(remote,'dismissed');
+          el.hidden=true;
+        };
       })
       .catch(function(){});
     }
-  })();
-
+})();
 })();
 </script>
 <style>
