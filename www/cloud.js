@@ -1172,6 +1172,10 @@ var admin = {
         if (!memberSnap.exists()) throw new Error('Membre introuvable');
         var member = memberSnap.data();
         if (member.status !== 'active') throw new Error('Seul un adhérent actif peut devenir sous-admin.');
+        /* Un sous-admin est toujours rattaché à une province : un
+           adhérent hors province ne peut pas être nommé (il ne
+           pourrait être responsable d'aucun secteur public). */
+        if (!String(member.prov || '').trim()) throw new Error('Seul un adhérent rattaché à une province peut devenir sous-admin.');
         if (!String(member.phone || '').trim()) throw new Error('Ce membre n\'a pas renseigné de téléphone : il doit d\'abord le saisir dans sa demande d\'adhésion pour figurer dans la liste publique des responsables de province.');
 
         var assigned = String(province || '').slice(0,40);
