@@ -1999,6 +1999,11 @@ button.danger:hover{
   transform:translateY(-1px);
 }
 
+.admin-todo > *{
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+
 .admin-todo b{
   min-width:30px;
   text-align:center;
@@ -2099,6 +2104,33 @@ button.danger:hover{
 @media(max-width:1024px){
   .admin-kpis{
     grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
+@media(max-width:640px){
+  .admin-kpis{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:480px){
+  .admin-kpis{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Admin listes : sur petits écrans, la colonne d'actions passe
+   sous les infos pour éviter tout débordement. */
+@media(max-width:600px){
+  .admin-section .mrow{
+    flex-wrap:wrap;
+    align-items:flex-start;
+  }
+  .admin-section .mrow .mact{
+    flex:none;
+    width:auto;
+  }
+  .admin-section .mrow .mi{
+    flex:1 1 auto;
+    min-width:0;
   }
 }
 
