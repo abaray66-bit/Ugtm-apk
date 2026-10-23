@@ -3451,6 +3451,7 @@ adhTransmitting:`Transmission de votre demande à l’administration…`,
 adhSentFirst:`Demande transmise à l’administration. Vous serez informé dès qu’un responsable l’aura signée.`,
 adhSentCompleted:`Complément transmis. Votre dossier est de nouveau en attente de signature.`,
 adhSentRenewal:`Renouvellement transmis : votre dossier repasse en attente de signature d’un responsable.`,
+adhPermDenied:`Refusé par les règles de sécurité Firebase : vérifiez votre connexion et la province saisie.`,
 adhSaveError:`Impossible d’enregistrer la demande.`,
 
 /* Espace responsable : signature électronique et génération du PDF */
@@ -9652,7 +9653,13 @@ window.UGTM.failed(err);
             if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
           }catch(err){
             console.error('Adhesion save:',err);
-            var saveMsg=(err&&err.message)?err.message:(t.adhSaveError||'Impossible d’enregistrer la demande.');
+            var saveMsg;
+            var code=err&&err.code?String(err.code):'';
+            if(code==='permission-denied'||code==='missing-permission'||/missing or insufficient permissions/i.test(String(err.message||''))){
+              saveMsg=t.adhPermDenied||'Refusé par les règles de sécurité Firebase : votre compte n’est pas autorisé à enregistrer cette demande. Vérifiez que vous êtes connecté et que la province est correcte.';
+            }else{
+              saveMsg=(err&&err.message)?err.message:(t.adhSaveError||'Impossible d’enregistrer la demande.');
+            }
             setAdhStatus(saveMsg,false);
             adm(saveMsg,5000);
           }finally{
