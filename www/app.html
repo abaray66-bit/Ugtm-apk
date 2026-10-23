@@ -454,7 +454,8 @@ main{
     flex:1 1 45%;
     min-width:0;
     width:auto;
-    padding-inline:12px
+    padding-inline:10px;
+    min-height:36px
     }
 
     .home-actions .adhbtns{
@@ -486,7 +487,8 @@ main{
     flex:1 1 45%;
     min-width:0;
     width:auto;
-    padding-inline:12px
+    padding-inline:10px;
+    min-height:36px
     }
 
     @media(max-width:359px){
@@ -1330,14 +1332,27 @@ main{
    ========================= */
 
 .tabs{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-around;
+  align-items:stretch;
   background:var(--surface);
   border-top:1px solid var(--line);
-  padding:4px 4px 6px;
+  padding:4px 2px 6px;
   position:relative;
   z-index:2;
-  box-shadow:0 -4px 14px rgba(36,25,31,.06)
+  box-shadow:0 -4px 14px rgba(36,25,31,.06);
+  width:100%;
+  max-width:100%;
+  overflow:hidden
+}
+
+.tab{
+  flex:1 1 0;
+  min-width:0;
+  max-width:20%;
+  padding:4px 2px;
+}
 }
 
 .tab{
@@ -1350,10 +1365,10 @@ main{
   justify-content:flex-end;
   gap:3px;
   min-height:54px;
-  padding:4px 2px;
-  font-size:12px;
+  font-size:11px;
   font-weight:500;
-  cursor:pointer
+  cursor:pointer;
+  word-break:break-word
 }
 
 .tab[aria-selected="true"]{
@@ -1408,12 +1423,16 @@ main{
 
 .fb-ok{
   color:#1a7a3c;
-  font-weight:600
+  font-weight:600;
+  overflow-wrap:anywhere;
+  word-break:break-word
 }
 
 .fb-err{
   color:#c0392b;
-  font-weight:600
+  font-weight:600;
+  overflow-wrap:anywhere;
+  word-break:break-word
 }
 
 @media (prefers-color-scheme: dark){
@@ -2716,6 +2735,28 @@ body {
   font-weight:600;
 }
 
+/* Pièces jointes : prévisualisation successives */
+.attachment-preview{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+margin-top:8px;
+}
+.attachment-thumb{
+display:flex;
+align-items:center;
+gap:6px;
+padding:4px 8px;
+border:1px solid #ddd;
+border-radius:6px;
+font-size:.82rem;
+background:#fafafa;
+}
+.attachment-thumb button{
+padding:2px 6px;
+font-size:.72rem;
+}
+
 #reportForm input[type="file"],
 .field input[type="file"] {
   width: 100%;
@@ -3162,10 +3203,10 @@ input[type=file]::file-selector-button{
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" minlength="10" maxlength="4000" required></textarea></div>
-<div class="field"><label for="rAttachment" data-i18n="rAttachLabel">Pièce jointe (facultatif)</label>
-<input id="rAttachment" type="file" accept="image/*,.pdf,application/pdf">
+<div class="field"><label for="rAttachment" data-i18n="rAttachLabel">Pièces jointes (facultatif, jusqu'à 3)</label>
+<input id="rAttachment" type="file" accept="image/*,.pdf,application/pdf" multiple>
 <div id="rAttachmentPreview" class="attach-preview" hidden></div>
-<p class="hint" data-i18n="rAttachHint">Image ou PDF, 300 Ko maximum : les photos sont automatiquement redimensionnées pour tenir dans cette limite.</p></div>
+<p class="hint" data-i18n="rAttachHint">Image ou PDF, 300 Ko maximum : les photos sont automatiquement redimensionnées pour tenir dans cette limite. Les pièces jointes s'affichent l'une après l'autre.</p></div>
 <label class="chip"><input id="rAnonymous" type="checkbox"><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" id="rSubmitBtn" data-i18n="rSubmit"></button>
@@ -3173,7 +3214,7 @@ input[type=file]::file-selector-button{
 </form>
 <div class="actions">
 
-<button class="btn ghost block" type="button" data-sendto="region" data-i18n="sendDocs"></button>
+<button class="btn ghost block" type="button" data-sendto="region" data-i18n="sendDocs"></button><p class="hint" data-i18n="sendDocsHint"></p>
 
 <button class="btn ghost block" type="button" data-sendto="province" data-i18n="sendDocsProvince"></button>
 
@@ -3450,6 +3491,7 @@ adhTransmitting:`Transmission de votre demande à l’administration…`,
 adhSentFirst:`Demande transmise à l’administration. Vous serez informé dès qu’un responsable l’aura signée.`,
 adhSentCompleted:`Complément transmis. Votre dossier est de nouveau en attente de signature.`,
 adhSentRenewal:`Renouvellement transmis : votre dossier repasse en attente de signature d’un responsable.`,
+adhPermDenied:`Refusé par les règles de sécurité Firebase : vérifiez votre connexion et la province saisie.`,
 adhSaveError:`Impossible d’enregistrer la demande.`,
 
 /* Espace responsable : signature électronique et génération du PDF */
@@ -3564,6 +3606,7 @@ rAdminOnly:`Les signalements sont visibles uniquement par l’administration.`,
 
 openForm:`Ouvrir le formulaire`,
 sendDocs:`Envoyer des pièces sur WhatsApp`,
+  sendDocsHint:`Le numéro régional s'ouvre ; le secrétaire provincial (si configuré) est disponible dans l'onglet Contact.`,
 
 agendaT:`Agenda`,
 addCal:`Ajouter au calendrier`,
@@ -3851,6 +3894,7 @@ deleted:`Données supprimées`,
   shareReportSummary:`Résumé :`,
   shareReportRef:`Référence :`,
   shareReportAttach:`Pièce jointe à ajouter manuellement dans WhatsApp :`,
+  shareReportAttachHint:`Pièce jointe à joindre manuellement`,
   sendDocsProvince:`Envoyer des pièces au secrétaire de ma province`,
   sendProvMissing:`Aucun numéro de secrétaire provincial n'est configuré pour votre province : utilisez l'envoi au secrétaire régional.`,
   sendDocsIntro:`Je souhaite transmettre des photos ou des documents à la Fédération nationale de la Santé (UGTM Souss-Massa).`,
@@ -4140,6 +4184,7 @@ rAdminOnly:`التبليغات مخصصة للإدارة.`,
 
 openForm:`فتح الاستمارة`,
 sendDocs:`إرسال وثائق عبر واتساب`,
+  sendDocsHint:`الرقم الإقليمي يفتح تلقائيًا؛ المدير الإقليمي (إذا تم تعيينه) متاح في علامة تواصل`,
 
 agendaT:`الأجندة`,
 addCal:`إضافة إلى التقويم`,
@@ -4151,7 +4196,7 @@ calNext:`الشهر التالي`,
 contactT:`اتصلوا بنا`,
 
 cWa:`مجموعة التواصل الجهوية`,
-cWaD:`انضموا إلى مجموعة التواصل الجهوية الخاصة بالجامعة الوطنية للصحة.`,
+cWaD:`الوصول مخصص للأعضاء المصادقين؛ يظهر الرابط فقط إذا كان اشتراكك نشطًا`,
 cWaB:`انضموا إلى المجموعة`,
   waGroupSignIn:`سجّلوا الدخول للوصول إلى مجموعة واتساب الجهوية.`,
   waGroupDenied:`الولوج إلى المجموعة مخصص للمنخرطين المصادق عليهم من طرف الجامعة (الطلب في انتظار المصادقة، ناقص أو مرفوض).`,
@@ -4423,6 +4468,7 @@ deleted:`تم حذف البيانات`,
   shareReportEtab:`المؤسسة:`,
   shareReportDate:`التاريخ:`,
   shareReportStatus:`الحالة:`,
+  shareReportAttachHint:`المرفق الذي يجب إرفاقه يدويًا`,
   shareReportSummary:`ملخص:`,
   shareReportRef:`المرجع:`,
   shareReportAttach:`مرفق يُضاف يدويًا عبر واتساب:`,
@@ -5178,6 +5224,19 @@ function contactUrl(re){
   return hit?hit.url:'';
 }
 
+function provinceWhatsAppForMember(){
+var m=typeof S!=='undefined'&&S.member;
+if(!m||!m.prov)return '';
+var list=S.provinceContacts||[];
+for(var i=0;i<list.length;i++){
+var c=list[i];
+if(c&&c.prov===m.prov&&c.phone){
+return String(c.phone).replace(/[^0-9+]/g,'').replace(/^\+/,'');
+}
+}
+return '';
+}
+
 function linkFor(key){
 
   if(key==='wa')
@@ -5187,12 +5246,13 @@ function linkFor(key){
   return contactUrl(/facebook\.com/i);
 
   if(key==='num'){
-  /* Numéro régional : entrée wa.me de data.js, sinon le numéro de la
-     permanence normalisé en format international (212…). */
-  var numUrl=contactUrl(/wa\.me/i)||'';
-  if(!numUrl)numUrl=waHref(PERM.phone);
-  return numUrl;
-  }
+
+  var reg=((PERM.phone||'').replace(/\D/g,''));
+  if(reg)return 'https://wa.me/'+reg;
+  var prov=provinceWhatsAppForMember();
+  if(prov)return 'https://wa.me/'+prov;
+  return '';
+
 
   return '';
 }
@@ -5370,26 +5430,23 @@ fmtDate(ev.date,true)+
 '</div>';
 }
 
-/* Événements affichés sur l'accueil : jusqu'à 3 rendez-vous à venir,
-   sinon les derniers événements PUBLIÉS (repli documenté — un   événement daté ne doit pas disparaître de l'accueil alors qu'il   figure dans l'administration et dans l'Agenda). */
-function homeEvents(){
-var list=upcoming().slice(0,3);
-if(list.length)return{list:list,fallback:false};
-var past=EVENTS.slice().sort(function(a,b){
-var x=a.date+(a.time||'');
-var y=b.date+(b.time||'');
-return x<y?1:(x>y?-1:0);
-}).slice(0,2);
-return{list:past,fallback:past.length>0};
+
+function applyGroupAccess(){
+var allowed=whatsappGroupAllowed();
+document.querySelectorAll('[data-link="wa"]').forEach(function(b){
+b.hidden=!allowed;
+if(!allowed)b.setAttribute('aria-disabled','true');
+});
 }
 
 function renderHome(){
-
+  applyGroupAccess();
 var home=homeEvents();
 var nextList=home.list;
 var fallback=home.fallback;
 var headBox=$('nextEventTitle');
 if(headBox)headBox.textContent=fallback?T().lastEventT:T().nextT;
+
 
 $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
@@ -5869,6 +5926,7 @@ return '<li class="mrow"><div class="mi">'+
 }
 
 function renderMe(){
+  applyGroupAccess();
 
 var t=T();
 
@@ -6045,10 +6103,11 @@ esc(isResp?t.admMemRemoveResp:t.admMemSetResp)+
 if(S.isAdmin)
 acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMember" data-uid="'+uid+'">'+esc(t.admDelete)+'</button>';
 
-var info=[
+
+var infoParts=[
 m.etab,
 provName(m.prov,lang)
-].filter(Boolean).join(' – ');
+].filter(Boolean);
 
 /* Téléphone de l'adhérent : visible et cliquable (WhatsApp) dans
    l'espace réservé aux responsables, uniquement si le numéro est
@@ -6075,8 +6134,8 @@ esc(statusLabel(m.status))+
 
 '<span>'+esc(m.email)+'</span>'+
 
-(info
-?'<span>'+esc(info)+'</span>'
+(infoParts.length
+?'<span>'+infoParts.join(' – ')+'</span>'
 :'')
 +
 phoneHtml
@@ -8231,6 +8290,10 @@ if(report){
    date, statut et rappel de la pièce jointe à joindre à la main. */
 var text=buildReportShareText(report);
 
+if(report.attachmentName){
+text+='\n'+T().shareReportAttachHint+': '+report.attachmentName;
+}
+
 if(navigator.share){
 navigator.share({
 title:t.shareReportTitle,
@@ -8451,7 +8514,9 @@ feedback(T().admSelectProvince);
 return;
 }
 
-var file=$('rAttachment').files&&$('rAttachment').files[0];
+var files=Array.prototype.slice.call($('rAttachment').files||[]).slice(0,3);
+var file=files[0]||null;
+renderAttachmentPreview(files);
 
 function setSending(on){
 
@@ -8541,6 +8606,7 @@ var attachReady=reportAttachment
 ?Promise.resolve(reportAttachment)
 :prepareReportAttachment(file);
 
+
 attachReady.then(function(att){
 sendReport(att);
 }).catch(function(errAtt){
@@ -8551,6 +8617,64 @@ toast(msg,5000);
 
 }else{
 sendReport(null);
+}
+
+function reduceImage(file){
+return new Promise(function(resolve,reject){
+var img=new Image();
+img.onload=function(){
+var scale=Math.min(1,1400/Math.max(img.width,img.height));
+var canvas=document.createElement('canvas');
+var quality=.82,data='';
+for(var attempt=0;attempt<20;attempt++){
+canvas.width=Math.max(1,Math.round(img.width*scale));
+canvas.height=Math.max(1,Math.round(img.height*scale));
+var ctx=canvas.getContext('2d');
+ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);
+ctx.drawImage(img,0,0,canvas.width,canvas.height);
+data=canvas.toDataURL('image/jpeg',quality);
+if(data.length<=300000)break;
+if(quality>.4){quality=Math.max(.4,quality-.1);}else{scale*=.82;quality=.72;}
+}
+if(data.length>300000){reject(new Error('too big'));return;}
+resolve({name:file.name.replace(/\.(jpe?g|png|webp)$/i,'.jpg'),type:'image/jpeg',data:data});
+};
+img.onerror=function(){reject(new Error('img'));};
+var reader=new FileReader();
+reader.onload=function(){img.src=reader.result;};
+reader.onerror=function(){reject(new Error('reader'));};
+reader.readAsDataURL(file);
+});
+}
+
+function renderAttachmentPreview(list){
+var box=$('rAttachmentPreview');
+if(!box)return;
+box.hidden=true;
+box.innerHTML='';
+list.forEach(function(f){
+if(!f)return;
+var div=document.createElement('div');
+div.className='attachment-thumb';
+var name=document.createElement('span');
+name.textContent=f.name+' ('+Math.round(f.size/1024)+' Ko)';
+div.appendChild(name);
+var remove=document.createElement('button');
+remove.type='button';
+remove.className='btn ghost small';
+remove.textContent='Retirer';
+remove.addEventListener('click',function(){
+var dt=new DataTransfer();
+Array.prototype.forEach.call($('rAttachment').files||[],function(f2){
+if(f2!==f)dt.items.add(f2);
+});
+$('rAttachment').files=dt.files;
+renderAttachmentPreview(Array.prototype.slice.call($('rAttachment').files||[]));
+});
+div.appendChild(remove);
+box.appendChild(div);
+box.hidden=false;
+});
 }
 });
 
@@ -8796,8 +8920,6 @@ window.UGTM.failed(err);
 });
 
 }
-
-})();
 </script>
 
 
@@ -9407,7 +9529,13 @@ window.UGTM.failed(err);
           var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
           var validationDate='';
           if(request&&request.signedAt){
-            try{validationDate=new Date(request.signedAt).toLocaleDateString('fr-FR');}catch(eDate){}
+            try{
+              var sd=request.signedAt;
+              if(sd&&typeof sd==='object'&&typeof sd.seconds==='number'){sd=sd.seconds*1000;}
+              else if(sd&&typeof sd.toDate==='function'){sd=sd.toDate();}
+              validationDate=new Date(sd).toLocaleDateString('fr-FR');
+              if(validationDate==='Invalid Date')validationDate='';
+            }catch(eDate){validationDate='';}
           }
           section('VALIDATION');
           row2('Validée par',signer,'Statut du dossier','VALIDÉE');
@@ -9568,7 +9696,13 @@ window.UGTM.failed(err);
             if(typeof window.refreshMyAdhesionStatus==='function')window.refreshMyAdhesionStatus(true);
           }catch(err){
             console.error('Adhesion save:',err);
-            var saveMsg=(err&&err.message)?err.message:(t.adhSaveError||'Impossible d’enregistrer la demande.');
+            var saveMsg;
+            var code=err&&err.code?String(err.code):'';
+            if(code==='permission-denied'||code==='missing-permission'||/missing or insufficient permissions/i.test(String(err.message||''))){
+              saveMsg=t.adhPermDenied||'Refusé par les règles de sécurité Firebase : votre compte n’est pas autorisé à enregistrer cette demande. Vérifiez que vous êtes connecté et que la province est correcte.';
+            }else{
+              saveMsg=(err&&err.message)?err.message:(t.adhSaveError||'Impossible d’enregistrer la demande.');
+            }
             setAdhStatus(saveMsg,false);
             adm(saveMsg,5000);
           }finally{
@@ -9842,8 +9976,7 @@ window.UGTM.failed(err);
       })
       .catch(function(){});
     }
-  })();
-
+})();
 })();
 </script>
 <style>

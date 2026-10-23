@@ -1191,8 +1191,10 @@ var admin = {
         if (old && old !== assigned){
           var oldRef = doc(db, 'provinceContacts', old);
           var oldSnap = await tx.get(oldRef);
-          if (oldSnap.exists() && oldSnap.data().uid === uid)
+          if (oldSnap.exists() && oldSnap.data().uid === uid) {
             tx.delete(doc(db, 'provinceContacts', old));
+            tx.delete(doc(db, 'publicProvinceContacts', old));
+          }
         }
 
         tx.set(doc(db, 'provinceContacts', assigned), {
@@ -1205,8 +1207,6 @@ var admin = {
 
         return {old: old, assigned: assigned, name: member.name, phone: member.phone};
       }).then(function(res){
-        if (res.old && res.old !== res.assigned)
-          return deletePublicProvinceContact(res.old).then(function(){ return res; });
         return res;
       }).then(function(res){
         return savePublicProvinceContact(res.assigned, res.name, res.phone);
