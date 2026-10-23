@@ -3485,6 +3485,7 @@ adhDownload:`Télécharger la demande`,
 adhSend:`Envoyer la demande`,
 adhDigitalBtn:`Adhésion numérique`,
 adhHint:``,
+authRequired:`Veuillez vous authentifier avant d'accéder à l'adhésion numérique. Cliquez sur le bouton U en haut de l'écran pour vous connecter avec Google.`,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
 adhProcessing:`Traitement de la demande en cours…`,
@@ -4009,6 +4010,7 @@ adhDownload:`تحميل الاستمارة`,
 adhSend:`إرسال الاستمارة`,
 adhDigitalBtn:`الانخراط الرقمي`,
 adhHint:``,
+authRequired:`يرجى المصادقة قبل الوصول إلى الانخراط الرقمي. اضغط على زر U أعلى الشاشة للاتصال بحساب Google.`,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
 adhProcessing:`جار معالجة الطلب…`,
@@ -5510,6 +5512,10 @@ $('recentList').innerHTML=recentHtml
 ?recentHtml
 
 :'<li class="empty">'+T().empty+'</li>';
+
+if(!S.user){
+  try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.add('avatar-u--guide'); }); }catch(e){}
+}
 }
 
 /* Filtres de publication : « Tous » + les rubriques dans l'ordre
@@ -9694,12 +9700,16 @@ window.UGTM.failed(err);
       connected=!!(session&&session.user&&session.user.uid);
     }catch(eSession){}
 
+    /* Utilisateur non connecté : accès bloqué. On invite à
+       s'authentifier via le bouton U en haut de l'écran. */
+    if(!connected){
+      try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.add('avatar-u--guide'); }); }catch(e){}
+      try{ toast(t.authRequired||'Veuillez vous authentifier en cliquant sur le bouton U en haut de l’écran avant d’accéder au formulaire d’adhésion.',6000); }catch(e){}
+      return;
+    }
+
     function openForm(){
       if(typeof window.ugtmGo==='function')window.ugtmGo('adhesion');
-      if(!connected){
-        try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.add('avatar-u--guide'); }); }catch(e){}
-        try{ toast('Bienvenue dans le formulaire d’adhésion UGTM. Pour commencer votre demande, veuillez vous authentifier avec votre compte Google. Cette étape permet de sécuriser votre dossier et de suivre votre demande. Appuyez sur le bouton U d’authentification pour continuer.',8000); }catch(e){}
-      }
       setTimeout(function(){
         initDigitalAdhesion();
         if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
