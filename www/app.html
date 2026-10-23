@@ -2397,6 +2397,17 @@ body {
   50% { opacity: 0.5; }
 }
 
+.avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; box-shadow: 0 0 0 2px rgba(215,167,44,.6); border-radius: 50%; }
+
+@keyframes avatarUGuide {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: .75; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .avatar-u--guide { animation: none; }
+}
+
 .title {
   letter-spacing: -.025em;
   text-shadow: 0 2px 12px rgba(184,50,104,.10);
@@ -3033,6 +3044,57 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
+<button class="btn ghost small" type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();" aria-label="Notifications">🔔</button>
+<div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
+<script>
+function renderNotifications(list){
+  var arr=Array.isArray(list)?list:[];
+  var countEl=document.getElementById('notifCount');
+  var listEl=document.getElementById('notifList');
+  var emptyEl=document.getElementById('notifEmpty');
+  var historyEl=document.getElementById('notifHistory');
+  var unread=arr.filter(function(n){return n && n.read===false;}).length;
+  if(countEl){ if(unread>0){countEl.textContent='('+unread+')';countEl.hidden=false;}else{countEl.textContent='';countEl.hidden=true;} }
+  if(!listEl) return;
+  listEl.innerHTML='';
+  if(!arr.length){ if(emptyEl){emptyEl.hidden=false;listEl.appendChild(emptyEl);} return; }
+  if(emptyEl) emptyEl.hidden=true;
+  arr.forEach(function(n){
+    var p=document.createElement('p');
+    p.textContent=String(n.title||'')+' - '+String(n.body||'');
+    if(n.read===false){
+      var b=document.createElement('button');
+      b.textContent='Marquer comme lu';
+      b.onclick=function(){ markNotificationRead(n.id); };
+      p.appendChild(b);
+    }
+    listEl.appendChild(p);
+  });
+  if(historyEl){ historyEl.hidden=arr.length<=3; }
+}
+async function markNotificationRead(id){
+  try{
+    if(!window.db || !window.ugtmSession) return;
+    var session=window.ugtmSession();
+    if(!session || !session.user || !session.user.uid) return;
+    await window.db.collection('notifications').doc(session.user.uid).collection('items').doc(id).update({read:true});
+    await loadNotifications();
+  }catch(e){ console.warn('notif mark',e); }
+}
+async function loadNotifications(){
+  try{
+    if(!window.db || !window.ugtmSession) return;
+    var session=window.ugtmSession();
+    if(!session || !session.user || !session.user.uid) return;
+    var uid=session.user.uid;
+    var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
+    var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
+    renderNotifications(list);
+  }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
+}
+window.loadNotifications=loadNotifications;
+window.markNotificationRead=markNotificationRead;
+</script>
 <button class="btn gold" type="button" data-share-app data-i18n="heroShare"></button>
 </div>
 </div><div class="adh">
@@ -7530,6 +7592,10 @@ $('s-'+n).hidden=n!==name;
 
 });
 
+if(name!=='adhesion'){
+  try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.remove('avatar-u--guide'); }); }catch(e){}
+}
+
 document
 .querySelectorAll('.tab')
 .forEach(function(b){
@@ -7938,7 +8004,9 @@ var act=el.getAttribute('data-act');
 
 if(act==='signin'){
 
-c.signIn().catch(showError);
+c.signIn().then(function(){
+  try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.remove('avatar-u--guide'); }); }catch(e){}
+}).catch(showError);
 
 }
 
@@ -9628,6 +9696,10 @@ window.UGTM.failed(err);
 
     function openForm(){
       if(typeof window.ugtmGo==='function')window.ugtmGo('adhesion');
+      if(!connected){
+        try{ document.querySelectorAll('.avatar-u').forEach(function(el){ el.classList.add('avatar-u--guide'); }); }catch(e){}
+        try{ toast('Bienvenue dans le formulaire d’adhésion UGTM. Pour commencer votre demande, veuillez vous authentifier avec votre compte Google. Cette étape permet de sécuriser votre dossier et de suivre votre demande. Appuyez sur le bouton U d’authentification pour continuer.',8000); }catch(e){}
+      }
       setTimeout(function(){
         initDigitalAdhesion();
         if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();

@@ -654,4 +654,22 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
   }
+
+  match /notifications/{uid}/items/{id} {
+    allow read: if signedIn() && request.auth.uid == uid;
+    allow create: if signedIn()
+      && (isAdmin() || (isSubAdmin() && get(/databases/$(database)/documents/members/$(uid)).data.prov == assignedProvince()))
+      && request.resource.data.read == false
+      && request.resource.data.authorUid == request.auth.uid
+      && request.resource.data.title is string && request.resource.data.title.size() <= 120
+      && request.resource.data.body is string && request.resource.data.body.size() <= 500
+      && request.resource.data.type in ['info','adhesion','event','news','report']
+      && request.resource.data.createdAt == request.time
+      && request.resource.data.keys().hasOnly(['title','body','createdAt','read','type','targetScreen','targetId','authorUid','province']);
+    allow update: if signedIn() && request.auth.uid == uid
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+      && request.resource.data.read is bool;
+    allow delete: if isAdmin();
+  }
+
 }
