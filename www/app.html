@@ -4018,6 +4018,7 @@ adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
 adhSentFirst:`تم إرسال الطلب إلى الإدارة. سيتم إخباركم فور توقيع أحد المسؤولين عليه.`,
 adhSentCompleted:`تم إرسال المعلومات الإضافية. طلبكم عاد إلى قيد التوقيع.`,
 adhSentRenewal:`تم إرسال طلب التجديد : طلبكم عاد إلى قيد توقيع أحد المسؤولين.`,
+adhPermDenied:`مرفض من قبل قواعد الأمان: تأكدوا من اتصالكم و الإقليمن المدخل.`,
 adhSaveError:`تعذر تسجيل الطلب.`,
 
 /* Espace responsable : signature électronique et génération du PDF */
@@ -4071,6 +4072,7 @@ adhTransmitting:`جار إرسال طلبكم إلى الإدارة…`,
 adhSentFirst:`تم إرسال الطلب إلى الإدارة. سيتم إخباركم فور توقيع أحد المسؤولين عليه.`,
 adhSentCompleted:`تم إرسال المعلومات الإضافية. طلبكم عاد إلى قيد التوقيع.`,
 adhSentRenewal:`تم إرسال طلب التجديد : طلبكم عاد إلى قيد توقيع أحد المسؤولين.`,
+adhPermDenied:`مرفض من قبل قواعد الأمان: تأكدوا من اتصالكم و الإقليمن المدخل.`,
 adhSaveError:`تعذر تسجيل الطلب.`,
 
 /* Espace responsable : signature électronique et génération du PDF */
@@ -6743,10 +6745,8 @@ function savePdfToDevice(b64,name){
            fichier où il veut sur l'appareil (téléchargements,
            Drive, WhatsApp…) — c'est la récupération réelle
            du fichier sur l'appareil. */
-        return share.share({files:[uri],dialogTitle:name}).then(function(){
           return uri;
-        });
-      }
+        }));
       throw new Error('Partage indisponible');
     })
     .catch(function(){
