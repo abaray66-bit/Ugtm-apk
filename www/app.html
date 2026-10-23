@@ -795,34 +795,97 @@ main{
 }
 
 .news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:var(--radius-m);margin:0 0 12px;cursor:zoom-in}
+.news-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px}
+.news-thumbs img{width:70px;height:70px;object-fit:cover;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent}
+.news-thumbs img.active{border-color:var(--accent)}
 
-.lightbox{
+.gallery{
   position:fixed;
   inset:0;
   z-index:60;
-  background:rgba(0,0,0,.93);
-  display:grid;
-  place-items:center;
+  background:rgba(0,0,0,.95);
+  display:flex;
+  flex-direction:column;
   padding:16px;
-  cursor:zoom-out
+  cursor:pointer
 }
-
-.lightbox img{
-  max-width:100%;
-  max-height:calc(100% - 56px);
+.gallery-track{
+  position:relative;
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden
+}
+.gallery-track img{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  width:auto;height:auto;
+  max-width:100%;max-height:100%;
   object-fit:contain;
+  opacity:0;
+  transition:opacity .25s ease,transform .25s ease;
+  transform:scale(.92);
   border-radius:var(--radius-s)
 }
-
-.lightbox .lb-hint{
+.gallery-track img.active{
+  opacity:1;
+  transform:scale(1)
+}
+.gallery-btn{
   position:absolute;
-  bottom:18px;
-  left:0;
-  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  width:44px;height:44px;
+  border-radius:50%;
+  background:rgba(255,255,255,.15);
+  border:none;
+  color:#fff;
+  font-size:24px;
+  cursor:pointer;
+  z-index:10;
+  display:flex;align-items:center;justify-content:center
+}
+.gallery-prev{left:12px}
+.gallery-next{right:12px}
+.gallery-counter{
+  position:absolute;
+  bottom:70px;
+  left:0;right:0;
   text-align:center;
   color:#fff;
   font-size:13px;
-  opacity:.75
+  background:rgba(0,0,0,.45);
+  padding:6px 10px;
+  border-radius:20px;
+  display:inline-block;
+  margin-left:auto;margin-right:auto
+}
+.gallery-actions{
+  position:absolute;
+  bottom:20px;
+  left:0;right:0;
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  z-index:10
+}
+.gallery-actions .gallery-btn{
+  position:static;
+  transform:none;
+  width:auto;padding:8px 16px;
+  background:rgba(255,255,255,.18);
+  border-radius:8px;
+  font-size:13px
+}
+.gallery-hint{
+  position:absolute;
+  bottom:16px;
+  left:0;right:0;
+  text-align:center;
+  color:#fff;
+  font-size:13px;
+  opacity:.7
 }
 
 .attachmodal{
@@ -3256,10 +3319,10 @@ window.markNotificationRead=markNotificationRead;
 <div class="field"><label for="rDate" data-i18n="rDate"></label><input id="rDate" type="date" required></div>
 <div class="field"><label for="rEtab" data-i18n="rEtab"></label><input id="rEtab" type="text" maxlength="160"></div>
 <div class="field"><label for="rDescription" data-i18n="rDescription"></label><textarea id="rDescription" rows="5" minlength="10" maxlength="4000" required></textarea></div>
-<div class="field"><label for="rAttachment" data-i18n="rAttachLabel">Pièce jointe (facultatif)</label>
-<input id="rAttachment" type="file" accept="image/*,.pdf,application/pdf">
+<div class="field"><label for="rAttachment" data-i18n="reportPhotos">Photos (1 à 3)</label>
+<input id="rAttachment" type="file" accept="image/*" multiple>
 <div id="rAttachmentPreview" class="attach-preview" hidden></div>
-<p class="hint" data-i18n="rAttachHint">Image ou PDF, 300 Ko maximum : les photos sont automatiquement redimensionnées pour tenir dans cette limite.</p></div>
+<p class="hint" data-i18n="reportPhotosHint">Jusqu'à 3 images, redimensionnées automatiquement.</p></div>
 <label class="chip"><input id="rAnonymous" type="checkbox"><span data-i18n="rAnonymous"></span></label>
 <p class="hint" data-i18n="rAuthHint"></p>
 <button class="btn primary block" type="submit" id="rSubmitBtn" data-i18n="rSubmit"></button>
@@ -3373,9 +3436,9 @@ window.markNotificationRead=markNotificationRead;
 <label for="nDate" data-i18n="admFieldDate">Date</label>
 <input id="nDate" type="date">
 </div><div class="field">
-<label for="nImage" data-i18n="newsPhoto"></label>
-<input id="nImage" type="file" accept="image/jpeg,image/png,image/webp">
-<p class="hint" data-i18n="newsPhotoHint"></p>
+<label for="nImage" data-i18n="newsPhotos"></label>
+<input id="nImage" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+<p class="hint" data-i18n="newsPhotosHint"></p>
 </div><div class="field">
 <label for="nTFr" data-i18n="admNewsTitleFr">Titre (français)</label>
 <input id="nTFr" type="text">
@@ -3443,7 +3506,17 @@ window.markNotificationRead=markNotificationRead;
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="gallery" id="gallery" hidden>
+  <button class="gallery-btn gallery-prev" id="galleryPrev" type="button" aria-label="Précédent">‹</button>
+  <div class="gallery-track" id="galleryTrack"></div>
+  <button class="gallery-btn gallery-next" id="galleryNext" type="button" aria-label="Suivant">›</button>
+  <div class="gallery-counter" id="galleryCounter"></div>
+  <div class="gallery-actions">
+    <button class="gallery-btn gallery-download" id="galleryDownload" type="button" data-i18n="galleryDownload">Télécharger</button>
+    <button class="gallery-btn gallery-share" id="galleryShare" type="button" data-i18n="galleryShare">Partager</button>
+  </div>
+  <p class="gallery-hint" data-i18n="galleryClose">Cliquez sur l'image pour fermer</p>
+</div><div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -3604,6 +3677,14 @@ Région Souss-Massa`,
 newsPhoto:`Photo (facultative)`,
 newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
 newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
+newsPhotos:`Photos (1 à 3)`,
+newsPhotosHint:`Jusqu'à 3 images JPG, PNG ou WebP`,
+reportPhotos:`Photos (1 à 3)`,
+reportPhotosHint:`Jusqu'à 3 images, redimensionnées automatiquement.`,
+galleryClose:`Cliquez sur l'image pour fermer`,
+galleryDownload:`Télécharger`,
+galleryShare:`Partager`,
+galleryCount:`Photo %1 sur %2`,
 
 reportT:`Signaler un dysfonctionnement`,
 reportP:`Décrivez les faits dans un formulaire confidentiel. Vous pouvez rester anonyme.`,
@@ -4183,6 +4264,14 @@ share:`مشاركة عبر واتساب`,
 newsPhoto:`صورة (اختياري)`,
 newsPhotoHint:`صورة JPG أو PNG أو WebP، سيتم تصغيرها تلقائيا.`,
 newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناسب.`,
+newsPhotos:`صور (1 إلى 3)`,
+newsPhotosHint:`حتى 3 صور JPG أو PNG أو WebP`,
+reportPhotos:`صور (1 إلى 3)`,
+reportPhotosHint:`حتى 3 صور، يتم تغيير حجمها تلقائيًا.`,
+galleryClose:`انقر على الصورة للإغلاق`,
+galleryDownload:`تحميل`,
+galleryShare:`مشاركة`,
+galleryCount:`الصورة %1 من %2`,
 
 reportT:`التبليغ عن اختلال`,
 reportP:`صفوا الوقائع في استمارة سرية. يمكنكم عدم الكشف عن هويتكم.`,
@@ -4786,24 +4875,103 @@ el.classList.remove('show');
 },ms||2400);
 }
 
-function openLightbox(src){
+function openGallery(items,startIdx){
+  var track=$('galleryTrack');
+  var counter=$('galleryCounter');
+  var gallery=$('gallery');
+  var idx=Math.max(0,Math.min(startIdx||0,items.length-1));
+  var downloads=[];
 
-$('lightboxImg').src=src;
-$('lightbox').hidden=false;
+  function render(){
+    track.innerHTML='';
+    items.forEach(function(it,i){
+      var img=document.createElement('img');
+      img.src=it.dataUri||it.url||it.src;
+      img.alt=it.name||'Image '+(i+1);
+      if(i===idx)img.classList.add('active');
+      track.appendChild(img);
+      downloads.push({name:it.name||'image'+(i+1),data:img.src});
+    });
+    counter.textContent=T().galleryCount.replace('%1',String(idx+1)).replace('%2',String(items.length));
+  }
+  function next(){idx=(idx+1)%items.length;render();}
+  function prev(){idx=(idx-1+items.length)%items.length;render();}
+  function close(){gallery.hidden=true;track.innerHTML='';downloads=[];}
+  function downloadCurrent(){
+    var d=downloads[idx];
+    if(!d)return;
+    var a=document.createElement('a');
+    a.href=d.data;a.download=d.name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+  }
+  function shareCurrent(){
+    var d=downloads[idx];
+    if(!d)return;
+    var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+    if(isNative&&window.Capacitor&&window.Capacitor.Plugins){
+      var share=window.Capacitor.Plugins.Share;
+      if(share){
+        share.share({title:d.name,text:d.name,url:d.data,dialogTitle:T().galleryShare}).catch(function(){});
+        return;
+      }
+    }
+    if(navigator.share){
+      try{navigator.share({title:d.name,text:d.name,url:d.data});}catch(e){}
+    }else{
+      downloadCurrent();
+    }
+  }
+
+  render();
+  gallery.hidden=false;
+
+  var gc=$('gallery');
+  gc.onclick=null;
+  gc.addEventListener('click',function(e){
+    if(e.target===gc||e.target.classList.contains('gallery-hint')){close();return;}
+    if(e.target.tagName==='IMG'){next();return;}
+  });
+
+  var prevBtn=$('galleryPrev');
+  var nextBtn=$('galleryNext');
+  var dlBtn=$('galleryDownload');
+  var shBtn=$('galleryShare');
+
+  if(prevBtn){prevBtn.onclick=null;prevBtn.addEventListener('click',function(e){e.stopPropagation();prev();});}
+  if(nextBtn){nextBtn.onclick=null;nextBtn.addEventListener('click',function(e){e.stopPropagation();next();});}
+  if(dlBtn){dlBtn.onclick=null;dlBtn.addEventListener('click',function(e){e.stopPropagation();downloadCurrent();});}
+  if(shBtn){shBtn.onclick=null;shBtn.addEventListener('click',function(e){e.stopPropagation();shareCurrent();});}
+
+  /* Swipe gauche/droite pour naviguer */
+  var sx=0,sy=0,started=false;
+  track.addEventListener('touchstart',function(e){
+    var tc=e.touches[0];sx=tc.clientX;sy=tc.clientY;started=true;
+  },{passive:true});
+  track.addEventListener('touchend',function(e){
+    if(!started){started=false;return;}
+    var tc=e.changedTouches[0];var dx=tc.clientX-sx,dy=tc.clientY-sy;started=false;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){dx>0?prev():next();}
+  },{passive:true});
+
+  /* Escape / retour Android : fermeture */
+  var escHandler=function(e){if(e.key==='Escape')close();};
+  document.addEventListener('keydown',escHandler);
+
+  window.__galleryClose=function(){close();document.removeEventListener('keydown',escHandler);};
+
+  return{close:close,next:next,prev:prev};
 }
 
-function closeLightbox(){
+function closeGallery(){
+  if(typeof window.__galleryClose==='function')window.__galleryClose();
+}
 
-$('lightbox').hidden=true;
-$('lightboxImg').src='';
+/* Rétrocompatibilité : l'ancien openLightbox redirige vers la galerie. */
+function openLightbox(src){
+  openGallery([{src:src,name:'image'}],0);
 }
 
 (function(){
- 
- var lb=$('lightbox');
- 
- lb.addEventListener('click',closeLightbox);
- 
+  
  $('attachModal').addEventListener('click',function(e){
  if(e.target===$('attachModal'))closeAttachModal();
  });
@@ -4864,7 +5032,7 @@ $('attachDownload').addEventListener('click',async function(){
  document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
   if(!$('attachModal').hidden){closeAttachModal();return;}
-  if(!lb.hidden)closeLightbox();
+  if(!$('gallery').hidden)closeGallery();
   }
  });
  
@@ -5611,8 +5779,8 @@ CHEV+
 
 '</button>'+
 
-'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-(c.image?'<img class="news-photo" src="'+esc(c.image)+'" alt="">':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
+'<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+' data-images="'+(c.images&&c.images.length?1:0)+'">'+
+(c.images&&c.images.length?'<div class="news-thumbs">'+c.images.map(function(d,i){return'<img class="news-photo" src="'+esc(d)+'" alt="Image '+(i+1)+'" data-idx="'+i+'">';}).join('')+'</div>':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -5626,7 +5794,7 @@ t.share+
 :'<li class="empty">'+t.empty+'</li>';
 }
 
-/* L'image de la publication est stockée à part : elle n'est chargée
+/* Les images de la publication sont stockées à part : elles sont chargées
    que lorsque l'on déplie la publication. */
 function loadNewsImage(item){
 if(!window.CLOUD||!window.CLOUD.getNewsImage)return;
@@ -5635,7 +5803,10 @@ renderNews();
 window.CLOUD.getNewsImage(item.id)
 .then(function(data){
 item.imageLoading=false;
-if(data)item.image=data;
+if(data&&data.length){
+item.images=data;
+item.imageCount=data.length;
+}
 renderNews();
 })
 .catch(function(){
@@ -7210,8 +7381,11 @@ if(ar.t||ar.b)o.ar=ar;
 
 var editing=S.editNewsId;
 
-imageData($('nImage').files[0]).then(function(image){
-if(image)o.image=image;
+var files=Array.prototype.slice.call($('nImage').files||[]).slice(0,3);
+
+Promise.all(files.map(function(f){return imageData(f);})).then(function(images){
+images=images.filter(Boolean);
+if(images.length)o.images=images;
 return editing
 ?c.admin.updateNews(editing,o)
 :c.admin.addNews(o);
@@ -8413,7 +8587,7 @@ syncAnonymousReportFields();
    420 000 caractères base64). Un PDF n'est pas modifiable : il doit
    déjà tenir dans la limite, sinon l'erreur est explicite.
    ========================= */
-var reportAttachment=null;
+var reportAttachments=[];
 var REPORT_ATTACH_MAX_CHARS=300*1024*4/3;
 
 function prepareReportAttachment(file){
@@ -8483,39 +8657,47 @@ box.hidden=false;
 box.innerHTML='<span class="attach-preview-err">'+esc(errMsg)+'</span>';
 return;
 }
-if(!att){box.hidden=true;box.innerHTML='';return;}
-var isImg=String(att.type||'').indexOf('image/')===0;
-var ko=Math.max(1,Math.round((att.data.length*3/4)/1024));
+if(!att||!att.length){box.hidden=true;box.innerHTML='';return;}
 box.hidden=false;
-box.innerHTML=
-(isImg?'<img class="attach-preview-img" src="'+esc(att.data)+'" alt="">':'<span class="attach-preview-ico" aria-hidden="true">📄</span>')+
-'<span class="attach-preview-meta"><b>'+esc(att.name)+'</b><span>'+ko+' Ko</span></span>'+
-'<button type="button" class="btn ghost small" id="attachPreviewClear">'+esc(T().rAttachRemove||'Retirer')+'</button>';
-var clearBtn=$('attachPreviewClear');
-if(clearBtn)clearBtn.addEventListener('click',function(){
-var input=$('rAttachment');
-if(input)input.value='';
-reportAttachment=null;
-renderReportAttachmentPreview(null);
+var html='';
+att.forEach(function(a,i){
+var isImg=String(a.type||'').indexOf('image/')===0;
+var ko=Math.max(1,Math.round((a.data.length*3/4)/1024));
+html+=
+(isImg?'<img class="attach-preview-img" src="'+esc(a.data)+'" alt="">':'<span class="attach-preview-ico" aria-hidden="true">📄</span>')+
+'<span class="attach-preview-meta"><b>'+esc(a.name)+'</b><span>'+ko+' Ko</span></span>'+
+'<button type="button" class="btn ghost small" data-attach-clear="'+i+'">'+esc(T().rAttachRemove||'Retirer')+'</button>';
+});
+box.innerHTML=html;
+box.querySelectorAll('[data-attach-clear]').forEach(function(btn){
+btn.addEventListener('click',function(){
+var idx=+btn.getAttribute('data-attach-clear');
+reportAttachments.splice(idx,1);
+$('rAttachment').value='';
+renderReportAttachmentPreview(reportAttachments);
+});
 });
 }
 
 $('rAttachment').addEventListener('change',function(){
-var file=this.files&&this.files[0];
-reportAttachment=null;
+var files=Array.prototype.slice.call(this.files||[]).slice(0,3);
+reportAttachments=[];
 renderReportAttachmentPreview(null);
-if(!file)return;
-prepareReportAttachment(file).then(function(att){
-reportAttachment=att;
-renderReportAttachmentPreview(att);
+if(!files.length)return;
+var pending=files.slice();
+function processNext(){
+if(!pending.length){renderReportAttachmentPreview(reportAttachments);return;}
+var f=pending.shift();
+prepareReportAttachment(f).then(function(att){
+if(att){reportAttachments.push(att);}
+processNext();
 }).catch(function(err){
 var msg=String((err&&err.message)||T().attachReadError);
-var input=$('rAttachment');
-if(input)input.value='';
-reportAttachment=null;
-renderReportAttachmentPreview(null,msg);
 toast(msg,5000);
+processNext();
 });
+}
+processNext();
 });
 
 $('reportForm').addEventListener('submit',function(e){
@@ -8589,7 +8771,7 @@ if(ok)
 toast(msg,6000);
 }
 
-function sendReport(attachment){
+function sendReport(attachments){
 
 c.addReport({
 anonymous:anonymous,
@@ -8601,9 +8783,7 @@ category:$('rCategory').value,
 description:val('rDescription'),
 date:$('rDate').value,
 province:province,
-attachmentName:attachment?attachment.name:'',
-attachmentType:attachment?attachment.type:'',
-attachmentData:attachment?attachment.data:''
+attachments:attachments.map(function(a){return{name:a.name,type:a.type,data:a.data};})
 })
 .then(function(){
 
@@ -8612,7 +8792,7 @@ $('rEtab').value='';
 $('rAge').value='';
 $('rDA').value='';
 $('rAttachment').value='';
-reportAttachment=null;
+reportAttachments=[];
 renderReportAttachmentPreview(null);
 $('rAnonymous').checked=false;
 syncAnonymousReportFields();
@@ -8642,20 +8822,11 @@ console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e
 setSending(true);
 feedback(T().rSending||'Envoi…');
 
-if(file){
-
-/* Image : redimensionnée/compressée au besoin (déjà fait au choix du
-   fichier, sinon le traitement a lieu ici). PDF : simple contrôle. */
-var attachReady=reportAttachment
-?Promise.resolve(reportAttachment)
-:prepareReportAttachment(file);
-
-attachReady.then(function(att){
-sendReport(att);
-}).catch(function(errAtt){
+sendReport(reportAttachments).catch(function(errAtt){
 var msg=String((errAtt&&errAtt.message)||T().attachReadError);
 done(false,msg);
 toast(msg,5000);
+});
 });
 
 }else{
