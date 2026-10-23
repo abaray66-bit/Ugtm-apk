@@ -5254,7 +5254,7 @@ function linkFor(key){
   var prov=provinceWhatsAppForMember();
   if(prov)return 'https://wa.me/'+prov;
   return '';
-
+  }
 
   return '';
 }
@@ -5439,6 +5439,19 @@ document.querySelectorAll('[data-link="wa"]').forEach(function(b){
 b.hidden=!allowed;
 if(!allowed)b.setAttribute('aria-disabled','true');
 });
+}
+
+/* Événements affichés sur l'accueil : jusqu'à 3 rendez-vous à venir,
+   sinon les derniers événements PUBLIÉS (repli documenté — un   événement daté ne doit pas disparaître de l'accueil alors qu'il   figure dans l'administration et dans l'Agenda). */
+function homeEvents(){
+var list=upcoming().slice(0,3);
+if(list.length)return{list:list,fallback:false};
+var past=EVENTS.slice().sort(function(a,b){
+var x=a.date+(a.time||'');
+var y=b.date+(b.time||'');
+return x<y?1:(x>y?-1:0);
+}).slice(0,2);
+return{list:past,fallback:past.length>0};
 }
 
 function renderHome(){
@@ -6745,8 +6758,10 @@ function savePdfToDevice(b64,name){
            fichier où il veut sur l'appareil (téléchargements,
            Drive, WhatsApp…) — c'est la récupération réelle
            du fichier sur l'appareil. */
+        return share.share({files:[uri],dialogTitle:name}).then(function(){
           return uri;
-        }));
+        });
+      }
       throw new Error('Partage indisponible');
     })
     .catch(function(){
