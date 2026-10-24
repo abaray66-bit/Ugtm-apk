@@ -653,8 +653,10 @@ service cloud.firestore {
 
       allow delete: if isAdmin();
     }
-  }
 
+  // Le bloc notifications doit être un enfant de
+  // match /databases/{database}/documents : placé plus bas (après la
+  // fermeture de documents) il serait hors de l'arbre et jamais atteint.
   match /notifications/{uid}/items/{id} {
     allow read: if signedIn() && request.auth.uid == uid;
     allow create: if signedIn()
@@ -670,6 +672,17 @@ service cloud.firestore {
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
       && request.resource.data.read is bool;
     allow delete: if isAdmin();
+  }
+
+  match /fcmTokens/{uid} {
+    allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+    allow create, update: if signedIn() && request.auth.uid == uid
+      && request.resource.data.token is string
+      && request.resource.data.token.size() > 0
+      && request.resource.data.updatedAt == request.time;
+    allow delete: if signedIn() && request.auth.uid == uid;
+  }
+
   }
 
 }
