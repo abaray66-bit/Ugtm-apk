@@ -11,6 +11,10 @@ function read(file) {
   return fs.readFileSync(path.join(root, file), 'utf8');
 }
 
+function exists(file) {
+  return fs.existsSync(path.join(root, file));
+}
+
 function fail(message) {
   failures.push(message);
   console.error(`FAIL ${message}`);
@@ -26,9 +30,10 @@ for (const file of [
   'firestore.rules',
   'firebase.json',
   'capacitor.config.json',
+  'www/cloud.js',
   '.github/workflows/apk.yml'
 ]) {
-  if (fs.existsSync(path.join(root, file))) ok(`${file} présent`);
+  if (exists(file)) ok(`${file} présent`);
   else fail(`${file} absent`);
 }
 
@@ -50,14 +55,40 @@ try {
   if (/allow\s+(?:read|write|create|update|delete|read\s*,\s*write)\s*:\s*if\s+true\s*;/.test(rules)) fail('firestore.rules: autorisation inconditionnelle détectée');
   else ok('Firestore: aucune autorisation inconditionnelle détectée');
 
-  if (/isSubAdmin\(\)[\s\S]{0,1800}request\.resource\.data\.status\s*==\s*['"]active['"][\s\S]{0,1800}request\.resource\.data\.keys\(\)\.hasOnly/.test(rules)
-      && !/isSubAdmin\(\)[\s\S]{0,2500}request\.resource\.data\.role\s*==\s*['"]member['"]/.test(rules)) {
-    fail('firestore.rules: la création active par un sous-admin ne borne pas explicitement le rôle member');
+  const membersBlock = rules.match(/match\s+\/members\/\{uid\}[\s\S]*?\n\s*\}\s*\n\s*\/\/\s*=+\s*\n\s*COMPTEURS/);
+  if (!membersBlock) {
+    fail('firestore.rules: bloc members introuvable pour audit des rôles');
   } else {
-    ok('Firestore: rôle de création active sous-admin vérifié');
+    const activeCreate = membersBlock[0].match(/allow\s+create:[\s\S]*?request\.resource\.data\.status\s*==\s*['"]active['"][\s\S]*?;\n\s*\n\s*allow\s+update:/);
+    if (!activeCreate) {
+      fail('firestore.rules: branche de création active introuvable');
+    } else if (/isSubAdmin\(\)[\s\S]*?request\.resource\.data\.status\s*==\s*['"]active['"]/.test(activeCreate[0])
+        && !/request\.resource\.data\.role\s*==\s*['"]member['"]/.test(activeCreate[0])) {
+      fail('firestore.rules: un sous-admin peut potentiellement créer un profil actif avec un rôle arbitraire');
+    } else {
+      ok('Firestore: création active et rôle sous-admin bornés');
+    }
   }
 } catch (error) {
   fail(`firestore.rules illisible: ${error.message}`);
+}
+
+try {
+  const cloud = read('www/cloud.js');
+  for (const marker of [
+    'signInWithCredential',
+    'signInWithPopup',
+    'signInWithGoogle',
+    'skipNativeAuth',
+    'GoogleAuthProvider',
+    'activateMemberFromRequest',
+    'runTransaction'
+  ]) {
+    if (cloud.includes(marker)) ok(`cloud.js conserve ${marker}`);
+    else fail(`cloud.js: marqueur fonctionnel absent (${marker})`);
+  }
+} catch (error) {
+  fail(`www/cloud.js illisible: ${error.message}`);
 }
 
 try {
@@ -68,8 +99,17 @@ try {
   } else {
     ok('apk.yml: permissions globales limitées');
   }
-  if (/\bnpm install\b/.test(workflow)) fail('apk.yml: npm install non reproductible détecté');
+
+  const nonGlobalInstall = workflow
+    .split(/\r?\n/)
+    .filter((line) => /npm install/.test(line) && !/npm install -g firebase-tools@13\.29\.1/.test(line));
+  if (nonGlobalInstall.length) fail('apk.yml: installation npm non verrouillée détectée');
   else ok('apk.yml: aucune installation npm non verrouillée');
+
+  for (const secret of ['GOOGLE_SERVICES_JSON', 'ANDROID_KEYSTORE_BASE64', 'ANDROID_KEYSTORE_PASSWORD', 'ANDROID_KEY_ALIAS', 'ANDROID_KEY_PASSWORD']) {
+    if (workflow.includes(`secrets.${secret}`)) ok(`apk.yml référence le secret ${secret}`);
+    else fail(`apk.yml ne référence pas explicitement le secret ${secret}`);
+  }
 } catch (error) {
   fail(`apk.yml illisible: ${error.message}`);
 }
