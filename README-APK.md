@@ -1,59 +1,84 @@
 # UGTM Souss-Massa — Android APK
 
-Ce dépôt contient la version web de l'application UGTM préparée pour une compilation Android avec Capacitor et GitHub Actions.
+Ce dépôt contient la version web de l'application, préparée pour une compilation Android avec Capacitor et GitHub Actions.
 
-## 1. Mettre le projet sur GitHub
+## Prérequis de sécurité
 
-Créer un dépôt GitHub puis envoyer **le contenu de ce dossier** à la branche `main`.
+Avant toute compilation ou publication :
 
-## 2. Configurer les secrets du dépôt
+- ne jamais committer `google-services.json`, un keystore ou un mot de passe ;
+- conserver les secrets uniquement dans **GitHub Actions > Settings > Secrets and variables > Actions** ;
+- vérifier les règles Firestore avec l’émulateur avant déploiement ;
+- tester les droits d’un utilisateur simple, d’un sous-administrateur et de l’administrateur ;
+- ne pas considérer l’interface cliente comme une preuve de privilège : les règles Firestore restent l’autorité réelle ;
+- révoquer immédiatement tout secret ou certificat accidentellement publié.
 
-Le workflow **Build Android APK** a besoin de 5 secrets
-(GitHub > Settings > Secrets and variables > Actions) :
+## Secrets GitHub Actions
+
+Le workflow **Build Android APK** utilise les secrets suivants :
 
 | Secret | Contenu |
 |---|---|
-| `GOOGLE_SERVICES_JSON` | Contenu intégral du fichier `google-services.json` téléchargé depuis Firebase (Projet > Paramètres > Vos applications > Android) |
-| `ANDROID_KEYSTORE_BASE64` | Keystore de **release** encodé en base64 (`base64 -w 0 ugtm-release.keystore`) |
+| `GOOGLE_SERVICES_JSON` | Contenu intégral du fichier `google-services.json` téléchargé depuis Firebase |
+| `ANDROID_KEYSTORE_BASE64` | Keystore release encodé en base64 (`base64 -w 0 ugtm-release.keystore`) |
 | `ANDROID_KEYSTORE_PASSWORD` | Mot de passe du keystore |
 | `ANDROID_KEY_ALIAS` | Alias de la clé dans le keystore |
 | `ANDROID_KEY_PASSWORD` | Mot de passe de la clé |
 
-Important : enregistrez dans Firebase (Paramètres du projet > Vos applications >
-Android > Ajouter une empreinte SHA-1) l'empreinte **du keystore de release** —
-pas celle d'un keystore debug — sinon la connexion Google échouera dans l'APK.
-Pour afficher l'empreinte : `keytool -list -v -keystore ugtm-release.keystore`.
+Ne mettez jamais ces valeurs dans le code source, les logs ou les issues GitHub.
 
-## 3. Compiler l'APK
+Important : ajoutez dans Firebase l’empreinte **SHA-1 du keystore release**, et non celle du keystore debug :
 
-Après le push, ouvrir l'onglet **Actions** du dépôt et sélectionner
-**Build Android APK** (le workflow se déclenche aussi automatiquement à chaque
-push sur `main`). Il construit un **APK release signé** et le publie comme
-*Artifact* `UGTM-Android-APK`.
+```bash
+keytool -list -v -keystore ugtm-release.keystore
+```
 
-## 4. Récupérer l'APK
+## Vérifications locales
 
-Dans l'exécution terminée du workflow, ouvrir les *Artifacts* et télécharger
-`UGTM-Android-APK`. Le fichier à installer est `app-release.apk`.
+```bash
+npm ci
+npm run check
+npm run test:audit
+npm run test:firestore
+```
 
-## 5. Publication Android de production
+Le test Firestore nécessite les émulateurs Firebase. Si les tests échouent, ne publiez pas l’APK.
 
-Avant la publication, il faut vérifier les éléments suivants :
+## Compiler l’APK
 
-- `google-services.json` est bien présent
-- le SHA-1 du keystore de release est ajouté dans Firebase
-- le package Android est bien `ma.ugtm.souss.massa`
-- le keystore de release est valide et signé
-- la version Android est définie (`versionCode`, `versionName`)
-- les permissions Android sont justifiées
-- les règles Firestore sont sécurisées
-- le build release est validé sur un appareil réel
+Après configuration des secrets, ouvrez l’onglet **Actions** du dépôt et lancez **Build Android APK**. Le workflow se déclenche également lors d’un push sur `main`.
 
-Pour la procédure détaillée, voir `README-PUBLISH.md`.
+Pour un build local :
 
-## Pour aller plus loin (Google Play)
+```bash
+npm ci
+npm run android:sync
+cd android
+./gradlew assembleDebug
+```
 
-Pour une publication Google Play, il faudra créer un Android App Bundle
-signé (`bundleRelease` → fichier `.aab`) avec le même keystore de release.
-Le fichier `android/` est regénéré par le workflow : ne le commitez pas
-(il figure dans `.gitignore`).
+Pour une release signée :
+
+```bash
+npm run android:build:release
+```
+
+## Récupérer l’APK
+
+Dans l’exécution terminée du workflow, ouvrez les **Artifacts** et téléchargez `UGTM-Android-APK`. Le fichier d’installation est `app-release.apk`.
+
+## Publication de production
+
+Avant publication, vérifiez :
+
+- `google-services.json` est injecté uniquement par le workflow ;
+- le SHA-1 du keystore release est enregistré dans Firebase ;
+- le package Android est `ma.ugtm.souss.massa` ;
+- le keystore release est sauvegardé dans un emplacement sûr ;
+- `versionCode` et `versionName` ont été incrémentés ;
+- les permissions Android sont justifiées ;
+- les règles Firestore sont testées ;
+- le build release est validé sur un appareil réel ;
+- la connexion Google fonctionne avec le certificat release.
+
+Pour Google Play, générez un Android App Bundle (`bundleRelease`) avec le même processus de signature. Le dossier `android/` est régénéré par le workflow et reste exclu du dépôt.
