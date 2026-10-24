@@ -1905,7 +1905,12 @@ export async function init(config, h){
           .then(function(s){ return s.exists() ? {data:String(s.data().data||''),name:s.data().name||'',type:s.data().type||''} : null; })
           .catch(function(){ return null; });
       })).then(function(results){
-        return results.filter(Boolean);
+        var arr = results.filter(Boolean);
+        if(arr.length) return arr;
+        // Rétrocompatibilité : ancienne pièce unique stockée dans reportAttachments/{id}
+        return getDoc(doc(db, 'reportAttachments', id))
+          .then(function(s){ return s.exists() ? [{data:String(s.data().data||''),name:s.data().name||'',type:s.data().type||''}] : []; })
+          .catch(function(){ return []; });
       });
     },
 
