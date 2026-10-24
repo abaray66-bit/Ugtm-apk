@@ -1433,10 +1433,11 @@ var admin = {
     deleteNews:
       function(id){
 
-        // Supprime aussi les images rangées à part (docs parfois absents).
-        var jobs=[0,1,2].map(function(idx){
+        // Supprime aussi les images rangées à part (docs parfois absents) :
+        // format multiple {id}_{0,1,2} et ancien format unique {id}.
+        var jobs=[id, id + '_0', id + '_1', id + '_2'].map(function(key){
           return deleteDoc(
-            doc(db, 'newsImages', id + '_' + idx)
+            doc(db, 'newsImages', key)
           ).catch(function(){});
         });
 
@@ -1575,12 +1576,13 @@ var admin = {
     deleteReport:
       function(id){
 
-      // Supprime aussi la pièce jointe rangée à part (doc parfois absent).
-      return deleteDoc(
-        doc(db, 'reportAttachments', id)
-      )
-      .catch(function(){})
-      .then(function(){
+      // Supprime aussi les pièces jointes rangées à part (docs parfois absents) :
+      // format multiple {id}_{0,1,2} et ancien format unique {id}.
+      return Promise.all(
+        [id, id + '_0', id + '_1', id + '_2'].map(function(key){
+          return deleteDoc(doc(db, 'reportAttachments', key)).catch(function(){});
+        })
+      ).then(function(){
         return deleteDoc(
           doc(db, 'reports', id)
         );
@@ -1906,7 +1908,15 @@ export async function init(config, h){
           .then(function(s){ return s.exists() ? String(s.data().data || '') : null; })
           .catch(function(){ return null; });
       })).then(function(results){
-        return results.filter(Boolean);
+        var found = results.filter(Boolean);
+        if (found.length) return found;
+        /* Rétrocompatibilité : les images publiées avant le format multiple
+           restent rangées dans newsImages/{id} (sans suffixe d'index). */
+        return getDoc(doc(db, 'newsImages', id))
+          .then(function(s){
+            return s.exists() && s.data().data ? [String(s.data().data)] : [];
+          })
+          .catch(function(){ return []; });
       });
     },
 
@@ -1916,7 +1926,17 @@ export async function init(config, h){
           .then(function(s){ return s.exists() ? {data:String(s.data().data||''),name:s.data().name||'',type:s.data().type||''} : null; })
           .catch(function(){ return null; });
       })).then(function(results){
-        return results.filter(Boolean);
+        var found = results.filter(Boolean);
+        if (found.length) return found;
+        /* Rétrocompatibilité : la pièce jointe publiée avant le format multiple
+           reste rangée dans reportAttachments/{id} (sans suffixe d'index). */
+        return getDoc(doc(db, 'reportAttachments', id))
+          .then(function(s){
+            return s.exists() && s.data().data
+              ? [{data:String(s.data().data), name:s.data().name||'', type:s.data().type||''}]
+              : [];
+          })
+          .catch(function(){ return []; });
       });
     },
 
