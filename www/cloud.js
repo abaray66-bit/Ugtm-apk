@@ -14,8 +14,9 @@ import {
   onSnapshot, query, where, serverTimestamp, deleteField, runTransaction,
   writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getMessaging, getToken } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
-var auth, db, hooks;
+var auth, db, hooks, fbApp = null, messaging = null;
 var nativeAuth = null;
 var capBrowser = null;
 
@@ -437,6 +438,10 @@ function onUser(user){
 
 
   hooks.setSession(session);
+
+  if(user && user.uid){
+    registerFCMToken(user.uid);
+  }
 
 
   var ref =
@@ -1795,6 +1800,13 @@ export async function init(config, h){
   var app =
     initializeApp(config);
 
+  fbApp = app;
+  try {
+    messaging = getMessaging(fbApp);
+  } catch(e) {
+    console.error('FCM init:', e);
+  }
+
 
   // App Check (facultatif) : si une clé est renseignée dans data.js,
   // chaque requête Firebase porte un jeton App Check (protection anti-robots).
@@ -1853,6 +1865,47 @@ export async function init(config, h){
   }
 
 
+  /* --- Notifications push (FCM) : enregistrement du jeton de l'appareil --- */
+  async function registerFCMToken(uid){
+    if(!uid || !messaging) return;
+    try{
+      if(Notification.permission !== 'granted'){
+        await Notification.requestPermission();
+      }
+      if(Notification.permission !== 'granted') return;
+      var token = await getToken(messaging);
+      if(!token) return;
+      await setDoc(doc(db, 'fcmTokens', String(uid)), {
+        token: String(token),
+        uid: String(uid),
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+    }catch(e){
+      console.error('FCM token:', e);
+    }
+  }
+
+  /* --- Création centralisée d'une notification interne (Firestore) --- */
+  async function createNotification(uid, data){
+    if(!uid) return;
+    try{
+      var payload = {
+        title: String(data.title||''),
+        body: String(data.body||''),
+        type: String(data.type||'info'),
+        read: false,
+        authorUid: String(data.authorUid||''),
+        createdAt: serverTimestamp()
+      };
+      if(data.targetScreen) payload.targetScreen = String(data.targetScreen);
+      if(data.targetId) payload.targetId = String(data.targetId);
+      if(data.province) payload.province = String(data.province);
+      return await addDoc(collection(db, 'notifications', String(uid), 'items'), payload);
+    }catch(e){
+      console.error('createNotification:', e);
+    }
+  }
+
   window.db = db;
 
   window.CLOUD = {
@@ -1860,6 +1913,10 @@ export async function init(config, h){
     signIn: signIn,
 
     signOut: signOut,
+
+    registerFCMToken: registerFCMToken,
+
+    createNotification: createNotification,
 
     saveProfile: saveProfile,
 

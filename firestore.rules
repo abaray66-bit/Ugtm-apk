@@ -672,4 +672,13 @@ service cloud.firestore {
     allow delete: if isAdmin();
   }
 
+  match /fcmTokens/{uid} {
+    allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+    allow create, update: if signedIn() && request.auth.uid == uid
+      && request.resource.data.token is string
+      && request.resource.data.token.size() > 0
+      && request.resource.data.updatedAt == request.time;
+    allow delete: if signedIn() && request.auth.uid == uid;
+  }
+
 }
