@@ -834,17 +834,17 @@ main{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:12px
 }
+.galley-track,
 .gallery-track{
   position:relative;width:100%;height:100%;max-height:78vh;
   display:flex;align-items:center;justify-content:center
 }
 .gallery-track img{
-  position:absolute;inset:0;width:auto;height:auto;
+  position:absolute;inset:0;margin:auto;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
-  opacity:0;transition:opacity .25s ease,transform .25s ease;
-  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in
+  opacity:0;transition:opacity .2s ease;
+  transform:none;border-radius:var(--radius-s);
 }
-.gallery-track img.active{opacity:1;transform:scale(1)}
 .gallery-btn{
   position:absolute;top:50%;transform:translateY(-50%);
   width:44px;height:44px;border-radius:50%;
@@ -3042,9 +3042,16 @@ button.primary:active {
   transition:background-color .15s ease,color .15s ease,border-color .15s ease,transform .12s ease
 }
 
-:focus-visible{
+.btn:focus-visible,.fbtn:focus-visible,.tab:focus-visible,.gallery-btn:focus-visible{
   outline:2px solid var(--focus);
   outline-offset:2px
+}
+.avatar-u{position:relative;}
+.avatar-u .notif-badge{
+  position:absolute;top:-4px;right:-6px;
+  background:#e43;color:#fff;font-size:10px;font-weight:bold;
+  border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
+  line-height:18px;text-align:center;z-index:10;
 }
 
 /* Se déconnecter : action secondaire, visuellement discrète */
@@ -3103,7 +3110,7 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
-<button class="btn ghost small" type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();" aria-label="Notifications">🔔</button>
+<button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); }catch(e){} }" aria-label="Notifications"><span id="homeNotifWrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;"><span id="homeNotifBell">🔔</span><span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
 <div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
 <script>
 function renderNotifications(list){
@@ -3149,9 +3156,12 @@ async function loadNotifications(){
     var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
     var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
     renderNotifications(list);
-    if(typeof window.updateNotifBadge==='function'){
-      var unread=list.filter(function(n){return n && n.read===false;}).length;
-      window.updateNotifBadge(unread);
+    var unread=list.filter(function(n){return n && n.read===false;}).length;
+    if(typeof window.updateNotifBadge==='function') window.updateNotifBadge(unread);
+    var hb=document.getElementById('homeNotifBadge');
+    if(hb){
+      if(unread>0){hb.textContent=unread>9?'9+':unread;hb.hidden=false;}
+      else{hb.textContent='';hb.hidden=true;}
     }
   }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
 }
@@ -4851,26 +4861,31 @@ try{history.pushState({gallery:true},'');}catch(e){}
 }
 
 function closeGallery(){
-$('gallery').hidden=true;
-document.body.style.overflow='';
-galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;
-try{history.popState();}catch(e){}
+  if($('gallery') && !$('gallery').hidden){
+    $('gallery').hidden=true;
+    document.body.style.overflow='';
+    galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;
+    try{ history.back(); }catch(e){ try{history.popState();}catch(e2){} }
+  }
 }
 
 function renderGallery(){
-var track=$('galleryTrack');
-var counter=$('galleryCounter');
-if(!track||!counter)return;
-track.innerHTML='';
-galleryState.items.forEach(function(it,i){
-var img=document.createElement('img');
-img.src=it.src;
-img.alt=it.name||('image'+(i+1));
-img.className=i===galleryState.idx?'active':'';
-track.appendChild(img);
-});
-counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-$('galleryDelete').hidden=galleryState.items.length<=1;
+  var track=$('galleryTrack');
+  var counter=$('galleryCounter');
+  if(!track||!counter)return;
+  track.innerHTML='';
+  galleryState.items.forEach(function(it,i){
+    var img=document.createElement('img');
+    img.src=it.src;
+    img.alt=it.name||('image'+(i+1));
+    img.className=i===galleryState.idx?'active':'';
+    img.draggable=false;
+    track.appendChild(img);
+  });
+  counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
+  $('galleryDelete').hidden=galleryState.items.length<=1;
+  $('galleryPrev').style.display=galleryState.items.length>1?'flex':'none';
+  $('galleryNext').style.display=galleryState.items.length>1?'flex':'none';
 }
 
 function galleryPrev(){
@@ -4916,16 +4931,20 @@ renderGallery();
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
   $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
-  ge.addEventListener('click',function(e){if(e.target===ge||e.target.tagName==='IMG'){closeLightbox();closeGallery();}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
+  // Fermer en cliquant directement sur l'image aussi
+  ge.querySelectorAll('img').forEach(function(im){
+    im.addEventListener('click',function(ev){ev.stopPropagation();closeGallery();});
+  });
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){ts=e.timeStamp;touchX=(e.touches[0]||e.changedTouches[0]).clientX;},{passive:true});
   ge.addEventListener('touchend',function(e){
   var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
   if(e.timeStamp-ts<300&&Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();}
   },{passive:true});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
-  document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeLightbox();closeGallery();}});
-  try{document.addEventListener('backbutton',function(){closeLightbox();closeGallery();});}catch(e){}
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
+  document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeGallery();}});
+  try{document.addEventListener('backbutton',function(){if($('gallery') && !$('gallery').hidden){closeGallery();}else{closeLightbox();closeGallery();}});}catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
  if(e.target===$('attachModal'))closeAttachModal();
@@ -6207,6 +6226,12 @@ btn.innerHTML=
 ?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
 :PERSON)
 +'<span id="notifBadge" class="notif-badge" hidden></span>';
+
+if(S.user){
+  var hb=document.getElementById('homeNotifBadge');
+  if(hb){hb.hidden=true;}
+}
+
 }
 
 /* =========================
@@ -7946,27 +7971,42 @@ if(box.hidden){
 return;
 }
 
-if(el.hasAttribute('data-go')){
+  if(el.hasAttribute('data-go')){
 
-  var goTarget=el.getAttribute('data-go');
+    var goTarget=el.getAttribute('data-go');
 
-  /* Le formulaire d'adhésion applique sa propre règle d'accès
-     (dossier en attente, refusé, adhérent déjà validé) : la
-     navigation passe par la porte d'entrée du parcours, qui
-     statue AVANT l'ouverture de l'écran. */
-  if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
+    /* Le formulaire d'adhésion applique sa propre règle d'accès
+       (dossier en attente, refusé, adhérent déjà validé) : la
+       navigation passe par la porte d'entrée du parcours, qui
+       statue AVANT l'ouverture de l'écran. */
+    if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
 
-    window.adhesionOpenGate(el);
+      window.adhesionOpenGate(el);
+
+      return;
+
+    }
+
+    /* Le formulaire de signalement exige une authentification. */
+    if(goTarget==='report'){
+      var repSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var repConnected=!!(repSession&&repSession.user&&repSession.user.uid);
+      if(!repConnected){
+        try{
+          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+          var repMsg=(rt&&rt.authRequired)?rt.authRequired:'Authentifiez-vous avant d\'accéder au formulaire de signalement.';
+          if(typeof toast==='function')toast(repMsg,5000);
+        }catch(eRep){}
+        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eRep2){}
+        return;
+      }
+    }
+
+    go(goTarget);
 
     return;
 
   }
-
-  go(goTarget);
-
-  return;
-
-}
 
 if(el.hasAttribute('data-tab')){
 
@@ -10122,10 +10162,16 @@ window.UGTM.failed(err);
 (function(){
   function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
-    if(!b)return;
+    var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
-    if(n<=0){b.textContent='';b.hidden=true;return;}
-    b.textContent=n>9?'9+':n;b.hidden=false;
+    if(b){
+      if(n<=0){b.textContent='';b.hidden=true;}
+      else{b.textContent=n>9?'9+':n;b.hidden=false;}
+    }
+    if(hb){
+      if(n<=0){hb.textContent='';hb.hidden=true;}
+      else{hb.textContent=n>9?'9+':n;hb.hidden=false;}
+    }
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');
