@@ -31,31 +31,31 @@ test('cross-user read denied', async () => {
 test('adhesion create denied', async () => {
   const ctx = testEnv.authenticatedContext('adherent1', { email: 'a@test.com', email_verified: true });
   const db = ctx.firestore();
-  await assertFails(db.collection('notifications').doc('adherent1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'adherent1', createdAt: new Date() }));
+  await assertFails(db.collection('notifications').doc('adherent1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'adherent1', createdAt: serverTimestamp }));
 });
 
 test('admin create allowed (if rules permit)', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
-  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'admin1', createdAt: new Date() }));
+  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'admin1', createdAt: serverTimestamp }));
 });
 
 test('subadmin cross-province create denied', async () => {
   const ctx = testEnv.authenticatedContext('sub1', { email: 's@test.com', email_verified: true });
   const db = ctx.firestore();
-  await assertFails(db.collection('notifications').doc('user2').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'sub1', province:'Other', createdAt: new Date() }));
+  await assertFails(db.collection('notifications').doc('user2').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'sub1', province:'Other', createdAt: serverTimestamp }));
 });
 
 test('authorUid tampering denied', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
-  await assertFails(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'other', createdAt: new Date() }));
+  await assertFails(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'other', createdAt: serverTimestamp }));
 });
 
 test('invalid fields denied', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
-  await assertFails(db.collection('notifications').doc('user1').collection('items').add({ title:'x'.repeat(200), body:'b', type:'bad', read:false, authorUid:'admin1', createdAt: new Date() }));
+  await assertFails(db.collection('notifications').doc('user1').collection('items').add({ title:'x'.repeat(200), body:'b', type:'bad', read:false, authorUid:'admin1', createdAt: serverTimestamp }));
 });
 
 test('read update allowed for recipient', async () => {
@@ -79,8 +79,8 @@ test('non-boolean read denied', async () => {
 test('serverTimestamp create', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
-  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'admin1', createdAt: (await import('firebase/firestore')).serverTimestamp() }));
+  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'admin1', createdAt: serverTimestamp }));
 });
 
-console.log('12 tests defined; notifications rules not yet in firestore.rules, so failures expected until rules added.');
-console.log('Run: firebase emulators:exec --only firestore "node test-notifications-rules.mjs"');
+console.log('12 tests notifications exécutés avec firestore.rules.');
+console.log('Run: npm run test:notifications');

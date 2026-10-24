@@ -6,6 +6,7 @@
     "check": "node tools/check-syntax.js",
     "test:audit": "node tools/test-audit-ugtm.mjs",
     "test:firestore": "firebase emulators:exec --only firestore \"node test-firestore-adhesion.mjs\"",
+    "test:notifications": "firebase emulators:exec --only firestore \"node test-notifications-rules.mjs\"",
     "cap:sync": "npx cap sync android",
     "android": "npx cap open android",
     "android:sync": "npx cap sync android",
