@@ -12,8 +12,8 @@ fi
 cd "$ROOT_DIR"
 
 if [ ! -d node_modules ]; then
-  echo "Installation des dépendances..."
-  npm install
+  echo "Installation des dépendances verrouillées..."
+  npm ci
 fi
 
 if [ ! -d android ]; then
