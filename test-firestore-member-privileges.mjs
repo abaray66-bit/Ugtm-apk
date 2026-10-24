@@ -2,7 +2,6 @@
    Exécution : firebase emulators:exec --only firestore "node test-firestore-member-privileges.mjs" */
 
 import test, { after } from 'node:test';
-import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   initializeTestEnvironment,
@@ -43,7 +42,7 @@ async function seedSubAdmin() {
   });
 }
 
-function activeMember(uid, role = 'member', adminProvince = 'agadir') {
+function activeMember(uid, role = 'member') {
   return {
     name: `Membre ${uid}`,
     email: `${uid}@example.com`,
@@ -56,7 +55,7 @@ function activeMember(uid, role = 'member', adminProvince = 'agadir') {
     activatedAt: serverTimestamp(),
     createdAt: serverTimestamp(),
     role,
-    adminProvince
+    adminProvince: 'agadir'
   };
 }
 
@@ -97,12 +96,20 @@ test('un adhérent ne peut pas modifier son propre rôle', async () => {
 
 test('un adhérent ne peut pas modifier son statut ou sa province administrative', async () => {
   const db = env.authenticatedContext(MEMBER, userToken(MEMBER)).firestore();
-  await assertFails(updateDoc(doc(db, 'members', MEMBER), { status: 'active' }));
+  await assertFails(updateDoc(doc(db, 'members', MEMBER), { status: 'pending' }));
   await assertFails(updateDoc(doc(db, 'members', MEMBER), { adminProvince: 'tiznit' }));
 });
 
-test('un administrateur général conserve la capacité de créer un profil actif de migration', async () => {
-  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+test('un administrateur général conserve l’activation de migration', async () => {
   const uid = 'admin-created-member';
-  await assertSucceeds(setDoc(doc(db, 'members', uid), activeMember(uid, 'member')));
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'members', uid), {
+      status: 'pending', prov: 'agadir', name: 'Membre migration',
+      email: `${uid}@example.com`, createdAt: Date.now()
+    });
+  });
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'members', uid), {
+    status: 'active', memberNo: 'SM-0099', activatedAt: serverTimestamp()
+  }));
 });
