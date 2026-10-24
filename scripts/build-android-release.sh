@@ -5,16 +5,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [ ! -f "$ROOT_DIR/package.json" ]; then
-  echo "ERREUR : package.json introuvable dans $ROOT_DIR"
+  echo "ERREUR : package.json introuvable dans $ROOT_DIR" >&2
+  exit 1
+fi
+
+if [ ! -f "$ROOT_DIR/package-lock.json" ]; then
+  echo "ERREUR : package-lock.json introuvable ; build reproductible impossible" >&2
   exit 1
 fi
 
 cd "$ROOT_DIR"
-
-if [ ! -d node_modules ]; then
-  echo "Installation des dépendances verrouillées..."
-  npm ci
-fi
+echo "Installation des dépendances verrouillées..."
+npm ci
 
 if [ ! -d android ]; then
   echo "Génération du projet Android..."
