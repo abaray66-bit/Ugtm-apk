@@ -7,56 +7,50 @@
 - Android Studio
 - Android SDK
 - Java 21
-- Firebase project configured
-- Google Play Console access (si publication store)
+- Projet Firebase configuré
+- Accès Google Play Console si publication sur le store
 
 ## 2. Préparer le projet
 
+Utilisez le lockfile pour installer exactement les versions validées :
+
 ```bash
-npm install
+npm ci
 npm run android:sync
 ```
+
+`npm ci` échoue volontairement si `package.json` et `package-lock.json` ne sont pas synchronisés.
 
 ## 3. Créer un keystore de release
 
 ```bash
-keytool -genkeypair \
-  -v \
-  -keystore android/ugtm-release.keystore \
-  -alias ugtm \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000 \
+keytool -genkeypair \\
+  -v \\
+  -keystore android/ugtm-release.keystore \\
+  -alias ugtm \\
+  -keyalg RSA \\
+  -keysize 2048 \\
+  -validity 10000 \\
   -storetype PKCS12
 ```
 
-Mémoriser :
-- `ANDROID_KEYSTORE_PASSWORD`
-- `ANDROID_KEY_ALIAS`
-- `ANDROID_KEY_PASSWORD`
+Conservez uniquement dans un gestionnaire de secrets : `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` et `ANDROID_KEY_PASSWORD`.
+
+Ne commitez jamais de keystore, mot de passe ou fichier `google-services.json`.
 
 ## 4. Ajouter le SHA-1 Firebase
 
-1. Ouvrir Firebase Console
-2. Aller dans Project settings
-3. Ajouter l’empreinte SHA-1 du keystore release
-4. Télécharger `google-services.json`
-5. Le placer dans :
-   `android/app/google-services.json`
+1. Ouvrir Firebase Console.
+2. Aller dans **Project settings**.
+3. Ajouter l’empreinte SHA-1 du keystore release.
+4. Télécharger `google-services.json`.
+5. Le placer uniquement en local dans `android/app/google-services.json` ou l’injecter via GitHub Actions.
 
-Important : le SHA-1 du keystore release est différent de celui du debug keystore.
+Le SHA-1 du keystore release est différent de celui du keystore debug.
 
 ## 5. Vérifier le package Android
 
-Le package doit être :
-
-```text
-ma.ugtm.souss.massa
-```
-
-Vérifier dans :
-- `capacitor.config.json`
-- `android/app/build.gradle`
+Le package doit être `ma.ugtm.souss.massa`. Vérifier `capacitor.config.json` et la configuration Android générée.
 
 ## 6. Compiler le release APK
 
@@ -64,58 +58,25 @@ Vérifier dans :
 npm run android:build:release
 ```
 
-Le fichier APK est généré ici :
+Le fichier APK est généré dans `android/app/build/outputs/apk/release/app-release.apk`.
 
-```text
-android/app/build/outputs/apk/release/app-release.apk
-```
-
-## 7. Vérifier le certificat APK
+## 7. Vérifier et tester
 
 ```bash
 $ANDROID_HOME/build-tools/<version>/apksigner verify --verbose android/app/build/outputs/apk/release/app-release.apk
+npm run test:firestore
 ```
 
-## 8. Tester sur appareil réel
+Tester sur appareil réel l’ouverture, la connexion Google, les profils, les rôles, les signalements, les actualités, les événements, les contacts, les liens et les PDF.
 
-Tester :
-- ouverture de l’application
-- connexion Google
-- profil utilisateur
-- admin et sous-admin
-- signalements
-- actualités
-- événements
-- contacts
-- liens et PDF
+## 8. Vérification finale
 
-## 9. Règles Firebase
-
-Vérifier que les règles Firestore sont strictes :
-- membres : le membre ne peut modifier que son profil
-- admin : toutes les données admin
-- sous-admin : province limitée
-- signalements : propriétaire ou admin uniquement
-- news/events : lecture publique selon logique métier
-
-## 10. Publication
-
-Après validation :
-- signer correctement
-- générer le release APK
-- tester sur vrai appareil
-- publier sur Google Play ou via canal de diffusion interne
-
-## 11. Vérification finale avant publication
-
+- [ ] `npm ci` OK
 - [ ] Build local OK
-- [ ] Firebase Android OK
-- [ ] google-services.json présent
-- [ ] Keystore release OK
-- [ ] SHA-1 Firebase OK
+- [ ] `google-services.json` non commité
+- [ ] Keystore release et SHA-1 Firebase OK
 - [ ] Google Sign-In OK
-- [ ] Firestore rules OK
-- [ ] APK release signé OK
-- [ ] Test réel OK
-- [ ] Permissions OK
-- [ ] Version et package OK
+- [ ] Règles Firestore OK
+- [ ] APK signée et vérifiée
+- [ ] Test sur appareil réel OK
+- [ ] Permissions, version et package vérifiés
