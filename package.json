@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "check": "node tools/check-syntax.js",
+    "audit:security": "node tools/audit-security.mjs",
     "test:audit": "node tools/test-audit-ugtm.mjs",
     "test:firestore": "firebase emulators:exec --only firestore \"node test-firestore-adhesion.mjs\"",
     "cap:sync": "npx cap sync android",
@@ -12,7 +13,7 @@
     "android:open": "npx cap open android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:build:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
-    "android:prepare": "npm install && npm run android:sync"
+    "android:prepare": "npm ci && npm run android:sync"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.0.0",
