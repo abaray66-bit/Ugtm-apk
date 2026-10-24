@@ -962,9 +962,9 @@ main{
 }
 
 .fbtn{
-  flex:none;
+  flex:0 1 auto;
   min-height:38px;
-  padding:0 16px;
+  padding:0 12px;
   border-radius:999px;
   border:1px solid var(--line);
   background:var(--surface);
@@ -1020,6 +1020,12 @@ main{
   border:1px solid var(--line);
   border-radius:var(--radius-s);
   padding:6px 0 5px
+.ev{display:flex;gap:10px;align-items:flex-start;padding:9px;border:1px solid var(--line);border-radius:var(--radius-m);margin:7px 0;background:var(--surface)}
+.ev .date{width:44px;padding:5px 0;text-align:center;background:var(--surface);border-radius:var(--radius-s);font-size:12px}
+.evb{flex:1;padding:6px 8px}
+.evb p{margin:3px 0;font-size:13px;line-height:1.35}
+.ev-actions{margin-top:8px;display:flex;gap:8px}
+.ev-actions .btn{padding:6px 10px;font-size:12px}
 }
 
 .date b{
@@ -2442,11 +2448,11 @@ body {
   50% { opacity: 0.5; }
 }
 
-.avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; box-shadow: 0 0 0 2px rgba(215,167,44,.6); border-radius: 50%; }
+.avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; border-radius: 50%; }
 
 @keyframes avatarUGuide {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.12); opacity: .75; }
+  50% { transform: scale(1.05); opacity: .85; }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -2511,6 +2517,7 @@ body {
 
 /* Accueil : « Dernier rendez-vous publié » compact */
 #s-home .nextcard .ev{
+  min-height:72px;
   padding:10px 0;
   gap:12px
 }
@@ -3087,7 +3094,7 @@ input[type=file]::file-selector-button{
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
-</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"></button>
+</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"><span id="notifBadge" class="notif-badge" hidden></span></button>
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -3142,6 +3149,10 @@ async function loadNotifications(){
     var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
     var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
     renderNotifications(list);
+    if(typeof window.updateNotifBadge==='function'){
+      var unread=list.filter(function(n){return n && n.read===false;}).length;
+      window.updateNotifBadge(unread);
+    }
   }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
 }
 window.loadNotifications=loadNotifications;
@@ -6192,11 +6203,10 @@ btn.hidden=!CLOUD_ON;
 if(!CLOUD_ON)return;
 
 btn.innerHTML=
-(S.user&&S.user.photo)
-
+((S.user&&S.user.photo)
 ?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
-
-:PERSON;
+:PERSON)
++'<span id="notifBadge" class="notif-badge" hidden></span>';
 }
 
 /* =========================
@@ -10099,4 +10109,35 @@ window.UGTM.failed(err);
 </style>
 
 </body>
+<style>
+.notif-badge{
+  position:absolute;top:0;right:0;
+  background:#e43;color:#fff;font-size:10px;font-weight:bold;
+  border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
+  line-height:18px;text-align:center;z-index:10;
+}
+#meBtn{position:relative;}
+</style>
+<script>
+(function(){
+  function updateNotifBadge(n){
+    var b=document.getElementById('notifBadge');
+    if(!b)return;
+    var n=Math.max(0,Number(n||0));
+    if(n<=0){b.textContent='';b.hidden=true;return;}
+    b.textContent=n>9?'9+':n;b.hidden=false;
+  }
+  window.updateNotifBadge=updateNotifBadge;
+  var btn=document.getElementById('meBtn');
+  if(btn){
+    btn.addEventListener('click',function(){
+      if(window.S&&window.S.user){
+        var m=document.getElementById('notifModal');
+        if(m){m.hidden=false;}
+        if(typeof loadNotifications==='function')loadNotifications();
+      }
+    });
+  }
+})();
+</script>
 </html>
