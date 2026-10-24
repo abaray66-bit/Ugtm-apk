@@ -12,7 +12,7 @@
     "android:open": "npx cap open android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:build:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
-    "android:prepare": "npm install && npm run android:sync"
+    "android:prepare": "npm ci && npm run android:sync"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.0.0",
