@@ -651,7 +651,8 @@ async function addReport(o){
   if (!auth.currentUser && !anonymous)
     throw new Error('Non connecté');
 
-  var attach = String(o.attachmentData || '').slice(0,420000);
+  var attachments = Array.isArray(o.attachments) ? o.attachments : (o.attachmentData ? [o.attachmentData] : []);
+  attachments = attachments.slice(0,3).filter(function(x){ return x; });
 
   var data = {
     ownerUid: anonymous ? '' : auth.currentUser.uid,
@@ -680,9 +681,9 @@ async function addReport(o){
 
   batch.set(reportRef, data);
 
-  if (attach) {
-    batch.set(doc(db, 'reportAttachments', reportRef.id), {
-      data: attach,
+  attachments.forEach(function(att, idx){
+    batch.set(doc(db, 'reportAttachments', reportRef.id + '_' + idx), {
+      data: String(att.data||'').slice(0,420000),
       name: String(o.attachmentName || '').slice(0,120),
       type: String(o.attachmentType || '').slice(0,80),
       ownerUid: data.ownerUid,
@@ -690,7 +691,7 @@ async function addReport(o){
       province: data.province,
       createdAt: serverTimestamp()
     });
-  }
+  });
 
   return batch.commit().then(function(){
     return reportRef;
@@ -1360,7 +1361,7 @@ var admin = {
         });
       });
     },
-    /* Publication d'un communiqué (FR/AR + image éventuelle). */
+    /* Publication d'un communiqué (FR/AR + jusqu'à 3 images). */
     addNews:
       function(o){
 
@@ -1383,14 +1384,10 @@ var admin = {
         if (o.ar)
           data.ar = o.ar;
 
-        // L'image part dans newsImages/{id} : la liste des communiqués
-        // reste légère et l'image n'est téléchargée qu'à l'ouverture.
-        var image =
-          o.image
-            ? String(o.image).slice(0,400000)
-            : '';
-
-        data.hasImage = !!image;
+        var images = Array.isArray(o.images) ? o.images : (o.image ? [o.image] : []);
+        images = images.slice(0,3).filter(function(x){ return x; });
+        data.hasImage = !!images.length;
+        data.imageCount = images.length;
 
         var ref =
           doc(collection(db, 'news'));
@@ -1399,17 +1396,18 @@ var admin = {
           setDoc(ref, data)
         ];
 
-        if (image)
+        images.forEach(function(img, idx){
           jobs.push(
             setDoc(
-              doc(db, 'newsImages', ref.id),
+              doc(db, 'newsImages', ref.id + '_' + idx),
               {
-                data: image,
+                data: String(img).slice(0,400000),
                 audience: o.audience || 'public',
                 createdAt: serverTimestamp()
               }
             )
           );
+        });
 
         return Promise.all(jobs)
           .then(function(){ return ref; });
@@ -1419,11 +1417,10 @@ var admin = {
     deleteNews:
       function(id){
 
-        // Supprime aussi l'image rangée à part (doc parfois absent).
-        return deleteDoc(
-          doc(db, 'newsImages', id)
-        )
-        .catch(function(){})
+        // Supprime aussi les images rangées à part (docs parfois absents).
+        return Promise.all([0,1,2].map(function(idx){
+          return deleteDoc(doc(db, 'newsImages', id + '_' + idx)).catch(function(){});
+        }))
         .then(function(){
           return deleteDoc(
             doc(db, 'news', id)
@@ -1448,15 +1445,17 @@ var admin = {
 
         };
 
-        // Nouvelle image : rangée dans newsImages, et l'ancien champ
-        // encodé dans le document (ancienne version) est retiré.
-        var image =
-          o.image
-            ? String(o.image).slice(0,400000)
-            : '';
+        // Nouvel ensemble d'images : rangé dans newsImages/{id}_{index},
+        // et l'ancien champ encodé dans le document (ancienne version) est retiré.
+        var images = Array.isArray(o.images) ? o.images : (o.image ? [o.image] : []);
+        images = images.slice(0,3).filter(function(x){ return x; });
 
-        if (image){
+        if (images.length){
           data.hasImage = true;
+          data.imageCount = images.length;
+        } else {
+          data.hasImage = false;
+          data.imageCount = 0;
           data.image = deleteField();
         }
 
@@ -1473,17 +1472,24 @@ var admin = {
           )
         ];
 
-        if (image)
+        // Écrit ou écrase chaque index d'image.
+        images.forEach(function(img, idx){
           jobs.push(
             setDoc(
-              doc(db, 'newsImages', id),
+              doc(db, 'newsImages', id + '_' + idx),
               {
-                data: image,
+                data: String(img).slice(0,400000),
                 audience: o.audience || 'public',
                 createdAt: serverTimestamp()
               }
             )
           );
+        });
+
+        // Supprime les indexes inutilisés au-delà du nouveau nombre.
+        for (var j = images.length; j < 3; j++){
+          jobs.push(deleteDoc(doc(db, 'newsImages', id + '_' + j)).catch(function(){}));
+        }
 
         return Promise.all(jobs);
 
@@ -1884,15 +1890,23 @@ export async function init(config, h){
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){
-      return getDoc(doc(db, 'newsImages', id))
-        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
-        .catch(function(){ return ''; });
+      return Promise.all([0,1,2].map(function(idx){
+        return getDoc(doc(db, 'newsImages', id + '_' + idx))
+          .then(function(s){ return s.exists() ? String(s.data().data || '') : null; })
+          .catch(function(){ return null; });
+      })).then(function(results){
+        return results.filter(Boolean);
+      });
     },
 
     getReportAttachment: function(id){
-      return getDoc(doc(db, 'reportAttachments', id))
-        .then(function(s){ return s.exists() ? String(s.data().data || '') : ''; })
-        .catch(function(){ return ''; });
+      return Promise.all([0,1,2].map(function(idx){
+        return getDoc(doc(db, 'reportAttachments', id + '_' + idx))
+          .then(function(s){ return s.exists() ? {data:String(s.data().data||''),name:s.data().name||'',type:s.data().type||''} : null; })
+          .catch(function(){ return null; });
+      })).then(function(results){
+        return results.filter(Boolean);
+      });
     },
 
     downloadAdhesionForm: function(){
