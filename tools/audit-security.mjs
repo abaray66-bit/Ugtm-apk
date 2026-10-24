@@ -20,7 +20,14 @@ function ok(message) {
   console.log(`OK   ${message}`);
 }
 
-for (const file of ['package.json', 'package-lock.json', 'firestore.rules', 'firebase.json', 'capacitor.config.json']) {
+for (const file of [
+  'package.json',
+  'package-lock.json',
+  'firestore.rules',
+  'firebase.json',
+  'capacitor.config.json',
+  '.github/workflows/apk.yml'
+]) {
   if (fs.existsSync(path.join(root, file))) ok(`${file} présent`);
   else fail(`${file} absent`);
 }
@@ -30,6 +37,8 @@ try {
   JSON.parse(read('package-lock.json'));
   if (!packageJson.scripts?.check) fail('package.json: script check absent');
   else ok('script de vérification présent');
+  if (!packageJson.scripts?.['audit:security']) fail('package.json: script audit:security absent');
+  else ok('script audit:security présent');
 } catch (error) {
   fail(`JSON package/package-lock invalide: ${error.message}`);
 }
@@ -40,8 +49,29 @@ try {
   else ok('Firestore Rules version 2');
   if (/allow\s+(?:read|write|create|update|delete|read\s*,\s*write)\s*:\s*if\s+true\s*;/.test(rules)) fail('firestore.rules: autorisation inconditionnelle détectée');
   else ok('Firestore: aucune autorisation inconditionnelle détectée');
+
+  if (/isSubAdmin\(\)[\s\S]{0,1800}request\.resource\.data\.status\s*==\s*['"]active['"][\s\S]{0,1800}request\.resource\.data\.keys\(\)\.hasOnly/.test(rules)
+      && !/isSubAdmin\(\)[\s\S]{0,2500}request\.resource\.data\.role\s*==\s*['"]member['"]/.test(rules)) {
+    fail('firestore.rules: la création active par un sous-admin ne borne pas explicitement le rôle member');
+  } else {
+    ok('Firestore: rôle de création active sous-admin vérifié');
+  }
 } catch (error) {
   fail(`firestore.rules illisible: ${error.message}`);
+}
+
+try {
+  const workflow = read('.github/workflows/apk.yml');
+  if (/permissions:\s*[\s\S]{0,160}contents:\s*write/.test(workflow)
+      || /permissions:\s*[\s\S]{0,160}actions:\s*write/.test(workflow)) {
+    fail('apk.yml: permissions write globales à réduire');
+  } else {
+    ok('apk.yml: permissions globales limitées');
+  }
+  if (/\bnpm install\b/.test(workflow)) fail('apk.yml: npm install non reproductible détecté');
+  else ok('apk.yml: aucune installation npm non verrouillée');
+} catch (error) {
+  fail(`apk.yml illisible: ${error.message}`);
 }
 
 try {
