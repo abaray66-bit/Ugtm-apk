@@ -962,9 +962,9 @@ main{
 }
 
 .fbtn{
-  flex:none;
+  flex:0 1 auto;
   min-height:38px;
-  padding:0 16px;
+  padding:0 12px;
   border-radius:999px;
   border:1px solid var(--line);
   background:var(--surface);
@@ -2517,6 +2517,7 @@ body {
 
 /* Accueil : « Dernier rendez-vous publié » compact */
 #s-home .nextcard .ev{
+  min-height:72px;
   padding:10px 0;
   gap:12px
 }
@@ -3093,7 +3094,7 @@ input[type=file]::file-selector-button{
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
-</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"></button>
+</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"><span id="notifBadge" class="notif-badge" hidden></span></button>
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -3148,6 +3149,10 @@ async function loadNotifications(){
     var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
     var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
     renderNotifications(list);
+    if(typeof window.updateNotifBadge==='function'){
+      var unread=list.filter(function(n){return n && n.read===false;}).length;
+      window.updateNotifBadge(unread);
+    }
   }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
 }
 window.loadNotifications=loadNotifications;
@@ -6198,11 +6203,10 @@ btn.hidden=!CLOUD_ON;
 if(!CLOUD_ON)return;
 
 btn.innerHTML=
-(S.user&&S.user.photo)
-
+((S.user&&S.user.photo)
 ?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
-
-:PERSON;
+:PERSON)
++'<span id="notifBadge" class="notif-badge" hidden></span>';
 }
 
 /* =========================
