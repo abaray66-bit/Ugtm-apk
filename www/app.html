@@ -2449,6 +2449,7 @@ body {
 }
 
 .avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; border-radius: 50%; }
+.avatar-u{position:relative;}
 
 @keyframes avatarUGuide {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -3103,7 +3104,7 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
-<button class="btn ghost small" type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();" aria-label="Notifications">🔔</button>
+<button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(e){} }" aria-label="Notifications"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;">🔔<span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
 <div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
 <script>
 function renderNotifications(list){
@@ -3140,20 +3141,21 @@ async function markNotificationRead(id){
     await loadNotifications();
   }catch(e){ console.warn('notif mark',e); }
 }
-async function loadNotifications(){
+function loadNotifications(){
   try{
     if(!window.db || !window.ugtmSession) return;
     var session=window.ugtmSession();
     if(!session || !session.user || !session.user.uid) return;
     var uid=session.user.uid;
-    var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
-    var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
-    renderNotifications(list);
-    if(typeof window.updateNotifBadge==='function'){
+    window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get().then(function(snap){
+      var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
+      renderNotifications(list);
       var unread=list.filter(function(n){return n && n.read===false;}).length;
-      window.updateNotifBadge(unread);
-    }
-  }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
+      if(typeof window.updateNotifBadge==='function') window.updateNotifBadge(unread);
+      var hb=document.getElementById('homeNotifBadge');
+      if(hb){ if(unread>0){hb.textContent=unread>9?'9+':unread;hb.hidden=false;}else{hb.textContent='';hb.hidden=true;} }
+    }).catch(function(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } });
+  }catch(e){ console.warn('notif load',e); }
 }
 window.loadNotifications=loadNotifications;
 window.markNotificationRead=markNotificationRead;
@@ -6207,6 +6209,12 @@ btn.innerHTML=
 ?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
 :PERSON)
 +'<span id="notifBadge" class="notif-badge" hidden></span>';
+
+if(S.user){
+  var hb=document.getElementById('homeNotifBadge');
+  if(hb){hb.hidden=true;}
+}
+
 }
 
 /* =========================
@@ -7946,27 +7954,34 @@ if(box.hidden){
 return;
 }
 
-if(el.hasAttribute('data-go')){
+  if(el.hasAttribute('data-go')){
 
-  var goTarget=el.getAttribute('data-go');
+    var goTarget=el.getAttribute('data-go');
 
-  /* Le formulaire d'adhésion applique sa propre règle d'accès
-     (dossier en attente, refusé, adhérent déjà validé) : la
-     navigation passe par la porte d'entrée du parcours, qui
-     statue AVANT l'ouverture de l'écran. */
-  if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
+    /* Le formulaire d'adhésion applique sa propre règle d'accès */
+    if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
+      window.adhesionOpenGate(el);
+      return;
+    }
 
-    window.adhesionOpenGate(el);
+    if(goTarget==='report'){
+      var repSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var repConnected=!!(repSession&&repSession.user&&repSession.user.uid);
+      if(!repConnected){
+        try{
+          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+          if(typeof toast==='function')toast(rt.authRequired||'Authentifiez-vous avant d\'accéder au formulaire de signalement.',5000);
+        }catch(eRep){}
+        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eRep2){}
+        return;
+      }
+    }
+
+    go(goTarget);
 
     return;
 
   }
-
-  go(goTarget);
-
-  return;
-
-}
 
 if(el.hasAttribute('data-tab')){
 
@@ -10120,12 +10135,12 @@ window.UGTM.failed(err);
 </style>
 <script>
 (function(){
-  function updateNotifBadge(n){
+function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
-    if(!b)return;
+    var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
-    if(n<=0){b.textContent='';b.hidden=true;return;}
-    b.textContent=n>9?'9+':n;b.hidden=false;
+    if(b){ if(n<=0){b.textContent='';b.hidden=true;}else{b.textContent=n>9?'9+':n;b.hidden=false;} }
+    if(hb){ if(n<=0){hb.textContent='';hb.hidden=true;}else{hb.textContent=n>9?'9+':n;hb.hidden=false;} }
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');
