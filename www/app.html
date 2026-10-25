@@ -4954,7 +4954,7 @@ renderGallery();
     }
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
-  document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeLightbox();closeGallery();}});
+  document.addEventListener('popstate',function(e){var g=$('gallery'); if(g && !g.hidden){ closeLightbox(); closeGallery(); } });
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
       window.Capacitor.Plugins.App.addListener('backButton', function(){
