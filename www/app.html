@@ -4995,6 +4995,19 @@ renderGallery();
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
   document.addEventListener('popstate',function(e){var g=$('gallery'); if(g && !g.hidden){ closeLightbox(); closeGallery(); } });
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest ? e.target.closest('#meBtn') : null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+    var connected=!!(session&&session.user&&session.user.uid);
+    if(!connected){
+      if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+      return;
+    }
+    var am=document.getElementById('authMenu');
+    if(am) am.hidden=!am.hidden;
+  });
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
       window.Capacitor.Plugins.App.addListener('backButton', function(){
