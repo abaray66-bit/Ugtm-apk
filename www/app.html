@@ -1598,7 +1598,8 @@ main{
 .acctbtn img{
   width:100%;
   height:100%;
-  object-fit:cover
+  object-fit:cover;
+  border-radius:50%
 }
 
 .h2{
@@ -3141,9 +3142,20 @@ function renderNotifications(list){
     p.style.cursor='pointer';
     p.style.padding='6px 0';
     p.style.borderBottom='1px solid #eee';
+    if(n.read===false){
+      p.style.fontWeight='bold';
+      p.style.background='#f0f7ff';
+      p.style.color='#111';
+    } else {
+      p.style.color='#666';
+      p.style.fontWeight='normal';
+    }
     p.textContent=String(n.title||'')+' - '+String(n.body||'');
     p.onclick=function(){
       if(n.targetType==='news' && typeof go==='function') go('news');
+      else if(n.targetType==='event' && typeof go==='function') go('agenda');
+      else if(typeof go==='function') go('me');
+
       if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
       var m=document.getElementById('notifModal'); if(m) m.hidden=true;
     };
@@ -3151,6 +3163,8 @@ function renderNotifications(list){
       var b=document.createElement('button');
       b.textContent='Marquer comme lu';
       b.style.marginLeft='8px';
+      b.style.color='#111';
+
       b.onclick=function(e){ e.stopPropagation(); markNotificationRead(n.id); };
       p.appendChild(b);
     }

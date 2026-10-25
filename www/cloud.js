@@ -1587,10 +1587,28 @@ var admin = {
       if (o.ar)
         data.ar = o.ar;
 
-      return addDoc(
-        collection(db, 'events'),
-        data
-      );
+      var ref = doc(collection(db, 'events'));
+
+      return setDoc(ref, data).then(function(){
+        return getDocs(collection(db, 'members')).then(function(snap){
+          var title = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : 'Nouvel événement');
+          var body = (o.fr && o.fr.b) ? o.fr.b : ((o.ar && o.ar.b) ? o.ar.b : '');
+          var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+          var writes = snap.docs.map(function(d){
+            return addDoc(collection(db, 'notifications', d.id, 'items'), {
+              title: String(title).slice(0,120),
+              body: String(body).slice(0,500),
+              type: 'event',
+              targetType: 'event',
+              targetId: ref.id,
+              read: false,
+              authorUid: authorUid,
+              createdAt: serverTimestamp()
+            }).catch(function(){});
+          });
+          return Promise.all(writes);
+        }).catch(function(){});
+      }).then(function(){ return ref; });
 
     },
 
