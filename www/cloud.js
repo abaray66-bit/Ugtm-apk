@@ -444,6 +444,30 @@ function onUser(user){
     try { Notification.requestPermission(); } catch(e){}
   }
 
+  // Enregistrement FCM (web) : sauvegarde du token pour les push.
+  try {
+    if (typeof Notification !== 'undefined') {
+      messaging = getMessaging(app);
+      Notification.requestPermission().then(function(permission){
+        if (permission !== 'granted' || !auth.currentUser) return;
+        getToken(messaging, { vapidKey: 'REPLACE_WITH_VAPID_KEY' }).then(function(token){
+          if (token) {
+            setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
+              token: token,
+              updatedAt: serverTimestamp()
+            }, { merge: true }).catch(function(){});
+          }
+        }).catch(function(){});
+      }).catch(function(){});
+      onMessage(messaging, function(payload){
+        var n = (payload && payload.notification) || {};
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try { new Notification(n.title || 'UGTM', { body: n.body || '' }); } catch(e){}
+        }
+      });
+    }
+  } catch(e){}
+
   // Notifications temps réel : badge + alerte locale.
   unsub('notifications');
   try {
