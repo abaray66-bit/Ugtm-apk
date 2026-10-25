@@ -717,6 +717,7 @@ async function addReport(o){
       o.province || (session.member ? session.member.prov || '' : '')
     ).slice(0,40),
     attachmentName: String((attachments[0] && attachments[0].name) || o.attachmentName || '').slice(0,120),
+    attachmentCount: attachments.length,
     attachmentType: String((attachments[0] && attachments[0].type) || o.attachmentType || '').slice(0,80),
     attachmentData: '',
     status: 'new',
