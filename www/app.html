@@ -4948,9 +4948,9 @@ renderGallery();
   ge.addEventListener('touchend',function(e){
     galleryState.pinchDist=0;
     if(galleryState.panning){ galleryState.panning=false; return; }
-    if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<300){
+    if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
       var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
-      if(Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
+      if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
     }
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
