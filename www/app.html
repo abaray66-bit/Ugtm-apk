@@ -2448,13 +2448,13 @@ body {
   50% { opacity: 0.5; }
 }
 
-.avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; border-radius: 50%; }
+.avatar-u--guide { animation: avatarUGuide .6s ease-in-out infinite; border-radius: 50%; box-shadow: 0 0 0 3px rgba(228,60,60,.6); }
 .avatar-u{position:relative;}
 .adhesion-btn-guide { animation: avatarUGuide 1.2s ease-in-out infinite; }
 
 @keyframes avatarUGuide {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: .85; }
+  50% { transform: scale(1.25); opacity: .6; }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -3470,9 +3470,6 @@ window.markNotificationRead=markNotificationRead;
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
-  <div class="gallery-actions">
-    <button type="button" class="btn gallery-btn gallery-share" id="galleryShare" aria-label="Partager">↗</button>
-  </div>
 </div>
 <div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
@@ -4859,7 +4856,7 @@ if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+
 track.appendChild(img);
 });
 counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-var gd=$('galleryDelete'); if(gd) gd.hidden=galleryState.items.length<=1;
+/* gallery actions removed */
 }
 
 function galleryPrev(){
@@ -4908,7 +4905,6 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
   ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
