@@ -5790,7 +5790,7 @@ CHEV+
 '</button>'+
 
 '<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-(c.images&&c.images.length?'<div class="news-thumbs">'+c.images.map(function(d,i){return'<img class="news-photo" src="'+esc(d)+'" alt="Image '+(i+1)+'" data-idx="'+i+'">';}).join('')+'</div>':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
+(c.images&&c.images.length?'<div class="news-thumbs" data-images="'+esc(id)+'">'+c.images.map(function(d,i){return'<img class="news-photo" src="'+esc(d)+'" alt="Image '+(i+1)+'" data-idx="'+i+'">';}).join('')+'</div>':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
