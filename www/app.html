@@ -3480,8 +3480,8 @@ window.markNotificationRead=markNotificationRead;
 </button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <div class="gallery-track" id="galleryTrack"></div>
-  <button type="button" class="gallery-btn gallery-prev" id="galleryPrev" aria-label="Image précédente">‹</button>
-  <button type="button" class="gallery-btn gallery-next" id="galleryNext" aria-label="Image suivante">›</button>
+  <button type="button" class="gallery-btn gallery-prev" id="galleryPrev" aria-label="Image précédente" onclick="galleryPrev()">‹</button>
+  <button type="button" class="gallery-btn gallery-next" id="galleryNext" aria-label="Image suivante" onclick="galleryNext()">›</button>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
   <div class="gallery-actions">
     <button type="button" class="btn gallery-btn gallery-delete" id="galleryDelete" aria-label="Supprimer l'image">🗑️</button>
@@ -4839,7 +4839,7 @@ el.classList.remove('show');
 },ms||2400);
 }
 
-var galleryState={items:[],idx:0,ctx:null};
+var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
 
 function openGallery(items,startIdx,opts){
 if(!items||!items.length)return;
@@ -4847,6 +4847,7 @@ opts=opts||{};
 galleryState.items=items;
 galleryState.idx=Math.max(0,Math.min(startIdx||0,items.length-1));
 galleryState.ctx=opts.ctx||null;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
 renderGallery();
 $('gallery').hidden=false;
 document.body.style.overflow='hidden';
@@ -4856,7 +4857,7 @@ try{history.pushState({gallery:true},'');}catch(e){}
 function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
-galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;
+galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
 try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
@@ -4870,6 +4871,7 @@ var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
 img.className=i===galleryState.idx?'active':'';
+if(i===galleryState.idx) img.style.transform='scale('+galleryState.zoom+')';
 track.appendChild(img);
 });
 counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
@@ -4879,12 +4881,20 @@ $('galleryDelete').hidden=galleryState.items.length<=1;
 function galleryPrev(){
 if(galleryState.items.length<=1)return;
 galleryState.idx=(galleryState.idx-1+galleryState.items.length)%galleryState.items.length;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;
 renderGallery();
 }
 
 function galleryNext(){
 if(galleryState.items.length<=1)return;
 galleryState.idx=(galleryState.idx+1)%galleryState.items.length;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;
+renderGallery();
+}
+
+function galleryZoomToggle(){
+galleryState.zoom = galleryState.zoom > 1 ? 1 : 2;
+if(galleryState.zoom === 1){ galleryState.tx=0; galleryState.ty=0; }
 renderGallery();
 }
 
@@ -4921,11 +4931,38 @@ renderGallery();
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
   ge.addEventListener('click',function(e){if(e.target===ge||e.target.tagName==='IMG'){closeLightbox();closeGallery();}});
   var ts=0,touchX=0;
-  ge.addEventListener('touchstart',function(e){ts=e.timeStamp;touchX=(e.touches[0]||e.changedTouches[0]).clientX;},{passive:true});
-  ge.addEventListener('touchend',function(e){
-  var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
-  if(e.timeStamp-ts<300&&Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();}
+  ge.addEventListener('touchstart',function(e){
+    ts=e.timeStamp;
+    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; }
+    if(e.touches && e.touches.length===2){
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      galleryState.pinchDist=Math.hypot(dx2,dy2);
+      galleryState.pinchScale=galleryState.zoom||1;
+    }
   },{passive:true});
+  ge.addEventListener('touchmove',function(e){
+    if(e.touches && e.touches.length===2 && galleryState.pinchDist){
+      e.preventDefault();
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      var dist=Math.hypot(dx2,dy2);
+      galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
+      renderGallery();
+    }
+  },{passive:false});
+  ge.addEventListener('touchend',function(e){
+    galleryState.pinchDist=0;
+    if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<300){
+      var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
+      if(Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
+    }
+    // Double-tap to toggle zoom
+    if(e.timeStamp-ts<250 && !(e.changedTouches && e.changedTouches.length>1)){
+      galleryZoomToggle();
+    }
+  },{passive:true});
+  ge.addEventListener('dblclick',function(e){ if(e.target && e.target.tagName==='IMG'){ galleryZoomToggle(); } });
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
   document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeLightbox();closeGallery();}});
   try{document.addEventListener('backbutton',function(){closeLightbox();closeGallery();});}catch(e){}
