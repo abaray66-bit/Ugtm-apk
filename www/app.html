@@ -4926,8 +4926,6 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  $('galleryPrev').addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
-  $('galleryNext').addEventListener('click',function(e){e.stopPropagation();galleryNext();});
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
   $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
