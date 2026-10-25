@@ -275,6 +275,7 @@ service cloud.firestore {
           'attachmentName',
           'attachmentType',
           'attachmentData',
+          'attachmentCount',
           'status',
           'response',
           'createdAt',
@@ -303,6 +304,9 @@ service cloud.firestore {
         ]
         && request.resource.data.attachmentName is string
         && request.resource.data.attachmentType is string
+        && request.resource.data.attachmentCount is int
+        && request.resource.data.attachmentCount >= 0
+        && request.resource.data.attachmentCount <= 3
         && request.resource.data.attachmentData is string
         && okText(request.resource.data.name, 120)
         && okText(request.resource.data.etab, 160)

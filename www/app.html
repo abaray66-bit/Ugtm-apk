@@ -6142,7 +6142,7 @@ return '<li class="mrow"><div class="mi">'+
 (head?'<span>'+esc(head)+'</span>':'')+
 (r.etab?'<span>'+esc(r.etab)+'</span>':'')+
 '<span>'+esc(r.description||'')+'</span>'+
-(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+((r.attachmentCount>0||r.attachmentName)?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+(r.attachmentName||'Pièces jointes')+'</button>':'')+
 '<button type="button" class="btn ghost small" data-share-report="'+esc(r.id)+'">'+esc(t.share)+'</button>'+
 (r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div></li>';
@@ -6569,7 +6569,7 @@ return '<li class="mrow"><div class="mi">'+
 (r.etab?'<span>'+esc(t.admReportEtab)+' '+esc(r.etab)+'</span>':'')+
 ((r.age!=='' || r.da)?'<span>'+(r.age!==''?esc(t.admReportPpr)+' '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?esc(t.admReportSpecialty)+' '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
-(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+((r.attachmentCount>0||r.attachmentName)?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+(r.attachmentName||'Pièces jointes')+'</button>':'')+
 '<span>'+(r.anonymous?esc(t.admReportAnonymous):esc(r.name||''))+'</span>'+
 (r.response?'<span><strong>'+esc(t.admReportResponse)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div><div class="mact">'+actions+'</div></li>';
