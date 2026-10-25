@@ -4926,7 +4926,7 @@ renderGallery();
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
   $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
-  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();} if(e.target&&e.target.tagName==='IMG'){var a=$('gallery-actions'); if(a) a.hidden=!a.hidden;}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
