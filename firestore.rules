@@ -71,7 +71,9 @@ service cloud.firestore {
         // même transaction : lastMemberNo correspond
         // obligatoirement au numéro de la fiche.
         || ((isAdmin()
-            || (isSubAdmin() && request.resource.data.prov == assignedProvince()))
+            || (isSubAdmin() && request.resource.data.prov == assignedProvince()
+                && request.resource.data.role == 'member'
+                && request.resource.data.adminProvince == assignedProvince()))
             && request.resource.data.status == 'active'
             && request.resource.data.keys().hasOnly([
               'name', 'email', 'photo', 'etab', 'prov',

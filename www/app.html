@@ -4856,7 +4856,7 @@ function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;
-try{history.popState();}catch(e){}
+try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
 function renderGallery(){

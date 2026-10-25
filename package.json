@@ -13,7 +13,9 @@
     "android:open": "npx cap open android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:build:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
-    "android:prepare": "npm install && npm run android:sync"
+    "android:prepare": "npm install && npm run android:sync",
+    "audit:security": "node tools/audit-security.mjs",
+    "test:firestore:privileges": "firebase emulators:exec --only firestore \"node test-firestore-member-privileges.mjs\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.0.0",
