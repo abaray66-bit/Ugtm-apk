@@ -3135,29 +3135,18 @@ function renderNotifications(list){
 }
 async function markNotificationRead(id){
   try{
-    if(!window.db || !window.ugtmSession) return;
-    var session=window.ugtmSession();
-    if(!session || !session.user || !session.user.uid) return;
-    await window.db.collection('notifications').doc(session.user.uid).collection('items').doc(id).update({read:true});
+    if(!window.CLOUD || typeof window.CLOUD.markNotificationRead!=='function') return;
+    await window.CLOUD.markNotificationRead(id);
     await loadNotifications();
   }catch(e){ console.warn('notif mark',e); }
 }
 function loadNotifications(){
   try{
-    if(!window.db || !window.ugtmSession) return;
-    var session=window.ugtmSession();
-    if(!session || !session.user || !session.user.uid) return;
-    var uid=session.user.uid;
-    window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get().then(function(snap){
-      var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
-      renderNotifications(list);
-      var unread=list.filter(function(n){return n && n.read===false;}).length;
-      if(typeof window.updateNotifBadge==='function') window.updateNotifBadge(unread);
-      var hb=document.getElementById('homeNotifBadge');
-      if(hb){ if(unread>0){hb.textContent=unread>9?'9+':unread;hb.hidden=false;}else{hb.textContent='';hb.hidden=true;} }
-    }).catch(function(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } });
+    if(!window.CLOUD || typeof window.CLOUD.loadNotifications!=='function') return;
+    window.CLOUD.loadNotifications();
   }catch(e){ console.warn('notif load',e); }
 }
+window.renderNotifications=renderNotifications;
 window.loadNotifications=loadNotifications;
 window.markNotificationRead=markNotificationRead;
 </script>
@@ -3348,7 +3337,7 @@ window.markNotificationRead=markNotificationRead;
 <ul class="resp" id="permResp" hidden></ul>
 </div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meNotifButton" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();">Notifications</button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -4921,8 +4910,6 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  $('galleryPrev').addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
-  $('galleryNext').addEventListener('click',function(e){e.stopPropagation();galleryNext();});
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
   $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
