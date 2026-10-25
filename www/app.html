@@ -7995,9 +7995,22 @@ return;
     var goTarget=el.getAttribute('data-go');
 
     /* Le formulaire d'adhésion applique sa propre règle d'accès */
-    if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
-      window.adhesionOpenGate(el);
-      return;
+    if(goTarget==='adhesion'){
+      var adhSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var adhConnected=!!(adhSession&&adhSession.user&&adhSession.user.uid);
+      if(!adhConnected){
+        try{
+          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+          var adhMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
+          if(typeof toast==='function') toast(adhMsg,5000);
+        }catch(eAdh){}
+        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAdh2){}
+        return;
+      }
+      if(typeof window.adhesionOpenGate==='function'){
+        window.adhesionOpenGate(el);
+        return;
+      }
     }
 
     if(goTarget==='report'){
