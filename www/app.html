@@ -3115,7 +3115,13 @@ input[type=file]::file-selector-button{
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
 
-<div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
+<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
+  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
+  <div id="notifList" style="min-height:40px;color:#111;"></div>
+  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
+  <div id="notifHistory" hidden></div>
+  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
+</div>
 <script>
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
