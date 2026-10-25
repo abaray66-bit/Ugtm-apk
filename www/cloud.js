@@ -935,7 +935,7 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      updatedAt:serverTimestamp()
    });
    await activateMemberFromRequest(uid);
-   try { await addDoc(collection(db,'notifications',String(uid),'items'), { title:'Adhésion acceptée', body:'Votre adhésion a été validée.', type:'adhesion', read:false, authorUid:u.uid, createdAt:serverTimestamp() }); } catch(e){}
+   try { await addDoc(collection(db,'notifications',String(uid),'items'), { title:'Adhésion acceptée', body:'Votre adhésion a été validée.', type:'adhesion', targetType:'adhesion', targetId:String(uid), read:false, authorUid:u.uid, createdAt:serverTimestamp() }); } catch(e){}
    return sig;
  }
  
