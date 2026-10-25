@@ -26,6 +26,7 @@ var unsubs = {
   reports: null,
   adhesions: null,
   responsables: null,
+  notifications: null,
   publicProvinceContacts: null
 };
 
@@ -385,6 +386,7 @@ function onUser(user){
 
     unsub('reports');
     unsub('adhesions');
+    unsub('notifications');
 
     session = {
       user: null,
@@ -438,6 +440,53 @@ function onUser(user){
 
   hooks.setSession(session);
 
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e){}
+  }
+
+  // Enregistrement FCM (web) : sauvegarde du token pour les push.
+  try {
+    if (typeof Notification !== 'undefined') {
+      messaging = getMessaging(app);
+      Notification.requestPermission().then(function(permission){
+        if (permission !== 'granted' || !auth.currentUser) return;
+        getToken(messaging, { vapidKey: 'REPLACE_WITH_VAPID_KEY' }).then(function(token){
+          if (token) {
+            setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
+              token: token,
+              updatedAt: serverTimestamp()
+            }, { merge: true }).catch(function(){});
+          }
+        }).catch(function(){});
+      }).catch(function(){});
+      onMessage(messaging, function(payload){
+        var n = (payload && payload.notification) || {};
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try { new Notification(n.title || 'UGTM', { body: n.body || '' }); } catch(e){}
+        }
+      });
+    }
+  } catch(e){}
+
+  // Notifications temps réel : badge + alerte locale.
+  unsub('notifications');
+  try {
+    unsubs.notifications = onSnapshot(
+      collection(db, 'notifications', user.uid, 'items'),
+      function(snap){
+        var unread = snap.docs.filter(function(d){ var x=d.data()||{}; return x.read !== true; }).length;
+        if(typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
+        snap.docChanges().forEach(function(ch){
+          if(ch.type === 'added'){
+            var x = ch.doc.data() || {};
+            if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+              try { new Notification(String(x.title||'UGTM'), { body: String(x.body||''), icon: 'icons/ugtm-mark.svg' }); } catch(e){}
+            }
+          }
+        });
+      }
+    );
+  } catch(e){}
 
   var ref =
     doc(db, 'members', user.uid);
@@ -1410,6 +1459,25 @@ var admin = {
         });
 
         return Promise.all(jobs)
+          .then(function(){
+            // Diffusion d'une notification à tous les membres.
+            return getDocs(collection(db, 'members')).then(function(snap){
+              var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
+              var body = (o.fr && o.fr.body) ? o.fr.body : ((o.ar && o.ar.body) ? o.ar.body : '');
+              var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+              var writes = snap.docs.map(function(d){
+                return addDoc(collection(db, 'notifications', d.id, 'items'), {
+                  title: String(title).slice(0,120),
+                  body: String(body).slice(0,500),
+                  type: 'news',
+                  read: false,
+                  authorUid: authorUid,
+                  createdAt: serverTimestamp()
+                }).catch(function(){});
+              });
+              return Promise.all(writes);
+            }).catch(function(){});
+          })
           .then(function(){ return ref; });
 
       },
