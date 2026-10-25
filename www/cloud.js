@@ -1435,6 +1435,25 @@ var admin = {
         });
 
         return Promise.all(jobs)
+          .then(function(){
+            // Diffusion d'une notification à tous les membres.
+            return getDocs(collection(db, 'members')).then(function(snap){
+              var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
+              var body = (o.fr && o.fr.body) ? o.fr.body : ((o.ar && o.ar.body) ? o.ar.body : '');
+              var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+              var writes = snap.docs.map(function(d){
+                return addDoc(collection(db, 'notifications', d.id, 'items'), {
+                  title: String(title).slice(0,120),
+                  body: String(body).slice(0,500),
+                  type: 'news',
+                  read: false,
+                  authorUid: authorUid,
+                  createdAt: serverTimestamp()
+                }).catch(function(){});
+              });
+              return Promise.all(writes);
+            }).catch(function(){});
+          })
           .then(function(){ return ref; });
 
       },
