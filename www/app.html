@@ -3471,8 +3471,6 @@ window.markNotificationRead=markNotificationRead;
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
   <div class="gallery-actions">
-    <button type="button" class="btn gallery-btn gallery-delete" id="galleryDelete" aria-label="Supprimer l'image">🗑️</button>
-    <button type="button" class="btn gallery-btn gallery-download" id="galleryDownload" aria-label="Télécharger">⬇</button>
     <button type="button" class="btn gallery-btn gallery-share" id="galleryShare" aria-label="Partager">↗</button>
   </div>
 </div>
@@ -4861,7 +4859,7 @@ if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+
 track.appendChild(img);
 });
 counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-$('galleryDelete').hidden=galleryState.items.length<=1;
+var gd=$('galleryDelete'); if(gd) gd.hidden=galleryState.items.length<=1;
 }
 
 function galleryPrev(){
@@ -4910,8 +4908,6 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
-  $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
   ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
   var ts=0,touchX=0;
