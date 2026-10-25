@@ -3103,7 +3103,7 @@ input[type=file]::file-selector-button{
 <span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
 <div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof go==='function') go('me');">Espace personnel</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
 
