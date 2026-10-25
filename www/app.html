@@ -1590,6 +1590,10 @@ main{
   padding:0;
   color:var(--ink)
 }
+.acctbtn--guide{
+  animation: avatarUGuide .6s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(228,60,60,.85);
+}
 
 .acctbtn img{
   width:100%;
@@ -8985,14 +8989,17 @@ renderAccountButton();
 renderMe();
 
 try{
-  if(s.user && typeof loadNotifications==='function') setTimeout(loadNotifications, 0);
-}catch(e){}
 
-try{
   document.querySelectorAll('.avatar-u').forEach(function(el){
     if(!s.user) el.classList.add('avatar-u--guide');
     else el.classList.remove('avatar-u--guide');
   });
+  var mb=document.getElementById('meBtn');
+  if(mb){
+    if(!s.user) mb.classList.add('acctbtn--guide');
+    else mb.classList.remove('acctbtn--guide');
+  }
+
 }catch(e){}
 
 if(window.prefillDigitalAdhesion){
