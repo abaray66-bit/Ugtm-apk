@@ -3105,7 +3105,7 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
-<button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(e){} }" aria-label="Notifications"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;">🔔<span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
+
 <div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
 <script>
 function renderNotifications(list){
@@ -8973,6 +8973,10 @@ renderAccountButton();
 renderMe();
 
 try{
+  if(s.user && typeof loadNotifications==='function') setTimeout(loadNotifications, 0);
+}catch(e){}
+
+try{
   document.querySelectorAll('button[data-go="adhesion"], #meAdhesionButton').forEach(function(btn){
     if(!s.user) btn.classList.add('adhesion-btn-guide');
     else btn.classList.remove('adhesion-btn-guide');
@@ -10193,10 +10197,10 @@ window.UGTM.failed(err);
 </body>
 <style>
 .notif-badge{
-  position:absolute;top:0;right:0;
-  background:#e43;color:#fff;font-size:10px;font-weight:bold;
-  border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
-  line-height:18px;text-align:center;z-index:10;
+  position:absolute;top:-2px;right:-2px;
+  background:#e43;color:#fff;font-size:9px;font-weight:bold;
+  border-radius:50%;padding:1px 4px;min-width:16px;height:16px;
+  line-height:16px;text-align:center;z-index:10;
 }
 #meBtn{position:relative;}
 </style>
@@ -10204,10 +10208,8 @@ window.UGTM.failed(err);
 (function(){
 function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
-    var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
     if(b){ if(n<=0){b.textContent='';b.hidden=true;}else{b.textContent=n>9?'9+':n;b.hidden=false;} }
-    if(hb){ if(n<=0){hb.textContent='';hb.hidden=true;}else{hb.textContent=n>9?'9+':n;hb.hidden=false;} }
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');

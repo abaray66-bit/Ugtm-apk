@@ -26,6 +26,7 @@ var unsubs = {
   reports: null,
   adhesions: null,
   responsables: null,
+  notifications: null,
   publicProvinceContacts: null
 };
 
@@ -385,6 +386,7 @@ function onUser(user){
 
     unsub('reports');
     unsub('adhesions');
+    unsub('notifications');
 
     session = {
       user: null,
@@ -438,6 +440,29 @@ function onUser(user){
 
   hooks.setSession(session);
 
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e){}
+  }
+
+  // Notifications temps réel : badge + alerte locale.
+  unsub('notifications');
+  try {
+    unsubs.notifications = onSnapshot(
+      collection(db, 'notifications', user.uid, 'items'),
+      function(snap){
+        var unread = snap.docs.filter(function(d){ var x=d.data()||{}; return x.read !== true; }).length;
+        if(typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
+        snap.docChanges().forEach(function(ch){
+          if(ch.type === 'added'){
+            var x = ch.doc.data() || {};
+            if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+              try { new Notification(String(x.title||'UGTM'), { body: String(x.body||''), icon: 'icons/ugtm-mark.svg' }); } catch(e){}
+            }
+          }
+        });
+      }
+    );
+  } catch(e){}
 
   var ref =
     doc(db, 'members', user.uid);
