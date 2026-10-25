@@ -3179,10 +3179,11 @@ async function markNotificationRead(id){
     await loadNotifications();
   }catch(e){ console.warn('notif mark',e); }
 }
-function loadNotifications(){
+async function loadNotifications(){
   try{
     if(!window.CLOUD || typeof window.CLOUD.loadNotifications!=='function') return;
-    window.CLOUD.loadNotifications();
+    await window.CLOUD.loadNotifications();
+
   }catch(e){ console.warn('notif load',e); }
 }
 window.renderNotifications=renderNotifications;
