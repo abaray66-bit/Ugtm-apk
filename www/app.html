@@ -1590,6 +1590,14 @@ main{
   padding:0;
   color:var(--ink)
 }
+.auth-blink{
+  animation: authBlink .7s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(228,60,60,.85);
+}
+@keyframes authBlink {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(228,60,60,.85); }
+  50% { box-shadow: 0 0 0 6px rgba(228,60,60,.35); }
+}
 .acctbtn--guide{
   animation: avatarUGuide .6s ease-in-out infinite;
   box-shadow: 0 0 0 3px rgba(228,60,60,.85);
