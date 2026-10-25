@@ -13,7 +13,11 @@
   },
   "hosting": {
     "public": "www",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
       {
         "source": "/demande-adhesion.pdf",
@@ -25,5 +29,8 @@
         ]
       }
     ]
+  },
+  "functions": {
+    "source": "functions"
   }
 }

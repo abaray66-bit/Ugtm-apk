@@ -11,7 +11,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction,
+  onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
   writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
@@ -1929,6 +1929,28 @@ export async function init(config, h){
 
   window.db = db;
 
+
+async function cloudLoadNotifications(){
+  if (!auth || !auth.currentUser) return;
+  var uid = auth.currentUser.uid;
+  try {
+    var q = query(collection(db, 'notifications', uid, 'items'), orderBy('createdAt', 'desc'), limit(50));
+    var snap = await getDocs(q);
+    var list = snap.docs.map(function(d){ var x = d.data() || {}; x.id = d.id; return x; });
+    if (typeof window.renderNotifications === 'function') window.renderNotifications(list);
+    var unread = list.filter(function(n){ return n && n.read !== true; }).length;
+    if (typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
+  } catch(e){ console.warn('notif load', e); }
+}
+
+async function cloudMarkNotificationRead(id){
+  if (!auth || !auth.currentUser) return;
+  var uid = auth.currentUser.uid;
+  try {
+    await updateDoc(doc(db, 'notifications', uid, 'items', id), { read: true });
+  } catch(e){ console.warn('notif mark', e); }
+}
+
   window.CLOUD = {
 
     signIn: signIn,
@@ -1955,6 +1977,9 @@ export async function init(config, h){
 
     addReport: addReport,
     admin: admin,
+
+    loadNotifications: cloudLoadNotifications,
+    markNotificationRead: cloudMarkNotificationRead,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){
