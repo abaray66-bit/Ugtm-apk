@@ -8965,9 +8965,9 @@ try{
 }catch(e){}
 
 try{
-  document.querySelectorAll('button[data-go="adhesion"], #meAdhesionButton').forEach(function(btn){
-    if(!s.user) btn.classList.add('adhesion-btn-guide');
-    else btn.classList.remove('adhesion-btn-guide');
+  document.querySelectorAll('.avatar-u').forEach(function(el){
+    if(!s.user) el.classList.add('avatar-u--guide');
+    else el.classList.remove('avatar-u--guide');
   });
 }catch(e){}
 
@@ -9993,7 +9993,7 @@ window.UGTM.failed(err);
         if(typeof toast==='function') toast(authMsg,5000);
       }catch(eAuth){}
       try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAuth2){}
-      try{ document.querySelectorAll('button[data-go="adhesion"], #meAdhesionButton').forEach(function(b){ b.classList.add('adhesion-btn-guide'); }); }catch(eAuth3){}
+
       return;
     }
 
