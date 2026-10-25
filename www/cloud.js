@@ -684,8 +684,8 @@ async function addReport(o){
   attachments.forEach(function(att, idx){
     batch.set(doc(db, 'reportAttachments', reportRef.id + '_' + idx), {
       data: String(att.data||'').slice(0,420000),
-      name: String(o.attachmentName || '').slice(0,120),
-      type: String(o.attachmentType || '').slice(0,80),
+      name: String(att.name || '').slice(0,120),
+      type: String(att.type || '').slice(0,80),
       ownerUid: data.ownerUid,
       anonymous: data.anonymous,
       province: data.province,
