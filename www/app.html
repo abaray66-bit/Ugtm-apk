@@ -832,7 +832,7 @@ main{
 .gallery{
   position:fixed;inset:0;z-index:70;background:#000;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:12px
+  padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .gallery-track{
   position:relative;width:100%;height:100%;max-height:78vh;
@@ -3480,15 +3480,12 @@ window.markNotificationRead=markNotificationRead;
 </button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <div class="gallery-track" id="galleryTrack"></div>
-  <button type="button" class="gallery-btn gallery-prev" id="galleryPrev" aria-label="Image précédente" onclick="galleryPrev()">‹</button>
-  <button type="button" class="gallery-btn gallery-next" id="galleryNext" aria-label="Image suivante" onclick="galleryNext()">›</button>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
   <div class="gallery-actions">
     <button type="button" class="btn gallery-btn gallery-delete" id="galleryDelete" aria-label="Supprimer l'image">🗑️</button>
     <button type="button" class="btn gallery-btn gallery-download" id="galleryDownload" aria-label="Télécharger">⬇</button>
     <button type="button" class="btn gallery-btn gallery-share" id="galleryShare" aria-label="Partager">↗</button>
   </div>
-  <p class="gallery-hint" data-i18n="lbClose">Cliquez sur l'image pour fermer</p>
 </div>
 <div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
@@ -4929,7 +4926,7 @@ renderGallery();
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
   $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
   $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
-  ge.addEventListener('click',function(e){if(e.target===ge||e.target.tagName==='IMG'){closeLightbox();closeGallery();}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
@@ -4968,15 +4965,19 @@ renderGallery();
       var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
       if(Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
     }
-    // Double-tap to toggle zoom
-    if(e.timeStamp-ts<250 && !(e.changedTouches && e.changedTouches.length>1)){
-      galleryZoomToggle();
-    }
   },{passive:true});
-  ge.addEventListener('dblclick',function(e){ if(e.target && e.target.tagName==='IMG'){ galleryZoomToggle(); } });
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
   document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeLightbox();closeGallery();}});
-  try{document.addEventListener('backbutton',function(){closeLightbox();closeGallery();});}catch(e){}
+  try{
+    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
+      window.Capacitor.Plugins.App.addListener('backButton', function(){
+        if($('gallery') && !$('gallery').hidden){ closeGallery(); }
+        else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
+      });
+    } else {
+      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else { closeLightbox(); closeGallery(); } });
+    }
+  }catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
  if(e.target===$('attachModal'))closeAttachModal();
