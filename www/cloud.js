@@ -1471,6 +1471,8 @@ var admin = {
                   title: String(title).slice(0,120),
                   body: String(body).slice(0,500),
                   type: 'news',
+                  targetType: 'news',
+                  targetId: ref.id,
                   read: false,
                   authorUid: authorUid,
                   createdAt: serverTimestamp()
