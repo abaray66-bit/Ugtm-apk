@@ -2450,6 +2450,7 @@ body {
 
 .avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; border-radius: 50%; }
 .avatar-u{position:relative;}
+.adhesion-btn-guide { animation: avatarUGuide 1.2s ease-in-out infinite; }
 
 @keyframes avatarUGuide {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -8923,6 +8924,13 @@ purgeSession();
 renderAccountButton();
 renderMe();
 
+try{
+  document.querySelectorAll('button[data-go="adhesion"], #meAdhesionButton').forEach(function(btn){
+    if(!s.user) btn.classList.add('adhesion-btn-guide');
+    else btn.classList.remove('adhesion-btn-guide');
+  });
+}catch(e){}
+
 if(window.prefillDigitalAdhesion){
   window.prefillDigitalAdhesion();
 }
@@ -9936,6 +9944,17 @@ window.UGTM.failed(err);
       /* Sans compte, aucune demande n'existe : le formulaire reste
          accessible (première adhésion). */
       return{mode:'free',message:''};
+    }
+
+    if(!connected){
+      try{
+        var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+        var authMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
+        if(typeof toast==='function') toast(authMsg,5000);
+      }catch(eAuth){}
+      try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAuth2){}
+      try{ document.querySelectorAll('button[data-go="adhesion"], #meAdhesionButton').forEach(function(b){ b.classList.add('adhesion-btn-guide'); }); }catch(eAuth3){}
+      return;
     }
 
     if(typeof window.refreshMyAdhesionStatus!=='function'){
