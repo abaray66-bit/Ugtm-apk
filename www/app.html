@@ -3096,7 +3096,11 @@ input[type=file]::file-selector-button{
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
-</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"><span id="notifBadge" class="notif-badge" hidden></span></button>
+</div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
+<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;" onclick="if(typeof window.CLOUD!=='undefined'&&window.CLOUD.signOut) window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
+</div>
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -6233,6 +6237,9 @@ btn.hidden=!CLOUD_ON;
 
 if(!CLOUD_ON)return;
 
+btn.removeAttribute('data-go');
+btn.onclick=function(e){ e.stopPropagation(); var am=document.getElementById('authMenu'); if(am) am.hidden=!am.hidden; };
+
 btn.innerHTML=
 ((S.user&&S.user.photo)
 ?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
@@ -9040,6 +9047,8 @@ if(
 'serviceWorker' in navigator&&
 location.protocol.indexOf('http')===0
 ){
+
+document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true; });
 
 window.addEventListener(
 'load',
