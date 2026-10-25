@@ -9020,15 +9020,10 @@ renderAccountButton();
 renderMe();
 
 try{
-
-  document.querySelectorAll('.avatar-u').forEach(function(el){
-    if(!s.user) el.classList.add('avatar-u--guide');
-    else el.classList.remove('avatar-u--guide');
-  });
   var mb=document.getElementById('meBtn');
   if(mb){
-    if(!s.user) mb.classList.add('acctbtn--guide');
-    else mb.classList.remove('acctbtn--guide');
+    if(!s.user) mb.classList.add('auth-blink');
+    else mb.classList.remove('auth-blink');
   }
 
 }catch(e){}
