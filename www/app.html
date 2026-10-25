@@ -4871,7 +4871,7 @@ var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
 img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='scale('+galleryState.zoom+')';
+if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
 track.appendChild(img);
 });
 counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
@@ -4933,7 +4933,7 @@ renderGallery();
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
-    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; }
+    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; touchY=(e.touches[0]||e.changedTouches[0]).clientY; galleryState.panStartX=galleryState.tx; galleryState.panStartY=galleryState.ty; galleryState.panning=false; }
     if(e.touches && e.touches.length===2){
       var dx2=e.touches[0].clientX-e.touches[1].clientX;
       var dy2=e.touches[0].clientY-e.touches[1].clientY;
@@ -4942,6 +4942,16 @@ renderGallery();
     }
   },{passive:true});
   ge.addEventListener('touchmove',function(e){
+    if(e.touches && e.touches.length===1 && galleryState.zoom>1){
+      e.preventDefault();
+      var dx=(e.touches[0].clientX-touchX);
+      var dy=(e.touches[0].clientY-touchY);
+      galleryState.tx=galleryState.panStartX+dx;
+      galleryState.ty=galleryState.panStartY+dy;
+      galleryState.panning=true;
+      renderGallery();
+      return;
+    }
     if(e.touches && e.touches.length===2 && galleryState.pinchDist){
       e.preventDefault();
       var dx2=e.touches[0].clientX-e.touches[1].clientX;
@@ -4953,6 +4963,7 @@ renderGallery();
   },{passive:false});
   ge.addEventListener('touchend',function(e){
     galleryState.pinchDist=0;
+    if(galleryState.panning){ galleryState.panning=false; return; }
     if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<300){
       var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
       if(Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
