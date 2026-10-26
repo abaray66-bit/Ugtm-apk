@@ -3132,9 +3132,16 @@ function renderNotifications(list){
     p.title = 'Ouvrir';
     p.onclick = function(){
       markNotificationRead(n.id);
+      var m=document.getElementById('notifModal');
+      if(m) m.hidden=true;
       if(n.targetScreen === 'me'){
-        try { go('me'); } catch(e){}
-        try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+        var sess=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+        if(sess && sess.user && sess.user.uid){
+          try { go('me'); } catch(e){}
+          try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+        } else {
+          console.warn('notif click: no session, cannot navigate to me');
+        }
       }
     };
     if(n.read===false){

@@ -888,6 +888,14 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
    try {
       var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
       var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
+      if (!provForNotif) {
+        var memberSnap = await getDoc(doc(db,'members',String(uid)));
+        if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
+          provForNotif = String(memberSnap.data().prov);
+        } else {
+          console.warn('notif province missing for uid', uid);
+        }
+      }
       await addDoc(collection(db,'notifications',String(uid),'items'), {
         title:'Adhésion acceptée',
         body:'Votre adhésion a été validée.',
