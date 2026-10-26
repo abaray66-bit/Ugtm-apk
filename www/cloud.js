@@ -885,7 +885,21 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      updatedAt:serverTimestamp()
    });
    await activateMemberFromRequest(uid);
-   try { await addDoc(collection(db,'notifications',String(uid),'items'), { title:'Adhésion acceptée', body:'Votre adhésion a été validée.', type:'adhesion', read:false, authorUid:u.uid, createdAt:serverTimestamp() }); } catch(e){}
+   try {
+      var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
+      var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
+      await addDoc(collection(db,'notifications',String(uid),'items'), {
+        title:'Adhésion acceptée',
+        body:'Votre adhésion a été validée.',
+        type:'adhesion',
+        read:false,
+        authorUid:u.uid,
+        createdAt:serverTimestamp(),
+        targetScreen:'me',
+        targetId:String(uid),
+        province:provForNotif
+      });
+    } catch(e){ console.warn('notif create', e); }
    return sig;
  }
  

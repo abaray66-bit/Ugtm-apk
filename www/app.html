@@ -3128,10 +3128,19 @@ function renderNotifications(list){
   arr.forEach(function(n){
     var p=document.createElement('p');
     p.textContent=String(n.title||'')+' - '+String(n.body||'');
+    p.style.cursor = 'pointer';
+    p.title = 'Ouvrir';
+    p.onclick = function(){
+      markNotificationRead(n.id);
+      if(n.targetScreen === 'me'){
+        try { go('me'); } catch(e){}
+        try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+      }
+    };
     if(n.read===false){
       var b=document.createElement('button');
       b.textContent='Marquer comme lu';
-      b.onclick=function(){ markNotificationRead(n.id); };
+      b.onclick=function(e){ e.stopPropagation(); markNotificationRead(n.id); };
       p.appendChild(b);
     }
     listEl.appendChild(p);

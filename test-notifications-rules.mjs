@@ -34,10 +34,13 @@ test('adhesion create denied', async () => {
   await assertFails(db.collection('notifications').doc('adherent1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'adherent1', createdAt: new Date() }));
 });
 
-test('admin create allowed (if rules permit)', async () => {
+test('admin create allowed (full 9 keys)', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
-  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({ title:'t', body:'b', type:'info', read:false, authorUid:'admin1', createdAt: new Date() }));
+  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
+    title:'t', body:'b', type:'info', read:false, authorUid:'admin1',
+    createdAt: new Date(), targetScreen:'me', targetId:'user1', province:'agadir'
+  }));
 });
 
 test('subadmin cross-province create denied', async () => {
