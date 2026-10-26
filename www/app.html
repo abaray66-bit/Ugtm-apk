@@ -3137,8 +3137,9 @@ function renderNotifications(list){
       if(n.targetScreen === 'me'){
         var sess=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
         if(sess && sess.user && sess.user.uid){
-          try { go('me'); } catch(e){}
-          try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+          try { go('me'); } catch(e){ console.warn('notif go me', e); }
+          try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); }
+          catch(e){ console.warn('notif renderMyAdhesionInfo', e); }
         } else {
           console.warn('notif click: no session, cannot navigate to me');
         }

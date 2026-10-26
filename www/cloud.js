@@ -892,9 +892,10 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
         var memberSnap = await getDoc(doc(db,'members',String(uid)));
         if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
           provForNotif = String(memberSnap.data().prov);
-        } else {
-          console.warn('notif province missing for uid', uid);
         }
+      }
+      if (!provForNotif) {
+        throw new Error('Province manquante pour la notification d\'adhésion uid=' + String(uid));
       }
       await addDoc(collection(db,'notifications',String(uid),'items'), {
         title:'Adhésion acceptée',
