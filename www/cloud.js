@@ -964,7 +964,6 @@ async function activateMemberFromRequest(uid){
   var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
   name = name.trim();
   var data = {
-    uid: uid,
     name: name,
     email: req.email||'',
     photo: '',

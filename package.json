@@ -1,6 +1,6 @@
 {
   "name": "ugtm-souss-massa",
-  "version": "1.5.73",
+  "version": "1.5.74",
   "private": true,
   "scripts": {
     "check": "node tools/check-syntax.js",

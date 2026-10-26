@@ -841,8 +841,9 @@ main{
 .gallery-track img{
   position:absolute;inset:0;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
-  opacity:0;transition:opacity .25s ease,transform .25s ease;
-  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in
+  opacity:0;transition:opacity .25s ease;
+  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
+  will-change:transform
 }
 .gallery-track img.active{opacity:1;transform:scale(1)}
 .gallery-btn{
@@ -951,18 +952,16 @@ main{
 }
 
 .filters{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
-  /* Tous les onglets restent visibles : sur petit écran les libellés
-     passent à la ligne au lieu de former une piste à défilement
-     horizontal (overflow-x conservé uniquement comme filet de sécurité). */
-  flex-wrap:wrap;
-  overflow-x:auto;
+  /* Tous les onglets restent visibles : 3 par ligne, homogène
+     web et APK (évite les espaces orphelins). */
   padding-bottom:12px
 }
 
 .fbtn{
-  flex:0 1 auto;
+  width:100%;
   min-height:38px;
   padding:0 12px;
   border-radius:999px;
@@ -3110,11 +3109,19 @@ input[type=file]::file-selector-button{
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
-<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
+<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
 
+</div>
+
+<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
+  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
+  <div id="notifList" style="min-height:40px;color:#111;"></div>
+  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
+  <div id="notifHistory" hidden></div>
+  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
 </div>
 
 <button class="langbtn" id="langBtn" type="button"></button>
@@ -3125,13 +3132,6 @@ input[type=file]::file-selector-button{
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
 
-<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
-  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
-  <div id="notifList" style="min-height:40px;color:#111;"></div>
-  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
-  <div id="notifHistory" hidden></div>
-  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
-</div>
 <script>
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -3385,7 +3385,7 @@ window.markNotificationRead=markNotificationRead;
 <ul class="resp" id="permResp" hidden></ul>
 </div></div></div><div class="province-leaders" id="provinceLeaders" aria-live="polite"></div></section><!-- Mon espace --><section class="screen" id="s-me" hidden><h1 class="title" data-i18n="meT"></h1><p class="lead" id="meMsg" hidden></p><div id="meOut" hidden><p class="lead" data-i18n="meIntro"></p><button class="btn primary block" type="button" data-act="signin" data-i18n="meBtnIn"></button>
 
-<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meNotifButton" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();">Notifications</button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
+<p class="hint" style="margin-top:16px" data-i18n="mePrivacy"></p></div><div id="meIn" hidden><div class="statusline" id="meStatus" hidden></div><div class="statusline" id="meAdhesionStatus" hidden></div><div id="meCard"></div><button class="btn primary block" type="button" id="meAdhesionButton" data-go="adhesion" data-i18n="fillAdhesion"></button><button class="btn ghost block" type="button" id="meAdhesionInfoBtn" data-i18n="myAdhesionInfo"></button><div id="meAdhesionInfoBox" class="adhesion-info" hidden></div>
 
 <div class="actions"><button class="btn ghost block" type="button" id="meAdminLink" hidden data-go="admin" data-i18n="adminOpen"></button>
 
@@ -4973,7 +4973,8 @@ renderGallery();
       galleryState.tx=galleryState.panStartX+dx;
       galleryState.ty=galleryState.panStartY+dy;
       galleryState.panning=true;
-      renderGallery();
+      var img=gt.querySelector('img.active');
+      if(img) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
       return;
     }
     if(e.touches && e.touches.length===2 && galleryState.pinchDist){
@@ -4982,7 +4983,8 @@ renderGallery();
       var dy2=e.touches[0].clientY-e.touches[1].clientY;
       var dist=Math.hypot(dx2,dy2);
       galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
-      renderGallery();
+      var img2=gt.querySelector('img.active');
+      if(img2) img2.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
     }
   },{passive:false});
   ge.addEventListener('touchend',function(e){
@@ -7392,29 +7394,32 @@ function imageData(file){
 return new Promise(function(resolve,reject){
 if(!file){resolve('');return;}
 if(!/^image\/(jpeg|png|webp)$/.test(file.type||'')&&!/\.(jpe?g|png|webp)$/i.test(file.name||'')){reject(new Error(T().newsPhotoError));return;}
-if(file.size>16000000){reject(new Error(T().newsPhotoError));return;}
+if(file.size>32000000){reject(new Error(T().newsPhotoError));return;}
 var reader=new FileReader();
 reader.onerror=function(){reject(new Error(T().newsPhotoError));};
 reader.onload=function(){
 var img=new Image();
 img.onerror=function(){reject(new Error(T().newsPhotoError));};
 img.onload=function(){
+try{
 var scale=Math.min(1,1400/Math.max(img.width,img.height));
 var canvas=document.createElement('canvas');
 var quality=.82,data='';
-for(var attempt=0;attempt<20;attempt++){
+for(var attempt=0;attempt<40;attempt++){
 canvas.width=Math.max(1,Math.round(img.width*scale));
 canvas.height=Math.max(1,Math.round(img.height*scale));
 var ctx=canvas.getContext('2d');
+if(!ctx){reject(new Error(T().newsPhotoError));return;}
 ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
 ctx.drawImage(img,0,0,canvas.width,canvas.height);
 data=canvas.toDataURL('image/jpeg',quality);
 if(data.length<=380000)break;
-if(quality>.4){quality=Math.max(.4,quality-.1);}
-else{scale*=.82;quality=.72;}
+if(quality>.3){quality=Math.max(.3,quality-.08);}
+else{scale*=.7;quality=.6;}
 }
 if(data.length>380000){reject(new Error(T().newsPhotoError));return;}
 resolve(data);
+}catch(err){reject(new Error(T().newsPhotoError));}
 };
 img.src=reader.result;
 };
