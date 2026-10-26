@@ -3108,7 +3108,12 @@ input[type=file]::file-selector-button{
 <b data-i18n="brandName"></b>
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
-</div><button class="acctbtn" id="meBtn" type="button" hidden data-go="me"><span id="notifBadge" class="notif-badge" hidden></span></button>
+</div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
+<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; go('me');">Espace personnel</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof window.loadNotifications==='function') window.loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="try{ if(window.CLOUD&&typeof window.CLOUD.signOut==='function'){ window.CLOUD.signOut().then(function(){ var am=document.getElementById('authMenu'); if(am) am.hidden=true; }).catch(function(err){ console.warn('signout err',err); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée. Réessayez.',4000); }); } else { console.warn('CLOUD.signOut indisponible'); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion indisponible.',4000); } }catch(e){ console.warn('signout err',e); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée.',4000); }">Se déconnecter</button>
+ </div>
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -4968,7 +4973,14 @@ renderGallery();
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeGallery();}});
-  try{document.addEventListener('backbutton',function(){if($('gallery') && !$('gallery').hidden){closeGallery();}else{closeLightbox();closeGallery();}});}catch(e){}
+  try{
+    document.addEventListener('backbutton',function(){
+      var am=document.getElementById('authMenu');
+      if(am && !am.hidden){ am.hidden=true; return; }
+      if($('gallery') && !$('gallery').hidden){ closeGallery(); }
+      else{ closeLightbox(); closeGallery(); }
+    });
+  }catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
  if(e.target===$('attachModal'))closeAttachModal();
@@ -10180,6 +10192,9 @@ window.UGTM.failed(err);
   border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
   line-height:18px;text-align:center;z-index:10;
 }
+#authMenu .notif-badge{
+  top:4px;right:4px;
+}
 #meBtn{position:relative;}
 </style>
 <script>
@@ -10200,14 +10215,27 @@ window.UGTM.failed(err);
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');
   if(btn){
-    btn.addEventListener('click',function(){
-      if(window.S&&window.S.user){
-        var m=document.getElementById('notifModal');
-        if(m){m.hidden=false;}
-        if(typeof loadNotifications==='function')loadNotifications();
+    btn.onclick=function(e){
+      e.stopPropagation();
+      var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var connected=!!(session&&session.user&&session.user.uid);
+      if(!connected){
+        if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+        return;
       }
-    });
+      var am=document.getElementById('authMenu');
+      if(am) am.hidden=!am.hidden;
+    };
   }
+})();
+</script>
+<script>
+(function(){
+  document.addEventListener('click',function(e){
+    var am=document.getElementById('authMenu');
+    var btn=document.getElementById('meBtn');
+    if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true;
+  },true);
 })();
 </script>
 </html>
