@@ -665,7 +665,7 @@ async function addReport(o){
     description: String(o.description || '').slice(0,4000),
     date: String(o.date || '').slice(0,20),
     province: String(
-      o.province || (session.member ? session.member.prov || '' : '')
+      reportProvinceLabel(o.province || (session.member ? session.member.prov || '' : ''))
     ).slice(0,40),
     attachmentName: String(o.attachmentName || '').slice(0,120),
     attachmentType: String(o.attachmentType || '').slice(0,80),

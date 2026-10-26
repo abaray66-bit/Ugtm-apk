@@ -3046,6 +3046,13 @@ button.primary:active {
   outline:2px solid var(--focus);
   outline-offset:2px
 }
+/* Les boutons d'adhésion : pas de contour au focus,
+   le focus est indiqué par un changement de fond. */
+#s-home [data-go="adhesion"]:focus-visible,
+#meAdhesionButton:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--primary);
+}
 .avatar-u{position:relative;}
 .avatar-u .notif-badge{
   position:absolute;top:-4px;right:-6px;
