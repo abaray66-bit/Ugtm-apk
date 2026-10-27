@@ -3961,7 +3961,6 @@ deleted:`Données supprimées`,
   admToastRespRemoved:`Responsable retiré`,
   admConfirmRemoveResp:`Retirer %1 de la liste des responsables ?`,
   admPromptRespTitle:`Fonction du responsable (facultatif), par exemple Secrétaire :`,
-  admPromptRespPhone:`Numéro de téléphone du responsable (facultatif), par exemple 06 61 00 00 00`,
   admSelectProvince:`Sélectionnez la province concernée.`,
   admConfirmSuspend:`Suspendre %1 ?`,
   admConfirmDeleteMember:`Supprimer définitivement le profil de %1 ?`,
@@ -4542,7 +4541,6 @@ deleted:`تم حذف البيانات`,
   admToastRespNamed:`تم تعيين المسؤول: يظهر ضمن المداومة النقابية`,
   admToastRespRemoved:`تم سحب المسؤول`,
   admConfirmRemoveResp:`سحب %1 من قائمة المسؤولين؟`,
-  admPromptRespPhone:`رقم Responsibility مسelandس (اختياري)، مثال: 06 61 00 00 00`,
   admPromptRespTitle:`وظيفة المسؤول (اختياري)، مثال: الكاتب الجهوي:`,
   admSelectProvince:`اختروا الإقليم المعني.`,
   admConfirmSuspend:`تجميد %1؟`,
@@ -8468,12 +8466,7 @@ t.admPromptRespTitle,
 
 if(respTitle===null)return;
 
-          var respPhone=window.prompt(
-            t.admPromptRespPhone,
-            String(m.phone||"")
-          );
-          if(respPhone===null)return;
-          c.admin.setResponsable(uid,respTitle.trim(),respPhone.trim())
+c.admin.setResponsable(uid,respTitle.trim())
 .then(function(){
 toast(t.admToastRespNamed);
 })
