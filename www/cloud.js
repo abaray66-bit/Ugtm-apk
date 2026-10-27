@@ -714,7 +714,7 @@ async function addReport(o){
     description: String(o.description || '').slice(0,4000),
     date: String(o.date || '').slice(0,20),
     province: String(
-      o.province || (session.member ? session.member.prov || '' : '')
+      reportProvinceLabel(o.province || (session.member ? session.member.prov || '' : ''))
     ).slice(0,40),
     attachmentName: String((attachments[0] && attachments[0].name) || o.attachmentName || '').slice(0,120),
     attachmentCount: attachments.length,
@@ -934,9 +934,32 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      adminNote:String(note||'').slice(0,1000),
      updatedAt:serverTimestamp()
    });
-   await activateMemberFromRequest(uid);
-   try { await addDoc(collection(db,'notifications',String(uid),'items'), { title:'Adhésion acceptée', body:'Votre adhésion a été validée.', type:'adhesion', targetType:'adhesion', targetId:String(uid), read:false, authorUid:u.uid, createdAt:serverTimestamp() }); } catch(e){}
-   return sig;
+await activateMemberFromRequest(uid);
+    try {
+       var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
+       var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
+       if (!provForNotif) {
+         var memberSnap = await getDoc(doc(db,'members',String(uid)));
+         if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
+           provForNotif = String(memberSnap.data().prov);
+         }
+       }
+       if (!provForNotif) {
+         throw new Error('Province manquante pour la notification d\'adhésion uid=' + String(uid));
+       }
+       await addDoc(collection(db,'notifications',String(uid),'items'), {
+         title:'Adhésion acceptée',
+         body:'Votre adhésion a été validée.',
+         type:'adhesion',
+         read:false,
+         authorUid:u.uid,
+         createdAt:serverTimestamp(),
+         targetScreen:'me',
+         targetId:String(uid),
+         province:provForNotif
+       });
+     } catch(e){ console.warn('notif create', e); }
+    return sig;
  }
  
  /* =========================================================
@@ -1282,7 +1305,7 @@ var admin = {
     },
 
   setResponsable:
-    function(uid, title){
+    function(uid, title, phone){
       return getDoc(doc(db, 'members', uid)).then(function(snap){
         if (!snap.exists()) throw new Error('Membre introuvable');
         var member = snap.data();
@@ -1292,7 +1315,7 @@ var admin = {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),
           title: String(title || '').slice(0,60),
-          phone: String(member.phone || '').slice(0,30),
+          phone: String(phone || member.phone || '').slice(0,30),
           createdAt: serverTimestamp()
         });
       });
