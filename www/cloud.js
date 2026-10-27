@@ -194,7 +194,8 @@ function subscribeResponsables(){
           return {
             uid: d.id,
             name: String(x.name || '').slice(0,120),
-            title: String(x.title || '').slice(0,60)
+            title: String(x.title || '').slice(0,60),
+            phone: String(x.phone || '').slice(0,30)
           };
 
         })
@@ -934,32 +935,32 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      adminNote:String(note||'').slice(0,1000),
      updatedAt:serverTimestamp()
    });
-await activateMemberFromRequest(uid);
-    try {
-       var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
-       var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
-       if (!provForNotif) {
-         var memberSnap = await getDoc(doc(db,'members',String(uid)));
-         if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
-           provForNotif = String(memberSnap.data().prov);
-         }
-       }
-       if (!provForNotif) {
-         throw new Error('Province manquante pour la notification d\'adhésion uid=' + String(uid));
-       }
-       await addDoc(collection(db,'notifications',String(uid),'items'), {
-         title:'Adhésion acceptée',
-         body:'Votre adhésion a été validée.',
-         type:'adhesion',
-         read:false,
-         authorUid:u.uid,
-         createdAt:serverTimestamp(),
-         targetScreen:'me',
-         targetId:String(uid),
-         province:provForNotif
-       });
-     } catch(e){ console.warn('notif create', e); }
-    return sig;
+   await activateMemberFromRequest(uid);
+   try {
+      var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
+      var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
+      if (!provForNotif) {
+        var memberSnap = await getDoc(doc(db,'members',String(uid)));
+        if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
+          provForNotif = String(memberSnap.data().prov);
+        }
+      }
+      if (!provForNotif) {
+        throw new Error('Province manquante pour la notification d\'adhésion uid=' + String(uid));
+      }
+      await addDoc(collection(db,'notifications',String(uid),'items'), {
+        title:'Adhésion acceptée',
+        body:'Votre adhésion a été validée.',
+        type:'adhesion',
+        read:false,
+        authorUid:u.uid,
+        createdAt:serverTimestamp(),
+        targetScreen:'me',
+        targetId:String(uid),
+        province:provForNotif
+      });
+    } catch(e){ console.warn('notif create', e); }
+   return sig;
  }
  
  /* =========================================================
@@ -1305,7 +1306,7 @@ var admin = {
     },
 
   setResponsable:
-    function(uid, title, phone){
+    function(uid, title){
       return getDoc(doc(db, 'members', uid)).then(function(snap){
         if (!snap.exists()) throw new Error('Membre introuvable');
         var member = snap.data();
@@ -1315,7 +1316,7 @@ var admin = {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),
           title: String(title || '').slice(0,60),
-          phone: String(phone || member.phone || '').slice(0,30),
+          phone: String(member.phone || '').slice(0,30),
           createdAt: serverTimestamp()
         });
       });
