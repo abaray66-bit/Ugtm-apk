@@ -11,7 +11,7 @@ import {
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
-  onSnapshot, query, where, serverTimestamp, deleteField, runTransaction,
+  onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
   writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
@@ -26,6 +26,7 @@ var unsubs = {
   reports: null,
   adhesions: null,
   responsables: null,
+  notifications: null,
   publicProvinceContacts: null
 };
 
@@ -385,6 +386,7 @@ function onUser(user){
 
     unsub('reports');
     unsub('adhesions');
+    unsub('notifications');
 
     session = {
       user: null,
@@ -438,6 +440,53 @@ function onUser(user){
 
   hooks.setSession(session);
 
+  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e){}
+  }
+
+  // Enregistrement FCM (web) : sauvegarde du token pour les push.
+  try {
+    if (typeof Notification !== 'undefined') {
+      messaging = getMessaging(app);
+      Notification.requestPermission().then(function(permission){
+        if (permission !== 'granted' || !auth.currentUser) return;
+        getToken(messaging, { vapidKey: 'REPLACE_WITH_VAPID_KEY' }).then(function(token){
+          if (token) {
+            setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
+              token: token,
+              updatedAt: serverTimestamp()
+            }, { merge: true }).catch(function(){});
+          }
+        }).catch(function(){});
+      }).catch(function(){});
+      onMessage(messaging, function(payload){
+        var n = (payload && payload.notification) || {};
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try { new Notification(n.title || 'UGTM', { body: n.body || '' }); } catch(e){}
+        }
+      });
+    }
+  } catch(e){}
+
+  // Notifications temps réel : badge + alerte locale.
+  unsub('notifications');
+  try {
+    unsubs.notifications = onSnapshot(
+      collection(db, 'notifications', user.uid, 'items'),
+      function(snap){
+        var unread = snap.docs.filter(function(d){ var x=d.data()||{}; return x.read !== true; }).length;
+        if(typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
+        snap.docChanges().forEach(function(ch){
+          if(ch.type === 'added'){
+            var x = ch.doc.data() || {};
+            if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
+              try { new Notification(String(x.title||'UGTM'), { body: String(x.body||''), icon: 'icons/ugtm-mark.svg' }); } catch(e){}
+            }
+          }
+        });
+      }
+    );
+  } catch(e){}
 
   var ref =
     doc(db, 'members', user.uid);
@@ -667,8 +716,9 @@ async function addReport(o){
     province: String(
       reportProvinceLabel(o.province || (session.member ? session.member.prov || '' : ''))
     ).slice(0,40),
-    attachmentName: String(o.attachmentName || '').slice(0,120),
-    attachmentType: String(o.attachmentType || '').slice(0,80),
+    attachmentName: String((attachments[0] && attachments[0].name) || o.attachmentName || '').slice(0,120),
+    attachmentCount: attachments.length,
+    attachmentType: String((attachments[0] && attachments[0].type) || o.attachmentType || '').slice(0,80),
     attachmentData: '',
     status: 'new',
     response: '',
@@ -684,8 +734,8 @@ async function addReport(o){
   attachments.forEach(function(att, idx){
     batch.set(doc(db, 'reportAttachments', reportRef.id + '_' + idx), {
       data: String(att.data||'').slice(0,420000),
-      name: String(o.attachmentName || '').slice(0,120),
-      type: String(o.attachmentType || '').slice(0,80),
+      name: String(att.name || '').slice(0,120),
+      type: String(att.type || '').slice(0,80),
       ownerUid: data.ownerUid,
       anonymous: data.anonymous,
       province: data.province,
@@ -885,6 +935,7 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      updatedAt:serverTimestamp()
    });
    await activateMemberFromRequest(uid);
+<<<<<<< HEAD
    try {
       var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
       var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
@@ -909,6 +960,9 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
         province:provForNotif
       });
     } catch(e){ console.warn('notif create', e); }
+=======
+   try { await addDoc(collection(db,'notifications',String(uid),'items'), { title:'Adhésion acceptée', body:'Votre adhésion a été validée.', type:'adhesion', targetType:'adhesion', targetId:String(uid), read:false, authorUid:u.uid, createdAt:serverTimestamp() }); } catch(e){}
+>>>>>>> main
    return sig;
  }
  
@@ -937,7 +991,6 @@ async function activateMemberFromRequest(uid){
   var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
   name = name.trim();
   var data = {
-    uid: uid,
     name: name,
     email: req.email||'',
     photo: '',
@@ -1433,6 +1486,27 @@ var admin = {
         });
 
         return Promise.all(jobs)
+          .then(function(){
+            // Diffusion d'une notification à tous les membres.
+            return getDocs(collection(db, 'members')).then(function(snap){
+              var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
+              var body = (o.fr && o.fr.body) ? o.fr.body : ((o.ar && o.ar.body) ? o.ar.body : '');
+              var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+              var writes = snap.docs.map(function(d){
+                return addDoc(collection(db, 'notifications', d.id, 'items'), {
+                  title: String(title).slice(0,120),
+                  body: String(body).slice(0,500),
+                  type: 'news',
+                  targetType: 'news',
+                  targetId: ref.id,
+                  read: false,
+                  authorUid: authorUid,
+                  createdAt: serverTimestamp()
+                }).catch(function(){});
+              });
+              return Promise.all(writes);
+            }).catch(function(){});
+          })
           .then(function(){ return ref; });
 
       },
@@ -1539,10 +1613,28 @@ var admin = {
       if (o.ar)
         data.ar = o.ar;
 
-      return addDoc(
-        collection(db, 'events'),
-        data
-      );
+      var ref = doc(collection(db, 'events'));
+
+      return setDoc(ref, data).then(function(){
+        return getDocs(collection(db, 'members')).then(function(snap){
+          var title = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : 'Nouvel événement');
+          var body = (o.fr && o.fr.b) ? o.fr.b : ((o.ar && o.ar.b) ? o.ar.b : '');
+          var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+          var writes = snap.docs.map(function(d){
+            return addDoc(collection(db, 'notifications', d.id, 'items'), {
+              title: String(title).slice(0,120),
+              body: String(body).slice(0,500),
+              type: 'event',
+              targetType: 'event',
+              targetId: ref.id,
+              read: false,
+              authorUid: authorUid,
+              createdAt: serverTimestamp()
+            }).catch(function(){});
+          });
+          return Promise.all(writes);
+        }).catch(function(){});
+      }).then(function(){ return ref; });
 
     },
 
@@ -1884,6 +1976,28 @@ export async function init(config, h){
 
   window.db = db;
 
+
+async function cloudLoadNotifications(){
+  if (!auth || !auth.currentUser) return;
+  var uid = auth.currentUser.uid;
+  try {
+    var q = query(collection(db, 'notifications', uid, 'items'), orderBy('createdAt', 'desc'), limit(50));
+    var snap = await getDocs(q);
+    var list = snap.docs.map(function(d){ var x = d.data() || {}; x.id = d.id; return x; });
+    if (typeof window.renderNotifications === 'function') window.renderNotifications(list);
+    var unread = list.filter(function(n){ return n && n.read !== true; }).length;
+    if (typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
+  } catch(e){ console.warn('notif load', e); }
+}
+
+async function cloudMarkNotificationRead(id){
+  if (!auth || !auth.currentUser) return;
+  var uid = auth.currentUser.uid;
+  try {
+    await updateDoc(doc(db, 'notifications', uid, 'items', id), { read: true });
+  } catch(e){ console.warn('notif mark', e); }
+}
+
   window.CLOUD = {
 
     signIn: signIn,
@@ -1910,6 +2024,9 @@ export async function init(config, h){
 
     addReport: addReport,
     admin: admin,
+
+    loadNotifications: cloudLoadNotifications,
+    markNotificationRead: cloudMarkNotificationRead,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){

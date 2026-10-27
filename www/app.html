@@ -832,7 +832,7 @@ main{
 .gallery{
   position:fixed;inset:0;z-index:70;background:#000;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:12px
+  padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .galley-track,
 .gallery-track{
@@ -842,8 +842,14 @@ main{
 .gallery-track img{
   position:absolute;inset:0;margin:auto;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
+<<<<<<< HEAD
   opacity:0;transition:opacity .2s ease;
   transform:none;border-radius:var(--radius-s);
+=======
+  opacity:0;transition:opacity .25s ease;
+  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
+  will-change:transform
+>>>>>>> main
 }
 .gallery-btn{
   position:absolute;top:50%;transform:translateY(-50%);
@@ -951,18 +957,16 @@ main{
 }
 
 .filters{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
-  /* Tous les onglets restent visibles : sur petit écran les libellés
-     passent à la ligne au lieu de former une piste à défilement
-     horizontal (overflow-x conservé uniquement comme filet de sécurité). */
-  flex-wrap:wrap;
-  overflow-x:auto;
+  /* Tous les onglets restent visibles : 3 par ligne, homogène
+     web et APK (évite les espaces orphelins). */
   padding-bottom:12px
 }
 
 .fbtn{
-  flex:0 1 auto;
+  width:100%;
   min-height:38px;
   padding:0 12px;
   border-radius:999px;
@@ -1586,15 +1590,28 @@ main{
   display:grid;
   place-items:center;
   cursor:pointer;
-  overflow:hidden;
+  overflow:visible;
   padding:0;
   color:var(--ink)
+}
+.auth-blink{
+  animation: authBlink .7s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(228,60,60,.85);
+}
+@keyframes authBlink {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(228,60,60,.85); }
+  50% { box-shadow: 0 0 0 6px rgba(228,60,60,.35); }
+}
+.acctbtn--guide{
+  animation: avatarUGuide .6s ease-in-out infinite;
+  box-shadow: 0 0 0 3px rgba(228,60,60,.85);
 }
 
 .acctbtn img{
   width:100%;
   height:100%;
-  object-fit:cover
+  object-fit:cover;
+  border-radius:50%
 }
 
 .h2{
@@ -2448,11 +2465,13 @@ body {
   50% { opacity: 0.5; }
 }
 
-.avatar-u--guide { animation: avatarUGuide 1.2s ease-in-out infinite; border-radius: 50%; }
+.avatar-u--guide { animation: avatarUGuide .6s ease-in-out infinite; border-radius: 50%; box-shadow: 0 0 0 3px rgba(228,60,60,.6); }
+.avatar-u{position:relative;}
+.adhesion-btn-guide { animation: avatarUGuide 1.2s ease-in-out infinite; }
 
 @keyframes avatarUGuide {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: .85; }
+  50% { transform: scale(1.25); opacity: .6; }
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -3109,11 +3128,28 @@ input[type=file]::file-selector-button{
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
+<<<<<<< HEAD
 <div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; go('me');">Espace personnel</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof window.loadNotifications==='function') window.loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="try{ if(window.CLOUD&&typeof window.CLOUD.signOut==='function'){ window.CLOUD.signOut().then(function(){ var am=document.getElementById('authMenu'); if(am) am.hidden=true; }).catch(function(err){ console.warn('signout err',err); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée. Réessayez.',4000); }); } else { console.warn('CLOUD.signOut indisponible'); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion indisponible.',4000); } }catch(e){ console.warn('signout err',e); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée.',4000); }">Se déconnecter</button>
  </div>
+=======
+<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
+
+</div>
+
+<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
+  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
+  <div id="notifList" style="min-height:40px;color:#111;"></div>
+  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
+  <div id="notifHistory" hidden></div>
+  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
+</div>
+>>>>>>> main
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -3122,8 +3158,12 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
+<<<<<<< HEAD
 <button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); }catch(e){} }" aria-label="Notifications"><span id="homeNotifWrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;"><span id="homeNotifBell"></span><span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
 <div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
+=======
+
+>>>>>>> main
 <script>
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -3139,7 +3179,19 @@ function renderNotifications(list){
   if(emptyEl) emptyEl.hidden=true;
   arr.forEach(function(n){
     var p=document.createElement('p');
+    p.style.cursor='pointer';
+    p.style.padding='6px 0';
+    p.style.borderBottom='1px solid #eee';
+    if(n.read===false){
+      p.style.fontWeight='bold';
+      p.style.background='#f0f7ff';
+      p.style.color='#111';
+    } else {
+      p.style.color='#666';
+      p.style.fontWeight='normal';
+    }
     p.textContent=String(n.title||'')+' - '+String(n.body||'');
+<<<<<<< HEAD
     p.style.cursor = 'pointer';
     p.title = 'Ouvrir';
     p.onclick = function(){
@@ -3156,10 +3208,25 @@ function renderNotifications(list){
           console.warn('notif click: no session, cannot navigate to me');
         }
       }
+=======
+    p.onclick=function(){
+      if(n.targetType==='news' && typeof go==='function') go('news');
+      else if(n.targetType==='event' && typeof go==='function') go('agenda');
+      else if(typeof go==='function') go('me');
+
+      if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
+      var m=document.getElementById('notifModal'); if(m) m.hidden=true;
+>>>>>>> main
     };
     if(n.read===false){
       var b=document.createElement('button');
       b.textContent='Marquer comme lu';
+<<<<<<< HEAD
+=======
+      b.style.marginLeft='8px';
+      b.style.color='#111';
+
+>>>>>>> main
       b.onclick=function(e){ e.stopPropagation(); markNotificationRead(n.id); };
       p.appendChild(b);
     }
@@ -3169,15 +3236,14 @@ function renderNotifications(list){
 }
 async function markNotificationRead(id){
   try{
-    if(!window.db || !window.ugtmSession) return;
-    var session=window.ugtmSession();
-    if(!session || !session.user || !session.user.uid) return;
-    await window.db.collection('notifications').doc(session.user.uid).collection('items').doc(id).update({read:true});
+    if(!window.CLOUD || typeof window.CLOUD.markNotificationRead!=='function') return;
+    await window.CLOUD.markNotificationRead(id);
     await loadNotifications();
   }catch(e){ console.warn('notif mark',e); }
 }
 async function loadNotifications(){
   try{
+<<<<<<< HEAD
     if(!window.db || !window.ugtmSession) return;
     var session=window.ugtmSession();
     if(!session || !session.user || !session.user.uid) return;
@@ -3193,7 +3259,14 @@ async function loadNotifications(){
       else{hb.textContent='';hb.hidden=true;}
     }
   }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
+=======
+    if(!window.CLOUD || typeof window.CLOUD.loadNotifications!=='function') return;
+    await window.CLOUD.loadNotifications();
+
+  }catch(e){ console.warn('notif load',e); }
+>>>>>>> main
 }
+window.renderNotifications=renderNotifications;
 window.loadNotifications=loadNotifications;
 window.markNotificationRead=markNotificationRead;
 </script>
@@ -3516,15 +3589,7 @@ window.markNotificationRead=markNotificationRead;
 </button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <div class="gallery-track" id="galleryTrack"></div>
-  <button type="button" class="gallery-btn gallery-prev" id="galleryPrev" aria-label="Image précédente">‹</button>
-  <button type="button" class="gallery-btn gallery-next" id="galleryNext" aria-label="Image suivante">›</button>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
-  <div class="gallery-actions">
-    <button type="button" class="btn gallery-btn gallery-delete" id="galleryDelete" aria-label="Supprimer l'image">🗑️</button>
-    <button type="button" class="btn gallery-btn gallery-download" id="galleryDownload" aria-label="Télécharger">⬇</button>
-    <button type="button" class="btn gallery-btn gallery-share" id="galleryShare" aria-label="Partager">↗</button>
-  </div>
-  <p class="gallery-hint" data-i18n="lbClose">Cliquez sur l'image pour fermer</p>
 </div>
 <div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
 /*
@@ -4875,7 +4940,7 @@ el.classList.remove('show');
 },ms||2400);
 }
 
-var galleryState={items:[],idx:0,ctx:null};
+var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
 
 function openGallery(items,startIdx,opts){
 if(!items||!items.length)return;
@@ -4883,6 +4948,7 @@ opts=opts||{};
 galleryState.items=items;
 galleryState.idx=Math.max(0,Math.min(startIdx||0,items.length-1));
 galleryState.ctx=opts.ctx||null;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
 renderGallery();
 $('gallery').hidden=false;
 document.body.style.overflow='hidden';
@@ -4890,6 +4956,7 @@ try{history.pushState({gallery:true},'');}catch(e){}
 }
 
 function closeGallery(){
+<<<<<<< HEAD
   if($('gallery') && !$('gallery').hidden){
     $('gallery').hidden=true;
     document.body.style.overflow='';
@@ -4915,17 +4982,48 @@ function renderGallery(){
   $('galleryDelete').hidden=galleryState.items.length<=1;
   $('galleryPrev').style.display=galleryState.items.length>1?'flex':'none';
   $('galleryNext').style.display=galleryState.items.length>1?'flex':'none';
+=======
+$('gallery').hidden=true;
+document.body.style.overflow='';
+galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
+try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
+}
+
+function renderGallery(){
+var track=$('galleryTrack');
+var counter=$('galleryCounter');
+if(!track||!counter)return;
+track.innerHTML='';
+galleryState.items.forEach(function(it,i){
+var img=document.createElement('img');
+img.src=it.src;
+img.alt=it.name||('image'+(i+1));
+img.className=i===galleryState.idx?'active':'';
+if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+track.appendChild(img);
+});
+counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
+/* gallery actions removed */
+>>>>>>> main
 }
 
 function galleryPrev(){
 if(galleryState.items.length<=1)return;
 galleryState.idx=(galleryState.idx-1+galleryState.items.length)%galleryState.items.length;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;
 renderGallery();
 }
 
 function galleryNext(){
 if(galleryState.items.length<=1)return;
 galleryState.idx=(galleryState.idx+1)%galleryState.items.length;
+galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;
+renderGallery();
+}
+
+function galleryZoomToggle(){
+galleryState.zoom = galleryState.zoom > 1 ? 1 : 2;
+if(galleryState.zoom === 1){ galleryState.tx=0; galleryState.ty=0; }
 renderGallery();
 }
 
@@ -4955,6 +5053,7 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
+<<<<<<< HEAD
   $('galleryPrev').addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
   $('galleryNext').addEventListener('click',function(e){e.stopPropagation();galleryNext();});
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
@@ -4965,12 +5064,51 @@ renderGallery();
   ge.querySelectorAll('img').forEach(function(im){
     im.addEventListener('click',function(ev){ev.stopPropagation();closeGallery();});
   });
+=======
+  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
+>>>>>>> main
   var ts=0,touchX=0;
-  ge.addEventListener('touchstart',function(e){ts=e.timeStamp;touchX=(e.touches[0]||e.changedTouches[0]).clientX;},{passive:true});
-  ge.addEventListener('touchend',function(e){
-  var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
-  if(e.timeStamp-ts<300&&Math.abs(dx)>40){e.stopPropagation();dx>0?galleryPrev():galleryNext();}
+  ge.addEventListener('touchstart',function(e){
+    ts=e.timeStamp;
+    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; touchY=(e.touches[0]||e.changedTouches[0]).clientY; galleryState.panStartX=galleryState.tx; galleryState.panStartY=galleryState.ty; galleryState.panning=false; }
+    if(e.touches && e.touches.length===2){
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      galleryState.pinchDist=Math.hypot(dx2,dy2);
+      galleryState.pinchScale=galleryState.zoom||1;
+    }
   },{passive:true});
+  ge.addEventListener('touchmove',function(e){
+    if(e.touches && e.touches.length===1 && galleryState.zoom>1){
+      e.preventDefault();
+      var dx=(e.touches[0].clientX-touchX);
+      var dy=(e.touches[0].clientY-touchY);
+      galleryState.tx=galleryState.panStartX+dx;
+      galleryState.ty=galleryState.panStartY+dy;
+      galleryState.panning=true;
+      var img=gt.querySelector('img.active');
+      if(img) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+      return;
+    }
+    if(e.touches && e.touches.length===2 && galleryState.pinchDist){
+      e.preventDefault();
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      var dist=Math.hypot(dx2,dy2);
+      galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
+      var img2=gt.querySelector('img.active');
+      if(img2) img2.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+    }
+  },{passive:false});
+  ge.addEventListener('touchend',function(e){
+    galleryState.pinchDist=0;
+    if(galleryState.panning){ galleryState.panning=false; return; }
+    if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
+      var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
+      if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
+    }
+  },{passive:true});
+<<<<<<< HEAD
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeGallery();}});
   try{
@@ -4980,6 +5118,32 @@ renderGallery();
       if($('gallery') && !$('gallery').hidden){ closeGallery(); }
       else{ closeLightbox(); closeGallery(); }
     });
+=======
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
+  document.addEventListener('popstate',function(e){var g=$('gallery'); if(g && !g.hidden){ closeLightbox(); closeGallery(); } });
+  document.addEventListener('click',function(e){
+    var btn=e.target && e.target.closest ? e.target.closest('#meBtn') : null;
+    if(!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+    var connected=!!(session&&session.user&&session.user.uid);
+    if(!connected){
+      if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+      return;
+    }
+    var am=document.getElementById('authMenu');
+    if(am) am.hidden=!am.hidden;
+  });
+  try{
+    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
+      window.Capacitor.Plugins.App.addListener('backButton', function(){
+        if($('gallery') && !$('gallery').hidden){ closeGallery(); }
+        else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
+      });
+    } else {
+      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else { closeLightbox(); closeGallery(); } });
+    }
+>>>>>>> main
   }catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
@@ -5806,7 +5970,7 @@ CHEV+
 '</button>'+
 
 '<div class="panel" id="p-'+id+'"'+(open?'':' hidden')+'>'+
-(c.images&&c.images.length?'<div class="news-thumbs">'+c.images.map(function(d,i){return'<img class="news-photo" src="'+esc(d)+'" alt="Image '+(i+1)+'" data-idx="'+i+'">';}).join('')+'</div>':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
+(c.images&&c.images.length?'<div class="news-thumbs" data-images="'+esc(id)+'">'+c.images.map(function(d,i){return'<img class="news-photo" src="'+esc(d)+'" alt="Image '+(i+1)+'" data-idx="'+i+'">';}).join('')+'</div>':(c.hasImage&&c.imageLoading?'<p class="hint">'+T().imgLoading+'</p>':''))+
 paras(L(c).b)+
 '<button type="button" class="btn ghost small" data-share="'+id+'">'+
 t.share+
@@ -6158,7 +6322,7 @@ return '<li class="mrow"><div class="mi">'+
 (head?'<span>'+esc(head)+'</span>':'')+
 (r.etab?'<span>'+esc(r.etab)+'</span>':'')+
 '<span>'+esc(r.description||'')+'</span>'+
-(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+((r.attachmentCount>0||r.attachmentName)?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+(r.attachmentName||'Pièces jointes')+'</button>':'')+
 '<button type="button" class="btn ghost small" data-share-report="'+esc(r.id)+'">'+esc(t.share)+'</button>'+
 (r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div></li>';
@@ -6256,6 +6420,20 @@ var btn=$('meBtn');
 btn.hidden=!CLOUD_ON;
 
 if(!CLOUD_ON)return;
+
+btn.removeAttribute('data-go');
+btn.onclick=function(e){
+  e.stopPropagation();
+  var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+  var connected=!!(session&&session.user&&session.user.uid);
+  if(!connected){
+    if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+    return;
+  }
+  var am=document.getElementById('authMenu');
+  if(am) am.hidden=!am.hidden;
+};
+
 
 btn.innerHTML=
 ((S.user&&S.user.photo)
@@ -6585,7 +6763,7 @@ return '<li class="mrow"><div class="mi">'+
 (r.etab?'<span>'+esc(t.admReportEtab)+' '+esc(r.etab)+'</span>':'')+
 ((r.age!=='' || r.da)?'<span>'+(r.age!==''?esc(t.admReportPpr)+' '+esc(r.age):'')+(r.age!=='' && r.da?' · ':'')+(r.da?esc(t.admReportSpecialty)+' '+esc(r.da):'')+'</span>':'')+
 '<span>'+esc(r.description)+'</span>'+
-(r.attachmentName?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+esc(r.attachmentName)+'</button>':'')+
+((r.attachmentCount>0||r.attachmentName)?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+(r.attachmentName||'Pièces jointes')+'</button>':'')+
 '<span>'+(r.anonymous?esc(t.admReportAnonymous):esc(r.name||''))+'</span>'+
 (r.response?'<span><strong>'+esc(t.admReportResponse)+'</strong> '+esc(r.response)+'</span>':'')+
 '</div><div class="mact">'+actions+'</div></li>';
@@ -7341,29 +7519,32 @@ function imageData(file){
 return new Promise(function(resolve,reject){
 if(!file){resolve('');return;}
 if(!/^image\/(jpeg|png|webp)$/.test(file.type||'')&&!/\.(jpe?g|png|webp)$/i.test(file.name||'')){reject(new Error(T().newsPhotoError));return;}
-if(file.size>16000000){reject(new Error(T().newsPhotoError));return;}
+if(file.size>32000000){reject(new Error(T().newsPhotoError));return;}
 var reader=new FileReader();
 reader.onerror=function(){reject(new Error(T().newsPhotoError));};
 reader.onload=function(){
 var img=new Image();
 img.onerror=function(){reject(new Error(T().newsPhotoError));};
 img.onload=function(){
+try{
 var scale=Math.min(1,1400/Math.max(img.width,img.height));
 var canvas=document.createElement('canvas');
 var quality=.82,data='';
-for(var attempt=0;attempt<20;attempt++){
+for(var attempt=0;attempt<40;attempt++){
 canvas.width=Math.max(1,Math.round(img.width*scale));
 canvas.height=Math.max(1,Math.round(img.height*scale));
 var ctx=canvas.getContext('2d');
+if(!ctx){reject(new Error(T().newsPhotoError));return;}
 ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
 ctx.drawImage(img,0,0,canvas.width,canvas.height);
 data=canvas.toDataURL('image/jpeg',quality);
 if(data.length<=380000)break;
-if(quality>.4){quality=Math.max(.4,quality-.1);}
-else{scale*=.82;quality=.72;}
+if(quality>.3){quality=Math.max(.3,quality-.08);}
+else{scale*=.7;quality=.6;}
 }
 if(data.length>380000){reject(new Error(T().newsPhotoError));return;}
 resolve(data);
+}catch(err){reject(new Error(T().newsPhotoError));}
 };
 img.src=reader.result;
 };
@@ -8011,6 +8192,7 @@ return;
 
     var goTarget=el.getAttribute('data-go');
 
+<<<<<<< HEAD
     /* Le formulaire d'adhésion applique sa propre règle d'accès
        (dossier en attente, refusé, adhérent déjà validé) : la
        navigation passe par la porte d'entrée du parcours, qui
@@ -8024,14 +8206,39 @@ return;
     }
 
     /* Le formulaire de signalement exige une authentification. */
+=======
+    /* Le formulaire d'adhésion applique sa propre règle d'accès */
+    if(goTarget==='adhesion'){
+      var adhSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var adhConnected=!!(adhSession&&adhSession.user&&adhSession.user.uid);
+      if(!adhConnected){
+        try{
+          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+          var adhMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
+          if(typeof toast==='function') toast(adhMsg,5000);
+        }catch(eAdh){}
+        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAdh2){}
+        return;
+      }
+      if(typeof window.adhesionOpenGate==='function'){
+        window.adhesionOpenGate(el);
+        return;
+      }
+    }
+
+>>>>>>> main
     if(goTarget==='report'){
       var repSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
       var repConnected=!!(repSession&&repSession.user&&repSession.user.uid);
       if(!repConnected){
         try{
           var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+<<<<<<< HEAD
           var repMsg=(rt&&rt.authRequired)?rt.authRequired:'Authentifiez-vous avant d\'accéder au formulaire de signalement.';
           if(typeof toast==='function')toast(repMsg,5000);
+=======
+          if(typeof toast==='function')toast(rt.authRequired||'Authentifiez-vous avant d\'accéder au formulaire de signalement.',5000);
+>>>>>>> main
         }catch(eRep){}
         try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eRep2){}
         return;
@@ -8984,6 +9191,15 @@ purgeSession();
 renderAccountButton();
 renderMe();
 
+try{
+  var mb=document.getElementById('meBtn');
+  if(mb){
+    if(!s.user) mb.classList.add('auth-blink');
+    else mb.classList.remove('auth-blink');
+  }
+
+}catch(e){}
+
 if(window.prefillDigitalAdhesion){
   window.prefillDigitalAdhesion();
 }
@@ -9061,6 +9277,8 @@ if(
 'serviceWorker' in navigator&&
 location.protocol.indexOf('http')===0
 ){
+
+document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true; });
 
 window.addEventListener(
 'load',
@@ -9999,6 +10217,17 @@ window.UGTM.failed(err);
       return{mode:'free',message:''};
     }
 
+    if(!connected){
+      try{
+        var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
+        var authMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
+        if(typeof toast==='function') toast(authMsg,5000);
+      }catch(eAuth){}
+      try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAuth2){}
+
+      return;
+    }
+
     if(typeof window.refreshMyAdhesionStatus!=='function'){
       openForm();
       return;
@@ -10187,10 +10416,11 @@ window.UGTM.failed(err);
 </body>
 <style>
 .notif-badge{
-  position:absolute;top:0;right:0;
-  background:#e43;color:#fff;font-size:10px;font-weight:bold;
-  border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
-  line-height:18px;text-align:center;z-index:10;
+  position:absolute;top:-4px;right:-6px;
+
+  background:#e43;color:#fff;font-size:9px;font-weight:bold;
+  border-radius:50%;padding:1px 4px;min-width:16px;height:16px;
+  line-height:16px;text-align:center;z-index:10;
 }
 #authMenu .notif-badge{
   top:4px;right:4px;
@@ -10199,8 +10429,9 @@ window.UGTM.failed(err);
 </style>
 <script>
 (function(){
-  function updateNotifBadge(n){
+function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
+<<<<<<< HEAD
     var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
     if(b){
@@ -10211,6 +10442,10 @@ window.UGTM.failed(err);
       if(n<=0){hb.textContent='';hb.hidden=true;}
       else{hb.textContent=n>9?'9+':n;hb.hidden=false;}
     }
+=======
+    var n=Math.max(0,Number(n||0));
+    if(b){ if(n<=0){b.textContent='';b.hidden=true;}else{b.textContent=n>9?'9+':n;b.hidden=false;} }
+>>>>>>> main
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');

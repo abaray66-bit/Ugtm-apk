@@ -1,18 +1,25 @@
 {
   "name": "ugtm-souss-massa",
+<<<<<<< HEAD
   "version": "1.5.60",
+=======
+  "version": "1.5.74",
+>>>>>>> main
   "private": true,
   "scripts": {
     "check": "node tools/check-syntax.js",
     "test:audit": "node tools/test-audit-ugtm.mjs",
     "test:firestore": "firebase emulators:exec --only firestore \"node test-firestore-adhesion.mjs\"",
+    "test:notifications": "firebase emulators:exec --only firestore \"node test-notifications-rules.mjs\"",
     "cap:sync": "npx cap sync android",
     "android": "npx cap open android",
     "android:sync": "npx cap sync android",
     "android:open": "npx cap open android",
     "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug",
     "android:build:release": "npm run android:sync && cd android && ./gradlew assembleRelease",
-    "android:prepare": "npm install && npm run android:sync"
+    "android:prepare": "npm install && npm run android:sync",
+    "audit:security": "node tools/audit-security.mjs",
+    "test:firestore:privileges": "firebase emulators:exec --only firestore \"node test-firestore-member-privileges.mjs\""
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.0.0",
@@ -21,7 +28,8 @@
     "@capacitor/core": "^7.0.0",
     "@capacitor/filesystem": "^7.1.9",
     "@capacitor/share": "^7.0.4",
-    "jspdf": "^4.2.1"
+    "jspdf": "^4.2.1",
+    "@capacitor/app": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^7.0.0",
