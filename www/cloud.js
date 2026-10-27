@@ -1292,6 +1292,7 @@ var admin = {
           uid: uid,
           name: String(member.name || member.email || '').slice(0,120),
           title: String(title || '').slice(0,60),
+          phone: String(member.phone || '').slice(0,30),
           createdAt: serverTimestamp()
         });
       });
