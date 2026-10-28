@@ -2066,6 +2066,7 @@ async function cloudMarkNotificationRead(id){
 
     loadNotifications: cloudLoadNotifications,
     markNotificationRead: cloudMarkNotificationRead,
+    syncMembersFromAdhesions: syncMembersFromAdhesions,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){

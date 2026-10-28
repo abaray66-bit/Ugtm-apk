@@ -9167,6 +9167,12 @@ purgeSession();
 
 }
 
+try{
+  if(S.isAdmin && window.CLOUD && typeof window.CLOUD.syncMembersFromAdhesions==='function'){
+    window.CLOUD.syncMembersFromAdhesions().catch(function(){});
+  }
+}catch(e){}
+
 renderAccountButton();
 renderMe();
 
