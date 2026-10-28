@@ -76,24 +76,12 @@ test('adhesion create denied', async () => {
   }));
 });
 
-<<<<<<< HEAD
 test('admin create allowed (full 9 keys)', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
   await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
     title:'t', body:'b', type:'info', read:false, authorUid:'admin1',
     createdAt: new Date(), targetScreen:'me', targetId:'user1', province:'agadir'
-=======
-test('admin create allowed (if rules permit)', async () => {
-  const db = env.authenticatedContext('admin1', ADMIN_TOKEN).firestore();
-  await assertSucceeds(addDoc(collection(db, 'notifications', 'user1', 'items'), {
-    title: 't',
-    body: 'b',
-    type: 'info',
-    read: false,
-    authorUid: 'admin1',
-    createdAt: serverTimestamp()
->>>>>>> main
   }));
 });
 
@@ -149,7 +137,6 @@ test('non-boolean read denied', async () => {
   await assertFails(updateDoc(doc(db, 'notifications', 'user1', 'items', 'n1'), { read: 'yes' }));
 });
 
-<<<<<<< HEAD
 test('serverTimestamp create (full 9 keys)', async () => {
   const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
@@ -157,17 +144,6 @@ test('serverTimestamp create (full 9 keys)', async () => {
     title:'t', body:'b', type:'info', read:false, authorUid:'admin1',
     createdAt: (await import('firebase/firestore')).serverTimestamp(),
     targetScreen:'me', targetId:'user1', province:'agadir'
-=======
-test('serverTimestamp create', async () => {
-  const db = env.authenticatedContext('admin1', ADMIN_TOKEN).firestore();
-  await assertSucceeds(addDoc(collection(db, 'notifications', 'user1', 'items'), {
-    title: 't',
-    body: 'b',
-    type: 'info',
-    read: false,
-    authorUid: 'admin1',
-    createdAt: serverTimestamp()
->>>>>>> main
   }));
 });
 

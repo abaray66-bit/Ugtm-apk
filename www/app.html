@@ -842,14 +842,8 @@ main{
 .gallery-track img{
   position:absolute;inset:0;margin:auto;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
-<<<<<<< HEAD
   opacity:0;transition:opacity .2s ease;
   transform:none;border-radius:var(--radius-s);
-=======
-  opacity:0;transition:opacity .25s ease;
-  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
-  will-change:transform
->>>>>>> main
 }
 .gallery-btn{
   position:absolute;top:50%;transform:translateY(-50%);
@@ -3128,28 +3122,11 @@ input[type=file]::file-selector-button{
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
-<<<<<<< HEAD
 <div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; go('me');">Espace personnel</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof window.loadNotifications==='function') window.loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="try{ if(window.CLOUD&&typeof window.CLOUD.signOut==='function'){ window.CLOUD.signOut().then(function(){ var am=document.getElementById('authMenu'); if(am) am.hidden=true; }).catch(function(err){ console.warn('signout err',err); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée. Réessayez.',4000); }); } else { console.warn('CLOUD.signOut indisponible'); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion indisponible.',4000); } }catch(e){ console.warn('signout err',e); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée.',4000); }">Se déconnecter</button>
  </div>
-=======
-<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
-
-</div>
-
-<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
-  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
-  <div id="notifList" style="min-height:40px;color:#111;"></div>
-  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
-  <div id="notifHistory" hidden></div>
-  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
-</div>
->>>>>>> main
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -3158,12 +3135,8 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
-<<<<<<< HEAD
 <button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); }catch(e){} }" aria-label="Notifications"><span id="homeNotifWrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;"><span id="homeNotifBell"></span><span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
 <div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
-=======
-
->>>>>>> main
 <script>
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -3191,7 +3164,6 @@ function renderNotifications(list){
       p.style.fontWeight='normal';
     }
     p.textContent=String(n.title||'')+' - '+String(n.body||'');
-<<<<<<< HEAD
     p.style.cursor = 'pointer';
     p.title = 'Ouvrir';
     p.onclick = function(){
@@ -3208,25 +3180,10 @@ function renderNotifications(list){
           console.warn('notif click: no session, cannot navigate to me');
         }
       }
-=======
-    p.onclick=function(){
-      if(n.targetType==='news' && typeof go==='function') go('news');
-      else if(n.targetType==='event' && typeof go==='function') go('agenda');
-      else if(typeof go==='function') go('me');
-
-      if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
-      var m=document.getElementById('notifModal'); if(m) m.hidden=true;
->>>>>>> main
     };
     if(n.read===false){
       var b=document.createElement('button');
       b.textContent='Marquer comme lu';
-<<<<<<< HEAD
-=======
-      b.style.marginLeft='8px';
-      b.style.color='#111';
-
->>>>>>> main
       b.onclick=function(e){ e.stopPropagation(); markNotificationRead(n.id); };
       p.appendChild(b);
     }
@@ -3243,7 +3200,6 @@ async function markNotificationRead(id){
 }
 async function loadNotifications(){
   try{
-<<<<<<< HEAD
     if(!window.db || !window.ugtmSession) return;
     var session=window.ugtmSession();
     if(!session || !session.user || !session.user.uid) return;
@@ -3259,12 +3215,6 @@ async function loadNotifications(){
       else{hb.textContent='';hb.hidden=true;}
     }
   }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
-=======
-    if(!window.CLOUD || typeof window.CLOUD.loadNotifications!=='function') return;
-    await window.CLOUD.loadNotifications();
-
-  }catch(e){ console.warn('notif load',e); }
->>>>>>> main
 }
 window.renderNotifications=renderNotifications;
 window.loadNotifications=loadNotifications;
@@ -4956,7 +4906,6 @@ try{history.pushState({gallery:true},'');}catch(e){}
 }
 
 function closeGallery(){
-<<<<<<< HEAD
   if($('gallery') && !$('gallery').hidden){
     $('gallery').hidden=true;
     document.body.style.overflow='';
@@ -4982,29 +4931,6 @@ function renderGallery(){
   $('galleryDelete').hidden=galleryState.items.length<=1;
   $('galleryPrev').style.display=galleryState.items.length>1?'flex':'none';
   $('galleryNext').style.display=galleryState.items.length>1?'flex':'none';
-=======
-$('gallery').hidden=true;
-document.body.style.overflow='';
-galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
-try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
-}
-
-function renderGallery(){
-var track=$('galleryTrack');
-var counter=$('galleryCounter');
-if(!track||!counter)return;
-track.innerHTML='';
-galleryState.items.forEach(function(it,i){
-var img=document.createElement('img');
-img.src=it.src;
-img.alt=it.name||('image'+(i+1));
-img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-track.appendChild(img);
-});
-counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-/* gallery actions removed */
->>>>>>> main
 }
 
 function galleryPrev(){
@@ -5053,7 +4979,6 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-<<<<<<< HEAD
   $('galleryPrev').addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
   $('galleryNext').addEventListener('click',function(e){e.stopPropagation();galleryNext();});
   $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
@@ -5064,9 +4989,6 @@ renderGallery();
   ge.querySelectorAll('img').forEach(function(im){
     im.addEventListener('click',function(ev){ev.stopPropagation();closeGallery();});
   });
-=======
-  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
->>>>>>> main
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
@@ -5108,7 +5030,6 @@ renderGallery();
       if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
     }
   },{passive:true});
-<<<<<<< HEAD
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeGallery();}});
   try{
@@ -5118,32 +5039,6 @@ renderGallery();
       if($('gallery') && !$('gallery').hidden){ closeGallery(); }
       else{ closeLightbox(); closeGallery(); }
     });
-=======
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
-  document.addEventListener('popstate',function(e){var g=$('gallery'); if(g && !g.hidden){ closeLightbox(); closeGallery(); } });
-  document.addEventListener('click',function(e){
-    var btn=e.target && e.target.closest ? e.target.closest('#meBtn') : null;
-    if(!btn) return;
-    e.preventDefault(); e.stopPropagation();
-    var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
-    var connected=!!(session&&session.user&&session.user.uid);
-    if(!connected){
-      if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
-      return;
-    }
-    var am=document.getElementById('authMenu');
-    if(am) am.hidden=!am.hidden;
-  });
-  try{
-    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
-      window.Capacitor.Plugins.App.addListener('backButton', function(){
-        if($('gallery') && !$('gallery').hidden){ closeGallery(); }
-        else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
-      });
-    } else {
-      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else { closeLightbox(); closeGallery(); } });
-    }
->>>>>>> main
   }catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
@@ -8291,7 +8186,6 @@ return;
 
     var goTarget=el.getAttribute('data-go');
 
-<<<<<<< HEAD
     /* Le formulaire d'adhésion applique sa propre règle d'accès
        (dossier en attente, refusé, adhérent déjà validé) : la
        navigation passe par la porte d'entrée du parcours, qui
@@ -8305,39 +8199,14 @@ return;
     }
 
     /* Le formulaire de signalement exige une authentification. */
-=======
-    /* Le formulaire d'adhésion applique sa propre règle d'accès */
-    if(goTarget==='adhesion'){
-      var adhSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
-      var adhConnected=!!(adhSession&&adhSession.user&&adhSession.user.uid);
-      if(!adhConnected){
-        try{
-          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
-          var adhMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
-          if(typeof toast==='function') toast(adhMsg,5000);
-        }catch(eAdh){}
-        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAdh2){}
-        return;
-      }
-      if(typeof window.adhesionOpenGate==='function'){
-        window.adhesionOpenGate(el);
-        return;
-      }
-    }
-
->>>>>>> main
     if(goTarget==='report'){
       var repSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
       var repConnected=!!(repSession&&repSession.user&&repSession.user.uid);
       if(!repConnected){
         try{
           var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
-<<<<<<< HEAD
           var repMsg=(rt&&rt.authRequired)?rt.authRequired:'Authentifiez-vous avant d\'accéder au formulaire de signalement.';
           if(typeof toast==='function')toast(repMsg,5000);
-=======
-          if(typeof toast==='function')toast(rt.authRequired||'Authentifiez-vous avant d\'accéder au formulaire de signalement.',5000);
->>>>>>> main
         }catch(eRep){}
         try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eRep2){}
         return;
@@ -10534,7 +10403,6 @@ window.UGTM.failed(err);
 (function(){
 function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
-<<<<<<< HEAD
     var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
     if(b){
@@ -10545,10 +10413,6 @@ function updateNotifBadge(n){
       if(n<=0){hb.textContent='';hb.hidden=true;}
       else{hb.textContent=n>9?'9+':n;hb.hidden=false;}
     }
-=======
-    var n=Math.max(0,Number(n||0));
-    if(b){ if(n<=0){b.textContent='';b.hidden=true;}else{b.textContent=n>9?'9+':n;b.hidden=false;} }
->>>>>>> main
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');
