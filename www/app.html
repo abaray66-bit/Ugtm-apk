@@ -5572,14 +5572,14 @@ function openWaUrl(url){
     var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
     var plugins=window.Capacitor&&window.Capacitor.Plugins;
     var capShare=isNative&&plugins?plugins.Share:null;
-    var fs=isNative&&plugins?plugins.Filesystem:null;
+    var fsPlug=isNative&&plugins?plugins.Filesystem:null;
     
     function fallback(){
-      try{ shareTextNative(text,title); }catch(e){ shareTextFallback(text); }
+      try{ shareTextNative(text,title); }catch(e){ try{ shareTextFallback(text); }catch(_e){} }
     }
     
     function tryNativeShareWithFiles(items){
-      if(!(capShare&&typeof capShare.share==='function'&&fs&&fs.writeFile)) return Promise.reject(new Error('no'));
+      if(!(capShare&&typeof capShare.share==='function'&&fsPlug&&fsPlug.writeFile)) return Promise.reject(new Error('no'));
       var writes = (items||[]).map(function(item,idx){
         if(!item)return Promise.resolve(null);
         var data=item.data||item.uri||'';
@@ -5588,7 +5588,8 @@ function openWaUrl(url){
           if(comma>-1) data=data.slice(comma+1);
         }
         var name=item.name||(report.attachmentName)||('piece-jointe-'+idx+'.jpg');
-        return fs.writeFile({path:name,data:data,directory:'CACHE'}).then(function(saved){
+        if(name.indexOf('.')===-1) name=name+'.jpg';
+        return fsPlug.writeFile({path:name,data:data,directory:'CACHE'}).then(function(saved){
           return saved&&saved.uri?saved.uri:null;
         }).catch(function(){return null;});
       });
@@ -5612,23 +5613,51 @@ function openWaUrl(url){
         if(items.length){ p = Promise.resolve(items); }
       }catch(e){}
     }
-    if(p === Promise.resolve([]) && window.CLOUD&&window.CLOUD.getReportAttachment){
-      p = window.CLOUD.getReportAttachment(report.id).then(function(arr){
-        var items=[];
-        if(Array.isArray(arr)){
-          arr.forEach(function(a,i){ if(a&&(a.data||a.uri)){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.uri}); } });
-        }
-        return items;
-      }).catch(function(){return [];});
+    if((!p || (Array.isArray(p)&&p.length===0)) && window.CLOUD&&window.CLOUD.getReportAttachment){
+      try{
+        p = window.CLOUD.getReportAttachment(report.id).then(function(arr){
+          var items=[];
+          if(Array.isArray(arr)){
+            arr.forEach(function(a,i){ if(a&&(a.data||a.uri)){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.uri}); } });
+          }
+          return items;
+        }).catch(function(){return [];});
+      }catch(e){ p = Promise.resolve([]); }
     }
+    if(!p) p = Promise.resolve([]);
     
-    p.then(function(items){
+    Promise.resolve(p).then(function(items){
       if(items && items.length){
         tryNativeShareWithFiles(items).then(function(){
         }).catch(function(err){
           if(err&&err.message&&/cancel/i.test(err.message)) return;
           try{
             if(!isNative && navigator.share){
+              try{
+                if(Array.isArray(items) && items.length && navigator.canShare){
+                  var webFiles=[];
+                  items.forEach(function(it,idx){
+                    try{
+                      if(typeof it.data==='string' && it.data.indexOf('data:')===0){
+                        var parts=it.data.split(',');
+                        var mime=it.data.substring(5,parts[0].indexOf(';'));
+                        var b64=parts[1]||'';
+                        var bin=atob(b64);
+                        var arrb=new Uint8Array(bin.length);
+                        for(var i=0;i<bin.length;i++)arrb[i]=bin.charCodeAt(i);
+                        var blob=new Blob([arrb],{type:mime||'application/octet-stream'});
+                        var fname=it.name||(report.attachmentName)||('piece-jointe'+(idx+1));
+                        var f=new File([blob],fname,{type:mime||blob.type});
+                        webFiles.push(f);
+                      }
+                    }catch(e){}
+                  });
+                  if(webFiles.length && navigator.canShare({files:webFiles})){
+                    navigator.share({title:title,text:text,files:webFiles}).catch(function(){shareTextFallback(text);});
+                    return;
+                  }
+                }
+              }catch(e){}
               navigator.share({title:title,text:text}).catch(function(){shareTextFallback(text);});
               return;
             }
