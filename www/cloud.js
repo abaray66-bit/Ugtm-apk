@@ -49,12 +49,12 @@ function normalizeMember(d, uid){
     email: d.email || '',
     photo: d.photo || '',
     etab: d.etab || '',
-    prov: d.prov || '',
+    prov: d.prov || d.province || '',
     phone: d.phone || '',
     status: d.status || 'pending',
     memberNo: d.memberNo || '',
     role: d.role || 'member',
-    adminProvince: d.adminProvince || '',
+    adminProvince: d.adminProvince || d.province || '',
     createdAt: ms(d.createdAt),
     activatedAt: ms(d.activatedAt)
   };
@@ -1014,6 +1014,10 @@ async function activateMemberFromRequest(uid){
     if (req.email && !member.email) upd.email = String(req.email||'').slice(0,254);
     await updateDoc(ref, upd);
   } else {
+    if (app.province) data.prov = String(app.province||'').trim();
+    if (app.province) data.adminProvince = String(app.province||'').trim();
+    if (app.establishment) data.etab = String(app.establishment||'').trim();
+    if (app.phone) data.phone = String(app.phone||'').trim();
     var seqRef = doc(db, 'counters', 'memberNumbers');
     var seed = 1;
     var seq0 = await getDoc(seqRef);
