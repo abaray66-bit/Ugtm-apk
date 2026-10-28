@@ -6541,7 +6541,7 @@ return '<li class="mrow">'+
 '<div class="mi">'+
 
 '<strong>'+
-esc(m.name||t.admMemNoName)+
+esc((function(){var nm=String(m.name||''); nm=nm.replace(/undefined/g,'').replace(/\s+/g,' ').trim(); return nm||t.admMemNoName;})())+
 ' <span class="tag st-'+esc(m.status)+'">'+
 esc(statusLabel(m.status))+
 '</span>'+
