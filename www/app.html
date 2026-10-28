@@ -7674,9 +7674,11 @@ var role=r.title||'';
 var phone=String(r.phone||'').trim();
 var waUrl=waHref(phone);
 
-var phoneHtml=(phone&&waUrl)
-  ?'<a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
-  : (phone?'<span class="phone-num">'+esc(phone)+'</span>':'');
+var phoneHtml=phone
+  ? (waUrl
+      ?'<a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
+      :'<span class="phone-num">'+esc(phone)+'</span>')
+  : '';
 
 return '<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
 
