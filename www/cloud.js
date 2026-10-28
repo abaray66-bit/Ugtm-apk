@@ -963,6 +963,34 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
     } catch(e){ console.warn('notif create', e); }
    return sig;
  }
+
+async function syncMembersFromAdhesions(){
+  try{
+    var membersSnap = await getDocs(collection(db,'members'));
+    var reqSnap = await getDocs(collection(db,'adhesionRequests'));
+    var reqByUid = {};
+    reqSnap.forEach(function(d){ var x=d.data()||{}; reqByUid[d.id]=x; });
+    var batch = writeBatch(db);
+    var count=0;
+    membersSnap.forEach(function(md){
+      var m=md.data()||{};
+      if(m.status!=='active') return;
+      var r=reqByUid[md.id];
+      if(!r) return;
+      var app=r.application||{};
+      var upd={updatedAt:serverTimestamp()};
+      var changed=false;
+      if(app.province && String(m.prov||m.adminProvince||'')!==String(app.province||'').trim()){ upd.prov=String(app.province||'').trim(); upd.adminProvince=String(app.province||'').trim(); changed=true; }
+      if(app.establishment && String(m.etab||'')!==String(app.establishment||'').trim()){ upd.etab=String(app.establishment||'').trim(); changed=true; }
+      if(app.phone && String(m.phone||'')!==String(app.phone||'').trim()){ upd.phone=String(app.phone||'').trim(); changed=true; }
+      var nm=String(app.prenom||'').trim()+' '+String(app.nom||'').trim(); nm=nm.trim();
+      if(nm && String(m.name||'')!==nm){ upd.name=nm; changed=true; }
+      if(changed && count<450){ batch.update(doc(db,'members',md.id), upd); count++; }
+    });
+    if(count>0) return batch.commit();
+  }catch(e){ console.warn('syncMembersFromAdhesions err',e); }
+}
+
  
  /* =========================================================
     ACTIVATION D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
