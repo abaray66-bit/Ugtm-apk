@@ -456,13 +456,13 @@ function onUser(user){
         if (permission !== 'granted' || !auth.currentUser) return;
         var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
         getToken(messaging, vapidKey ? { vapidKey: vapidKey } : {}).then(function(token){
-          if (token) {
+          if (token && auth.currentUser) {
             setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
               token: token,
               updatedAt: serverTimestamp()
-            }, { merge: true }).catch(function(){});
+            }, { merge: true }).catch(function(err){ try{ console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
           }
-        }).catch(function(){});
+        }).catch(function(err){ try{ console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
       }).catch(function(){});
       onMessage(messaging, function(payload){
         var n = (payload && payload.notification) || {};

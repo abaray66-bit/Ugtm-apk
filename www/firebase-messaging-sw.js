@@ -6,16 +6,27 @@ try {
   self.importScripts('/data.js');
 } catch(e) {}
 
-var firebaseConfig = (self.APP_DATA && self.APP_DATA.firebase) ? self.APP_DATA.firebase : {
+var firebaseConfig = (self.APP_DATA && self.APP_DATA.firebase) ? self.APP_DATA.firebase : null;
+if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.indexOf('REPLACE') === 0) {
+  try {
+    var req = new XMLHttpRequest();
+    req.open('GET', '/data.js', false);
+    req.send(null);
+    if (req.responseText) {
+      try { eval(req.responseText); } catch(e) {}
+    }
+  } catch(e) {}
+  firebaseConfig = (self.APP_DATA && self.APP_DATA.firebase) ? self.APP_DATA.firebase : null;
+}
+
+firebase.initializeApp(firebaseConfig || {
   apiKey: 'REPLACE_WITH_FIREBASE_API_KEY',
   authDomain: 'REPLACE_WITH_FIREBASE_AUTH_DOMAIN',
   projectId: 'REPLACE_WITH_FIREBASE_PROJECT_ID',
   storageBucket: 'REPLACE_WITH_FIREBASE_STORAGE_BUCKET',
   messagingSenderId: 'REPLACE_WITH_FIREBASE_MESSAGING_SENDER_ID',
   appId: 'REPLACE_WITH_FIREBASE_APP_ID'
-};
-
-firebase.initializeApp(firebaseConfig);
+});
 
 const messaging = firebase.messaging();
 

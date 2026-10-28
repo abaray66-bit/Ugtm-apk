@@ -674,7 +674,7 @@ service cloud.firestore {
       && request.resource.data.body is string && request.resource.data.body.size() <= 500
       && request.resource.data.type in ['info','adhesion','event','news','report']
       && request.resource.data.createdAt == request.time
-      && request.resource.data.keys().hasOnly(['title','body','createdAt','read','type','targetScreen','targetId','authorUid','province']);
+      && request.resource.data.keys().hasOnly(['title','body','createdAt','read','type','targetScreen','targetId','authorUid','province','targetType']);
     allow update: if signedIn() && request.auth.uid == uid
       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
       && request.resource.data.read is bool;
