@@ -43,18 +43,19 @@ function ms(v){
 }
 
 function normalizeMember(d, uid){
+  var app = d.application || {};
   return {
     uid: uid,
-    name: d.name || '',
-    email: d.email || '',
+    name: d.name || app.prenom && app.nom ? (String(app.prenom).trim() + ' ' + String(app.nom).trim()).trim() : (d.name || ''),
+    email: d.email || app.email || '',
     photo: d.photo || '',
-    etab: d.etab || '',
-    prov: d.prov || d.province || '',
-    phone: d.phone || '',
+    etab: d.etab || app.establishment || app.etab || '',
+    prov: d.prov || d.province || app.province || '',
+    phone: d.phone || app.phone || '',
     status: d.status || 'pending',
     memberNo: d.memberNo || '',
     role: d.role || 'member',
-    adminProvince: d.adminProvince || d.province || '',
+    adminProvince: d.adminProvince || d.province || app.province || '',
     createdAt: ms(d.createdAt),
     activatedAt: ms(d.activatedAt)
   };
