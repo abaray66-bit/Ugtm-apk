@@ -5391,7 +5391,7 @@ function openUrl(url){
   /* Partage natif Android (Capacitor Share) → dialogue système.
      Fallback navigateur (navigator.share) → partage Web API.
      Dernier recours : ouverture WhatsApp (wa.me). */
-  function shareTextNative(text,title){
+  function shareTextNative(text,title,files){
   
     var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
     var plugins=window.Capacitor&&window.Capacitor.Plugins;
@@ -5399,7 +5399,10 @@ function openUrl(url){
   
     if(capShare&&typeof capShare.share==='function'){
   
-      capShare.share({text:text,dialogTitle:title})
+      var shareOpts={text:text,dialogTitle:title};
+      if(Array.isArray(files)&&files.length)shareOpts.files=files;
+  
+      capShare.share(shareOpts)
       .catch(function(err){
         /* Partage interrompu (utilisateur a annulé) : on ne toast pas. */
         if(err&&err.message&&/cancel|user/i.test(err.message))return;
@@ -5412,6 +5415,14 @@ function openUrl(url){
     if(navigator.share){
   
       try{
+        if(Array.isArray(files)&&files.length){
+          try{
+            if(navigator.canShare && navigator.canShare({files:files})){
+              navigator.share({title:title,text:text,files:files}).catch(function(){shareTextFallback(text);});
+              return;
+            }
+          }catch(e){}
+        }
         navigator.share({title:title,text:text}).catch(function(){});
         return;
       }catch(e){}
@@ -5677,6 +5688,94 @@ function openWaUrl(url){
    PPR, téléphone) n'y figure, et la pièce jointe n'est JAMAIS présentée
    comme envoyée : WhatsApp n'accepte aucun fichier via un lien wa.me,
    le message rappelle donc qu'elle doit être jointe à la main. */
+
+  /* Partage d'un signalement avec pièces jointes si possible (fichiers). */
+  function shareReportWithAttachments(report){
+    var t=T();
+    var text=buildReportShareText(report);
+    var title=t.shareReportTitle||'Signalement UGTM';
+    var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+    var plugins=window.Capacitor&&window.Capacitor.Plugins;
+    var capShare=isNative&&plugins?plugins.Share:null;
+    var fs=isNative&&plugins?plugins.Filesystem:null;
+    
+    function fallback(){
+      try{ shareTextNative(text,title); }catch(e){ shareTextFallback(text); }
+    }
+    
+    function tryNativeShareWithFiles(items){
+      if(!(capShare&&typeof capShare.share==='function'&&fs&&fs.writeFile)) return Promise.reject(new Error('no'));
+      var writes = (items||[]).map(function(item,idx){
+        if(!item)return Promise.resolve(null);
+        var data=item.data||item.uri||'';
+        if(typeof data==='string' && data.indexOf('data:')===0){
+          var comma=data.indexOf(',');
+          if(comma>-1) data=data.slice(comma+1);
+        }
+        var name=item.name||(report.attachmentName)||('piece-jointe-'+idx+'.jpg');
+        return fs.writeFile({path:name,data:data,directory:'CACHE'}).then(function(saved){
+          return saved&&saved.uri?saved.uri:null;
+        }).catch(function(){return null;});
+      });
+      return Promise.all(writes).then(function(uris){
+        uris=uris.filter(Boolean);
+        if(!uris.length) throw new Error('no-uri');
+        return capShare.share({text:text,dialogTitle:title,files:uris});
+      });
+    }
+    
+    // Try to get attachments
+    var p = Promise.resolve([]);
+    if(report.attachmentData){
+      try{
+        var ad=report.attachmentData;
+        var items=[];
+        if(typeof ad==='string' && ad){
+          items.push({name:report.attachmentName||'piece-jointe.jpg',type:report.attachmentType||'',data:ad});
+        }else if(Array.isArray(ad)){
+          ad.forEach(function(a,i){ if(a){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.dataUrl||a}); } });
+        }
+        if(items.length){ p = Promise.resolve(items); }
+      }catch(e){}
+    }
+    if(p === Promise.resolve([]) && window.CLOUD&&window.CLOUD.getReportAttachment){
+      p = window.CLOUD.getReportAttachment(report.id).then(function(arr){
+        var items=[];
+        if(Array.isArray(arr)){
+          arr.forEach(function(a,i){ if(a&&(a.data||a.uri)){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.uri}); } });
+        }
+        return items;
+      }).catch(function(){return [];});
+    }
+    
+    p.then(function(items){
+      if(items && items.length){
+        tryNativeShareWithFiles(items).then(function(){
+          // ok
+        }).catch(function(err){
+          if(err&&err.message&&/cancel/i.test(err.message)) return;
+          // fallback to share with text + try web share
+          try{
+            if(!isNative && navigator.share){
+              // try to convert to files for web share if possible
+              try{
+                if(navigator.canShare){
+                  // not easily convertible from data URLs in all browsers; fallback
+                }
+              }catch(e){}
+              navigator.share({title:title,text:text}).catch(function(){shareTextFallback(text);});
+              return;
+            }
+          }catch(e){}
+          shareTextFallback(text);
+        });
+        return;
+      }
+      fallback();
+    }).catch(function(){ fallback(); });
+  }
+
+
 function buildReportShareText(report){
 var t=T();
 if(!report)return '';
@@ -8319,7 +8418,11 @@ return;
 if(el.hasAttribute('data-share-report')){
 
 var shareRep=(S.reports||[]).filter(function(x){return x.id===el.getAttribute('data-share-report');})[0];
-if(shareRep)shareTextNative(buildReportShareText(shareRep),T().shareReportTitle);
+if(shareRep){
+  try{ if(typeof shareReportWithAttachments==='function'){ shareReportWithAttachments(shareRep); return; } }catch(e){}
+  var shareText=buildReportShareText(shareRep);
+  try{ shareTextNative(shareText,T().shareReportTitle); }catch(e){ shareTextFallback(shareText); }
+}
 
 return;
 }
