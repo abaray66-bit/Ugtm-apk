@@ -15,7 +15,7 @@ window.APP_DATA = {
     storageBucket: "ugtm-fns-souss-massa.firebasestorage.app",
     messagingSenderId: "313270677240",
     appId: "1:313270677240:web:e93739d6533750b3dd150d",
-    vapidKey: "",
+    vapidKey: "BCINtqiPhMlcxaU8dM1TR6AwVKMvT79UNLHpYWpn26n_88ZGRErBufz3-H01c9fCvGCzqmZv5h9LF3WXKqFc2tE",
     // Clé App Check (reCAPTCHA v3) — FACULTATIVE.
     // Laisser vide : rien ne change. Renseignée (Firebase > Paramètres >
     // Application > App Check), l'app joint un jeton App Check à chaque
