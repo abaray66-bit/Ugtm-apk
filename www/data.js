@@ -12,7 +12,10 @@ window.APP_DATA = {
     apiKey: "AIzaSyB-xhY-y5uuglA4ZUuXfM8FY5C6eTTZRMg",
     authDomain: "ugtm-fns-souss-massa.web.app",
     projectId: "ugtm-fns-souss-massa",
+    storageBucket: "ugtm-fns-souss-massa.firebasestorage.app",
+    messagingSenderId: "313270677240",
     appId: "1:313270677240:web:e93739d6533750b3dd150d",
+    vapidKey: "",
     // Clé App Check (reCAPTCHA v3) — FACULTATIVE.
     // Laisser vide : rien ne change. Renseignée (Firebase > Paramètres >
     // Application > App Check), l'app joint un jeton App Check à chaque

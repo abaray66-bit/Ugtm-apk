@@ -454,7 +454,8 @@ function onUser(user){
       messaging = getMessaging(app);
       Notification.requestPermission().then(function(permission){
         if (permission !== 'granted' || !auth.currentUser) return;
-        getToken(messaging, { vapidKey: 'REPLACE_WITH_VAPID_KEY' }).then(function(token){
+        var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
+        getToken(messaging, vapidKey ? { vapidKey: vapidKey } : {}).then(function(token){
           if (token) {
             setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
               token: token,
