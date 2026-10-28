@@ -43,9 +43,12 @@ function ms(v){
 }
 
 function normalizeMember(d, uid){
+  var name = d.name;
+  if (name === undefined || name === null) name = '';
+  if (typeof name === 'string' && name.indexOf('undefined') !== -1) name = name.replace(/undefined/g, '').replace(/\s+/g, ' ').trim();
   return {
     uid: uid,
-    name: d.name || '',
+    name: name,
     email: d.email || '',
     photo: d.photo || '',
     etab: d.etab || '',
