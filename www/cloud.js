@@ -1004,7 +1004,15 @@ async function activateMemberFromRequest(uid){
   var no = '';
   if (member && member.status === 'active') {
     no = member.memberNo || '';
-    await updateDoc(ref, {updatedAt: serverTimestamp()});
+    var upd = { updatedAt: serverTimestamp() };
+    if (app.province) upd.prov = String(app.province||'').trim();
+    if (app.province) upd.adminProvince = String(app.province||'').trim();
+    if (app.establishment) upd.etab = String(app.establishment||'').trim();
+    if (app.phone) upd.phone = String(app.phone||'').trim();
+    var nm2 = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
+    if (nm2.trim()) upd.name = nm2.trim();
+    if (req.email && !member.email) upd.email = String(req.email||'').slice(0,254);
+    await updateDoc(ref, upd);
   } else {
     var seqRef = doc(db, 'counters', 'memberNumbers');
     var seed = 1;
