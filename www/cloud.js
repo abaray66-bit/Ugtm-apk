@@ -458,7 +458,7 @@ function onUser(user){
             }, { merge: true }).catch(function(err){ try{ console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
           }
         }).catch(function(err){ try{ console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
-      }
+      })
       onMessage(messaging, function(payload){
         var n = (payload && payload.notification) || {};
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
