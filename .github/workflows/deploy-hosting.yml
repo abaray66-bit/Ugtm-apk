@@ -59,6 +59,10 @@ jobs:
       - name: Installer la CLI Firebase
         run: npm install -g firebase-tools@13.29.1
 
+      - name: Installer les dépendances des fonctions
+        run: npm ci
+        working-directory: functions
+
       - name: Préparer le compte de service
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -86,7 +90,7 @@ jobs:
           PY
 
       - name: Publier les règles Firestore
-        run: firebase deploy --only firestore:rules --project ugtm-fns-souss-massa --force
+        run: firebase deploy --only firestore:rules,functions --project ugtm-fns-souss-massa --force
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa.json
 
