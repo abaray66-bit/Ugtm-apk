@@ -444,16 +444,25 @@ function onUser(user){
 
   hooks.setSession(session);
 
-  if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
-    try { Notification.requestPermission(); } catch(e){}
-  }
-
   // Enregistrement FCM (web) : sauvegarde du token pour les push.
   try {
     if (typeof Notification !== 'undefined') {
       messaging = getMessaging(app);
-      Notification.requestPermission().then(function(permission){
-        if (permission !== 'granted' || !auth.currentUser) return;
+      function registerFcm(){
+        if (!auth.currentUser) return;
+        var p = (typeof Notification.permission !== 'undefined') ? Notification.permission : 'default';
+        if (p === 'default') {
+          try {
+            Notification.requestPermission().then(function(perm){
+              if (perm === 'granted') doGetToken();
+            }).catch(function(){ doGetToken(); });
+          } catch(e){ doGetToken(); }
+        } else if (p === 'granted') {
+          doGetToken();
+        }
+      }
+      function doGetToken(){
+        if (!auth.currentUser) return;
         var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
         getToken(messaging, vapidKey ? { vapidKey: vapidKey } : {}).then(function(token){
           if (token && auth.currentUser) {
@@ -463,7 +472,8 @@ function onUser(user){
             }, { merge: true }).catch(function(err){ try{ console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
           }
         }).catch(function(err){ try{ console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
-      }).catch(function(){});
+      }
+      registerFcm();
       onMessage(messaging, function(payload){
         var n = (payload && payload.notification) || {};
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -471,7 +481,7 @@ function onUser(user){
         }
       });
     }
-  } catch(e){}
+  } catch(e){ try{ console.warn('FCM init failed:', e && e.code ? e.code : 'unknown'); }catch(_e){} }
 
   // Notifications temps réel : badge + alerte locale.
   unsub('notifications');
