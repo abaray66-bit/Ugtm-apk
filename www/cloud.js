@@ -448,24 +448,10 @@ function onUser(user){
   try {
     if (typeof Notification !== 'undefined') {
       messaging = getMessaging(app);
-      function registerFcm(){
-        if (!auth.currentUser) return;
-        var p = (typeof Notification.permission !== 'undefined') ? Notification.permission : 'default';
-        if (p === 'default') {
-          try {
-            Notification.requestPermission().then(function(perm){
-              if (perm === 'granted') doGetToken();
-            }).catch(function(){ doGetToken(); });
-          } catch(e){ doGetToken(); }
-        } else if (p === 'granted') {
-          doGetToken();
-        }
-      }
-      function doGetToken(){
-        if (!auth.currentUser) return;
-        var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
-        getToken(messaging, vapidKey ? { vapidKey: vapidKey } : {}).then(function(token){
-          if (token && auth.currentUser) {
+      Notification.requestPermission().then(function(permission){
+        if (permission !== 'granted' || !auth.currentUser) return;
+        getToken(messaging, { vapidKey: 'BCINtqiPhMlcxaU8dM1TR6AwVKMvT79UNLHpYWpn26n_88ZGRErBufz3-H01c9fCvGCzqmZv5h9LF3WXKqFc2tE' }).then(function(token){
+          if (token) {
             setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
               token: token,
               updatedAt: serverTimestamp()
@@ -473,7 +459,6 @@ function onUser(user){
           }
         }).catch(function(err){ try{ console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
       }
-      registerFcm();
       onMessage(messaging, function(payload){
         var n = (payload && payload.notification) || {};
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
