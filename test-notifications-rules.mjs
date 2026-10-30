@@ -77,11 +77,11 @@ test('adhesion create denied', async () => {
 });
 
 test('admin create allowed (full 9 keys)', async () => {
-  const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
+  const ctx = env.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
   await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
     title:'t', body:'b', type:'info', read:false, authorUid:'admin1',
-    createdAt: new Date(), targetScreen:'me', targetId:'user1', province:'agadir'
+    createdAt: serverTimestamp(), targetScreen:'me', targetId:'user1', province:'agadir'
   }));
 });
 
@@ -138,7 +138,7 @@ test('non-boolean read denied', async () => {
 });
 
 test('serverTimestamp create (full 9 keys)', async () => {
-  const ctx = testEnv.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
+  const ctx = env.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
   const db = ctx.firestore();
   await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
     title:'t', body:'b', type:'info', read:false, authorUid:'admin1',

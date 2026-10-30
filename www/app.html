@@ -9260,6 +9260,11 @@ navigator.serviceWorker
 .register('sw.js')
 .catch(function(){});
 
+// Enregistrement du service worker FCM pour les notifications en arrière-plan.
+navigator.serviceWorker
+  .register('firebase-messaging-sw.js')
+  .catch(function(){});
+
 });
 
 }

@@ -14,6 +14,7 @@ import {
   onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
   writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
 var auth, db, hooks;
 var nativeAuth = null;
@@ -448,25 +449,58 @@ function onUser(user){
   try {
     if (typeof Notification !== 'undefined') {
       messaging = getMessaging(app);
-      Notification.requestPermission().then(function(permission){
-        if (permission !== 'granted' || !auth.currentUser) return;
-        getToken(messaging, { vapidKey: 'REPLACE_WITH_VAPID_KEY' }).then(function(token){
-          if (token) {
-            setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
+      var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
+      if (!vapidKey) {
+        console.warn('FCM: aucune clé VAPID configurée (data.js → firebase.vapidKey).');
+      }
+      function registerFcmToken() {
+        if (!user) return;
+        var perm = (typeof Notification.permission !== 'undefined') ? Notification.permission : 'default';
+        if (perm === 'default') {
+          try {
+            Notification.requestPermission().then(function(p) {
+              if (p === 'granted') doGetToken();
+            }).catch(function() { doGetToken(); });
+          } catch (e) { doGetToken(); }
+        } else if (perm === 'granted') {
+          doGetToken();
+        }
+      }
+      function doGetToken() {
+        if (!user) return;
+        var opts = vapidKey ? { vapidKey: vapidKey } : {};
+        getToken(messaging, opts).then(function(token) {
+          if (token && user) {
+            setDoc(doc(db, 'fcmTokens', user.uid), {
               token: token,
               updatedAt: serverTimestamp()
-            }, { merge: true }).catch(function(){});
+            }, { merge: true }).catch(function(err) {
+              try { console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
+            });
           }
-        }).catch(function(){});
-      }).catch(function(){});
-      onMessage(messaging, function(payload){
+        }).catch(function(err) {
+          try { console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
+        });
+      }
+      registerFcmToken();
+      // Renouvellement du token lors du retour au premier plan.
+      if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible' && user) {
+            doGetToken();
+          }
+        });
+      }
+      onMessage(messaging, function(payload) {
         var n = (payload && payload.notification) || {};
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try { new Notification(n.title || 'UGTM', { body: n.body || '' }); } catch(e){}
+          try { new Notification(n.title || 'UGTM', { body: n.body || '', icon: 'icons/ugtm-mark.svg' }); } catch (e) {}
         }
       });
     }
-  } catch(e){}
+  } catch (e) {
+    try { console.warn('FCM init failed:', e && e.code ? e.code : 'unknown'); } catch (_e) {}
+  }
 
   // Notifications temps réel : badge + alerte locale.
   unsub('notifications');
