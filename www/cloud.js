@@ -14,6 +14,7 @@ import {
   onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
   writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
 var auth, db, hooks;
 var nativeAuth = null;
@@ -448,25 +449,58 @@ function onUser(user){
   try {
     if (typeof Notification !== 'undefined') {
       messaging = getMessaging(app);
-      Notification.requestPermission().then(function(permission){
-        if (permission !== 'granted' || !auth.currentUser) return;
-        getToken(messaging, { vapidKey: 'BCINtqiPhMlcxaU8dM1TR6AwVKMvT79UNLHpYWpn26n_88ZGRErBufz3-H01c9fCvGCzqmZv5h9LF3WXKqFc2tE' }).then(function(token){
-          if (token) {
-            setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), {
+      var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
+      if (!vapidKey) {
+        console.warn('FCM: aucune clé VAPID configurée (data.js → firebase.vapidKey).');
+      }
+      function registerFcmToken() {
+        if (!user) return;
+        var perm = (typeof Notification.permission !== 'undefined') ? Notification.permission : 'default';
+        if (perm === 'default') {
+          try {
+            Notification.requestPermission().then(function(p) {
+              if (p === 'granted') doGetToken();
+            }).catch(function() { doGetToken(); });
+          } catch (e) { doGetToken(); }
+        } else if (perm === 'granted') {
+          doGetToken();
+        }
+      }
+      function doGetToken() {
+        if (!user) return;
+        var opts = vapidKey ? { vapidKey: vapidKey } : {};
+        getToken(messaging, opts).then(function(token) {
+          if (token && user) {
+            setDoc(doc(db, 'fcmTokens', user.uid), {
               token: token,
               updatedAt: serverTimestamp()
-            }, { merge: true }).catch(function(err){ try{ console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
+            }, { merge: true }).catch(function(err) {
+              try { console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
+            });
           }
-        }).catch(function(err){ try{ console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); }catch(e){} });
-      })
-      onMessage(messaging, function(payload){
+        }).catch(function(err) {
+          try { console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
+        });
+      }
+      registerFcmToken();
+      // Renouvellement du token lors du retour au premier plan.
+      if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible' && user) {
+            doGetToken();
+          }
+        });
+      }
+      onMessage(messaging, function(payload) {
         var n = (payload && payload.notification) || {};
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try { new Notification(n.title || 'UGTM', { body: n.body || '' }); } catch(e){}
+          try { new Notification(n.title || 'UGTM', { body: n.body || '', icon: 'icons/ugtm-mark.svg' }); } catch (e) {}
         }
       });
     }
-  } catch(e){ try{ console.warn('FCM init failed:', e && e.code ? e.code : 'unknown'); }catch(_e){} }
+  } catch (e) {
+    try { console.warn('FCM init failed:', e && e.code ? e.code : 'unknown'); } catch (_e) {}
+  }
 
   // Notifications temps réel : badge + alerte locale.
   unsub('notifications');
@@ -958,6 +992,11 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
         targetId:String(uid),
         province:provForNotif
       });
+      // Push via backend (best-effort).
+      getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+        var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
+        cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+      }).catch(function(){});
     } catch(e){ console.warn('notif create', e); }
    return sig;
  }
@@ -1493,9 +1532,14 @@ var admin = {
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
               var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
-              var body = (o.fr && o.fr.body) ? o.fr.body : ((o.ar && o.ar.body) ? o.ar.body : '');
+              var body = (o.fr && o.fr.body) ? (o.fr.body) : ((o.ar && o.ar.body) ? (o.ar.body) : '');
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+              var tokens = [];
               var writes = snap.docs.map(function(d){
+                var m = d.data() || {};
+                if (m.status === 'active' && m.uid) {
+                  // Collect token for push (async, best-effort).
+                }
                 return addDoc(collection(db, 'notifications', d.id, 'items'), {
                   title: String(title).slice(0,120),
                   body: String(body).slice(0,500),
@@ -1507,6 +1551,11 @@ var admin = {
                   createdAt: serverTimestamp()
                 }).catch(function(){});
               });
+              // Push via backend (best-effort, non-blocking).
+              getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
+                var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
+                cloudSendPush('news', title, body);
+              }).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
           })
@@ -1635,6 +1684,11 @@ var admin = {
               createdAt: serverTimestamp()
             }).catch(function(){});
           });
+          // Push via backend (best-effort, non-blocking).
+          getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
+            var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
+            cloudSendPush('event', title, body);
+          }).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
       }).then(function(){ return ref; });
@@ -1979,6 +2033,26 @@ export async function init(config, h){
 
   window.db = db;
 
+
+async function cloudSendPush(type, title, body, targetUid){
+  var url = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!url) return;
+  try {
+    var user = auth && auth.currentUser;
+    if (!user) return;
+    var token = await user.getIdToken();
+    var payload = { type: type, title: String(title).slice(0,120), body: String(body || '').slice(0,500) };
+    if (targetUid) payload.targetUid = String(targetUid);
+    await fetch(url + '/api/send-push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch(e){ console.warn('push backend failed:', e); }
+}
 
 async function cloudLoadNotifications(){
   if (!auth || !auth.currentUser) return;
