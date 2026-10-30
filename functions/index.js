@@ -23,18 +23,17 @@ exports.sendNotificationOnCreate = functions.firestore
         }
       });
     } catch (err) {
-      const code = err && (err.code || err.errorInfo && err.errorInfo.code);
+      const code = err && (err.code || (err.errorInfo && err.errorInfo.code));
       if (
         code === 'messaging/registration-token-not-registered' ||
-        code === 'messaging/invalid-registration-token' ||
-        code === 'messaging/invalid-argument'
+        code === 'messaging/invalid-registration-token'
       ) {
         try {
           await getFirestore().doc('fcmTokens/' + uid).delete();
         } catch (_e) {}
         return;
       }
-      // Ne pas supprimer le token pour d'autres erreurs (réseau, quota, etc.)
+      // Ne pas supprimer le token pour d'autres erreurs (réseau, quota, invalid-argument générique, etc.)
       return;
     }
   });
