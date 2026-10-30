@@ -16,7 +16,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
-var auth, db, hooks;
+var auth, db, hooks, firebaseApp, messaging, fcmMessageBound = false;
 var nativeAuth = null;
 var capBrowser = null;
 
@@ -38,6 +38,18 @@ var session = {
   member: null,
   isAdmin: false
 };
+
+function showPushNotification(title, body){
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg' };
+  if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
+    navigator.serviceWorker.ready
+      .then(function(registration){ return registration.showNotification(String(title || 'UGTM'), options); })
+      .catch(function(){});
+    return;
+  }
+  try { new Notification(String(title || 'UGTM'), options); } catch (e) {}
+}
 
 function ms(v){
   return (v && typeof v.toMillis === 'function') ? v.toMillis() : null;
@@ -445,58 +457,18 @@ function onUser(user){
 
   hooks.setSession(session);
 
-  // Enregistrement FCM (web) : sauvegarde du token pour les push.
+  // FCM ne demande jamais la permission automatiquement après connexion :
+  // Chrome Android exige une action explicite de l'utilisateur.
   try {
     if (typeof Notification !== 'undefined') {
-      messaging = getMessaging(app);
-      var vapidKey = (window.APP_DATA && window.APP_DATA.firebase && (window.APP_DATA.firebase.vapidKey || window.APP_DATA.firebase.messagingVapidKey)) || '';
-      if (!vapidKey) {
-        console.warn('FCM: aucune clé VAPID configurée (data.js → firebase.vapidKey).');
-      }
-      function registerFcmToken() {
-        if (!user) return;
-        var perm = (typeof Notification.permission !== 'undefined') ? Notification.permission : 'default';
-        if (perm === 'default') {
-          try {
-            Notification.requestPermission().then(function(p) {
-              if (p === 'granted') doGetToken();
-            }).catch(function() { doGetToken(); });
-          } catch (e) { doGetToken(); }
-        } else if (perm === 'granted') {
-          doGetToken();
-        }
-      }
-      function doGetToken() {
-        if (!user) return;
-        var opts = vapidKey ? { vapidKey: vapidKey } : {};
-        getToken(messaging, opts).then(function(token) {
-          if (token && user) {
-            setDoc(doc(db, 'fcmTokens', user.uid), {
-              token: token,
-              updatedAt: serverTimestamp()
-            }, { merge: true }).catch(function(err) {
-              try { console.warn('FCM token save failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
-            });
-          }
-        }).catch(function(err) {
-          try { console.warn('FCM getToken failed:', err && err.code ? err.code : 'unknown'); } catch (e) {}
+      messaging = messaging || getMessaging(firebaseApp);
+      if (!fcmMessageBound) {
+        fcmMessageBound = true;
+        onMessage(messaging, function(payload) {
+          var n = (payload && payload.notification) || {};
+          showPushNotification(n.title || 'UGTM', n.body || '');
         });
       }
-      registerFcmToken();
-      // Renouvellement du token lors du retour au premier plan.
-      if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
-        document.addEventListener('visibilitychange', function() {
-          if (document.visibilityState === 'visible' && user) {
-            doGetToken();
-          }
-        });
-      }
-      onMessage(messaging, function(payload) {
-        var n = (payload && payload.notification) || {};
-        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          try { new Notification(n.title || 'UGTM', { body: n.body || '', icon: 'icons/ugtm-mark.svg' }); } catch (e) {}
-        }
-      });
     }
   } catch (e) {
     try { console.warn('FCM init failed:', e && e.code ? e.code : 'unknown'); } catch (_e) {}
@@ -514,7 +486,7 @@ function onUser(user){
           if(ch.type === 'added'){
             var x = ch.doc.data() || {};
             if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-              try { new Notification(String(x.title||'UGTM'), { body: String(x.body||''), icon: 'icons/ugtm-mark.svg' }); } catch(e){}
+              showPushNotification(String(x.title||'UGTM'), String(x.body||''));
             }
           }
         });
@@ -1970,7 +1942,7 @@ export async function init(config, h){
   await loadCapacitorBrowser();
 
 
-  var app =
+  firebaseApp =
     initializeApp(config);
 
 
@@ -1981,7 +1953,7 @@ export async function init(config, h){
     try{
 
       initializeAppCheck(
-        app,
+        firebaseApp,
         {
           provider: new ReCaptchaV3Provider(String(config.appCheckKey)),
           isTokenAutoRefreshEnabled: true
@@ -1997,7 +1969,7 @@ export async function init(config, h){
 
 
   auth =
-    getAuth(app);
+    getAuth(firebaseApp);
 
 
   try {
@@ -2005,7 +1977,7 @@ export async function init(config, h){
     db =
       initializeFirestore(
 
-        app,
+        firebaseApp,
 
         {
 
@@ -2026,7 +1998,7 @@ export async function init(config, h){
   catch(e){
 
     db =
-      getFirestore(app);
+      getFirestore(firebaseApp);
 
   }
 
@@ -2101,6 +2073,23 @@ async function cloudMarkNotificationRead(id){
 
     addReport: addReport,
     admin: admin,
+
+    enablePushNotifications: async function(){
+      if (!auth || !auth.currentUser) throw new Error('Connectez-vous avant d’activer les notifications.');
+      if (typeof Notification === 'undefined' || !navigator.serviceWorker) throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
+      // L'appel à requestPermission est exécuté immédiatement depuis le clic utilisateur.
+      var permission = await Notification.requestPermission();
+      if (permission !== 'granted') throw new Error('Autorisation de notification non accordée.');
+      messaging = messaging || getMessaging(firebaseApp);
+      var registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      var cfg = window.APP_DATA && window.APP_DATA.firebase || {};
+      var vapidKey = cfg.vapidKey || cfg.messagingVapidKey || '';
+      if (!vapidKey) throw new Error('Clé VAPID absente de la configuration.');
+      var token = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
+      if (!token) throw new Error('Firebase n’a pas créé de jeton push.');
+      await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { token: token, updatedAt: serverTimestamp() }, { merge: true });
+      return true;
+    },
 
     loadNotifications: cloudLoadNotifications,
     markNotificationRead: cloudMarkNotificationRead,
