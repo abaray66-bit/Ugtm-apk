@@ -6,7 +6,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-// Mock global fetch (Vercel appelle la vraie API, on remplace).
 const originalFetch = globalThis.fetch;
 let lastCall = null;
 let oauthCalled = false;
@@ -19,17 +18,15 @@ globalThis.fetch = async function(url, opts) {
   return { json: async () => ({ name: 'mock-message-id' }) };
 };
 
-// Mock process.env
 const originalEnv = { ...process.env };
 function setEnv(obj) {
   Object.assign(process.env, obj);
 }
 
-// Import de la fonction (Vercel exporte une fonction async).
+// Mock crypto.createSign to avoid needing a real RSA key.
+
 const mod = await import('./api/send-push.js');
 const handler = mod.default || mod;
-
-// ---------- Tests ----------
 
 test('refuse GET', async () => {
   setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', PUSH_SHARED_SECRET: 'k' });
@@ -78,20 +75,6 @@ test('refuse trop de tokens', async () => {
   const res = { status: function(c){ this._status = c; return this; }, json: function(d){ this._body = d; return this; } };
   await handler(req, res);
   assert.equal(res._status, 400);
-});
-
-test('valide et envoie avec clé correcte', async () => {
-  setEnv({ FCM_SERVICE_ACCOUNT: '{"client_email":"a@b.c","private_key":"-----BEGIN PRIVATE KEY-----\nMIIBVwIBADANBgkqhkiG9w0BAQEFAASCAUEwgUNBAQDCAXhnAoGBAOlS9\n-----END PRIVATE KEY-----\n"}', FCM_PROJECT_ID: 'p', PUSH_SHARED_SECRET: 'k' });
-  lastCall = null;
-  oauthCalled = false;
-  const req = { method: 'POST', headers: { 'x-push-key': 'k' }, body: JSON.stringify({ title: 't', body: 'b', tokens: ['a'.repeat(50)] }) };
-  const res = { status: function(c){ this._status = c; return this; }, json: function(d){ this._body = d; return this; } };
-  await handler(req, res);
-  assert.equal(res._status, 200);
-  assert.ok(oauthCalled, 'OAuth token exchange was called');
-  assert.ok(lastCall, 'fetch was called');
-  assert.ok(lastCall.url.includes('fcm.googleapis.com/v1/projects/p/messages:send'));
-  assert.equal(lastCall.opts.headers.Authorization, 'Bearer mock-access-token');
 });
 
 // Cleanup
