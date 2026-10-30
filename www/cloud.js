@@ -2040,7 +2040,10 @@ async function cloudSendPush(title, body, tokens){
   try {
     await fetch(url + '/api/send-push', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Push-Key': String(window.APP_DATA && window.APP_DATA.pushSharedKey || '')
+      },
       body: JSON.stringify({ title: String(title).slice(0,120), body: String(body || '').slice(0,500), tokens: tokens })
     });
   } catch(e){ console.warn('push backend failed:', e); }
