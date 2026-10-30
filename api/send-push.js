@@ -1,28 +1,51 @@
 // Vercel serverless function : envoie des push FCM via l'API HTTP v1.
-// Sécurité :
-//   - Authentification par clé partagée (X-Push-Key header).
-//   - Les tokens FCM sont validés (format + longueur).
-//   - Les destinataires sont limités (max 1000 par appel).
-//   - Aucun secret Firebase dans le code client.
+// Authentification : Firebase ID token (header Authorization: Bearer <token>).
+// Autorisation : vérification du rôle admin côté serveur (email dans adminEmails).
+// Destinataires : déterminés depuis Firestore (fcmTokens + members).
+// Secrets : uniquement dans les variables d'environnement Vercel.
 //
-// Variables d'environnement Vercel requises :
+// Variables d'environnement requises :
 //   FCM_SERVICE_ACCOUNT  — JSON du compte de service Firebase (clé privée).
 //   FCM_PROJECT_ID       — "ugtm-fns-souss-massa"
-//   PUSH_SHARED_SECRET   — clé partagée avec le client (à générer).
+//   ADMIN_EMAILS         — e-mails des administrateurs (séparés par des virgules)
 
-const MAX_TOKENS = 1000;
 const crypto = require('crypto');
+const admin = require('firebase-admin');
+
+const MAX_RECIPIENTS = 1000;
+const RATE_LIMIT_WINDOW_MS = 3600000; // 1 heure
+const RATE_LIMIT_MAX_PER_ADMIN = 5; // 5 envois/heure par admin
+const RATE_LIMIT_MAX_PER_IP = 10; // 10 req/min par IP (géré par Vercel)
+
+// Initialiser Firebase Admin SDK (une seule fois).
+let firebaseApp = null;
+function getFirebaseApp() {
+  if (firebaseApp) return firebaseApp;
+  const serviceAccount = JSON.parse(process.env.FCM_SERVICE_ACCOUNT);
+  firebaseApp = admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  return firebaseApp;
+}
+
+function getDb() {
+  return getFirebaseApp().firestore();
+}
+
+function getMessaging() {
+  getFirebaseApp();
+  return admin.messaging();
+}
 
 function isValidFcmToken(t) {
   return typeof t === 'string' && t.length >= 40 && t.length <= 512 && /^[A-Za-z0-9_:.-]+$/.test(t);
 }
 
-async function getAccessToken(serviceAccountJson) {
-  const sa = JSON.parse(serviceAccountJson);
+async function getAccessToken(serviceAccount) {
   const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
   const payload = Buffer.from(JSON.stringify({
-    iss: sa.client_email,
+    iss: serviceAccount.client_email,
     scope: 'https://www.googleapis.com/auth/firebase.messaging',
     aud: 'https://oauth2.googleapis.com/token',
     exp: now + 3600,
@@ -31,7 +54,7 @@ async function getAccessToken(serviceAccountJson) {
   const signInput = header + '.' + payload;
   const sign = crypto.createSign('RSA-SHA256');
   sign.update(signInput);
-  const signature = sign.sign(sa.private_key).toString('base64url');
+  const signature = sign.sign(serviceAccount.private_key).toString('base64url');
   const assertion = signInput + '.' + signature;
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -44,26 +67,111 @@ async function getAccessToken(serviceAccountJson) {
   });
   const tokenData = await tokenRes.json();
   if (!tokenData.access_token) {
-    throw new Error('OAuth token exchange failed: ' + JSON.stringify(tokenData));
+    throw new Error('OAuth token exchange failed');
   }
   return tokenData.access_token;
 }
 
+async function checkRateLimit(adminUid) {
+  const db = getDb();
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const docRef = db.collection('rateLimits').doc(adminUid);
+  const snap = await docRef.get();
+
+  if (snap.exists) {
+    const data = snap.data();
+    const windowStartMs = data.windowStart ? data.windowStart.toMillis() : 0;
+    if (windowStartMs > windowStart) {
+      if (data.count >= RATE_LIMIT_MAX_PER_ADMIN) {
+        return { allowed: false, remaining: 0, resetAt: windowStartMs + RATE_LIMIT_WINDOW_MS };
+      }
+      await docRef.update({ count: admin.firestore.FieldValue.increment(1) });
+      return { allowed: true, remaining: RATE_LIMIT_MAX_PER_ADMIN - data.count - 1, resetAt: windowStartMs + RATE_LIMIT_WINDOW_MS };
+    }
+  }
+
+  await docRef.set({ count: 1, windowStart: admin.firestore.Timestamp.now() });
+  return { allowed: true, remaining: RATE_LIMIT_MAX_PER_ADMIN - 1, resetAt: now + RATE_LIMIT_WINDOW_MS };
+}
+
+function getAdminEmails() {
+  const envEmails = process.env.ADMIN_EMAILS || '';
+  if (envEmails) {
+    return envEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  }
+  return ['abaray66@gmail.com'];
+}
+
+async function getActiveMemberTokens() {
+  const db = getDb();
+  const membersSnap = await db.collection('members').where('status', '==', 'active').get();
+  const activeUids = membersSnap.docs.map(d => d.id);
+  const tokens = [];
+  for (const uid of activeUids) {
+    const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
+    if (tokenSnap.exists) {
+      const token = tokenSnap.data().token;
+      if (token && isValidFcmToken(token)) {
+        tokens.push(token);
+      }
+    }
+  }
+  return tokens;
+}
+
+async function getMemberToken(uid) {
+  const db = getDb();
+  const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
+  if (tokenSnap.exists) {
+    const token = tokenSnap.data().token;
+    if (token && isValidFcmToken(token)) {
+      return token;
+    }
+  }
+  return null;
+}
+
 module.exports = async function handler(req, res) {
+  const startTime = Date.now();
+
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const pushKey = process.env.PUSH_SHARED_SECRET;
-    if (!pushKey || !req.headers || req.headers['x-push-key'] !== pushKey) {
+    // Authentification : Firebase ID token
+    const authHeader = req.headers['authorization'] || '';
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!idToken) {
+      console.log(JSON.stringify({ level: 'warn', event: 'unauthorized_attempt', reason: 'no_token', timestamp: new Date().toISOString() }));
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const serverKey = process.env.FCM_SERVICE_ACCOUNT;
-    const projectId = process.env.FCM_PROJECT_ID;
-    if (!serverKey || !projectId) {
-      return res.status(500).json({ error: 'FCM credentials not configured' });
+    let decodedToken;
+    try {
+      decodedToken = await getFirebaseApp().auth().verifyIdToken(idToken);
+    } catch (e) {
+      console.log(JSON.stringify({ level: 'warn', event: 'unauthorized_attempt', reason: 'invalid_token', timestamp: new Date().toISOString() }));
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!decodedToken.email_verified) {
+      console.log(JSON.stringify({ level: 'warn', event: 'unauthorized_attempt', reason: 'email_not_verified', timestamp: new Date().toISOString() }));
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const adminEmails = getAdminEmails();
+    if (!adminEmails.includes((decodedToken.email || '').toLowerCase())) {
+      console.log(JSON.stringify({ level: 'warn', event: 'forbidden_attempt', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Rate limiting par administrateur
+    const rateCheck = await checkRateLimit(decodedToken.uid);
+    if (!rateCheck.allowed) {
+      console.log(JSON.stringify({ level: 'warn', event: 'rate_limited', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
+      return res.status(429).json({ error: 'Too many requests' });
     }
 
     let body = req.body;
@@ -72,22 +180,43 @@ module.exports = async function handler(req, res) {
     }
     body = body || {};
 
-    const { title, body: msgBody, tokens } = body;
-    if (!title || !Array.isArray(tokens) || tokens.length === 0) {
-      return res.status(400).json({ error: 'title and tokens[] required' });
-    }
-    if (tokens.length > MAX_TOKENS) {
-      return res.status(400).json({ error: 'Too many tokens. Max: ' + MAX_TOKENS });
+    const { type, title, body: msgBody, targetUid } = body;
+    if (!title || !type) {
+      return res.status(400).json({ error: 'Invalid request' });
     }
 
-    const validTokens = tokens.filter(isValidFcmToken);
-    if (validTokens.length === 0) {
-      return res.status(400).json({ error: 'No valid FCM tokens' });
+    const validTypes = ['news', 'event', 'adhesion'];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: 'Invalid request' });
     }
 
-    const accessToken = await getAccessToken(serverKey);
+    // Déterminer les destinataires depuis Firestore
+    let tokens = [];
+    if (type === 'news' || type === 'event') {
+      tokens = await getActiveMemberTokens();
+    } else if (type === 'adhesion') {
+      if (!targetUid) {
+        return res.status(400).json({ error: 'Invalid request' });
+      }
+      const token = await getMemberToken(targetUid);
+      if (token) tokens = [token];
+    }
+
+    if (tokens.length === 0) {
+      return res.status(200).json({ sent: 0, total: 0, message: 'No recipients' });
+    }
+
+    if (tokens.length > MAX_RECIPIENTS) {
+      tokens = tokens.slice(0, MAX_RECIPIENTS);
+    }
+
+    // Envoyer le push
+    const serviceAccount = JSON.parse(process.env.FCM_SERVICE_ACCOUNT);
+    const projectId = process.env.FCM_PROJECT_ID;
+    const accessToken = await getAccessToken(serviceAccount);
+
     const results = [];
-    for (const token of validTokens) {
+    for (const token of tokens) {
       try {
         const r = await fetch(
           'https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send',
@@ -110,13 +239,32 @@ module.exports = async function handler(req, res) {
           }
         );
         const data = await r.json();
-        results.push({ token: token.slice(0, 12) + '...', success: !!data.name, error: data.error || null });
+        results.push({ success: !!data.name, error: data.error && data.error.code ? data.error.code : null });
       } catch (e) {
-        results.push({ token: token.slice(0, 12) + '...', success: false, error: String(e) });
+        results.push({ success: false, error: 'send_failed' });
       }
     }
-    return res.status(200).json({ sent: results.filter(r => r.success).length, total: validTokens.length, results });
+
+    const sentCount = results.filter(r => r.success).length;
+    console.log(JSON.stringify({
+      level: 'info',
+      event: 'push_sent',
+      adminUid: decodedToken.uid,
+      type: type,
+      recipientCount: tokens.length,
+      successCount: sentCount,
+      durationMs: Date.now() - startTime,
+      timestamp: new Date().toISOString()
+    }));
+
+    return res.status(200).json({ sent: sentCount, total: tokens.length });
   } catch (e) {
-    return res.status(500).json({ error: 'Push send failed: ' + String(e) });
+    console.log(JSON.stringify({
+      level: 'error',
+      event: 'push_error',
+      error: String(e).slice(0, 200),
+      timestamp: new Date().toISOString()
+    }));
+    return res.status(500).json({ error: 'Internal error' });
   }
 };

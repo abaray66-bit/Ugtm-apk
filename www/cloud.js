@@ -995,7 +995,7 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
       // Push via backend (best-effort).
       getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
         var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-        if (tok) cloudSendPush('Adhésion acceptée', 'Votre adhésion a été validée.', [tok]);
+        cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
       }).catch(function(){});
     } catch(e){ console.warn('notif create', e); }
    return sig;
@@ -1554,7 +1554,7 @@ var admin = {
               // Push via backend (best-effort, non-blocking).
               getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
                 var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-                if (tks.length) cloudSendPush(title, body, tks);
+                cloudSendPush('news', title, body);
               }).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
@@ -1687,7 +1687,7 @@ var admin = {
           // Push via backend (best-effort, non-blocking).
           getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
             var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-            if (tks.length) cloudSendPush(title, body, tks);
+            cloudSendPush('event', title, body);
           }).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
@@ -2034,17 +2034,22 @@ export async function init(config, h){
   window.db = db;
 
 
-async function cloudSendPush(title, body, tokens){
+async function cloudSendPush(type, title, body, targetUid){
   var url = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
-  if (!url || !tokens || !tokens.length) return;
+  if (!url) return;
   try {
+    var user = auth && auth.currentUser;
+    if (!user) return;
+    var token = await user.getIdToken();
+    var payload = { type: type, title: String(title).slice(0,120), body: String(body || '').slice(0,500) };
+    if (targetUid) payload.targetUid = String(targetUid);
     await fetch(url + '/api/send-push', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Push-Key': String(window.APP_DATA && window.APP_DATA.pushSharedKey || '')
+        'Authorization': 'Bearer ' + token
       },
-      body: JSON.stringify({ title: String(title).slice(0,120), body: String(body || '').slice(0,500), tokens: tokens })
+      body: JSON.stringify(payload)
     });
   } catch(e){ console.warn('push backend failed:', e); }
 }
