@@ -147,3 +147,30 @@ test('serverTimestamp create (full 9 keys)', async () => {
 });
 
 console.log('Tests notifications exécutés avec firestore.rules.');
+
+test('admin create allowed with targetType news', async () => {
+  const ctx = env.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
+  const db = ctx.firestore();
+  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
+    title:'n', body:'b', type:'news', read:false, authorUid:'admin1',
+    createdAt: serverTimestamp(), targetType:'news', targetId:'nid1'
+  }));
+});
+
+test('admin create allowed with targetType event', async () => {
+  const ctx = env.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
+  const db = ctx.firestore();
+  await assertSucceeds(db.collection('notifications').doc('user1').collection('items').add({
+    title:'e', body:'b', type:'event', read:false, authorUid:'admin1',
+    createdAt: serverTimestamp(), targetType:'event', targetId:'eid1'
+  }));
+});
+
+test('unauthorized extra field denied', async () => {
+  const ctx = env.authenticatedContext('admin1', { email: 'abaray66@gmail.com', email_verified: true });
+  const db = ctx.firestore();
+  await assertFails(db.collection('notifications').doc('user1').collection('items').add({
+    title:'t', body:'b', type:'info', read:false, authorUid:'admin1',
+    createdAt: serverTimestamp(), extra:'nope'
+  }));
+});

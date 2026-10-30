@@ -14,11 +14,27 @@ exports.sendNotificationOnCreate = functions.firestore
     if (!tokenSnap.exists) return;
     const token = tokenSnap.data().token;
     if (!token) return;
-    await getMessaging().send({
-      token: token,
-      notification: {
-        title: String(data.title || 'UGTM'),
-        body: String(data.body || '')
+    try {
+      await getMessaging().send({
+        token: token,
+        notification: {
+          title: String(data.title || 'UGTM'),
+          body: String(data.body || '')
+        }
+      });
+    } catch (err) {
+      const code = err && (err.code || err.errorInfo && err.errorInfo.code);
+      if (
+        code === 'messaging/registration-token-not-registered' ||
+        code === 'messaging/invalid-registration-token' ||
+        code === 'messaging/invalid-argument'
+      ) {
+        try {
+          await getFirestore().doc('fcmTokens/' + uid).delete();
+        } catch (_e) {}
+        return;
       }
-    });
+      // Ne pas supprimer le token pour d'autres erreurs (réseau, quota, etc.)
+      return;
+    }
   });
