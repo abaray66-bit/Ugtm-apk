@@ -2,6 +2,13 @@
 // Le gestionnaire est déclaré avant Firebase, comme recommandé par FCM.
 const APP_ROOT_URL = 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/';
 
+self.addEventListener('install', function(event){
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener('activate', function(event){
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('notificationclick', function(event){
   event.notification.close();
   var targetUrl = (event.notification.data && event.notification.data.url) || APP_ROOT_URL;
