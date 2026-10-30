@@ -19,7 +19,7 @@ window.APP_DATA = {
     // Clé publique — peut être exposée côté client.
     vapidKey: "BCINtqiPhMlcxaU8dM1TR6AwVKMvT79UNLHpYWpn26n_88ZGRErBufz3-H01c9fCvGCzqmZv5h9LF3WXKqFc2tE",
     // URL du backend push (Vercel). Laisser vide pour désactiver le push serveur.
-    pushBackendUrl: "https://agile-marimba-ow7rjs2.vercel.app",
+    pushBackendUrl: "https://agile-marimba-ow7rjs2.tmp.now",
     // Clé App Check (reCAPTCHA v3) — FACULTATIVE.
     // Laisser vide : rien ne change. Renseignée (Firebase > Paramètres >
     // Application > App Check), l'app joint un jeton App Check à chaque
