@@ -3118,6 +3118,8 @@ input[type=file]::file-selector-button{
 
 <div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
   <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
+  <button id="enablePushBtn" type="button" style="width:100%;margin:0 0 8px;padding:8px 10px;border:1px solid #176b45;border-radius:6px;background:#e8f5ee;color:#145a39;cursor:pointer;" onclick="enablePushFromClick()">Activer les notifications push</button>
+  <p id="pushStatus" role="status" style="margin:0 0 8px;color:#555;font-size:13px;"></p>
   <div id="notifList" style="min-height:40px;color:#111;"></div>
   <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
   <div id="notifHistory" hidden></div>
@@ -3133,6 +3135,22 @@ input[type=file]::file-selector-button{
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
 
 <script>
+async function enablePushFromClick(){
+  var btn=document.getElementById('enablePushBtn');
+  var status=document.getElementById('pushStatus');
+  if(btn) btn.disabled=true;
+  if(status) status.textContent='Activation en cours…';
+  try{
+    if(!window.CLOUD||typeof window.CLOUD.enablePushNotifications!=='function') throw new Error('Service de notification indisponible. Rechargez la page.');
+    await window.CLOUD.enablePushNotifications();
+    if(status) status.textContent='Notifications push activées sur cet appareil.';
+    if(btn) btn.textContent='Notifications activées';
+  }catch(e){
+    if(status) status.textContent=(e&&e.message)||'Impossible d’activer les notifications.';
+    if(btn) btn.disabled=false;
+  }
+}
+
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
   var countEl=document.getElementById('notifCount');
