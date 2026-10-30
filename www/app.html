@@ -3111,7 +3111,7 @@ input[type=file]::file-selector-button{
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
 <div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button id="notifMenuBtn" type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
 
 </div>
@@ -9276,6 +9276,20 @@ location.protocol.indexOf('http')===0
 ){
 
 document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true; });
+
+document.addEventListener('click',function(e){
+  var modal=document.getElementById('notifModal');
+  if(!modal||modal.hidden) return;
+  var target=e.target;
+  var menuButton=target&&target.closest?target.closest('#notifMenuBtn'):null;
+  if(!modal.contains(target)&&!menuButton) modal.hidden=true;
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var modal=document.getElementById('notifModal');
+    if(modal) modal.hidden=true;
+  }
+});
 
 window.addEventListener(
 'load',

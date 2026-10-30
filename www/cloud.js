@@ -914,7 +914,13 @@ async function submitAdhesion(application,signature){
        la fiche membre, puis — quand le compte en porte
        un — sur la fiche de responsable et le contact de
        province (liste publique). */
-    return syncMemberPhone(u, clean.phone).then(function(){return result;});
+    return syncMemberPhone(u, clean.phone).then(function(){
+      if (!result.completed) {
+        var applicantName = (clean.prenom + ' ' + clean.nom).trim();
+        cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
+      }
+      return result;
+    });
   });
   return result;
 }
@@ -1503,7 +1509,8 @@ var admin = {
           .then(function(){
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
-              var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
+              var newsSubject = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : '');
+              var title = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
               var body = (o.fr && o.fr.body) ? (o.fr.body) : ((o.ar && o.ar.body) ? (o.ar.body) : '');
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
               var tokens = [];
@@ -1641,7 +1648,8 @@ var admin = {
 
       return setDoc(ref, data).then(function(){
         return getDocs(collection(db, 'members')).then(function(snap){
-          var title = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : 'Nouvel événement');
+          var eventSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
+          var title = ('Nouvel événement' + (eventSubject ? ' : ' + String(eventSubject).trim() : '')).slice(0,120);
           var body = (o.fr && o.fr.b) ? o.fr.b : ((o.ar && o.ar.b) ? o.ar.b : '');
           var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
           var writes = snap.docs.map(function(d){
