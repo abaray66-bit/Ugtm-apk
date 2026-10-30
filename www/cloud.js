@@ -992,6 +992,11 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
         targetId:String(uid),
         province:provForNotif
       });
+      // Push via backend (best-effort).
+      getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+        var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
+        if (tok) cloudSendPush('Adhésion acceptée', 'Votre adhésion a été validée.', [tok]);
+      }).catch(function(){});
     } catch(e){ console.warn('notif create', e); }
    return sig;
  }
@@ -1527,9 +1532,14 @@ var admin = {
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
               var title = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : 'Nouveau communiqué');
-              var body = (o.fr && o.fr.body) ? o.fr.body : ((o.ar && o.ar.body) ? o.ar.body : '');
+              var body = (o.fr && o.fr.body) ? (o.fr.body) : ((o.ar && o.ar.body) ? (o.ar.body) : '');
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
+              var tokens = [];
               var writes = snap.docs.map(function(d){
+                var m = d.data() || {};
+                if (m.status === 'active' && m.uid) {
+                  // Collect token for push (async, best-effort).
+                }
                 return addDoc(collection(db, 'notifications', d.id, 'items'), {
                   title: String(title).slice(0,120),
                   body: String(body).slice(0,500),
@@ -1541,6 +1551,11 @@ var admin = {
                   createdAt: serverTimestamp()
                 }).catch(function(){});
               });
+              // Push via backend (best-effort, non-blocking).
+              getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
+                var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
+                if (tks.length) cloudSendPush(title, body, tks);
+              }).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
           })
@@ -1669,6 +1684,11 @@ var admin = {
               createdAt: serverTimestamp()
             }).catch(function(){});
           });
+          // Push via backend (best-effort, non-blocking).
+          getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
+            var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
+            if (tks.length) cloudSendPush(title, body, tks);
+          }).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
       }).then(function(){ return ref; });
@@ -2013,6 +2033,18 @@ export async function init(config, h){
 
   window.db = db;
 
+
+async function cloudSendPush(title, body, tokens){
+  var url = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!url || !tokens || !tokens.length) return;
+  try {
+    await fetch(url + '/api/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: String(title).slice(0,120), body: String(body || '').slice(0,500), tokens: tokens })
+    });
+  } catch(e){ console.warn('push backend failed:', e); }
+}
 
 async function cloudLoadNotifications(){
   if (!auth || !auth.currentUser) return;
