@@ -6,7 +6,7 @@ firebase.initializeApp({
   apiKey: 'AIzaSyB-xhY-y5uuglA4ZUuXfM8FY5C6eTTZRMg',
   authDomain: 'ugtm-fns-souss-massa.web.app',
   projectId: 'ugtm-fns-souss-massa',
-  storageBucket: 'ugtm-fns-souss-massa.firebasestorage.app',
+  storageBucket: 'ugtm-fns-souss-massa.appspot.com',
   messagingSenderId: '313270677240',
   appId: '1:313270677240:web:e93739d6533750b3dd150d'
 });
