@@ -120,6 +120,57 @@ async function getActiveMemberTokens() {
   return tokens;
 }
 
+async function notifyAdhesionManagers(requestUid, province, title, messageBody) {
+  const db = getDb();
+  const managerUids = new Set();
+  const auth = getFirebaseApp().auth();
+
+  // Administrateurs principaux configurés dans Vercel.
+  for (const email of getAdminEmails()) {
+    try {
+      const user = await auth.getUserByEmail(email);
+      if (user.uid !== requestUid) managerUids.add(user.uid);
+    } catch (e) {
+      // Une adresse configurée mais sans compte Firebase n'a pas de destinataire.
+    }
+  }
+
+  // Sous-administrateurs actifs de la province du dossier.
+  const subadmins = await db.collection('members').where('role', '==', 'subadmin').get();
+  for (const doc of subadmins.docs) {
+    const member = doc.data() || {};
+    const assignedProvince = String(member.adminProvince || member.prov || '');
+    if (doc.id !== requestUid && member.status === 'active' && assignedProvince === String(province || '')) {
+      managerUids.add(doc.id);
+    }
+  }
+
+  const batch = db.batch();
+  const tokens = [];
+  for (const uid of managerUids) {
+    const notificationRef = db.collection('notifications').doc(uid).collection('items').doc();
+    batch.set(notificationRef, {
+      title: String(title).slice(0, 120),
+      body: String(messageBody || '').slice(0, 500),
+      type: 'adhesion',
+      read: false,
+      authorUid: requestUid,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      targetType: 'adhesion',
+      targetId: requestUid,
+      province: String(province || '')
+    });
+
+    const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
+    if (tokenSnap.exists) {
+      const token = tokenSnap.data() && tokenSnap.data().token;
+      if (isValidFcmToken(token)) tokens.push(token);
+    }
+  }
+  if (managerUids.size) await batch.commit();
+  return Array.from(new Set(tokens));
+}
+
 async function getMemberToken(uid) {
   const db = getDb();
   const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
@@ -187,34 +238,47 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const adminEmails = getAdminEmails();
-    if (!adminEmails.includes((decodedToken.email || '').toLowerCase())) {
-      console.log(JSON.stringify({ level: 'warn', event: 'forbidden_attempt', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-
-    // Rate limiting par administrateur
-    const rateCheck = await checkRateLimit(decodedToken.uid);
-    if (!rateCheck.allowed) {
-      console.log(JSON.stringify({ level: 'warn', event: 'rate_limited', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
-      return res.status(429).json({ error: 'Too many requests' });
-    }
-
     let body = req.body;
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
     body = body || {};
 
-    const { type, title, body: msgBody, targetUid } = body;
-    if (!title || !type) {
+    const { type, title: requestedTitle, body: requestedBody, targetUid } = body;
+    const validTypes = ['news', 'event', 'adhesion', 'adhesion_request'];
+    if (!type || !validTypes.includes(type)) {
       return res.status(400).json({ error: 'Invalid request' });
     }
 
-    const validTypes = ['news', 'event', 'adhesion'];
-    if (!validTypes.includes(type)) {
-      return res.status(400).json({ error: 'Invalid request' });
+    const adminEmails = getAdminEmails();
+    const isAdmin = adminEmails.includes((decodedToken.email || '').toLowerCase());
+    if (type === 'adhesion_request') {
+      if (!targetUid || targetUid !== decodedToken.uid) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const requestRate = await checkRateLimit('adhesion:' + decodedToken.uid);
+      if (!requestRate.allowed) {
+        return res.status(429).json({ error: 'Too many requests' });
+      }
+    } else {
+      if (!requestedTitle) {
+        return res.status(400).json({ error: 'Invalid request' });
+      }
+      if (!isAdmin) {
+        console.log(JSON.stringify({ level: 'warn', event: 'forbidden_attempt', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      // Rate limiting par administrateur
+      const rateCheck = await checkRateLimit(decodedToken.uid);
+      if (!rateCheck.allowed) {
+        console.log(JSON.stringify({ level: 'warn', event: 'rate_limited', uid: decodedToken.uid, timestamp: new Date().toISOString() }));
+        return res.status(429).json({ error: 'Too many requests' });
+      }
     }
+
+    let title = requestedTitle || '';
+    let msgBody = requestedBody || '';
 
     // Déterminer les destinataires depuis Firestore
     let tokens = [];
@@ -226,6 +290,21 @@ module.exports = async function handler(req, res) {
       }
       const token = await getMemberToken(targetUid);
       if (token) tokens = [token];
+    } else if (type === 'adhesion_request') {
+      const db = getDb();
+      const requestSnap = await db.collection('adhesionRequests').doc(decodedToken.uid).get();
+      if (!requestSnap.exists) return res.status(403).json({ error: 'Forbidden' });
+      const request = requestSnap.data() || {};
+      if (request.status !== 'pending' || String(request.email || '').toLowerCase() !== String(decodedToken.email || '').toLowerCase()) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const application = request.application || {};
+      const applicantName = (String(application.prenom || '').trim() + ' ' + String(application.nom || '').trim()).trim();
+      if (!applicantName) return res.status(400).json({ error: 'Incomplete application' });
+      const province = String(request.province || application.province || '');
+      title = ('Nouvelle demande d’adhésion : ' + applicantName).slice(0, 120);
+      msgBody = ('Province : ' + province).slice(0, 500);
+      tokens = await notifyAdhesionManagers(decodedToken.uid, province, title, msgBody);
     }
 
     if (tokens.length === 0) {
