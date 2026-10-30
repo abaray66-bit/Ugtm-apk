@@ -132,8 +132,34 @@ async function getMemberToken(uid) {
   return null;
 }
 
+const ALLOWED_ORIGINS = new Set([
+  'https://ugtm-fns-souss-massa.web.app',
+  'https://ugtm-fns-souss-massa.firebaseapp.com',
+  'https://ugtm.ma',
+  'https://www.ugtm.ma',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://localhost'
+]);
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+}
+
 module.exports = async function handler(req, res) {
   const startTime = Date.now();
+  setCorsHeaders(req, res);
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
 
   try {
     if (req.method !== 'POST') {
