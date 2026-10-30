@@ -340,7 +340,7 @@ module.exports = async function handler(req, res) {
                 },
                 data: { targetUrl: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' },
                 webpush: {
-                  fcmOptions: { link: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' },
+                  fcm_options: { link: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' },
                   notification: { icon: '/www/icons/ugtm-mark.svg' }
                 },
                 android: { priority: 'high' }
