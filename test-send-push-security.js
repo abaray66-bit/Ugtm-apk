@@ -54,6 +54,7 @@ function makeRes() {
   res._body = null;
   res.status = function(c){ this._status = c; return this; };
   res.json = function(d){ this._body = d; return this; };
+  res.setHeader = function(){ return this; };
   return res;
 }
 
@@ -73,7 +74,7 @@ async function runTest(name, fn) {
 async function main() {
   await runTest('refuse GET', async () => {
     setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
-    const req = { method: 'GET' };
+    const req = { method: 'GET', headers: {} };
     const res = makeRes();
     await handler(req, res);
     assertEqual(res._status, 405);
