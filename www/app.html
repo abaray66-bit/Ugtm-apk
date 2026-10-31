@@ -979,13 +979,10 @@ main{
   cursor:pointer
 }
 
-#admTabs .fbtn{display:flex;align-items:center;justify-content:center;min-height:48px;padding:6px 2px}
-#admTabs .admin-tab-icon{display:block;flex:0 0 22px;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#admTabs .admin-tab-icon{display:block;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #admTabs .admin-tab-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 
  .filter-lines{display:flex;flex-direction:column;align-items:center;line-height:1.05}
-
-#admMemFilters .fbtn{font-size:clamp(10px,2.8vw,12px)}
 
 .fbtn[aria-pressed="true"]{
   background:var(--primary);
@@ -3215,7 +3212,7 @@ function renderNotifications(list){
     p.appendChild(titleEl);
     if(bodyEl.textContent) p.appendChild(bodyEl);
     p.onclick=function(){
-      if((n.targetType==='news'||n.targetType==='event'||n.targetType==='report') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
+      if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
       else if(n.targetType==='news' && typeof go==='function') go('news');
       else if(n.targetType==='event' && typeof go==='function') go('agenda');
       else if(typeof go==='function') go('me');
@@ -4788,7 +4785,7 @@ try{
 var notificationQuery=new URLSearchParams(window.location.search||'');
 var notificationType=notificationQuery.get('notificationType');
 var notificationId=notificationQuery.get('notificationId');
-if((notificationType==='news'||notificationType==='event'||notificationType==='report')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
+if((notificationType==='news'||notificationType==='event')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
 }catch(notificationQueryError){}
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
@@ -6133,15 +6130,6 @@ function openNotificationTarget(type,id){
     setTimeout(function(){var panel=document.getElementById('p-'+targetId);if(panel&&panel.scrollIntoView)panel.scrollIntoView({behavior:'smooth',block:'center'});},50);
     return true;
   }
-  if(targetType==='report'){
-    if(!S.isAdmin&&!S.isSubAdmin)return false;
-    var reportExists=(S.reports||[]).some(function(item){return String(item.id)===targetId;});
-    if(!reportExists)return false;
-    go('admin');
-    showAdmTab('reports');
-    setTimeout(function(){var row=document.getElementById('adm-report-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},60);
-    return true;
-  }
   if(targetType==='event'){
     var eventItem=EVENTS.filter(function(item){return String(item.id)===targetId;})[0];
     if(!eventItem)return false;
@@ -6888,7 +6876,7 @@ if(S.isAdmin){
 actions+='<button type="button" class="btn ghost small danger" data-adm-act="delReport" data-id="'+esc(r.id)+'">'+esc(t.admDelete)+'</button>';
 }
 
-return '<li class="mrow" id="adm-report-'+esc(r.id)+'"><div class="mi">'+
+return '<li class="mrow"><div class="mi">'+
 '<strong>'+esc(reportCategoryLabelI18n(r.category))+' · '+esc(status)+'</strong>'+
 '<span>'+esc(provName(r.province,lang)||r.province||'')+' · '+esc(r.date)+'</span>'+
 (r.etab?'<span>'+esc(t.admReportEtab)+' '+esc(r.etab)+'</span>':'')+
@@ -9297,7 +9285,6 @@ setReports:function(list){
 S.reports=list||[];
 renderAdminReports();
 renderMeReports();
-processPendingNotificationTarget();
 },
 
 setAdhesions:function(list){
