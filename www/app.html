@@ -3176,9 +3176,18 @@ function renderNotifications(list){
       p.style.color='#666';
       p.style.fontWeight='normal';
     }
-    p.textContent=String(n.title||'')+' - '+String(n.body||'');
+    var titleEl=document.createElement('strong');
+    titleEl.textContent=String(n.title||'Notification');
+    titleEl.style.display='block';
+    var bodyEl=document.createElement('span');
+    bodyEl.textContent=String(n.body||'');
+    bodyEl.style.display='block';
+    bodyEl.style.marginTop='3px';
+    p.appendChild(titleEl);
+    if(bodyEl.textContent) p.appendChild(bodyEl);
     p.onclick=function(){
-      if(n.targetType==='news' && typeof go==='function') go('news');
+      if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
+      else if(n.targetType==='news' && typeof go==='function') go('news');
       else if(n.targetType==='event' && typeof go==='function') go('agenda');
       else if(typeof go==='function') go('me');
 
@@ -4745,6 +4754,13 @@ var filter='all';
    déclarations / Actualités syndicales / Rencontres et réunions). */
 var admNewsFilter='all';
 var openId=null;
+var pendingNotificationTarget=null;
+try{
+var notificationQuery=new URLSearchParams(window.location.search||'');
+var notificationType=notificationQuery.get('notificationType');
+var notificationId=notificationQuery.get('notificationId');
+if((notificationType==='news'||notificationType==='event')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
+}catch(notificationQueryError){}
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
 var agendaSelectedDate='';
@@ -6049,8 +6065,54 @@ var list=EVENTS.filter(function(ev){
 return String(ev.date||'').slice(0,7)===monthKey&&(!agendaSelectedDate||ev.date===agendaSelectedDate);
 }).sort(function(a,b){return a.date===b.date?String(a.time||'').localeCompare(String(b.time||'')):a.date.localeCompare(b.date);});
 $('eventList').innerHTML=list.length
-?list.map(function(ev){return '<li>'+eventRow(ev,true)+'</li>';}).join('')
+?list.map(function(ev){return '<li id="event-'+esc(ev.id)+'">'+eventRow(ev,true)+'</li>';}).join('')
 :'<li class="empty">'+T().noEvent+'</li>';
+}
+
+function openNotificationTarget(type,id){
+  var targetType=String(type||'');
+  var targetId=String(id||'');
+  if(!targetId)return false;
+  if(targetType==='news'){
+    var publication=NEWS.filter(function(item){return String(item.id)===targetId;})[0];
+    if(!publication)return false;
+    filter='all';
+    renderFilters();
+    go('news');
+    openId=targetId;
+    renderNews();
+    if(publication.hasImage&&!publication.images)loadNewsImage(publication);
+    setTimeout(function(){var panel=document.getElementById('p-'+targetId);if(panel&&panel.scrollIntoView)panel.scrollIntoView({behavior:'smooth',block:'center'});},50);
+    return true;
+  }
+  if(targetType==='event'){
+    var eventItem=EVENTS.filter(function(item){return String(item.id)===targetId;})[0];
+    if(!eventItem)return false;
+    var dateParts=String(eventItem.date||'').split('-');
+    if(dateParts.length>=2)agendaCursor=new Date(Number(dateParts[0]),Number(dateParts[1])-1,1);
+    agendaSelectedDate=String(eventItem.date||'');
+    go('agenda');
+    renderAgenda();
+    setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
+    return true;
+  }
+  return false;
+}
+window.openNotificationTarget=openNotificationTarget;
+function clearNotificationTargetQuery(){
+  try{
+    var url=new URL(window.location.href);
+    url.searchParams.delete('notificationType');
+    url.searchParams.delete('notificationId');
+    window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
+  }catch(e){}
+}
+function processPendingNotificationTarget(){
+  if(!pendingNotificationTarget)return;
+  if(openNotificationTarget(pendingNotificationTarget.type,pendingNotificationTarget.id)){
+    pendingNotificationTarget=null;
+    clearNotificationTargetQuery();
+  }
 }
 
 /* =========================
@@ -8051,6 +8113,36 @@ $('main').scrollTop=0;
 
 }
 
+function bindPageSwipeNavigation(){
+  var main=$('main');
+  if(!main||main.getAttribute('data-page-swipe-bound'))return;
+  main.setAttribute('data-page-swipe-bound','true');
+  var start=null;
+  main.addEventListener('touchstart',function(e){
+    if(!e.touches||e.touches.length!==1||!document.querySelector('#tabs .tab[aria-selected="true"]')){start=null;return;}
+    var target=e.target;
+    if(target&&target.closest&&target.closest('input,textarea,select,button,a,[contenteditable="true"],.gallery,.lightbox,[role="dialog"]')){start=null;return;}
+    start={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  },{passive:true});
+  main.addEventListener('touchend',function(e){
+    if(!start||!e.changedTouches||e.changedTouches.length!==1){start=null;return;}
+    var dx=e.changedTouches[0].clientX-start.x;
+    var dy=e.changedTouches[0].clientY-start.y;
+    start=null;
+    if(Math.abs(dx)<65||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    var tabs=Array.prototype.slice.call(document.querySelectorAll('#tabs .tab[data-tab]'));
+    var active=document.querySelector('#tabs .tab[aria-selected="true"]');
+    var current=tabs.indexOf(active);
+    if(current<0)return;
+    var step=dx<0?1:-1;
+    if(window.getComputedStyle(document.documentElement).direction==='rtl')step=-step;
+    var next=tabs[current+step];
+    if(next)go(next.getAttribute('data-tab'));
+  },{passive:true});
+  main.addEventListener('touchcancel',function(){start=null;},{passive:true});
+}
+bindPageSwipeNavigation();
+
 /* =========================
    CALENDRIER
    ========================= */
@@ -9120,6 +9212,7 @@ NEWS=list;
 renderHome();
 renderNews();
 renderAdminNews();
+processPendingNotificationTarget();
 
 },
 
@@ -9130,6 +9223,7 @@ EVENTS=list;
 renderHome();
 renderAgenda();
 renderAdminEvents();
+processPendingNotificationTarget();
 
 },
 
@@ -10431,6 +10525,7 @@ window.UGTM.failed(err);
 
 </body>
 <style>
+#main{touch-action:pan-y;}
 .notif-badge{
   position:absolute;top:-4px;right:-6px;
 

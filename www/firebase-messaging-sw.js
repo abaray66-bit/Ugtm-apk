@@ -9,11 +9,32 @@ self.addEventListener('activate', function(event){
   event.waitUntil(self.clients.claim());
 });
 
+function notificationTargetUrl(data){
+  var info=data||{};
+  var root=new URL(APP_ROOT_URL);
+  var raw=info.targetUrl||info.url||'';
+  if(raw){
+    try{
+      var candidate=new URL(String(raw),APP_ROOT_URL);
+      if(candidate.origin===root.origin&&candidate.pathname===root.pathname)return candidate.href;
+    }catch(e){}
+  }
+  var type=String(info.notificationType||info.targetType||'');
+  var id=String(info.notificationId||info.targetId||'');
+  if((type==='news'||type==='event')&&/^[A-Za-z0-9_-]{1,150}$/.test(id)){
+    root.searchParams.set('notificationType',type);
+    root.searchParams.set('notificationId',id);
+  }
+  return root.href;
+}
+
 self.addEventListener('notificationclick', function(event){
   event.notification.close();
-  // Ignorer les anciennes URL mémorisées dans les notifications (ex. Vercel).
-  // Toutes les notifications doivent ouvrir l'application Firebase.
-  var targetUrl = APP_ROOT_URL;
+  var notificationData=event.notification.data||{};
+  var fcmData=notificationData.FCM_MSG&&notificationData.FCM_MSG.data||{};
+  var clickData=Object.assign({},fcmData,notificationData);
+  // Rejeter l'ancien domaine Vercel, tout en gardant les liens de publication Firebase.
+  var targetUrl = notificationTargetUrl(clickData);
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList){
       var appClient = clientList.find(function(client){
@@ -49,5 +70,6 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage(function(payload){
   var title = (payload.notification && payload.notification.title) || 'UGTM';
   var body = (payload.notification && payload.notification.body) || '';
-  self.registration.showNotification(title, { body: body, icon: '/www/icons/ugtm-mark.svg', data: { url: APP_ROOT_URL } });
+  var notificationData=payload.data||{};
+  self.registration.showNotification(title, { body: body, icon: '/www/icons/ugtm-mark.svg', data: { url: notificationTargetUrl(notificationData), targetType: notificationData.notificationType||'', targetId: notificationData.notificationId||'' } });
 });

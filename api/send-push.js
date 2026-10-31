@@ -41,6 +41,16 @@ function isValidFcmToken(t) {
   return typeof t === 'string' && t.length >= 40 && t.length <= 512 && /^[A-Za-z0-9_:.-]+$/.test(t);
 }
 
+function buildNotificationTarget(type, targetId) {
+  const url = new URL('https://ugtm-fns-souss-massa.web.app/app.html');
+  const id = String(targetId || '');
+  if ((type === 'news' || type === 'event') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
+    url.searchParams.set('notificationType', type);
+    url.searchParams.set('notificationId', id);
+  }
+  return url;
+}
+
 async function getAccessToken(serviceAccount) {
   const now = Math.floor(Date.now() / 1000);
   const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
@@ -244,7 +254,7 @@ module.exports = async function handler(req, res) {
     }
     body = body || {};
 
-    const { type, title: requestedTitle, body: requestedBody, targetUid } = body;
+    const { type, title: requestedTitle, body: requestedBody, targetUid, targetId } = body;
     const validTypes = ['news', 'event', 'adhesion', 'adhesion_request'];
     if (!type || !validTypes.includes(type)) {
       return res.status(400).json({ error: 'Invalid request' });
@@ -320,6 +330,13 @@ module.exports = async function handler(req, res) {
     const projectId = process.env.FCM_PROJECT_ID;
     const accessToken = await getAccessToken(serviceAccount);
 
+    const pushTarget = buildNotificationTarget(type, targetId);
+    const pushData = { targetUrl: pushTarget.toString() };
+    if ((type === 'news' || type === 'event') && /^[A-Za-z0-9_-]{1,150}$/.test(String(targetId || ''))) {
+      pushData.notificationType = type;
+      pushData.notificationId = String(targetId);
+    }
+
     const results = [];
     for (const token of tokens) {
       try {
@@ -338,9 +355,9 @@ module.exports = async function handler(req, res) {
                   title: String(title).slice(0, 120),
                   body: String(msgBody || '').slice(0, 500)
                 },
-                data: { targetUrl: 'https://ugtm-fns-souss-massa.web.app/app.html' },
+                data: pushData,
                 webpush: {
-                  fcm_options: { link: 'https://ugtm-fns-souss-massa.web.app/app.html' },
+                  fcm_options: { link: pushTarget.toString() },
                   notification: { icon: '/www/icons/ugtm-mark.svg' }
                 },
                 android: { priority: 'high' }
