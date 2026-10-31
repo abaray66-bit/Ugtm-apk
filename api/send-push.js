@@ -193,6 +193,148 @@ async function getMemberToken(uid) {
   return null;
 }
 
+async function checkReportIpRateLimit(req) {
+  const rawIp = String((req.headers && req.headers['x-forwarded-for']) || (req.socket && req.socket.remoteAddress) || '');
+  const ip = rawIp.split(',')[0].trim() || 'unknown';
+  const key = crypto.createHash('sha256').update(ip).digest('hex');
+  const ref = getDb().collection('reportNotificationRateLimits').doc(key);
+  const now = Date.now();
+  return getDb().runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.exists ? (snap.data() || {}) : {};
+    const start = data.windowStart && typeof data.windowStart.toMillis === 'function'
+      ? data.windowStart.toMillis()
+      : 0;
+    if (start && now - start < 60000 && Number(data.count || 0) >= RATE_LIMIT_MAX_PER_IP) return false;
+    if (start && now - start < 60000) {
+      tx.update(ref, { count: Number(data.count || 0) + 1 });
+    } else {
+      tx.set(ref, { count: 1, windowStart: admin.firestore.Timestamp.fromMillis(now) });
+    }
+    return true;
+  });
+}
+
+async function dispatchReportNotification(req, reportId) {
+  if (!/^[A-Za-z0-9_-]{1,150}$/.test(reportId)) {
+    return { sent: 0, total: 0, error: 'Invalid report' };
+  }
+  if (!(await checkReportIpRateLimit(req))) return { sent: 0, total: 0, rateLimited: true };
+
+  const db = getDb();
+  const reportSnap = await db.collection('reports').doc(reportId).get();
+  if (!reportSnap.exists) return { sent: 0, total: 0, error: 'Report not found' };
+  const report = reportSnap.data() || {};
+  const createdAt = report.createdAt && typeof report.createdAt.toMillis === 'function'
+    ? report.createdAt.toMillis()
+    : 0;
+  const ageMs = Date.now() - createdAt;
+  if (report.status !== 'new' || !createdAt || ageMs < -60000 || ageMs > 15 * 60 * 1000) {
+    return { sent: 0, total: 0, error: 'Report is not eligible' };
+  }
+
+  const province = String(report.province || '').trim();
+  const allowedProvinces = new Set([
+    'Agadir Ida-Outanane', 'Inezgane-Aït Melloul', 'Chtouka-Aït Baha',
+    'Taroudant', 'Tiznit', 'Tata'
+  ]);
+  if (!allowedProvinces.has(province)) {
+    return { sent: 0, total: 0, error: 'Invalid province' };
+  }
+
+  const managerUids = new Set();
+  const auth = getFirebaseApp().auth();
+  for (const email of getAdminEmails()) {
+    try {
+      const user = await auth.getUserByEmail(email);
+      managerUids.add(user.uid);
+    } catch (e) {}
+  }
+
+  const subadmins = await db.collection('members').where('role', '==', 'subadmin').get();
+  for (const memberDoc of subadmins.docs) {
+    const member = memberDoc.data() || {};
+    const assignedProvince = String(member.adminProvince || member.prov || member.province || '');
+    if (member.status === 'active' && assignedProvince === province) managerUids.add(memberDoc.id);
+  }
+
+  const category = String(report.category || '').slice(0, 60).trim();
+  const title = ('Nouveau signalement' + (category ? ' : ' + category : '')).slice(0, 120);
+  const messageBody = 'Province : ' + province;
+  const claimRef = db.collection('reportNotificationDispatches').doc(reportId);
+  const dispatchClaimed = await db.runTransaction(async (tx) => {
+    const existing = await tx.get(claimRef);
+    if (existing.exists) return false;
+    tx.create(claimRef, {
+      reportId: reportId,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    for (const uid of managerUids) {
+      const notificationRef = db.collection('notifications').doc(uid).collection('items').doc('report_' + reportId);
+      tx.set(notificationRef, {
+        title: title,
+        body: messageBody,
+        type: 'report',
+        read: false,
+        authorUid: String(report.ownerUid || ''),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        targetType: 'report',
+        targetId: reportId,
+        targetScreen: 'admin',
+        province: province
+      });
+    }
+    return true;
+  });
+
+  if (!dispatchClaimed) return { sent: 0, total: 0, duplicate: true };
+
+  const tokens = [];
+  for (const uid of managerUids) {
+    const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
+    if (!tokenSnap.exists) continue;
+    const token = tokenSnap.data() && tokenSnap.data().token;
+    if (token && isValidFcmToken(token)) tokens.push(token);
+  }
+  const uniqueTokens = Array.from(new Set(tokens));
+  if (!uniqueTokens.length) return { sent: 0, total: 0 };
+
+  const serviceAccount = JSON.parse(process.env.FCM_SERVICE_ACCOUNT);
+  const projectId = process.env.FCM_PROJECT_ID;
+  const accessToken = await getAccessToken(serviceAccount);
+  const targetUrl = buildNotificationTarget('report', reportId).toString();
+  const tag = 'report-' + reportId;
+  const results = [];
+  for (const token of uniqueTokens) {
+    try {
+      const response = await fetch('https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken
+        },
+        body: JSON.stringify({
+          message: {
+            token: token,
+            notification: { title: title, body: messageBody },
+            data: { targetUrl: targetUrl, notificationType: 'report', notificationId: reportId },
+            webpush: {
+              fcm_options: { link: targetUrl },
+              notification: { icon: '/www/icons/ugtm-mark.svg', tag: tag, renotify: false }
+            },
+            android: { priority: 'high', notification: { tag: tag } }
+          }
+        })
+      });
+      const result = await response.json();
+      results.push({ success: !!result.name });
+    } catch (e) {
+      results.push({ success: false });
+    }
+  }
+  return { sent: results.filter((result) => result.success).length, total: uniqueTokens.length };
+}
+
 const ALLOWED_ORIGINS = new Set([
   'https://ugtm-fns-souss-massa.web.app',
   'https://ugtm-fns-souss-massa.firebaseapp.com',
@@ -225,6 +367,21 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    let earlyBody = req.body;
+    if (typeof earlyBody === 'string') {
+      try { earlyBody = JSON.parse(earlyBody); } catch (e) { earlyBody = {}; }
+    }
+    earlyBody = earlyBody || {};
+
+    // Les signalements anonymes n'ont pas de jeton Firebase. On vérifie
+    // l'origine, l'existence du dossier, son état et sa date de création.
+    if (earlyBody.type === 'report') {
+      const origin = String(req.headers.origin || '');
+      if (!ALLOWED_ORIGINS.has(origin)) return res.status(403).json({ error: 'Forbidden' });
+      const result = await dispatchReportNotification(req, String(earlyBody.targetId || ''));
+      return res.status(result.rateLimited ? 429 : (result.error ? 400 : 200)).json(result);
     }
 
     // Authentification : Firebase ID token
