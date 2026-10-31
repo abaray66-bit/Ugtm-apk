@@ -21,7 +21,7 @@ function notificationTargetUrl(data){
   }
   var type=String(info.notificationType||info.targetType||'');
   var id=String(info.notificationId||info.targetId||'');
-  if((type==='news'||type==='event')&&/^[A-Za-z0-9_-]{1,150}$/.test(id)){
+  if((type==='news'||type==='event'||type==='report')&&/^[A-Za-z0-9_-]{1,150}$/.test(id)){
     root.searchParams.set('notificationType',type);
     root.searchParams.set('notificationId',id);
   }
