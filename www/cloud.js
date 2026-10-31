@@ -62,7 +62,7 @@ var session = {
 function showPushNotification(title, body, data){
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
   var target=data||{};
-  var stableKey=String(target.targetType||target.notificationType||target.type||'general')+'-'+String(target.targetId||target.notificationId||target.id||'');
+  var stableKey=String(target.targetType||target.notificationType||target.type||'general')+'-'+String(target.targetId||target.notificationId||target.targetUid||target.id||'');
   var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', tag: stableKey, renotify: false, data: { url: notificationTargetUrl(data) } };
   if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
     navigator.serviceWorker.ready
