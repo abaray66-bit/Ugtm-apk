@@ -1,6 +1,6 @@
 // Service worker FCM : un clic sur une notification ouvre la racine UGTM.
 // Le gestionnaire est déclaré avant Firebase, comme recommandé par FCM.
-const APP_ROOT_URL = 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/';
+const APP_ROOT_URL = 'https://ugtm-fns-souss-massa.web.app/app.html';
 
 self.addEventListener('install', function(event){
   event.waitUntil(self.skipWaiting());
@@ -15,7 +15,7 @@ self.addEventListener('notificationclick', function(event){
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList){
       var appClient = clientList.find(function(client){
-        return client.url.indexOf(new URL(APP_ROOT_URL).origin + '/www/') === 0;
+        return client.url.indexOf(new URL(APP_ROOT_URL).origin + '/') === 0;
       });
       if (appClient) {
         if (typeof appClient.navigate === 'function') {
