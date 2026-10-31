@@ -11,7 +11,9 @@ self.addEventListener('activate', function(event){
 
 self.addEventListener('notificationclick', function(event){
   event.notification.close();
-  var targetUrl = (event.notification.data && event.notification.data.url) || APP_ROOT_URL;
+  // Ignorer les anciennes URL mémorisées dans les notifications (ex. Vercel).
+  // Toutes les notifications doivent ouvrir l'application Firebase.
+  var targetUrl = APP_ROOT_URL;
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList){
       var appClient = clientList.find(function(client){
