@@ -10386,6 +10386,9 @@ window.UGTM.failed(err);
      La version installée est celle du manifeste embarqué (www/update.json) ;
      sans elle, le dernier versionCode connu en cache fait référence. */
   (function checkOTA(){
+    // L'APK natif se met à jour avec UpdateManager au démarrage.
+    // Ne pas proposer son APK comme une seconde application web à installer.
+    if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return;
     var stored = parseInt(localStorage.getItem('ugtm_app_version_code') || '0', 10);
 
     /* Le manifeste embarqué donne la version réellement installée. */
