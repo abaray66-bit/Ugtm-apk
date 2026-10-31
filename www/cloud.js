@@ -19,6 +19,26 @@ import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/fireb
 var auth, db, hooks, firebaseApp, messaging, fcmMessageBound = false;
 var nativeAuth = null;
 var capBrowser = null;
+var APP_NOTIFICATION_ROOT = 'https://ugtm-fns-souss-massa.web.app/app.html';
+
+function notificationTargetUrl(data){
+  var target=new URL(APP_NOTIFICATION_ROOT);
+  var info=data||{};
+  var raw=info.targetUrl||info.url||'';
+  if(raw){
+    try{
+      var candidate=new URL(String(raw),APP_NOTIFICATION_ROOT);
+      if(candidate.origin===target.origin&&candidate.pathname===target.pathname)return candidate.href;
+    }catch(e){}
+  }
+  var type=String(info.notificationType||info.targetType||'');
+  var id=String(info.notificationId||info.targetId||'');
+  if((type==='news'||type==='event')&&id){
+    target.searchParams.set('notificationType',type);
+    target.searchParams.set('notificationId',id);
+  }
+  return target.href;
+}
 
 var unsubs = {
   member: null,
@@ -39,9 +59,9 @@ var session = {
   isAdmin: false
 };
 
-function showPushNotification(title, body){
+function showPushNotification(title, body, data){
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', data: { url: 'https://ugtm-fns-souss-massa.web.app/app.html' } };
+  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', data: { url: notificationTargetUrl(data) } };
   if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
     navigator.serviceWorker.ready
       .then(function(registration){ return registration.showNotification(String(title || 'UGTM'), options); })
@@ -466,7 +486,7 @@ function onUser(user){
         fcmMessageBound = true;
         onMessage(messaging, function(payload) {
           var n = (payload && payload.notification) || {};
-          showPushNotification(n.title || 'UGTM', n.body || '');
+          showPushNotification(n.title || 'UGTM', n.body || '', (payload && payload.data) || {});
         });
       }
     }
@@ -486,7 +506,7 @@ function onUser(user){
           if(ch.type === 'added'){
             var x = ch.doc.data() || {};
             if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-              showPushNotification(String(x.title||'UGTM'), String(x.body||''));
+              showPushNotification(String(x.title||'UGTM'), String(x.body||''), x);
             }
           }
         });
@@ -1533,7 +1553,7 @@ var admin = {
               // Push via backend (best-effort, non-blocking).
               getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
                 var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-                cloudSendPush('news', title, body);
+                cloudSendPush('news', title, body, null, ref.id);
               }).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
@@ -1667,7 +1687,7 @@ var admin = {
           // Push via backend (best-effort, non-blocking).
           getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
             var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-            cloudSendPush('event', title, body);
+            cloudSendPush('event', title, body, null, ref.id);
           }).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
@@ -2014,7 +2034,7 @@ export async function init(config, h){
   window.db = db;
 
 
-async function cloudSendPush(type, title, body, targetUid){
+async function cloudSendPush(type, title, body, targetUid, targetId){
   var url = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
   if (!url) return;
   try {
@@ -2023,6 +2043,7 @@ async function cloudSendPush(type, title, body, targetUid){
     var token = await user.getIdToken();
     var payload = { type: type, title: String(title).slice(0,120), body: String(body || '').slice(0,500) };
     if (targetUid) payload.targetUid = String(targetUid);
+    if (targetId) payload.targetId = String(targetId);
     await fetch(url + '/api/send-push', {
       method: 'POST',
       headers: {
