@@ -1529,7 +1529,7 @@ var admin = {
           .then(function(){
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
-              var newsSubject = (o.fr && o.fr.title) ? o.fr.title : ((o.ar && o.ar.title) ? o.ar.title : '');
+              var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
               var title = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
               var body = (o.fr && o.fr.body) ? (o.fr.body) : ((o.ar && o.ar.body) ? (o.ar.body) : '');
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
