@@ -3124,11 +3124,12 @@ input[type=file]::file-selector-button{
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
 <div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
-  <button id="notifMenuBtn" type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button id="notifMenuBtn" type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.setNotificationsPopup) window.setNotificationsPopup(true); if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
   <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
 
 </div>
 
+<div id="notifBackdrop" hidden aria-hidden="true" style="position:fixed;inset:0;z-index:1000;background:transparent;"></div>
 <div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
   <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
   <button id="enablePushBtn" type="button" style="width:100%;margin:0 0 8px;padding:8px 10px;border:1px solid #176b45;border-radius:6px;background:#e8f5ee;color:#145a39;cursor:pointer;" onclick="enablePushFromClick()">Activer les notifications push</button>
@@ -3136,7 +3137,7 @@ input[type=file]::file-selector-button{
   <div id="notifList" style="min-height:40px;color:#111;"></div>
   <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
   <div id="notifHistory" hidden></div>
-  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button>
+  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="if(window.setNotificationsPopup)window.setNotificationsPopup(false);">Fermer</button>
 </div>
 
 <button class="langbtn" id="langBtn" type="button"></button>
@@ -3163,6 +3164,13 @@ async function enablePushFromClick(){
     if(btn) btn.disabled=false;
   }
 }
+
+window.setNotificationsPopup=function(open){
+  var modal=document.getElementById('notifModal');
+  var backdrop=document.getElementById('notifBackdrop');
+  if(modal)modal.hidden=!open;
+  if(backdrop)backdrop.hidden=!open;
+};
 
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -3205,7 +3213,7 @@ function renderNotifications(list){
       else if(typeof go==='function') go('me');
 
       if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
-      var m=document.getElementById('notifModal'); if(m) m.hidden=true;
+      if(window.setNotificationsPopup)window.setNotificationsPopup(false);
     };
     if(n.read===false){
       var b=document.createElement('button');
@@ -9408,13 +9416,13 @@ document.addEventListener('click',function(e){
     e.preventDefault();
     e.stopPropagation();
     if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-    modal.hidden=true;
+    if(window.setNotificationsPopup)window.setNotificationsPopup(false);
   }
 },true);
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     var modal=document.getElementById('notifModal');
-    if(modal) modal.hidden=true;
+    if(modal&&!modal.hidden&&window.setNotificationsPopup)window.setNotificationsPopup(false);
   }
 });
 
