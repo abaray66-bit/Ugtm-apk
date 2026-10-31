@@ -61,7 +61,9 @@ var session = {
 
 function showPushNotification(title, body, data){
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', data: { url: notificationTargetUrl(data) } };
+  var target=data||{};
+  var stableKey=String(target.targetType||target.notificationType||target.type||'general')+'-'+String(target.targetId||target.notificationId||target.id||'');
+  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', tag: stableKey, renotify: false, data: { url: notificationTargetUrl(data) } };
   if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
     navigator.serviceWorker.ready
       .then(function(registration){ return registration.showNotification(String(title || 'UGTM'), options); })
@@ -502,14 +504,7 @@ function onUser(user){
       function(snap){
         var unread = snap.docs.filter(function(d){ var x=d.data()||{}; return x.read !== true; }).length;
         if(typeof window.updateNotifBadge === 'function') window.updateNotifBadge(unread);
-        snap.docChanges().forEach(function(ch){
-          if(ch.type === 'added'){
-            var x = ch.doc.data() || {};
-            if(x.read !== true && typeof Notification !== 'undefined' && Notification.permission === 'granted'){
-              showPushNotification(String(x.title||'UGTM'), String(x.body||''), x);
-            }
-          }
-        });
+
       }
     );
   } catch(e){}
