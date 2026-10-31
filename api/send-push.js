@@ -338,9 +338,9 @@ module.exports = async function handler(req, res) {
                   title: String(title).slice(0, 120),
                   body: String(msgBody || '').slice(0, 500)
                 },
-                data: { targetUrl: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' },
+                data: { targetUrl: 'https://ugtm-fns-souss-massa.web.app/app.html' },
                 webpush: {
-                  fcm_options: { link: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' },
+                  fcm_options: { link: 'https://ugtm-fns-souss-massa.web.app/app.html' },
                   notification: { icon: '/www/icons/ugtm-mark.svg' }
                 },
                 android: { priority: 'high' }
