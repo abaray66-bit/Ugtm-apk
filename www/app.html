@@ -7326,7 +7326,7 @@ function adhesionPdfFileName(doc){
    référence) : tout PDF enregistré AVANT cette date est régénéré une
    fois. Constante côté client — aucun champ supplémentaire, les règles
    Firestore (hasOnly) restent inchangées. */
-var PDF_LAYOUT_SINCE=Date.UTC(2026,9,31);
+var PDF_LAYOUT_SINCE=Date.UTC(2026,9,31,18,6,13);
 function isAdhesionPdfFresh(saved,doc){
   if(!saved||!saved.data)return false;
   var s=(typeof saved.updatedAt==='number')?saved.updatedAt:0;
