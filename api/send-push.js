@@ -358,9 +358,18 @@ module.exports = async function handler(req, res) {
                 data: pushData,
                 webpush: {
                   fcm_options: { link: pushTarget.toString() },
-                  notification: { icon: '/www/icons/ugtm-mark.svg' }
+                  notification: {
+                    icon: '/www/icons/ugtm-mark.svg',
+                    tag: String(type) + '-' + String(targetId || type),
+                    renotify: false
+                  }
                 },
-                android: { priority: 'high' }
+                android: {
+                  priority: 'high',
+                  notification: {
+                    tag: String(type) + '-' + String(targetId || type)
+                  }
+                }
               }
             })
           }
