@@ -33,7 +33,7 @@ function notificationTargetUrl(data){
   }
   var type=String(info.notificationType||info.targetType||'');
   var id=String(info.notificationId||info.targetId||'');
-  if((type==='news'||type==='event'||type==='report')&&id){
+  if((type==='news'||type==='event')&&id){
     target.searchParams.set('notificationType',type);
     target.searchParams.set('notificationId',id);
   }
@@ -765,7 +765,6 @@ async function addReport(o){
   });
 
   return batch.commit().then(function(){
-    cloudNotifyReport(reportRef.id);
     return reportRef;
   });
 }
@@ -2049,16 +2048,6 @@ async function cloudSendPush(type, title, body, targetUid, targetId){
       body: JSON.stringify(payload)
     });
   } catch(e){ console.warn('push backend failed:', e); }
-}
-
-function cloudNotifyReport(reportId){
-  var url=(window.APP_DATA&&window.APP_DATA.firebase&&window.APP_DATA.firebase.pushBackendUrl)||'';
-  if(!url||!reportId)return;
-  fetch(url+'/api/send-push',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({type:'report',targetId:String(reportId)})
-  }).catch(function(e){console.warn('report notification failed:',e);});
 }
 
 async function cloudLoadNotifications(){
