@@ -68,7 +68,10 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload){
-  var title = (payload.notification && payload.notification.title) || 'UGTM';
+  // FCM affiche déjà les payloads « notification » en arrière-plan.
+  // Les réafficher ici créait une seconde alerte pour le même sujet.
+  if(payload&&payload.notification)return;
+  var title = 'UGTM';
   var body = (payload.notification && payload.notification.body) || '';
   var notificationData=payload.data||{};
   self.registration.showNotification(title, { body: body, icon: '/www/icons/ugtm-mark.svg', data: { url: notificationTargetUrl(notificationData), targetType: notificationData.notificationType||'', targetId: notificationData.notificationId||'' } });
