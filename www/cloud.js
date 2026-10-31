@@ -1531,7 +1531,7 @@ var admin = {
             return getDocs(collection(db, 'members')).then(function(snap){
               var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
               var title = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
-              var body = (o.fr && o.fr.body) ? (o.fr.body) : ((o.ar && o.ar.body) ? (o.ar.body) : '');
+              var body = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
               var tokens = [];
               var writes = snap.docs.map(function(d){
