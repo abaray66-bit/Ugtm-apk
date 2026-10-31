@@ -41,7 +41,7 @@ var session = {
 
 function showPushNotification(title, body){
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', data: { url: 'https://agile-marimba-ow7rjs2-abaray66-2380.vercel.app/www/' } };
+  var options = { body: String(body || ''), icon: 'icons/ugtm-mark.svg', data: { url: 'https://ugtm-fns-souss-massa.web.app/app.html' } };
   if (typeof navigator !== 'undefined' && navigator.serviceWorker) {
     navigator.serviceWorker.ready
       .then(function(registration){ return registration.showNotification(String(title || 'UGTM'), options); })
