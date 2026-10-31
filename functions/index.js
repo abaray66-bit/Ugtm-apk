@@ -20,6 +20,12 @@ exports.sendNotificationOnCreate = functions.firestore
         notification: {
           title: String(data.title || 'UGTM'),
           body: String(data.body || '')
+        },
+        webpush: {
+          notification: {
+            tag: String(data.targetType || 'notification') + '-' + String(data.targetId || context.params.id),
+            renotify: false
+          }
         }
       });
     } catch (err) {
