@@ -982,6 +982,8 @@ main{
 #admTabs .admin-tab-icon{display:block;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #admTabs .admin-tab-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 
+ .filter-lines{display:flex;flex-direction:column;align-items:center;line-height:1.05}
+
 .fbtn[aria-pressed="true"]{
   background:var(--primary);
   border-color:var(--primary);
@@ -5988,13 +5990,19 @@ return [k,label];
 
 }
 
+function catFilterLabel(k){
+if(lang==='fr'&&k[0]==='urgent')return '<span class="filter-lines"><span>Communiqués</span><span>déclarations</span></span>';
+if(lang==='fr'&&k[0]==='events')return '<span class="filter-lines"><span>Rencontres</span><span>réunions</span></span>';
+return esc(k[1]);
+}
+
 function renderFilters(){
 
 var keys=catFilters();
 
 $('filters').innerHTML=keys.map(function(k){
 
-return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+esc(k[1])+'</button>';
+return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+catFilterLabel(k)+'</button>';
 
 }).join('');
 }
@@ -6754,7 +6762,7 @@ if(box){
 
 box.innerHTML=catFilters().map(function(k){
 
-return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+esc(k[1])+'</button>';
+return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+catFilterLabel(k)+'</button>';
 
 }).join('');
 
