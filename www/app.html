@@ -7671,6 +7671,12 @@ reader.readAsDataURL(file);
 });
 }
 
+/* Un double appui sur « Publier » créait deux publications (donc deux
+   notifications et deux entrées dans la liste) : la publication est
+   verrouillée tant que l'enregistrement n'est pas terminé, comme le
+   formulaire d'adhésion le fait déjà. */
+var newsPublishing=false;
+
 function publishNews(){
 
 var c=cloud();
@@ -7707,6 +7713,8 @@ if(fr.t||fr.b)o.fr=fr;
 
 if(ar.t||ar.b)o.ar=ar;
 
+if(newsPublishing)return;
+newsPublishing=true;
 var editing=S.editNewsId;
 
 var files=Array.prototype.slice.call($('nImage').files||[]).slice(0,3);
@@ -7717,6 +7725,8 @@ return editing
 :c.admin.addNews(o);
 })
 .then(function(){
+
+newsPublishing=false;
 
 if(editing){
 endEditNews();
@@ -7734,8 +7744,13 @@ $('nImage').value='';
 toast(T().admNewsPublishedToast);
 
 })
-.catch(showError);
+.catch(function(e){
+newsPublishing=false;
+showError(e);
+});
 }
+
+var eventPublishing=false;
 
 function publishEvent(){
 
@@ -7772,12 +7787,16 @@ if(fr.t||fr.p)o.fr=fr;
 
 if(ar.t||ar.p)o.ar=ar;
 
+if(eventPublishing)return;
+eventPublishing=true;
 var editing=S.editEventId;
 
 (editing
 ?c.admin.updateEvent(editing,o)
 :c.admin.addEvent(o))
 .then(function(){
+
+eventPublishing=false;
 
 if(editing){
 endEditEvent();
@@ -7793,7 +7812,10 @@ $(id).value='';
 toast(T().admEventPublishedToast);
 
 })
-.catch(showError);
+.catch(function(e){
+eventPublishing=false;
+showError(e);
+});
 }
 
 /* =========================

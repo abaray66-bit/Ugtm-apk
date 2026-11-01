@@ -408,6 +408,12 @@ module.exports = async function handler(req, res) {
       tokens = await notifyAdhesionManagers(decodedToken.uid, province, title, msgBody);
     }
 
+    // Un même appareil peut être enregistré sous plusieurs comptes (le jeton
+    // n'est pas effacé à la déconnexion) : sans dédoublonnage, la diffusion
+    // envoyait plusieurs messages identiques au même téléphone. Le chemin
+    // « demande d'adhésion » le faisait déjà, pas la diffusion aux membres.
+    tokens = Array.from(new Set(tokens));
+
     if (tokens.length === 0) {
       // Diagnostic sans exposer de secret : pourquoi personne n'est joignable.
       let detail = {};

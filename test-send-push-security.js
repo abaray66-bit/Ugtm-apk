@@ -1,8 +1,11 @@
 const originalFetch = globalThis.fetch;
+// Appels FCM réellement émis, pour compter les messages d'un envoi.
+const mockFcmCalls = [];
 globalThis.fetch = async function(url, opts) {
   if (url.includes('oauth2.googleapis.com/token')) {
     return { json: async () => ({ access_token: 'mock-access-token' }) };
   }
+  mockFcmCalls.push({ url: String(url), body: opts && opts.body });
   return { json: async () => ({ name: 'mock-message-id' }) };
 };
 
@@ -44,8 +47,9 @@ const mockFirestore = {
           .map(t => ({ id: t.id, data: () => ({ token: t.token }) }))
       }),
       doc: function(id) {
+        const stored = name === 'fcmTokens' ? mockDbState.tokens.filter(t => t.id === id)[0] : null;
         return {
-          get: async () => ({ exists: false, data: () => null }),
+          get: async () => ({ exists: !!stored, data: () => (stored ? { token: stored.token } : null) }),
           set: async () => {},
           update: async () => {}
         };
@@ -73,20 +77,43 @@ function makeRes() {
   return res;
 }
 
-function assertEqual(actual, expected) {
-  if (actual !== expected) throw new Error('Expected ' + expected + ' but got ' + actual);
+function assertEqual(actual, expected, context) {
+  if (actual !== expected) {
+    throw new Error('Expected ' + expected + ' but got ' + actual + (context ? ' — ' + context : ''));
+  }
 }
+
+let failures = 0;
 
 async function runTest(name, fn) {
   try {
     await fn();
     console.log('PASS: ' + name);
   } catch (e) {
+    failures++;
     console.log('FAIL: ' + name + ' - ' + e.message);
   }
 }
 
 async function main() {
+  // Cle RSA reelle partagee par tous les tests qui atteignent l'envoi FCM :
+  // parseServiceAccount met le compte de service en cache au premier appel,
+  // donc tous les tests doivent fournir cette meme cle valide.
+  const { privateKey: testPrivateKey } = require('crypto').generateKeyPairSync('rsa', {
+    modulusLength: 2048,
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    publicKeyEncoding: { type: 'spki', format: 'pem' }
+  });
+  const TEST_SERVICE_ACCOUNT = JSON.stringify({
+    type: 'service_account',
+    project_id: 'ugtm-fns-souss-massa',
+    client_email: 'svc@ugtm-fns-souss-massa.iam.gserviceaccount.com',
+    private_key: testPrivateKey
+  });
+  function setBaseEnv() {
+    setEnv({ FCM_SERVICE_ACCOUNT: TEST_SERVICE_ACCOUNT, FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+  }
+
   await runTest('config Firebase absente -> 500 explicite (jamais 401)', async () => {
     delete process.env.FCM_SERVICE_ACCOUNT;
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
@@ -97,7 +124,7 @@ async function main() {
   });
 
   await runTest('refuse GET', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'GET', headers: {} };
     const res = makeRes();
     await handler(req, res);
@@ -105,7 +132,7 @@ async function main() {
   });
 
   await runTest('refuse sans token', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: {}, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -113,7 +140,7 @@ async function main() {
   });
 
   await runTest('refuse token invalide', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer invalid-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -121,7 +148,7 @@ async function main() {
   });
 
   await runTest('refuse utilisateur non admin', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-user-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -129,7 +156,7 @@ async function main() {
   });
 
   await runTest('refuse email non verifie', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer unverified-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -137,7 +164,7 @@ async function main() {
   });
 
   await runTest('refuse type invalide', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'invalid', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -145,7 +172,7 @@ async function main() {
   });
 
   await runTest('refuse sans title', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -153,7 +180,7 @@ async function main() {
   });
 
   await runTest('refuse adhesion sans targetUid', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'adhesion', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -161,7 +188,7 @@ async function main() {
   });
 
   await runTest('aucun destinataire -> 200 no_recipients + log diagnostique', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setBaseEnv();
     mockDbState = { activeMembers: ['m1', 'm2'], tokens: [] };
     const req = { method: 'POST', headers: { authorization: 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
@@ -182,6 +209,29 @@ async function main() {
     assertEqual(diag.storedTokens, 0);
     assertEqual(diag.activeMembersWithToken, 0);
     if (!diag.hint) throw new Error('diagnostic sans hint');
+  });
+
+  await runTest('diffusion : un appareil enregistre sous deux comptes ne recoit qu un message', async () => {
+    setBaseEnv();
+    // Le meme telephone, enregistre sous deux comptes differents :
+    // deux documents fcmTokens portent exactement le meme jeton.
+    const sharedToken = 'meme-appareil-token-0123456789abcdefghijklmnopqrstuvwxyz';
+    mockDbState = {
+      activeMembers: ['m1', 'm2'],
+      tokens: [{ id: 'm1', token: sharedToken }, { id: 'm2', token: sharedToken }]
+    };
+    mockFcmCalls.length = 0;
+    const req = { method: 'POST', headers: { authorization: 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b', targetId: 'news1' }) };
+    const res = makeRes();
+    const logs = [];
+    const originalLog = console.log;
+    console.log = function(line) { logs.push(String(line)); };
+    try { await handler(req, res); } finally { console.log = originalLog; mockDbState = { activeMembers: [], tokens: [] }; }
+
+    assertEqual(res._status, 200, logs.join(' | '));
+    assertEqual(res._body.total, 1);
+    assertEqual(mockFcmCalls.length, 1);
+    mockFcmCalls.length = 0;
   });
 
   // Diagnostic /api/health : vérifie la configuration sans exposer de secret.
@@ -223,6 +273,11 @@ async function main() {
 
   globalThis.fetch = originalFetch;
   Object.assign(process.env, originalEnv);
+  if (failures > 0) {
+    process.exitCode = 1;
+    console.log('\n' + failures + ' test(s) en échec.');
+    return;
+  }
   console.log('\nTous les tests de sécurité du push backend sont passés.');
 }
 
