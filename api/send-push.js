@@ -19,13 +19,41 @@ const RATE_LIMIT_MAX_PER_IP = 10; // 10 req/min par IP (géré par Vercel)
 
 // Initialiser Firebase Admin SDK (une seule fois).
 let firebaseApp = null;
+let cachedServiceAccount = null;
+
+function parseServiceAccount() {
+  if (cachedServiceAccount) return cachedServiceAccount;
+  const raw = process.env.FCM_SERVICE_ACCOUNT;
+  if (!raw) throw new Error('FCM_SERVICE_ACCOUNT missing');
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    throw new Error('FCM_SERVICE_ACCOUNT is not valid JSON');
+  }
+  if (!parsed.client_email || !parsed.private_key) {
+    throw new Error('FCM_SERVICE_ACCOUNT incomplete (client_email/private_key)');
+  }
+  cachedServiceAccount = parsed;
+  return parsed;
+}
+
 function getFirebaseApp() {
   if (firebaseApp) return firebaseApp;
-  const serviceAccount = JSON.parse(process.env.FCM_SERVICE_ACCOUNT);
   firebaseApp = admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(parseServiceAccount())
   });
   return firebaseApp;
+}
+
+function getServiceAccount() {
+  return parseServiceAccount();
+}
+
+function getProjectId() {
+  const projectId = process.env.FCM_PROJECT_ID;
+  if (!projectId) throw new Error('FCM_PROJECT_ID missing');
+  return projectId;
 }
 
 function getDb() {
@@ -196,6 +224,8 @@ async function getMemberToken(uid) {
 const ALLOWED_ORIGINS = new Set([
   'https://ugtm-fns-souss-massa.web.app',
   'https://ugtm-fns-souss-massa.firebaseapp.com',
+  // Domaine permanent du backend, qui sert aussi l'application (vercel.json).
+  'https://agile-marimba-ow7rjs2.vercel.app',
   'https://ugtm.ma',
   'https://www.ugtm.ma',
   'capacitor://localhost',
@@ -235,12 +265,30 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Initialisation séparée de la vérification du jeton : une erreur de
+    // configuration (secret absent ou invalide) est un 500 explicite, jamais
+    // un 401 trompeur.
+    let firebaseAppRef;
+    try {
+      firebaseAppRef = getFirebaseApp();
+    } catch (e) {
+      console.log(JSON.stringify({
+        level: 'error',
+        event: 'config_error',
+        reason: 'firebase_init_failed',
+        detail: String(e && e.message || e).slice(0, 200),
+        timestamp: new Date().toISOString()
+      }));
+      return res.status(500).json({ error: 'Server misconfigured', code: 'firebase_init_failed' });
+    }
+
     let decodedToken;
     try {
-      decodedToken = await getFirebaseApp().auth().verifyIdToken(idToken);
+      decodedToken = await firebaseAppRef.auth().verifyIdToken(idToken);
     } catch (e) {
-      console.log(JSON.stringify({ level: 'warn', event: 'unauthorized_attempt', reason: 'invalid_token', timestamp: new Date().toISOString() }));
-      return res.status(401).json({ error: 'Unauthorized' });
+      const code = String((e && e.code) || 'invalid_token');
+      console.log(JSON.stringify({ level: 'warn', event: 'unauthorized_attempt', reason: 'invalid_token', code: code, timestamp: new Date().toISOString() }));
+      return res.status(401).json({ error: 'Unauthorized', code: code });
     }
 
     if (!decodedToken.email_verified) {
@@ -326,8 +374,21 @@ module.exports = async function handler(req, res) {
     }
 
     // Envoyer le push
-    const serviceAccount = JSON.parse(process.env.FCM_SERVICE_ACCOUNT);
-    const projectId = process.env.FCM_PROJECT_ID;
+    let serviceAccount;
+    let projectId;
+    try {
+      serviceAccount = getServiceAccount();
+      projectId = getProjectId();
+    } catch (e) {
+      console.log(JSON.stringify({
+        level: 'error',
+        event: 'config_error',
+        reason: 'fcm_config_incomplete',
+        detail: String(e && e.message || e).slice(0, 200),
+        timestamp: new Date().toISOString()
+      }));
+      return res.status(500).json({ error: 'Server misconfigured', code: 'fcm_config_incomplete' });
+    }
     const accessToken = await getAccessToken(serviceAccount);
 
     const pushTarget = buildNotificationTarget(type, targetId);
@@ -398,9 +459,15 @@ module.exports = async function handler(req, res) {
     console.log(JSON.stringify({
       level: 'error',
       event: 'push_error',
-      error: String(e).slice(0, 200),
+      error: String(e && e.message || e).slice(0, 200),
       timestamp: new Date().toISOString()
     }));
-    return res.status(500).json({ error: 'Internal error' });
+    return res.status(500).json({ error: 'Internal error', code: 'internal_error' });
   }
 };
+
+// Réutilisé par api/health.js pour vérifier le compte de service sans secret exposé.
+module.exports.getFirebaseApp = getFirebaseApp;
+module.exports.getAccessToken = getAccessToken;
+module.exports.getServiceAccount = getServiceAccount;
+module.exports.getProjectId = getProjectId;

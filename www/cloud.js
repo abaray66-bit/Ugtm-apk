@@ -2030,8 +2030,9 @@ export async function init(config, h){
 
 
 async function cloudSendPush(type, title, body, targetUid, targetId){
-  var url = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
-  if (!url) return;
+  var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!configured) return;
+  var url = String(configured).replace(/\/+$/, '');
   try {
     var user = auth && auth.currentUser;
     if (!user) return;
@@ -2039,7 +2040,7 @@ async function cloudSendPush(type, title, body, targetUid, targetId){
     var payload = { type: type, title: String(title).slice(0,120), body: String(body || '').slice(0,500) };
     if (targetUid) payload.targetUid = String(targetUid);
     if (targetId) payload.targetId = String(targetId);
-    await fetch(url + '/api/send-push', {
+    var res = await fetch(url + '/api/send-push', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -2047,6 +2048,13 @@ async function cloudSendPush(type, title, body, targetUid, targetId){
       },
       body: JSON.stringify(payload)
     });
+    // Ne jamais échouer en silence : 404 = fonction absente du déploiement,
+    // 401/403 = jeton ou droits, 500 = variables d'environnement Vercel.
+    if (!res.ok) {
+      var detail = '';
+      try { detail = (await res.text()).slice(0, 200); } catch(e){}
+      console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', detail);
+    }
   } catch(e){ console.warn('push backend failed:', e); }
 }
 

@@ -72,8 +72,17 @@ async function runTest(name, fn) {
 }
 
 async function main() {
+  await runTest('config Firebase absente -> 500 explicite (jamais 401)', async () => {
+    delete process.env.FCM_SERVICE_ACCOUNT;
+    const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
+    const res = makeRes();
+    await handler(req, res);
+    assertEqual(res._status, 500);
+    assertEqual(res._body.code, 'firebase_init_failed');
+  });
+
   await runTest('refuse GET', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'GET', headers: {} };
     const res = makeRes();
     await handler(req, res);
@@ -81,7 +90,7 @@ async function main() {
   });
 
   await runTest('refuse sans token', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: {}, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -89,7 +98,7 @@ async function main() {
   });
 
   await runTest('refuse token invalide', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer invalid-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -97,7 +106,7 @@ async function main() {
   });
 
   await runTest('refuse utilisateur non admin', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-user-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -105,7 +114,7 @@ async function main() {
   });
 
   await runTest('refuse email non verifie', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer unverified-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -113,7 +122,7 @@ async function main() {
   });
 
   await runTest('refuse type invalide', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'invalid', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -121,7 +130,7 @@ async function main() {
   });
 
   await runTest('refuse sans title', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
@@ -129,11 +138,48 @@ async function main() {
   });
 
   await runTest('refuse adhesion sans targetUid', async () => {
-    setEnv({ FCM_SERVICE_ACCOUNT: '{}', FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
     const req = { method: 'POST', headers: { 'authorization': 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'adhesion', title: 't', body: 'b' }) };
     const res = makeRes();
     await handler(req, res);
     assertEqual(res._status, 400);
+  });
+
+  // Diagnostic /api/health : vérifie la configuration sans exposer de secret.
+  const health = require('./api/health.js');
+
+  await runTest('health: configuration absente -> 503', async () => {
+    delete process.env.FCM_SERVICE_ACCOUNT;
+    delete process.env.FCM_PROJECT_ID;
+    const res = makeRes();
+    await health({ method: 'GET', headers: {} }, res);
+    assertEqual(res._status, 503);
+    assertEqual(res._body.checks.serviceAccount, false);
+    assertEqual(res._body.checks.oauthToken, false);
+  });
+
+  await runTest('health: compte de service valide -> 200 et OAuth accepte', async () => {
+    // Vraie paire de cles RSA : signature JWT reelle, echange OAuth simule.
+    const { privateKey } = require('crypto').generateKeyPairSync('rsa', {
+      modulusLength: 2048,
+      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+      publicKeyEncoding: { type: 'spki', format: 'pem' }
+    });
+    setEnv({
+      FCM_SERVICE_ACCOUNT: JSON.stringify({
+        type: 'service_account',
+        project_id: 'ugtm-fns-souss-massa',
+        client_email: 'svc@ugtm-fns-souss-massa.iam.gserviceaccount.com',
+        private_key: privateKey
+      }),
+      FCM_PROJECT_ID: 'ugtm-fns-souss-massa'
+    });
+    const res = makeRes();
+    await health({ method: 'GET', headers: {} }, res);
+    assertEqual(res._status, 200);
+    assertEqual(res._body.ok, true);
+    assertEqual(res._body.checks.adminSdk, true);
+    assertEqual(res._body.checks.oauthToken, true);
   });
 
   globalThis.fetch = originalFetch;

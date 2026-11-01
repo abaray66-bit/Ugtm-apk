@@ -45,7 +45,7 @@ function read(rel) {
 }
 
 /* --- Fichiers JavaScript classiques --- */
-['www/sw.js', 'www/data.js'].forEach(function (rel) {
+['www/sw.js', 'www/data.js', 'api/send-push.js', 'api/health.js'].forEach(function (rel) {
   try {
     checkJs(rel, read(rel), '.js');
   } catch (e) {
