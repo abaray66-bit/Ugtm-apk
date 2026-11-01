@@ -2164,7 +2164,7 @@ async function cloudMarkNotificationRead(id){
 
   onAuthStateChanged(
     auth,
-    onUser
+    function(user){ try { console.log('DEBUG_AUTH onAuthStateChanged', user ? user.uid : null); } catch(e){} onUser(user); }
   );
 
 
