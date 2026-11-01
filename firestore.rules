@@ -604,7 +604,7 @@ service cloud.firestore {
               request.resource.data.status == 'accepted'
               && request.resource.data.adminSignature is string
               && request.resource.data.adminSignature.size() > 0
-              && request.resource.data.adminsignature.size() <= 20000
+              && request.resource.data.adminSignature.size() <= 20000
               && request.resource.data.signedBy == request.auth.uid
               && request.resource.data.signedAt == request.time
             )
