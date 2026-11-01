@@ -1990,7 +1990,11 @@ export async function init(config, h){
     getAuth(app);
 
   try {
-    getRedirectResult(auth).catch(function(){});
+    getRedirectResult(auth).then(function(result){
+      if(result && result.user){
+        // already handled by onAuthStateChanged
+      }
+    }).catch(function(){});
   } catch(e) {}
 
     db =

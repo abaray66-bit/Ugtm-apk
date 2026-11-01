@@ -193,6 +193,8 @@ button,input,select,textarea{
   font-size:10px;
   line-height:1.2;
   white-space:nowrap;
+  hyphens:none;
+  word-break:keep-all;
   overflow:hidden;
   text-overflow:ellipsis;
   letter-spacing:-.2px
@@ -951,24 +953,32 @@ main{
 }
 
 .filters{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  /* Tous les onglets restent visibles : 3 par ligne, homogène
-     web et APK (évite les espaces orphelins). */
-  padding-bottom:12px
+  display:flex;
+  flex-wrap:nowrap;
+  gap:6px;
+  padding-bottom:12px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
+.filters::-webkit-scrollbar{display:none}
 
 .fbtn{
-  width:100%;
+  flex:0 0 auto;
+  min-width:fit-content;
   min-height:38px;
-  padding:0 12px;
+  padding:0 14px;
   border-radius:999px;
   border:1px solid var(--line);
   background:var(--surface);
-  font-weight:500;
-  font-size:14px;
-  cursor:pointer
+  font-weight:600;
+  font-size:clamp(12px,2.6vw,13px);
+  line-height:1.2;
+  white-space:nowrap;
+  word-break:normal;
+  hyphens:none;
+  cursor:pointer;
+  text-align:center
 }
 
 .fbtn[aria-pressed="true"]{
@@ -1331,11 +1341,17 @@ main{
 }
 
 .resp li{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:4px 8px;
   font-size:12.5px;
   color:var(--muted);
   line-height:1.6;
   padding-inline-start:2px
 }
+.resp-name{min-width:0}
+.resp li .phone{direction:ltr;unicode-bidi:plaintext;white-space:nowrap}
 
 .resp li::marker{
   color:var(--accent)
@@ -1866,6 +1882,8 @@ button.danger:hover{
 #admMemSearch::placeholder{
   color:rgba(255,255,255,.55) !important;
 }
+#admMemFilters{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#admMemFilters::-webkit-scrollbar{display:none}
 </style>
 
 <style id="admin-dashboard-style">
@@ -3136,7 +3154,7 @@ input[type=file]::file-selector-button{
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
 <button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); }catch(e){} }" aria-label="Notifications"><span id="homeNotifWrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;"><span id="homeNotifBell"></span><span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
-<div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:1000;"><div style="background:#fff;padding:20px;border-radius:12px;max-width:320px;width:90%;"><h2>Notifications <span id="notifCount" hidden></span></h2><div id="notifList" style="min-height:40px;"><p id="notifEmpty">Aucune notification pour le moment</p></div><div id="notifHistory" hidden></div><button type="button" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">Fermer</button></div></div>
+<div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding-top:80px;"><div id="notifModalBox" style="background:#fff;padding:16px;border-radius:12px;max-width:340px;width:92%;max-height:70vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.25);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h2 style="margin:0;font-size:18px;">Notifications <span id="notifCount" hidden></span></h2><button type="button" aria-label="Fermer" style="border:none;background:transparent;font-size:18px;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">×</button></div><div id="notifList" style="min-height:40px;"></div><p id="notifEmpty">Aucune notification pour le moment</p><div id="notifHistory" hidden></div></div></div>
 <script>
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -3163,23 +3181,48 @@ function renderNotifications(list){
       p.style.color='#666';
       p.style.fontWeight='normal';
     }
-    p.textContent=String(n.title||'')+' - '+String(n.body||'');
+    var title = String(n.title||'');
+    var body = String(n.body||'');
+    p.innerHTML = '';
+    var tEl = document.createElement('div');
+    tEl.style.fontWeight = '600';
+    tEl.style.color = '#111';
+    tEl.textContent = title || body || 'Notification';
+    p.appendChild(tEl);
+    if(body && body !== title){
+      var bEl = document.createElement('div');
+      bEl.style.fontSize = '13px';
+      bEl.style.color = n.read===false?'#333':'#666';
+      bEl.style.marginTop = '2px';
+      bEl.textContent = body;
+      p.appendChild(bEl);
+    }
     p.style.cursor = 'pointer';
     p.title = 'Ouvrir';
     p.onclick = function(){
-      markNotificationRead(n.id);
+      try { if(typeof markNotificationRead==='function') markNotificationRead(n.id); } catch(e){}
       var m=document.getElementById('notifModal');
       if(m) m.hidden=true;
-      if(n.targetScreen === 'me'){
-        var sess=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
-        if(sess && sess.user && sess.user.uid){
-          try { go('me'); } catch(e){ console.warn('notif go me', e); }
-          try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); }
-          catch(e){ console.warn('notif renderMyAdhesionInfo', e); }
-        } else {
-          console.warn('notif click: no session, cannot navigate to me');
+      try {
+        var targetType = n.targetType || n.type || n.notificationType || '';
+        var targetId = n.targetId || n.newsId || n.id || '';
+        if(targetType === 'news' && targetId){
+          if(typeof go==='function') go('news');
+          if(typeof openNewsById==='function') openNewsById(targetId);
+          else if(typeof window.openNewsById==='function') window.openNewsById(targetId);
+          else if(typeof setHashAndGo==='function'){ /* try */ }
+        } else if(n.targetScreen === 'me' || targetType === 'me'){
+          var sess=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+          if(sess && sess.user && sess.user.uid){
+            try { if(typeof go==='function') go('me'); } catch(e){}
+            try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+          }
+        } else if(targetType === 'event' && targetId){
+          if(typeof go==='function') go('agenda');
+        } else if(n.url){
+          try { window.location.href = n.url; } catch(e){}
         }
-      }
+      } catch(e){ console.warn('notif click',e); }
     };
     if(n.read===false){
       var b=document.createElement('button');
@@ -3219,6 +3262,23 @@ async function loadNotifications(){
 window.renderNotifications=renderNotifications;
 window.loadNotifications=loadNotifications;
 window.markNotificationRead=markNotificationRead;
+
+function openNewsById(id){
+  try {
+    if(!id) return;
+    try { if(typeof setFilter === 'function') setFilter('all'); else filter='all'; } catch(e){}
+    try { if(typeof renderNews === 'function') renderNews(); if(typeof renderFilters === 'function') renderFilters(); } catch(e){}
+    try { if(typeof go === 'function') go('news'); } catch(e){}
+    setTimeout(function(){
+      var el = document.querySelector('[data-item="'+String(id).replace(/"/g,'\"')+'"]');
+      if(el){
+        try { if(typeof el.click === 'function') el.click(); } catch(e){}
+        try { el.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+      }
+    }, 200);
+  } catch(e){}
+}
+window.openNewsById = openNewsById;
 </script>
 <button class="btn gold" type="button" data-share-app data-i18n="heroShare"></button>
 </div>
@@ -7788,16 +7848,17 @@ return String(a.name||'').localeCompare(String(b.name||''));
 
 $('permResp').innerHTML=list.map(function(r){
 
-var nom=r.name||'';
-var role=r.title||'';
+var nom=String(r.name||'').trim();
+var role=String(r.title||'').trim();
 var phone=String(r.phone||'').trim();
 var waUrl=waHref(phone);
 
+var label = role ? (nom ? role + ' : ' + nom : role) : nom;
 var phoneHtml=(phone&&waUrl)
-  ?'<a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
-  : '';
+  ?' <a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
+  : (phone ? ' <span dir="ltr" class="phone"><span class="phone-num">'+esc(phone)+'</span></span>' : '');
 
-return '<li>'+esc(nom?(role?role+' : '+nom:nom):role)+phoneHtml+'</li>';
+return '<li><span class="resp-name">'+esc(label)+'</span>'+phoneHtml+'</li>';
 
 }).join('');
 
@@ -7872,7 +7933,7 @@ admin.setAttribute('lang',lang);
 }
 
 $('permDesc').textContent=
-[PERM.hours,PERM.address,PERM.phone]
+[PERM.hours,PERM.address]
 .filter(Boolean)
 .join(' · ');
 
@@ -9824,12 +9885,12 @@ window.UGTM.failed(err);
         loadLogo().then(function(logo){
 
           if(logo&&logo.data){
-            /* Logo inscrit dans un carré de 16 mm, à SON rapport
+            /* Logo agrandi, inscrit dans un carré de 22 mm, à SON rapport
                largeur/hauteur (aucune déformation verticale). */
             var ratio=(logo.w>0&&logo.h>0)?(logo.w/logo.h):1;
-            var boxL=Math.min(16,16*ratio);
+            var boxL=Math.min(22,22*ratio);
             var boxH=boxL/ratio;
-            pdf.addImage(logo.data,'JPEG',margin,10+(16-boxH)/2,boxL,boxH);
+            pdf.addImage(logo.data,'JPEG',margin,10+(22-boxH)/2,boxL,boxH);
           }
 
           pdf.setFont(undefined,'bold');
@@ -9843,18 +9904,10 @@ window.UGTM.failed(err);
           pdf.text('Région Souss-Massa',56,24.5);
           pdf.setTextColor(0,0,0);
 
-          /* Référence unique du document : identifiant du document
-             adhesionRequests/{id} (provenance réelle du dossier),
-             affichée en évidence en tête de page. */
+                    /* Référence unique du document : identifiant du document
+             adhesionRequests/{id} (provenance réelle du dossier). */
           var ref=(request&&request.id)?String(request.id)
             :((request&&request.uid)?String(request.uid):'');
-          if(ref){
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(8.4);
-            pdf.setTextColor(95,95,95);
-            pdf.text('Référence : '+ref,pageW-margin,15,{align:'right'});
-            pdf.setTextColor(0,0,0);
-          }
 
           pdf.setFont(undefined,'bold');
           pdf.setFontSize(15);
@@ -9913,13 +9966,18 @@ window.UGTM.failed(err);
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
           var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
+          if(signer && signer.indexOf('@') >= 0){ signer='Responsable provincial'; }
+          if(!signer){ signer='Responsable provincial'; }
           var validationDate='';
           if(request&&request.signedAt){
             try{validationDate=new Date(request.signedAt).toLocaleDateString('fr-FR');}catch(eDate){}
+          } else {
+            try{ validationDate = new Date().toLocaleDateString('fr-FR'); } catch(e){}
           }
+          if(validationDate === 'Invalid Date') validationDate = '';
           section('VALIDATION');
           row2('Validée par',signer,'Statut du dossier','VALIDÉE');
-          row2('Date de validation',validationDate,'Référence',ref);
+          row2('Date de validation',validationDate,'Référence',ref||'');
 
           /* Pied de page sur CHAQUE page : fil conducteur
              du document, avec numérotation. */
@@ -10353,7 +10411,15 @@ window.UGTM.failed(err);
              et par l'installateur Android. La bannière passe alors en
              état « téléchargée / redémarrage requis ». */
           writeState(remote,'requested');
-          window.open(m.apkUrl,'_system');
+          try{
+      if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser){
+        window.Capacitor.Plugins.Browser.open({url: m.apkUrl});
+      } else if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.AppLauncher){
+        Capacitor.Plugins.AppLauncher.openUrl({url: m.apkUrl});
+      } else {
+        window.location.href = m.apkUrl;
+      }
+    }catch(e){ window.location.href = m.apkUrl; };
           el.hidden=true;
           checkRemote(storedCode);
         };
@@ -10390,6 +10456,43 @@ window.UGTM.failed(err);
 .ota-banner .ota-dismiss{background:transparent;color:#000;border:1px solid #000;}
 </style>
 
+
+<script>
+(function(){
+  var tabs = ['home','news','agenda','report','contact','me','adhesion'];
+  var startX=0,startY=0,dx=0,dy=0,moving=false;
+  var container = document.querySelector('main') || document.body;
+  container.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1) return;
+    var t=e.touches[0];
+    startX=t.clientX; startY=t.clientY; dx=0; dy=0; moving=true;
+  },{passive:true});
+  container.addEventListener('touchmove',function(e){
+    if(!moving) return;
+    var t=e.touches[0];
+    dx=t.clientX-startX; dy=t.clientY-startY;
+  },{passive:true});
+  container.addEventListener('touchend',function(e){
+    if(!moving) return;
+    moving=false;
+    if(Math.abs(dy)>Math.abs(dx)) return;
+    if(Math.abs(dx)<60) return;
+    var current = null;
+    for(var i=0;i<tabs.length;i++){
+      var el=document.getElementById('s-'+tabs[i]) || document.querySelector('.screen#s-'+tabs[i]);
+      if(el && !el.hidden){ current = tabs[i]; break; }
+    }
+    if(!current) return;
+    var idx = tabs.indexOf(current);
+    if(idx===-1) return;
+    if(dx>0 && idx>0){
+      if(typeof go==='function') go(tabs[idx-1]);
+    } else if(dx<0 && idx<tabs.length-1){
+      if(typeof go==='function') go(tabs[idx+1]);
+    }
+  });
+})();
+</script>
 </body>
 <style>
 .notif-badge{
