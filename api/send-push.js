@@ -141,6 +141,37 @@ function getAdminEmails() {
   return ['abaray66@gmail.com'];
 }
 
+/* Compte les destinataires potentiels quand la liste de jetons est vide.
+   N'expose que des nombres : aucun e-mail, aucun jeton, aucun secret.
+   Objectif : lire dans les logs Vercel la difference entre « personne
+   d'inscrit », « inscrits sans notification activee » et « jeton manquant ». */
+async function describeMissingRecipients(type) {
+  const db = getDb();
+  const info = { type: type };
+  if (type === 'news' || type === 'event') {
+    const membersSnap = await db.collection('members').where('status', '==', 'active').get();
+    const tokensSnap = await db.collection('fcmTokens').get();
+    const withToken = tokensSnap.docs.filter(function (t) { return t.data() && t.data().token; });
+    const idsWithToken = new Set(withToken.map(function (t) { return t.id; }));
+    const activeWithToken = membersSnap.docs.filter(function (m) { return idsWithToken.has(m.id); }).length;
+    info.activeMembers = membersSnap.docs.length;
+    info.storedTokens = withToken.length;
+    info.activeMembersWithToken = activeWithToken;
+    if (membersSnap.docs.length === 0) info.hint = 'aucun membre avec status=active';
+    else if (withToken.length === 0) info.hint = 'aucun appareil abonne (fcmTokens vide)';
+    else if (activeWithToken === 0) info.hint = 'appareils abonnes mais aucun membre actif parmi eux';
+  } else if (type === 'adhesion') {
+    info.hint = 'le membre cible n\'a pas de jeton FCM enregistre';
+  } else if (type === 'adhesion_request') {
+    const subs = await db.collection('members').where('role', '==', 'subadmin').get();
+    info.subadmins = subs.docs.length;
+    info.hint = subs.docs.length === 0
+      ? 'aucun sous-administrateur enregistre'
+      : 'sous-administrateurs sans jeton ou hors de cette province';
+  }
+  return info;
+}
+
 async function getActiveMemberTokens() {
   const db = getDb();
   const membersSnap = await db.collection('members').where('status', '==', 'active').get();
@@ -308,6 +339,18 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid request' });
     }
 
+    // Trace d'arrivée : permet de distinguer « l'app n'a rien envoyé » de
+    // « l'app a envoyé mais aucun destinataire » sans console navigateur.
+    console.log(JSON.stringify({
+      level: 'info',
+      event: 'push_request',
+      uid: decodedToken.uid,
+      type: type,
+      target: targetUid ? 'single' : 'broadcast',
+      targetId: targetId ? String(targetId).slice(0, 40) : null,
+      timestamp: new Date().toISOString()
+    }));
+
     const adminEmails = getAdminEmails();
     const isAdmin = adminEmails.includes((decodedToken.email || '').toLowerCase());
     if (type === 'adhesion_request') {
@@ -366,7 +409,20 @@ module.exports = async function handler(req, res) {
     }
 
     if (tokens.length === 0) {
-      return res.status(200).json({ sent: 0, total: 0, message: 'No recipients' });
+      // Diagnostic sans exposer de secret : pourquoi personne n'est joignable.
+      let detail = {};
+      try {
+        detail = await describeMissingRecipients(type);
+      } catch (e) {
+        detail = { detail: String(e && e.message || e).slice(0, 160) };
+      }
+      console.log(JSON.stringify(Object.assign({
+        level: 'warn',
+        event: 'push_no_recipients',
+        uid: decodedToken.uid,
+        timestamp: new Date().toISOString()
+      }, detail)));
+      return res.status(200).json({ sent: 0, total: 0, message: 'No recipients', code: 'no_recipients' });
     }
 
     if (tokens.length > MAX_RECIPIENTS) {

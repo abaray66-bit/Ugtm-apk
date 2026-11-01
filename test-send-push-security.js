@@ -24,10 +24,25 @@ const mockVerifyIdToken = async function(token) {
   throw new Error('Invalid token');
 };
 
+// Contenu Firestore simulé, modifiable par les tests qui en ont besoin.
+let mockDbState = { activeMembers: [], tokens: [] };
+
 const mockFirestore = {
   collection: function(name) {
     return {
-      where: function() { return { get: async () => ({ docs: [] }) }; },
+      where: function() {
+        return {
+          get: async () => ({
+            docs: name === 'members'
+              ? mockDbState.activeMembers.map(id => ({ id: id, data: () => ({ status: 'active' }) }))
+              : []
+          })
+        };
+      },
+      get: async () => ({
+        docs: (name === 'fcmTokens' ? mockDbState.tokens : [])
+          .map(t => ({ id: t.id, data: () => ({ token: t.token }) }))
+      }),
       doc: function(id) {
         return {
           get: async () => ({ exists: false, data: () => null }),
@@ -143,6 +158,30 @@ async function main() {
     const res = makeRes();
     await handler(req, res);
     assertEqual(res._status, 400);
+  });
+
+  await runTest('aucun destinataire -> 200 no_recipients + log diagnostique', async () => {
+    setEnv({ FCM_SERVICE_ACCOUNT: JSON.stringify({ client_email: 'svc@test.iam.gserviceaccount.com', private_key: 'k' }), FCM_PROJECT_ID: 'p', ADMIN_EMAILS: 'abaray66@gmail.com' });
+    mockDbState = { activeMembers: ['m1', 'm2'], tokens: [] };
+    const req = { method: 'POST', headers: { authorization: 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b' }) };
+    const res = makeRes();
+    const logs = [];
+    const originalLog = console.log;
+    console.log = function(line) { logs.push(String(line)); };
+    try { await handler(req, res); } finally { console.log = originalLog; mockDbState = { activeMembers: [], tokens: [] }; }
+
+    assertEqual(res._status, 200);
+    assertEqual(res._body.code, 'no_recipients');
+    const events = logs.map(function(l) { try { return JSON.parse(l); } catch (e) { return null; } }).filter(Boolean);
+    if (!events.some(function(e) { return e.event === 'push_request'; })) {
+      throw new Error('log push_request absent : impossible de voir que la requete a atteint le serveur');
+    }
+    const diag = events.filter(function(e) { return e.event === 'push_no_recipients'; })[0];
+    if (!diag) throw new Error('log push_no_recipients absent');
+    assertEqual(diag.activeMembers, 2);
+    assertEqual(diag.storedTokens, 0);
+    assertEqual(diag.activeMembersWithToken, 0);
+    if (!diag.hint) throw new Error('diagnostic sans hint');
   });
 
   // Diagnostic /api/health : vérifie la configuration sans exposer de secret.
