@@ -675,11 +675,11 @@ async function signIn(){
         provider
       );
     } catch (e) {
+      try { console.error('DEBUG_AUTH signInWithPopup', e && e.code, e && e.message); } catch(ex){}
       if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
-        await signInWithRedirect(auth, provider);
-        return;
+        try { await signInWithRedirect(auth, provider); return; } catch(e2){ try { console.error('DEBUG_AUTH signInWithRedirect', e2 && e2.code, e2 && e2.message); } catch(ex){} throw e2; }
       }
-      throw e;
+      if (e) throw e;
     }
 
   }
@@ -695,8 +695,9 @@ async function signIn(){
     ){
       return;
     }
-
-    throw e;
+    if (e) {
+      throw e;
+    }
 
   }
 
