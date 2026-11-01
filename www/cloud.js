@@ -5,7 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential,
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
   reauthenticateWithPopup, reauthenticateWithCredential, onAuthStateChanged, signOut as fbSignOut, deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
@@ -669,10 +669,18 @@ async function signIn(){
     });
 
 
-    await signInWithPopup(
-      auth,
-      provider
-    );
+    try {
+      await signInWithPopup(
+        auth,
+        provider
+      );
+    } catch (e) {
+      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw e;
+    }
 
   }
 
@@ -1981,8 +1989,9 @@ export async function init(config, h){
   auth =
     getAuth(app);
 
-
   try {
+    getRedirectResult(auth).catch(function(){});
+  } catch(e) {}
 
     db =
       initializeFirestore(
