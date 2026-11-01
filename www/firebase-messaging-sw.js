@@ -37,18 +37,30 @@ self.addEventListener('notificationclick', function(event){
   var targetUrl = notificationTargetUrl(clickData);
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList){
-      var appClient = clientList.find(function(client){
-        return client.url.indexOf(new URL(APP_ROOT_URL).origin + '/') === 0;
-      });
-      if (appClient) {
-        if (typeof appClient.navigate === 'function') {
-          return appClient.navigate(targetUrl).then(function(client){
-            return (client || appClient).focus();
-          });
+      try {
+        var root = new URL(APP_ROOT_URL);
+        // Avoid any Vercel destination
+        try {
+          var turl = new URL(targetUrl);
+          if(turl.hostname.indexOf('vercel.app') !== -1){
+            targetUrl = root.href + (turl.search || '');
+          }
+        } catch(e){}
+        var appClient = clientList.find(function(client){
+          try { return client.url.indexOf(root.origin + '/') === 0; } catch(e){ return false; }
+        });
+        if (appClient) {
+          if (typeof appClient.navigate === 'function') {
+            return appClient.navigate(targetUrl).then(function(client){
+              return (client || appClient).focus();
+            }).catch(function(){ return appClient.focus(); });
+          }
+          return appClient.focus();
         }
-        return appClient.focus();
+        return self.clients.openWindow(targetUrl);
+      } catch(e){
+        return self.clients.openWindow(APP_ROOT_URL);
       }
-      return self.clients.openWindow(targetUrl);
     })
   );
 });
@@ -75,4 +87,17 @@ messaging.onBackgroundMessage(function(payload){
   var body = (payload.notification && payload.notification.body) || '';
   var notificationData=payload.data||{};
   self.registration.showNotification(title, { body: body, icon: '/icons/ugtm-mark.svg', data: { url: notificationTargetUrl(notificationData), targetType: notificationData.notificationType||'', targetId: notificationData.notificationId||'' } });
+});
+self.addEventListener('push', function(event){
+  try {
+    if(!event.data) return;
+    var payload = {};
+    try { payload = event.data.json(); } catch(e) { return; }
+    var data = payload.data || {};
+    var notification = payload.notification || {};
+    // If notification payload present, FCM may show it; but ensure data has correct target
+    if(!data.targetUrl && !data.notificationType){
+      // try to build
+    }
+  } catch(e){}
 });
