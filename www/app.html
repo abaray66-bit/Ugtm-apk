@@ -9324,10 +9324,10 @@ setSession:function(s){
 
 var wasManager=S.isAdmin||S.isSubAdmin;
 
-S.user=s.user;
-S.member=s.member;
-S.isAdmin=!!s.isAdmin;
-S.isSubAdmin=!!s.isSubAdmin;
+S.user = (s && s.user) ? s.user : null;
+S.member = (s && s.member) ? s.member : null;
+S.isAdmin=!!(s && s.isAdmin);
+S.isSubAdmin=!!(s && s.isSubAdmin);
 
 var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
 tabs.forEach(function(b){b.hidden=!S.isAdmin;});
