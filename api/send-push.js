@@ -358,7 +358,10 @@ async function probeStoredTokens(projectId, accessToken, limit) {
     valid: 0,
     notRegistered: 0,
     invalidFormat: 0,
-    rejected: 0
+    rejected: 0,
+    // Raisons distinctes des refus (jamais le jeton lui-meme) : sans elles,
+    // « rejected » ne dit pas s'il faut corriger l'inscription ou l'envoi.
+    reasons: []
   };
 
   for (const token of items) {
@@ -391,8 +394,16 @@ async function probeStoredTokens(projectId, accessToken, limit) {
       } else {
         summary.rejected++;
       }
+      const reason = String((body && body.error && body.error.status) || 'ERROR') + ': ' + message.slice(0, 120);
+      if (summary.reasons.indexOf(reason) === -1 && summary.reasons.length < 5) {
+        summary.reasons.push(reason);
+      }
     } catch (e) {
       summary.rejected++;
+      const failure = 'REQUEST_FAILED: ' + String(e && e.message || e).slice(0, 100);
+      if (summary.reasons.indexOf(failure) === -1 && summary.reasons.length < 5) {
+        summary.reasons.push(failure);
+      }
     }
   }
 
