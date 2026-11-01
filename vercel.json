@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "www",
+  "rewrites": [
+    { "source": "/telecharger", "destination": "/telecharger/index.html" },
+    { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/firebase-messaging-sw.js",
