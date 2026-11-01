@@ -605,8 +605,11 @@ function onUser(user){
    GOOGLE LOGIN
    ========================================================= */
 
+var _signingIn=false;
 async function signIn(){
 
+  if(_signingIn) return;
+  _signingIn=true;
   try {
 
     if (
@@ -699,6 +702,9 @@ async function signIn(){
       throw e;
     }
 
+  }
+  finally {
+    _signingIn=false;
   }
 
 }
