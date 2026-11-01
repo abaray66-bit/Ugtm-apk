@@ -7,7 +7,7 @@ window.APP_DATA = {
 
   firebase: {
     apiKey: "AIzaSyB-xhY-y5uuglA4ZUuXfM8FY5C6eTTZRMg",
-    authDomain: "ugtm-fns-souss-massa.web.app",
+    authDomain: "agile-marimba-ow7rjs2.vercel.app",
     projectId: "ugtm-fns-souss-massa",
     storageBucket: "ugtm-fns-souss-massa.firebasestorage.app",
     messagingSenderId: "313270677240",
