@@ -5,7 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signInWithCredential,
+  getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithCredential,
   reauthenticateWithPopup, reauthenticateWithCredential, onAuthStateChanged, signOut as fbSignOut, deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
@@ -661,13 +661,13 @@ async function signIn(){
 
 
     try {
-      await signInWithPopup(
+      await signInWithRedirect(
         auth,
         provider
       );
     } catch (e) {
       if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
-        try { await signInWithPopup(auth, provider); return; } catch(e2){ throw e2; }
+        try { await signInWithRedirect(auth, provider); return; } catch(e2){ throw e2; }
       }
       throw e;
     }
