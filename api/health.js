@@ -157,6 +157,9 @@ module.exports = async function handler(req, res) {
         deepReport.verdict = 'envoi_ok_aucun_jeton_enregistre';
       } else if (typeof regs.valid === 'number' && regs.valid === 0) {
         deepReport.verdict = 'envoi_ok_jetons_stockes_invalides';
+      } else if (typeof regs.checked === 'number' && regs.valid < regs.checked) {
+        // Au moins un jeton mort : les appareils concernes ne recoivent plus rien.
+        deepReport.verdict = 'envoi_ok_jetons_partiellement_invalides';
       } else {
         deepReport.verdict = 'envoi_ok_jetons_valides';
       }
