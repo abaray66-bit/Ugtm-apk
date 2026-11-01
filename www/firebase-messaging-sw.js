@@ -74,5 +74,5 @@ messaging.onBackgroundMessage(function(payload){
   var title = 'UGTM';
   var body = (payload.notification && payload.notification.body) || '';
   var notificationData=payload.data||{};
-  self.registration.showNotification(title, { body: body, icon: '/www/icons/ugtm-mark.svg', data: { url: notificationTargetUrl(notificationData), targetType: notificationData.notificationType||'', targetId: notificationData.notificationId||'' } });
+  self.registration.showNotification(title, { body: body, icon: '/icons/ugtm-mark.svg', data: { url: notificationTargetUrl(notificationData), targetType: notificationData.notificationType||'', targetId: notificationData.notificationId||'' } });
 });
