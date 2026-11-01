@@ -26,3 +26,7 @@ build/
 
 # Logs
 *.log
+firestore.rules.backup
+firestore.rules.new
+*.backup
+*.new
