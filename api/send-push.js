@@ -252,6 +252,95 @@ async function getMemberToken(uid) {
   return null;
 }
 
+/* Construit le message FCM v1. Extrait de la boucle d'envoi pour que le
+   diagnostic puisse eprouver exactement la meme charge utile que celle
+   reellement utilisee : un message de sonde qui divergerait ne prouverait rien. */
+function buildFcmMessage(token, title, msgBody, pushData, pushTarget, tag) {
+  return {
+    message: {
+      token: token,
+      notification: {
+        title: String(title).slice(0, 120),
+        body: String(msgBody || '').slice(0, 500)
+      },
+      data: pushData,
+      webpush: {
+        fcm_options: { link: String(pushTarget) },
+        notification: {
+          icon: '/icons/ugtm-mark.svg',
+          tag: String(tag),
+          renotify: false
+        }
+      },
+      android: {
+        priority: 'high',
+        notification: { tag: String(tag) }
+      }
+    }
+  };
+}
+
+/* Traduit la reponse FCM en cause exploitable. La distinction qui compte :
+   « token » signifie que FCM a accepte et valide notre charge utile puis
+   refuse le destinataire ; « payload » signifie que le message lui-meme est
+   rejete, auquel cas aucun envoi ne peut aboutir, quel que soit l'appareil. */
+function classifyFcmError(payload) {
+  if (!payload) return 'unknown';
+  if (payload.name) return 'accepted';
+  const err = payload.error || {};
+  const status = String(err.status || '');
+  const code = (err.details && err.details[0] && err.details[0].errorCode)
+    ? String(err.details[0].errorCode)
+    : status;
+  const message = String(err.message || '');
+  if (/registration token|not a valid fcm|requested entity was not found|unregistered/i.test(message) || code === 'UNREGISTERED' || code === 'SENDER_ID_MISMATCH') {
+    return 'token';
+  }
+  if (status === 'RESOURCE_EXHAUSTED' || err.code === 429) return 'quota';
+  if (status === 'UNAUTHENTICATED' || err.code === 401) return 'credentials';
+  if (status === 'PERMISSION_DENIED' || err.code === 403) return 'permissions';
+  if (/invalid json payload|invalid argument|field|malformed/i.test(message) || code === 'INVALID_ARGUMENT') {
+    return 'payload';
+  }
+  return 'unknown';
+}
+
+/* Sonde sans destinataire : envoie la vraie charge utile a un jeton
+   volontairement inexistant. Aucun appareil ne peut la recevoir ; la reponse
+   de FCM dit si le message est acceptable. */
+const PROBE_TOKEN = 'probe-token-000000000000000000000000000000000000000000';
+let lastProbeAt = 0;
+
+async function probeFcmSend(projectId, accessToken) {
+  const now = Date.now();
+  if (now - lastProbeAt < 60000) {
+    return { skipped: 'throttled' };
+  }
+  lastProbeAt = now;
+  const target = buildNotificationTarget('news', 'probe');
+  const pushData = { targetUrl: target.toString() };
+  const res = await fetch(
+    'https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
+      },
+      body: JSON.stringify(buildFcmMessage(PROBE_TOKEN, 'Test UGTM', 'Verification du circuit d envoi', pushData, target.toString(), 'probe-probe'))
+    }
+  );
+  let body = null;
+  try { body = await res.json(); } catch (e) { body = null; }
+  const err = (body && body.error) || {};
+  return {
+    httpStatus: res.status,
+    classification: classifyFcmError(body),
+    fcmCode: err.status ? String(err.status) : null,
+    fcmMessage: err.message ? String(err.message).slice(0, 160) : null
+  };
+}
+
 const ALLOWED_ORIGINS = new Set([
   'https://ugtm-fns-souss-massa.web.app',
   'https://ugtm-fns-souss-massa.firebaseapp.com',
@@ -460,6 +549,7 @@ module.exports = async function handler(req, res) {
       pushData.notificationId = String(targetId);
     }
 
+    const pushTag = String(type) + '-' + String(targetId || type);
     const results = [];
     for (const token of tokens) {
       try {
@@ -471,40 +561,21 @@ module.exports = async function handler(req, res) {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer ' + accessToken
             },
-            body: JSON.stringify({
-              message: {
-                token: token,
-                notification: {
-                  title: String(title).slice(0, 120),
-                  body: String(msgBody || '').slice(0, 500)
-                },
-                data: pushData,
-                webpush: {
-                  fcm_options: { link: pushTarget.toString() },
-                  notification: {
-                    icon: '/icons/ugtm-mark.svg',
-                    tag: String(type) + '-' + String(targetId || type),
-                    renotify: false
-                  }
-                },
-                android: {
-                  priority: 'high',
-                  notification: {
-                    tag: String(type) + '-' + String(targetId || type)
-                  }
-                }
-              }
-            })
+            body: JSON.stringify(buildFcmMessage(token, title, msgBody, pushData, pushTarget.toString(), pushTag))
           }
         );
         const data = await r.json();
-        results.push({ success: !!data.name, error: data.error && data.error.code ? data.error.code : null });
+        results.push({ success: !!data.name, error: data.name ? null : classifyFcmError(data) });
       } catch (e) {
         results.push({ success: false, error: 'send_failed' });
       }
     }
 
     const sentCount = results.filter(r => r.success).length;
+    const failures = {};
+    for (const r of results) {
+      if (!r.success) failures[r.error || 'unknown'] = (failures[r.error || 'unknown'] || 0) + 1;
+    }
     console.log(JSON.stringify({
       level: 'info',
       event: 'push_sent',
@@ -512,6 +583,7 @@ module.exports = async function handler(req, res) {
       type: type,
       recipientCount: tokens.length,
       successCount: sentCount,
+      failures: failures,
       durationMs: Date.now() - startTime,
       timestamp: new Date().toISOString()
     }));
@@ -533,3 +605,7 @@ module.exports.getFirebaseApp = getFirebaseApp;
 module.exports.getAccessToken = getAccessToken;
 module.exports.getServiceAccount = getServiceAccount;
 module.exports.getProjectId = getProjectId;
+module.exports.getDb = getDb;
+module.exports.buildFcmMessage = buildFcmMessage;
+module.exports.classifyFcmError = classifyFcmError;
+module.exports.probeFcmSend = probeFcmSend;

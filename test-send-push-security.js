@@ -6,7 +6,22 @@ globalThis.fetch = async function(url, opts) {
     return { json: async () => ({ access_token: 'mock-access-token' }) };
   }
   mockFcmCalls.push({ url: String(url), body: opts && opts.body });
-  return { json: async () => ({ name: 'mock-message-id' }) };
+  // Jeton de sonde : FCM repond « jeton inconnu », ce qui prouve que la charge
+  // utile a ete acceptee puis que le destinataire a ete refuse.
+  if (opts && String(opts.body || '').indexOf('probe-token') !== -1) {
+    return {
+      status: 400,
+      json: async () => ({
+        error: {
+          code: 400,
+          status: 'INVALID_ARGUMENT',
+          message: 'The registration token is not a valid FCM registration token',
+          details: [{ errorCode: 'INVALID_ARGUMENT' }]
+        }
+      })
+    };
+  }
+  return { status: 200, json: async () => ({ name: 'mock-message-id' }) };
 };
 
 const originalEnv = { ...process.env };
@@ -231,6 +246,45 @@ async function main() {
     assertEqual(res._status, 200, logs.join(' | '));
     assertEqual(res._body.total, 1);
     assertEqual(mockFcmCalls.length, 1);
+    mockFcmCalls.length = 0;
+  });
+
+  // Diagnostic approfondi : le sort de la reponse FCM doit etre traduit en cause.
+  await runTest('sonde FCM : distingue jeton inconnu, charge utile rejetee et droits', async () => {
+    const classify = handler.classifyFcmError;
+    assertEqual(classify({ name: 'projects/p/messages/1' }), 'accepted');
+    assertEqual(classify({
+      error: {
+        code: 400,
+        status: 'INVALID_ARGUMENT',
+        message: 'The registration token is not a valid FCM registration token',
+        details: [{ errorCode: 'INVALID_ARGUMENT' }]
+      }
+    }), 'token');
+    assertEqual(classify({
+      error: { code: 400, status: 'INVALID_ARGUMENT', message: 'Invalid JSON payload received. Unknown name "foo"' }
+    }), 'payload');
+    assertEqual(classify({ error: { code: 403, status: 'PERMISSION_DENIED' } }), 'permissions');
+    assertEqual(classify({ error: { code: 401, status: 'UNAUTHENTICATED' } }), 'credentials');
+    assertEqual(classify({ error: { code: 429, status: 'RESOURCE_EXHAUSTED' } }), 'quota');
+  });
+
+  await runTest('sonde FCM : la charge utile reelle est soumise a FCM sans destinataire', async () => {
+    setBaseEnv();
+    mockFcmCalls.length = 0;
+    const probe = await handler.probeFcmSend('ugtm-fns-souss-massa', 'mock-access-token');
+
+    assertEqual(mockFcmCalls.length, 1);
+    const sent = JSON.parse(mockFcmCalls[0].body);
+    // Le message sonde doit porter exactement la structure reelle.
+    if (!sent.message || !sent.message.token) throw new Error('message.token absent');
+    if (!sent.message.notification || !sent.message.notification.title) throw new Error('notification absente');
+    if (!sent.message.data || !sent.message.data.targetUrl) throw new Error('data.targetUrl absent');
+    if (!sent.message.webpush || !sent.message.webpush.notification || !sent.message.webpush.notification.tag) throw new Error('tag webpush absent');
+    if (!sent.message.android || !sent.message.android.notification || !sent.message.android.notification.tag) throw new Error('tag android absent');
+
+    assertEqual(probe.httpStatus, 400);
+    assertEqual(probe.classification, 'token');
     mockFcmCalls.length = 0;
   });
 
