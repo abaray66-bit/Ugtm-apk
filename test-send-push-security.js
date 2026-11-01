@@ -21,6 +21,17 @@ globalThis.fetch = async function(url, opts) {
       })
     };
   }
+  const rawBody = opts && String(opts.body || '');
+  if (rawBody.indexOf('validate_only') !== -1) {
+    // Validation de jeton : aucun envoi, FCM repond 200 (corps vide) ou refuse.
+    if (rawBody.indexOf('jeton-mort') !== -1) {
+      return {
+        status: 404,
+        json: async () => ({ error: { code: 404, status: 'NOT_FOUND', message: 'Requested entity was not found.' } })
+      };
+    }
+    return { status: 200, json: async () => ({}) };
+  }
   return { status: 200, json: async () => ({ name: 'mock-message-id' }) };
 };
 
@@ -285,6 +296,29 @@ async function main() {
 
     assertEqual(probe.httpStatus, 400);
     assertEqual(probe.classification, 'token');
+    mockFcmCalls.length = 0;
+  });
+
+  await runTest('jetons stockes : validate_only separe les valides des obsoletes', async () => {
+    setBaseEnv();
+    const liveToken = 'jeton-vivant-0123456789abcdefghijklmnopqrstuvwxyz';
+    const deadToken = 'jeton-mort-0123456789abcdefghijklmnopqrstuvwxyz';
+    mockDbState = {
+      activeMembers: ['m1', 'm2'],
+      tokens: [{ id: 'm1', token: liveToken }, { id: 'm2', token: deadToken }]
+    };
+    mockFcmCalls.length = 0;
+    const summary = await handler.probeStoredTokens('ugtm-fns-souss-massa', 'mock-access-token', 10);
+    mockDbState = { activeMembers: [], tokens: [] };
+
+    assertEqual(summary.checked, 2);
+    assertEqual(summary.valid, 1);
+    assertEqual(summary.notRegistered, 1);
+    assertEqual(summary.rejected, 0);
+    // Aucune livraison : chaque appel porte validate_only.
+    mockFcmCalls.forEach(function (call) {
+      if (String(call.body).indexOf('validate_only') === -1) throw new Error('sonde sans validate_only : une notification serait partie');
+    });
     mockFcmCalls.length = 0;
   });
 

@@ -341,6 +341,64 @@ async function probeFcmSend(projectId, accessToken) {
   };
 }
 
+/* Verifie que les jetons reellement stockes sont encore exploitables, sans
+   rien livrer : FCM accepte validate_only, qui controle le message et le
+   destinataire puis refuse d'envoyer. Aucune notification ne part, et seuls
+   des compteurs ressortent — jamais un jeton. */
+async function probeStoredTokens(projectId, accessToken, limit) {
+  const db = getDb();
+  const snap = await db.collection('fcmTokens').get();
+  const items = snap.docs
+    .map(function (d) { return d.data() && d.data().token; })
+    .filter(isValidFcmToken)
+    .slice(0, limit || 10);
+
+  const summary = {
+    checked: items.length,
+    valid: 0,
+    notRegistered: 0,
+    invalidFormat: 0,
+    rejected: 0
+  };
+
+  for (const token of items) {
+    try {
+      const target = buildNotificationTarget('news', 'probe');
+      const payload = buildFcmMessage(token, 'Test UGTM', 'Verification du circuit d envoi', { targetUrl: target.toString() }, target.toString(), 'probe-probe');
+      payload.validate_only = true;
+      const res = await fetch(
+        'https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accessToken
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+      if (res.status === 200) {
+        summary.valid++;
+        continue;
+      }
+      let body = null;
+      try { body = await res.json(); } catch (e) { body = null; }
+      const message = String((body && body.error && body.error.message) || '');
+      if (/requested entity was not found|unregistered/i.test(message)) {
+        summary.notRegistered++;
+      } else if (/not a valid fcm registration token|invalid registration token/i.test(message)) {
+        summary.invalidFormat++;
+      } else {
+        summary.rejected++;
+      }
+    } catch (e) {
+      summary.rejected++;
+    }
+  }
+
+  return summary;
+}
+
 const ALLOWED_ORIGINS = new Set([
   'https://ugtm-fns-souss-massa.web.app',
   'https://ugtm-fns-souss-massa.firebaseapp.com',
@@ -609,3 +667,4 @@ module.exports.getDb = getDb;
 module.exports.buildFcmMessage = buildFcmMessage;
 module.exports.classifyFcmError = classifyFcmError;
 module.exports.probeFcmSend = probeFcmSend;
+module.exports.probeStoredTokens = probeStoredTokens;

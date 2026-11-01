@@ -126,17 +126,40 @@ module.exports = async function handler(req, res) {
         errors.fcmProbe = 'probe_failed';
         deepReport.fcm = { error: 'probe_failed' };
       }
+
+      // 3) Les jetons stockés sont-ils encore exploitables ? validate_only
+      //    contrôle le destinataire sans rien livrer.
+      try {
+        deepReport.registrations = await withTimeout(
+          (async function () {
+            const token = await push.getAccessToken(push.getServiceAccount());
+            return await push.probeStoredTokens(push.getProjectId(), token, 10);
+          })(),
+          9000,
+          { error: 'timeout' }
+        );
+      } catch (e) {
+        deepReport.registrations = { error: 'probe_failed' };
+      }
     } else {
       deepReport.fcm = { error: 'config_incomplete' };
+      deepReport.registrations = { error: 'config_incomplete' };
     }
 
-    // 3) Lecture de la sonde : que faut-il conclure ?
+    // 4) Lecture des sondes : que faut-il conclure ?
     const fcm = deepReport.fcm || {};
     const recipients = deepReport.recipients || {};
+    const regs = deepReport.registrations || {};
     if (fcm.classification === 'accepted' || fcm.classification === 'token') {
-      deepReport.verdict = (recipients.reachableMembers > 0)
-        ? 'envoi_ok_jetons_presents'
-        : 'envoi_ok_aucun_destinataire';
+      if (!recipients.reachableMembers) {
+        deepReport.verdict = 'envoi_ok_aucun_destinataire';
+      } else if (typeof regs.checked === 'number' && regs.checked === 0) {
+        deepReport.verdict = 'envoi_ok_aucun_jeton_enregistre';
+      } else if (typeof regs.valid === 'number' && regs.valid === 0) {
+        deepReport.verdict = 'envoi_ok_jetons_stockes_invalides';
+      } else {
+        deepReport.verdict = 'envoi_ok_jetons_valides';
+      }
     } else if (fcm.classification === 'payload') {
       deepReport.verdict = 'charge_utile_rejetee';
     } else if (fcm.classification === 'credentials' || fcm.classification === 'permissions') {
