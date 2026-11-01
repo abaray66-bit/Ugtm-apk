@@ -1,0 +1,100 @@
+name: Deploy Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  # =========================================================
+  # GATE : tests Firestore (bloque le déploiement si échec)
+  # =========================================================
+  test-firestore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Java 21 (émulateur Firestore)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Installer la CLI Firebase
+        run: npm install -g firebase-tools@13.29.1
+
+      - name: Lancer les tests des règles Firestore
+        run: npm run test:firestore
+
+  # =========================================================
+  # DÉPLOIEMENT (conditionné à la réussite des tests)
+  # =========================================================
+  deploy:
+    needs: test-firestore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Syntaxe JS + JSON : bloque le déploiement si un fichier est cassé.
+      - name: Vérifier la syntaxe JavaScript
+        run: node tools/check-syntax.js
+
+      - name: Installer la CLI Firebase
+        run: npm install -g firebase-tools@13.29.1
+
+      - name: Préparer le compte de service
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -e
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > sa.json
+          python3 - <<'PY'
+          import json
+
+          raw = open('sa.json', encoding='utf-8').read().strip()
+
+          try:
+              data = json.loads(raw)
+          except Exception:
+              # secret collé avec des \n littéraux : on les transforme
+              data = json.loads(raw.replace('\\r\\n', '\\n').replace('\\n', '\\n'))
+
+          if not data.get('client_email') or not data.get('private_key'):
+              raise SystemExit('secret FIREBASE_SERVICE_ACCOUNT invalide (client_email/private_key absents)')
+
+          with open('sa.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f)
+
+          print('compte de service OK :', data['client_email'])
+          PY
+
+      - name: Publier les règles Firestore
+        run: firebase deploy --only firestore:rules --project ugtm-fns-souss-massa --force
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa.json
+
+      - name: Déployer sur Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: ugtm-fns-souss-massa
+          channelId: live
+          entryPoint: .

@@ -1,0 +1,28 @@
+# Dépendances
+node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Secrets et fichiers sensibles
+.env
+.env.*
+*serviceAccount*.json
+google-services.json
+google-services-info.plist
+
+# Système / éditeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Builds
+dist/
+build/
+
+# Logs
+*.log
