@@ -445,6 +445,10 @@ function onUser(user){
   }
 
 
+  // Jeton périmé = appareil muet : on le réenregistre dès la connexion quand
+  // l'autorisation de notification est déjà accordée.
+  refreshPushTokenQuietly(user);
+
   var admins =
     (hooks.adminEmails || [])
     .map(function(x){
@@ -2056,6 +2060,31 @@ async function cloudSendPush(type, title, body, targetUid, targetId){
       console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', detail);
     }
   } catch(e){ console.warn('push backend failed:', e); }
+}
+
+/* Renouvellement silencieux du jeton FCM.
+   `enablePushNotifications` n'est appelé que sur un clic : quand le jeton
+tourne (réinstallation, données de navigation effacées, mise à jour du
+navigateur), l'appareil garde un jeton périmé et cesse de recevoir. Ici, si
+l'autorisation est DÉJÀ accordée, le jeton est réenregistré au démarrage sans
+redemander quoi que ce soit ; aucune demande d'autorisation n'est déclenchée. */
+var pushRefreshFor = '';
+async function refreshPushTokenQuietly(user){
+  try{
+    if(!user||!user.uid) return;
+    if(typeof Notification==='undefined'||!navigator.serviceWorker) return;
+    if(Notification.permission!=='granted') return;
+    if(pushRefreshFor===user.uid) return;
+    var cfg=(window.APP_DATA&&window.APP_DATA.firebase)||{};
+    var vapidKey=cfg.vapidKey||cfg.messagingVapidKey||'';
+    if(!vapidKey) return;
+    pushRefreshFor=user.uid;
+    messaging=messaging||getMessaging(firebaseApp);
+    var registration=await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    var token=await getToken(messaging,{vapidKey:vapidKey,serviceWorkerRegistration:registration});
+    if(!token) return;
+    await setDoc(doc(db,'fcmTokens',user.uid),{token:token,updatedAt:serverTimestamp()},{merge:true});
+  }catch(e){ /* silencieux : jamais bloquant pour l'application */ }
 }
 
 async function cloudLoadNotifications(){

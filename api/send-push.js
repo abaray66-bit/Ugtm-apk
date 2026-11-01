@@ -387,7 +387,10 @@ async function probeStoredTokens(projectId, accessToken, limit) {
       let body = null;
       try { body = await res.json(); } catch (e) { body = null; }
       const message = String((body && body.error && body.error.message) || '');
-      if (/requested entity was not found|unregistered/i.test(message)) {
+      // FCM renvoie ici « NotRegistered » sans espace ni phrase : c'est le cas
+      // d'un appareil desinstalle ou d'un jeton expire, a distinguer d'un
+      // jeton malforme.
+      if (/not\s*registered|requested entity was not found|unregistered/i.test(message)) {
         summary.notRegistered++;
       } else if (/not a valid fcm registration token|invalid registration token/i.test(message)) {
         summary.invalidFormat++;
