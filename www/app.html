@@ -10493,6 +10493,28 @@ window.UGTM.failed(err);
   });
 })();
 </script>
+
+<div id="authDiag" style="position:fixed;bottom:10px;right:10px;z-index:9999;background:#000;color:#0f0;font:11px monospace;max-width:90vw;max-height:40vh;overflow:auto;padding:8px;border:1px solid #0f0;display:none;">
+<div style="display:flex;gap:6px;margin-bottom:4px;">
+<button onclick="document.getElementById('authDiag').style.display='none'" style="background:#000;color:#0f0;border:1px solid #0f0;">x</button>
+<button onclick="var t=document.getElementById('authDiagLog');var s=t.textContent;navigator.clipboard.writeText(s)" style="background:#000;color:#0f0;border:1px solid #0f0;">copy</button>
+<button onclick="document.getElementById('authDiagLog').textContent=''" style="background:#000;color:#0f0;border:1px solid #0f0;">clear</button>
+</div>
+<pre id="authDiagLog" style="margin:0;white-space:pre-wrap;word-break:break-all;"></pre>
+</div>
+<button onclick="document.getElementById('authDiag').style.display='block'" style="position:fixed;bottom:10px;left:10px;z-index:9999;background:#000;color:#0f0;border:1px solid #0f0;font:10px monospace;">DIAG</button>
+<script>
+window.AUTH_DIAG = function(msg){
+  try {
+    var el = document.getElementById('authDiagLog');
+    if(el){
+      var ts = new Date().toISOString().substr(11,12);
+      el.textContent += '['+ts+'] '+msg+'\n';
+      el.scrollTop = el.scrollHeight;
+    }
+  } catch(e){}
+};
+</script>
 </body>
 <style>
 .notif-badge{
