@@ -6549,8 +6549,6 @@ btn.onclick=function(e){
     if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
     return;
   }
-  var am=document.getElementById('authMenu');
-  if(am) am.hidden=!am.hidden;
 };
 
 
@@ -9440,7 +9438,7 @@ if(
 location.protocol.indexOf('http')===0
 ){
 
-document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true; });
+document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); var clickedOnBtn = btn && (e.target === btn || btn.contains(e.target)); if(am && !am.hidden && !clickedOnBtn && !am.contains(e.target)) am.hidden=true; });
 
 document.addEventListener('click',function(e){
   var modal=document.getElementById('notifModal');
