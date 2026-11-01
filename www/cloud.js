@@ -675,9 +675,9 @@ async function signIn(){
         provider
       );
     } catch (e) {
+      try { console.warn('signInWithPopup error', e && e.code); } catch(ex){}
       if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
-        await signInWithRedirect(auth, provider);
-        return;
+        try { await signInWithRedirect(auth, provider); return; } catch(e2){ try { console.error('signInWithRedirect error', e2 && e2.code); } catch(ex){} throw e2; }
       }
       throw e;
     }
