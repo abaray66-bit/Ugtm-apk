@@ -249,7 +249,7 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['cat', 'date'])
         && request.resource.data.keys().hasOnly([
           'cat', 'date', 'audience', 'fr', 'ar',
-          'hasImage', 'createdAt', 'updatedAt'
+          'hasImage', 'imageCount', 'createdAt', 'updatedAt'
         ])
         && request.resource.data.cat in ['urgent', 'statut', 'events']
         && request.resource.data.date is string
