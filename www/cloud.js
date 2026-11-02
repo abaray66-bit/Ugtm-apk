@@ -765,9 +765,9 @@ async function signIn(){
     // Personne ne rattrape la promesse de signIn() : lancer l'erreur ne
     // produisait AUCUN message et le bouton semblait simplement inerte.
     var reason = String((e && (e.message || e.code)) || e || '');
-    if (/referer|referrer/i.test(reason)) {
+    if (/referer|referrer|API_KEY_HTTP_REFERRER_BLOCKED/i.test(reason)) {
       hooks.error({
-        code: 'connexion refusée par Firebase : origine de l’application non autorisée'
+        code: 'connexion refusée par Firebase : origine de l’application non autorisée (https://localhost). Autorisez https://localhost/* et capacitor://localhost/* dans les restrictions par référent de votre clé API Firebase.'
       });
       return;
     }
