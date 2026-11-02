@@ -596,6 +596,51 @@ function onUser(user){
    GOOGLE LOGIN
    ========================================================= */
 
+/* Un appel natif peut ne jamais se terminer (selecteur de comptes
+   silencieux, Google Play Services en retard) : sans delai maximum le
+   bouton reste bloque sans le moindre message. */
+function withTimeout(promise, ms, message){
+
+  return new Promise(function(resolve, reject){
+
+    var settled = false;
+
+    var timer = setTimeout(function(){
+
+      if (settled) return;
+
+      settled = true;
+
+      var error = new Error(message);
+      error.timeout = true;
+      reject(error);
+
+    }, ms);
+
+
+    promise.then(function(value){
+
+      if (settled) return;
+
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+
+    }, function(error){
+
+      if (settled) return;
+
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+
+    });
+
+  });
+
+}
+
+
 async function signIn(){
 
   try {
@@ -615,13 +660,41 @@ async function signIn(){
       }
 
 
-      var result =
-        await nativeAuth.signInWithGoogle({
+      var result;
 
-          useCredentialManager: true,
-          skipNativeAuth: true
+      try {
 
-        });
+        result = await withTimeout(
+          nativeAuth.signInWithGoogle({
+
+            useCredentialManager: true,
+            skipNativeAuth: true
+
+          }),
+          25000,
+          "Google ne répond pas (délai dépassé)."
+        );
+
+      } catch (first) {
+
+        if (!first || !first.timeout) throw first;
+
+        // Credential Manager est resté muet : on repasse par le sélecteur
+        // de comptes classique, qui est la seule issue sur ces appareils.
+        hooks.error({ code: 'sélecteur Google bloqué, nouvelle tentative' });
+
+        result = await withTimeout(
+          nativeAuth.signInWithGoogle({
+
+            useCredentialManager: false,
+            skipNativeAuth: true
+
+          }),
+          40000,
+          "Le sélecteur de comptes Google ne s'est pas ouvert. Vérifiez que Google Play Services et Chrome sont à jour."
+        );
+
+      }
 
 
       var idToken =
@@ -666,7 +739,10 @@ async function signIn(){
         provider
       );
     } catch (e) {
-      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
+      // Ne relancer que si le navigateur a bloqué la fenêtre : relancer après
+      // une fermeture volontaire rouvrait une popup que l'utilisateur venait
+      // de fermer, ce qui donne l'impression que la connexion est cassée.
+      if (e && e.code === 'auth/popup-blocked') {
         try { await signInWithPopup(auth, provider); return; } catch(e2){ throw e2; }
       }
       throw e;
@@ -686,7 +762,18 @@ async function signIn(){
       return;
     }
 
-    throw e;
+    // Personne ne rattrape la promesse de signIn() : lancer l'erreur ne
+    // produisait AUCUN message et le bouton semblait simplement inerte.
+    var reason = String((e && (e.message || e.code)) || e || '');
+    if (/referer|referrer|API_KEY_HTTP_REFERRER_BLOCKED/i.test(reason)) {
+      hooks.error({
+        code: 'connexion refusée par Firebase : origine de l’application non autorisée (https://localhost). Autorisez https://localhost/* et capacitor://localhost/* dans les restrictions par référent de votre clé API Firebase.'
+      });
+      return;
+    }
+
+    hooks.error(e);
+    return;
 
   }
 
@@ -2146,7 +2233,12 @@ async function cloudMarkNotificationRead(id){
 
     enablePushNotifications: async function(){
       if (!auth || !auth.currentUser) throw new Error('Connectez-vous avant d’activer les notifications.');
-      if (typeof Notification === 'undefined' || !navigator.serviceWorker) throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
+      if (typeof Notification === 'undefined' || !navigator.serviceWorker) {
+        var onNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+        throw new Error(onNative
+          ? 'L’application Android ne peut pas recevoir ces notifications. Ouvrez ugtm-fns-souss-massa.web.app dans Chrome sur ce téléphone pour les activer.'
+          : 'Ce navigateur ne prend pas en charge les notifications push.');
+      }
       // L'appel à requestPermission est exécuté immédiatement depuis le clic utilisateur.
       var permission = await Notification.requestPermission();
       if (permission !== 'granted') throw new Error('Autorisation de notification non accordée.');

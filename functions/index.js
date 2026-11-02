@@ -1,6 +1,5 @@
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
-const { getMessaging } = require('firebase-admin/messaging');
 const functions = require('firebase-functions');
 
 initializeApp();
@@ -14,32 +13,29 @@ exports.sendNotificationOnCreate = functions.firestore
     if (!tokenSnap.exists) return;
     const token = tokenSnap.data().token;
     if (!token) return;
-    try {
-      await getMessaging().send({
-        token: token,
-        notification: {
-          title: String(data.title || 'UGTM'),
-          body: String(data.body || '')
-        },
-        webpush: {
-          notification: {
-            tag: String(data.targetType || 'notification') + '-' + String(data.targetId || context.params.id),
-            renotify: false
-          }
-        }
-      });
-    } catch (err) {
-      const code = err && (err.code || (err.errorInfo && err.errorInfo.code));
-      if (
-        code === 'messaging/registration-token-not-registered' ||
-        code === 'messaging/invalid-registration-token'
-      ) {
-        try {
-          await getFirestore().doc('fcmTokens/' + uid).delete();
-        } catch (_e) {}
-        return;
-      }
-      // Ne pas supprimer le token pour d'autres erreurs (réseau, quota, invalid-argument générique, etc.)
+
+    const pushKey = process.env.PUSH_SHARED_SECRET || (functions.config().push && functions.config().push.secret);
+    if (!pushKey) {
+      console.error('PUSH_SHARED_SECRET manquant pour l\'envoi via Vercel');
       return;
+    }
+
+    try {
+      const res = await fetch('https://agile-marimba-ow7rjs2.vercel.app/api/send-push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-push-key': pushKey
+        },
+        body: JSON.stringify({
+          title: String(data.title || 'UGTM'),
+          body: String(data.body || ''),
+          tokens: [token]
+        })
+      });
+      const json = await res.json().catch(() => ({}));
+      console.log('Vercel push response:', json);
+    } catch (e) {
+      console.error('Erreur envoi push via Vercel:', e);
     }
   });
