@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "www",
   "rewrites": [
-    { "source": "/__/auth/:path*", "destination": "https://ugtm-fns-souss-massa.web.app/__/auth/:path*" },
+    { "source": "/__/auth/:path*", "destination": "https://ugtm-fns-souss-massa.firebaseapp.com/__/auth/:path*" },
     { "source": "/__/firebase/:path*", "destination": "https://ugtm-fns-souss-massa.web.app/__/firebase/:path*" },
     { "source": "/telecharger", "destination": "/telecharger/index.html" },
     { "source": "/((?!.*\\.).*)", "destination": "/index.html" }
