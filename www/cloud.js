@@ -447,7 +447,7 @@ function onUser(user){
 
   // Jeton périmé = appareil muet : on le réenregistre dès la connexion quand
   // l'autorisation de notification est déjà accordée.
-  refreshPushTokenQuietly(user);
+  try { if (typeof refreshPushTokenQuietly === "function") refreshPushTokenQuietly(user); } catch(e) { console.warn("push refresh:", e); }
 
   var admins =
     (hooks.adminEmails || [])
