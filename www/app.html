@@ -6480,18 +6480,19 @@ btn.onclick=function(e){
   var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
   var connected=!!(session&&session.user&&session.user.uid);
   if(!connected){
+    e.preventDefault();
     e.stopPropagation();
-    if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
-    return;
+    if(window.CLOUD && typeof window.CLOUD.signIn==='function'){ try{ window.CLOUD.signIn(); }catch(ex){} }
+    return false;
   }
   var am=document.getElementById('authMenu');
   if(am){
+    e.preventDefault();
     e.stopPropagation();
-    am.hidden=!am.hidden;
-    return;
+    am.hidden = !am.hidden;
+    return false;
   }
-  e.stopPropagation();
-  try{ if(typeof go==='function') go('me'); }catch(ex){}
+  try{ if(typeof go==='function'){ e.preventDefault(); e.stopPropagation(); go('me'); return false; } }catch(ex){}
 };
 
 
