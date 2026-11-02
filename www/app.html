@@ -6545,16 +6545,25 @@ if(!CLOUD_ON)return;
 
 btn.removeAttribute('data-go');
 btn.onclick=function(e){
-  e.stopPropagation();
   var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
   var connected=!!(session&&session.user&&session.user.uid);
   if(!connected){
-    if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+    e.preventDefault();
+    e.stopPropagation();
+    if(window.CLOUD && typeof window.CLOUD.signIn==='function'){ try{ window.CLOUD.signIn(); }catch(ex){} }
     else if(typeof toast==='function') toast(S.cloud==='error'
       ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
       : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
-    return;
+    return false;
   }
+  var am=document.getElementById('authMenu');
+  if(am){
+    e.preventDefault();
+    e.stopPropagation();
+    am.hidden = !am.hidden;
+    return false;
+  }
+  try{ e.preventDefault(); e.stopPropagation(); if(typeof go==='function') go('me'); return false; }catch(ex){}
 };
 
 
