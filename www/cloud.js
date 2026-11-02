@@ -378,7 +378,7 @@ function subscribeReports(){
    AUTHENTIFICATION
    ========================================================= */
 
-function onUser(user){
+function onUser(user){ try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('ONUSER:'+ (user?user.uid.substr(0,8):'null')); }catch(e){}
 
   unsub('member');
   unsub('members');
@@ -608,7 +608,8 @@ function onUser(user){
 var _signingIn=false;
 async function signIn(){
 
-  if(_signingIn) return;
+  try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('SIGNIN_START'); }catch(e){}
+  if(_signingIn){ try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('SIGNIN_BUSY'); }catch(e){} return; }
   _signingIn=true;
   try {
 
@@ -673,12 +674,14 @@ async function signIn(){
 
 
     try {
+      try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('POPUP_START'); }catch(e){}
       await signInWithPopup(
         auth,
         provider
       );
+      try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('POPUP_RESOLVED'); }catch(e){}
     } catch (e) {
-      try { console.error('DEBUG_AUTH signInWithPopup', e && e.code, e && e.message); } catch(ex){}
+      try { console.error('DEBUG_AUTH signInWithPopup', e && e.code, e && e.message); if(typeof AUTH_DIAG==='function') AUTH_DIAG('POPUP_ERR:'+ (e&&e.code)); } catch(ex){}
       if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
         try { await signInWithRedirect(auth, provider); return; } catch(e2){ try { console.error('DEBUG_AUTH signInWithRedirect', e2 && e2.code, e2 && e2.message); } catch(ex){} throw e2; }
       }
@@ -1180,7 +1183,7 @@ function getSavedAdhesionPdf(uid){
     if(!s.exists())return null;
     var d=s.data()||{};
     return {data:String(d.data||''),fileName:String(d.fileName||''),updatedAt:ms(d.updatedAt)};
-  }).catch(function(){return null;});
+  }).catch(function(err){ try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('REDIRECT_ERR:'+ (err&&err.code)); }catch(e){}return null;});
 }
 
 /* =========================================================
@@ -1997,7 +2000,7 @@ export async function init(config, h){
     getAuth(app);
 
   try {
-    getRedirectResult(auth).then(function(result){
+    getRedirectResult(auth).then(function(result){ try{ if(typeof AUTH_DIAG==='function') AUTH_DIAG('REDIRECT_RES:'+ (result&&result.user?'ok':'null')); }catch(e){}
       if(result && result.user){
         // already handled by onAuthStateChanged
       }
@@ -2171,7 +2174,7 @@ async function cloudMarkNotificationRead(id){
 
   onAuthStateChanged(
     auth,
-    function(user){ try { console.log('DEBUG_AUTH onAuthStateChanged', user ? user.uid : null); } catch(e){} onUser(user); }
+    function(user){ try { console.log('DEBUG_AUTH onAuthStateChanged', user ? user.uid : null); if(typeof AUTH_DIAG==='function') AUTH_DIAG('AUTH_STATE:'+ (user?user.uid.substr(0,8):'null')); } catch(e){} onUser(user); }
   );
 
 
