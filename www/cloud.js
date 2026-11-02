@@ -596,6 +596,51 @@ function onUser(user){
    GOOGLE LOGIN
    ========================================================= */
 
+/* Un appel natif peut ne jamais se terminer (selecteur de comptes
+   silencieux, Google Play Services en retard) : sans delai maximum le
+   bouton reste bloque sans le moindre message. */
+function withTimeout(promise, ms, message){
+
+  return new Promise(function(resolve, reject){
+
+    var settled = false;
+
+    var timer = setTimeout(function(){
+
+      if (settled) return;
+
+      settled = true;
+
+      var error = new Error(message);
+      error.timeout = true;
+      reject(error);
+
+    }, ms);
+
+
+    promise.then(function(value){
+
+      if (settled) return;
+
+      settled = true;
+      clearTimeout(timer);
+      resolve(value);
+
+    }, function(error){
+
+      if (settled) return;
+
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+
+    });
+
+  });
+
+}
+
+
 async function signIn(){
 
   try {
@@ -615,13 +660,41 @@ async function signIn(){
       }
 
 
-      var result =
-        await nativeAuth.signInWithGoogle({
+      var result;
 
-          useCredentialManager: true,
-          skipNativeAuth: true
+      try {
 
-        });
+        result = await withTimeout(
+          nativeAuth.signInWithGoogle({
+
+            useCredentialManager: true,
+            skipNativeAuth: true
+
+          }),
+          25000,
+          "Google ne répond pas (délai dépassé)."
+        );
+
+      } catch (first) {
+
+        if (!first || !first.timeout) throw first;
+
+        // Credential Manager est resté muet : on repasse par le sélecteur
+        // de comptes classique, qui est la seule issue sur ces appareils.
+        hooks.error({ code: 'sélecteur Google bloqué, nouvelle tentative' });
+
+        result = await withTimeout(
+          nativeAuth.signInWithGoogle({
+
+            useCredentialManager: false,
+            skipNativeAuth: true
+
+          }),
+          40000,
+          "Le sélecteur de comptes Google ne s'est pas ouvert. Vérifiez que Google Play Services et Chrome sont à jour."
+        );
+
+      }
 
 
       var idToken =

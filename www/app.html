@@ -5070,6 +5070,9 @@ renderGallery();
     var connected=!!(session&&session.user&&session.user.uid);
     if(!connected){
       if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+      else if(typeof toast==='function') toast(S.cloud==='error'
+        ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
+        : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
       return;
     }
     var am=document.getElementById('authMenu');
@@ -6547,6 +6550,9 @@ btn.onclick=function(e){
   var connected=!!(session&&session.user&&session.user.uid);
   if(!connected){
     if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+    else if(typeof toast==='function') toast(S.cloud==='error'
+      ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
+      : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
     return;
   }
 };
@@ -8616,7 +8622,12 @@ if(el.hasAttribute('data-act')){
 
 c=cloud();
 
-if(!c)return;
+if(!c){
+  if(typeof toast==='function') toast(S.cloud==='error'
+    ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
+    : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
+  return;
+}
 
 var act=el.getAttribute('data-act');
 
