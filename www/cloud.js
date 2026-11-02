@@ -666,7 +666,10 @@ async function signIn(){
         provider
       );
     } catch (e) {
-      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/cancelled-popup-request' || e.code === 'auth/popup-closed-by-user')) {
+      // Ne relancer que si le navigateur a bloqué la fenêtre : relancer après
+      // une fermeture volontaire rouvrait une popup que l'utilisateur venait
+      // de fermer, ce qui donne l'impression que la connexion est cassée.
+      if (e && e.code === 'auth/popup-blocked') {
         try { await signInWithPopup(auth, provider); return; } catch(e2){ throw e2; }
       }
       throw e;
