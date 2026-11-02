@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">UGTM Souss-Massa</string>
+    <string name="title_activity_main">UGTM Souss-Massa</string>
+    <string name="package_name">ma.ugtm.souss.massa</string>
+    <string name="custom_url_scheme">ma.ugtm.souss.massa</string>
+</resources>

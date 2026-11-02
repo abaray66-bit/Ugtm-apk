@@ -18,8 +18,8 @@
     "test:firestore:privileges": "firebase emulators:exec --only firestore \"node test-firestore-member-privileges.mjs\""
   },
   "dependencies": {
-    "@capacitor-firebase/authentication": "^7.0.0",
-    "@capacitor/android": "^7.0.0",
+    "@capacitor-firebase/authentication": "^7.5.0",
+    "@capacitor/android": "^7.6.10",
     "@capacitor/app": "^7.0.0",
     "@capacitor/browser": "^7.0.0",
     "@capacitor/core": "^7.0.0",
