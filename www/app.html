@@ -5203,6 +5203,14 @@ console.error(err);
 if(quiet)return;
 
 var code=(err&&(err.code||err.message))||'';
+if(typeof code === 'object') code = code.code || code.message || '';
+code = String(code);
+
+if(code.indexOf('permission-denied')>-1){
+  var t2=T();
+  toast(t2.rDenied || 'Envoi refusé par le serveur (permission-denied). Déconnectez-vous et reconnectez-vous avec votre compte administrateur.', 6000);
+  return;
+}
 
 toast(
 T().errPrefix+
