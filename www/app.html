@@ -10503,13 +10503,13 @@ window.UGTM.failed(err);
   var container = document.querySelector('main') || document.body;
   container.addEventListener('touchstart',function(e){
     if(e.touches.length!==1) return;
-    var t=e.touches[0];
-    startX=t.clientX; startY=t.clientY; dx=0; dy=0; moving=true;
+    var touch=e.touches[0];
+    startX=touch.clientX; startY=touch.clientY; dx=0; dy=0; moving=true;
   },{passive:true});
   container.addEventListener('touchmove',function(e){
     if(!moving) return;
-    var t=e.touches[0];
-    dx=t.clientX-startX; dy=t.clientY-startY;
+    var touch=e.touches[0];
+    dx=touch.clientX-startX; dy=touch.clientY-startY;
   },{passive:true});
   container.addEventListener('touchend',function(e){
     if(!moving) return;
