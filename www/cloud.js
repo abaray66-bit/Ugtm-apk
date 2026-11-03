@@ -1736,6 +1736,8 @@ var admin = {
           return deleteDoc(
             doc(db, 'news', id)
           );
+        }).then(function(){
+          return deleteNotificationsForTarget(id).catch(function(){});
         });
 
       },
@@ -1863,7 +1865,9 @@ var admin = {
 
       return deleteDoc(
         doc(db, 'events', id)
-      );
+      ).then(function(){
+        return deleteNotificationsForTarget(id).catch(function(){});
+      });
 
     },
 
@@ -2281,6 +2285,22 @@ async function cloudMarkNotificationRead(id){
   try {
     await updateDoc(doc(db, 'notifications', uid, 'items', id), { read: true });
   } catch(e){ console.warn('notif mark', e); }
+}
+
+async function deleteNotificationsForTarget(targetId){
+  if (!targetId) return;
+  try {
+    var members = await getDocs(collection(db, 'members'));
+    var batch = writeBatch(db);
+    var count = 0;
+    for (var i = 0; i < members.docs.length; i++) {
+      var m = members.docs[i];
+      var q = query(collection(db, 'notifications', m.id, 'items'), where('targetId', '==', String(targetId)));
+      var snap = await getDocs(q);
+      snap.docs.forEach(function(d){ batch.delete(d.ref); count++; });
+    }
+    if (count) await batch.commit();
+  } catch(e){ console.warn('notif cleanup', e); }
 }
 
   window.CLOUD = {
