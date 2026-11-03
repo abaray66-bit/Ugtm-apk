@@ -3568,6 +3568,9 @@ window.markNotificationRead=markNotificationRead;
 </div><div class="field">
 <label for="ePAr" data-i18n="admEventPlaceAr">المكان (بالعربية)</label>
 <input id="ePAr" type="text" dir="rtl">
+</div><div class="field">
+<label for="eImage" data-i18n="newsPhotos"></label>
+<input id="eImage" type="file" accept="image/jpeg,image/png,image/webp" multiple>
 </div><button class="btn primary block" type="button" data-adm-act="addEvent" id="eSubmitBtn" data-i18n="admEventPublish">Publier l'événement</button>
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
@@ -5060,6 +5063,9 @@ renderGallery();
     }
   },{passive:true});
   ge.addEventListener('touchmove',function(e){
+    if(e.touches && e.touches.length===1){
+      e.preventDefault();
+    }
     if(e.touches && e.touches.length===1 && galleryState.zoom>1){
       e.preventDefault();
       var dx=(e.touches[0].clientX-touchX);
@@ -7846,9 +7852,13 @@ if(eventPublishing)return;
 eventPublishing=true;
 var editing=S.editEventId;
 
-(editing
+var files=Array.prototype.slice.call($('eImage').files||[]).slice(0,3);
+Promise.all(files.map(function(f){return imageData(f);})).then(function(images){
+o.images=images.filter(function(x){return x;});
+return editing
 ?c.admin.updateEvent(editing,o)
-:c.admin.addEvent(o))
+:c.admin.addEvent(o);
+})
 .then(function(){
 
 eventPublishing=false;
@@ -7859,7 +7869,7 @@ toast(T().admEventEditedToast);
 return;
 }
 
-['eTime','eTFr','ePFr','eTAr','ePAr']
+['eTime','eTFr','ePFr','eTAr','ePAr','eImage']
 .forEach(function(id){
 $(id).value='';
 });

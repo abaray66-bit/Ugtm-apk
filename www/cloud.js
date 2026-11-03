@@ -1759,7 +1759,17 @@ var admin = {
 
       var ref = doc(collection(db, 'events'));
 
-      return setDoc(ref, data).then(function(){
+      var images = Array.isArray(o.images) ? o.images : (o.image ? [o.image] : []);
+      images = images.slice(0,3).filter(function(x){ return x; });
+      data.hasImage = !!images.length;
+      data.imageCount = images.length;
+
+      var jobs = [ setDoc(ref, data) ];
+      images.forEach(function(img, idx){
+        jobs.push(setDoc(doc(db, 'eventImages', ref.id + '_' + idx), { data: String(img).slice(0,400000), audience: o.audience || 'public', createdAt: serverTimestamp() }));
+      });
+
+      return Promise.all(jobs).then(function(){
         return getDocs(collection(db, 'members')).then(function(snap){
           var eventSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
           var title = ('Nouvel événement' + (eventSubject ? ' : ' + String(eventSubject).trim() : '')).slice(0,120);
@@ -1791,9 +1801,13 @@ var admin = {
   deleteEvent:
     function(id){
 
-      return deleteDoc(
-        doc(db, 'events', id)
-      );
+      return Promise.all([0,1,2].map(function(idx){
+        return deleteDoc(doc(db, 'eventImages', id + '_' + idx)).catch(function(){});
+      })).then(function(){
+        return deleteDoc(doc(db, 'events', id));
+      }).then(function(){
+        return deleteNotificationsForTarget(id).catch(function(){});
+      });
 
     },
 
@@ -2311,11 +2325,26 @@ async function cloudMarkNotificationRead(id){
 
     enablePushNotifications: async function(){
       if (!auth || !auth.currentUser) throw new Error('Connectez-vous avant d’activer les notifications.');
+      var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+      if (isNative) {
+        var PushNotifications = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+        if (!PushNotifications) throw new Error('Plugin push natif indisponible.');
+        var perm = await PushNotifications.requestPermissions();
+        if (!perm || perm.receive !== 'granted') throw new Error('Autorisation de notification non accordée.');
+        var nativeToken = await new Promise(function(resolve, reject){
+          var done = false;
+          PushNotifications.addListener('registration', function(t){ if (done) return; done = true; resolve(t && t.value ? t.value : null); });
+          PushNotifications.addListener('registrationError', function(e){ if (done) return; done = true; reject(new Error((e && e.error) || 'Erreur enregistrement push natif.')); });
+          PushNotifications.register().catch(function(e){ if(!done){ done=true; reject(e); } });
+          setTimeout(function(){ if(!done){ done=true; reject(new Error('Délai dépassé pour le jeton push natif.')); } }, 20000);
+        });
+        if (!nativeToken) throw new Error('Firebase n’a pas créé de jeton push natif.');
+        await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
+        try { PushNotifications.addListener('pushNotificationActionPerformed', function(action){ var data = (action && action.notification && action.notification.data) || {}; var url = data.targetUrl || data.url; if (url) { try { window.location.href = url; } catch(e){} } }); } catch(e){}
+        return true;
+      }
       if (typeof Notification === 'undefined' || !navigator.serviceWorker) {
-        var onNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-        throw new Error(onNative
-          ? 'L’application Android ne peut pas recevoir ces notifications. Ouvrez ugtm-fns-souss-massa.web.app dans Chrome sur ce téléphone pour les activer.'
-          : 'Ce navigateur ne prend pas en charge les notifications push.');
+        throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
       }
       // L'appel à requestPermission est exécuté immédiatement depuis le clic utilisateur.
       var permission = await Notification.requestPermission();
