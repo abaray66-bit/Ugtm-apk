@@ -1372,6 +1372,75 @@ function syncPublicProvinceContacts(){
     });
   }).catch(function(e){hooks.error(e, true);});
 }
+/* Envoi push via le backend Vercel.
+   Accepte les deux formes d'appel pour rester compatible avec le code déjà
+   publié : cloudSendPush(type, title, body, targetUid, targetId) et
+   cloudSendPush({ type, title, body, targetUid, targetId }). */
+async function cloudSendPush(a, b, c, d, e){
+  var type, title, body, targetUid, targetId;
+  if (a && typeof a === 'object') {
+    type = a.type; title = a.title; body = a.body;
+    targetUid = a.targetUid; targetId = a.targetId;
+  } else {
+    type = a; title = b; body = c; targetUid = d; targetId = e;
+  }
+
+  // Chaque abandon laisse une trace lisible sans console : la dernière
+  // tentative est rangée sous ugtm:push:last et affichée dans la fenêtre
+  // « Notifications » de l'application.
+  function record(status, detail){
+    var info = {
+      at: new Date().toISOString(),
+      type: String(type || ''),
+      status: status,
+      detail: detail ? String(detail).slice(0, 200) : ''
+    };
+    try { localStorage.setItem('ugtm:push:last', JSON.stringify(info)); } catch(err){}
+    window.UGTM_PUSH_LAST = info;
+    return info;
+  }
+
+  var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!configured) {
+    record('config_missing', 'pushBackendUrl absent de data.js');
+    return;
+  }
+  var url = String(configured).replace(/\/+$/, '');
+  try {
+    var user = auth && auth.currentUser;
+    if (!user && typeof getAuth === 'function') {
+      try { user = getAuth(firebaseApp).currentUser; } catch(err){}
+    }
+    if (!user) {
+      record('no_session', 'aucun utilisateur connecté au moment de l\'envoi');
+      return;
+    }
+    var token = await (user.getIdToken ? user.getIdToken() : Promise.reject(new Error('no getIdToken')));
+    var payload = { type: type, title: String(title || '').slice(0,120), body: String(body || '').slice(0,500) };
+    if (targetUid) payload.targetUid = String(targetUid);
+    if (targetId) payload.targetId = String(targetId);
+    var res = await fetch(url + '/api/send-push', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    var raw = '';
+    try { raw = await res.text(); } catch(err){}
+    var parsed = {};
+    try { parsed = JSON.parse(raw); } catch(err){}
+    if (!res.ok) {
+      // 401/403 = jeton ou droits, 404 = fonction absente du déploiement,
+      // 429 = limite d'envoi, 500 = configuration Vercel.
+      record(res.status, raw);
+      console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', raw.slice(0, 200));
+      return;
+    }
+    record('ok', 'envoyés ' + Number(parsed.sent || 0) + '/' + Number(parsed.total || 0));
+  } catch(e){
+    record('network_error', (e && e.message) || e);
+    console.warn('push backend failed:', e);
+  }
+}
 var admin = {
 
   setSubAdmin:
@@ -1620,11 +1689,17 @@ var admin = {
 
         return Promise.all(jobs)
           .then(function(){
+            var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
+            var pushTitle = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
+            var pushBody = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
+            // Push via backend (best-effort, non-blocking), déclenché
+            // immédiatement après la création, indépendamment de la diffusion
+            // aux membres et de la lecture de fcmTokens côté client.
+            cloudSendPush('news', pushTitle, pushBody, null, ref.id).catch(function(){});
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
-              var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
-              var title = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
-              var body = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
+              var title = pushTitle;
+              var body = pushBody;
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
               var tokens = [];
               var writes = snap.docs.map(function(d){
@@ -1643,11 +1718,6 @@ var admin = {
                   createdAt: serverTimestamp()
                 }).catch(function(){});
               });
-              // Push via backend (best-effort, non-blocking).
-              // La liste des destinataires est calculée par le serveur : lire
-              // fcmTokens ici n'était qu'un vestige, et son échec (règles
-              // Firestore) empêchait silencieusement l'envoi.
-              cloudSendPush('news', title, body, null, ref.id).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
           })
@@ -2128,75 +2198,6 @@ export async function init(config, h){
   window.db = db;
 
 
-/* Envoi push via le backend Vercel.
-   Accepte les deux formes d'appel pour rester compatible avec le code déjà
-   publié : cloudSendPush(type, title, body, targetUid, targetId) et
-   cloudSendPush({ type, title, body, targetUid, targetId }). */
-async function cloudSendPush(a, b, c, d, e){
-  var type, title, body, targetUid, targetId;
-  if (a && typeof a === 'object') {
-    type = a.type; title = a.title; body = a.body;
-    targetUid = a.targetUid; targetId = a.targetId;
-  } else {
-    type = a; title = b; body = c; targetUid = d; targetId = e;
-  }
-
-  // Chaque abandon laisse une trace lisible sans console : la dernière
-  // tentative est rangée sous ugtm:push:last et affichée dans la fenêtre
-  // « Notifications » de l'application.
-  function record(status, detail){
-    var info = {
-      at: new Date().toISOString(),
-      type: String(type || ''),
-      status: status,
-      detail: detail ? String(detail).slice(0, 200) : ''
-    };
-    try { localStorage.setItem('ugtm:push:last', JSON.stringify(info)); } catch(err){}
-    window.UGTM_PUSH_LAST = info;
-    return info;
-  }
-
-  var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
-  if (!configured) {
-    record('config_missing', 'pushBackendUrl absent de data.js');
-    return;
-  }
-  var url = String(configured).replace(/\/+$/, '');
-  try {
-    var user = auth && auth.currentUser;
-    if (!user && typeof getAuth === 'function') {
-      try { user = getAuth(firebaseApp).currentUser; } catch(err){}
-    }
-    if (!user) {
-      record('no_session', 'aucun utilisateur connecté au moment de l\'envoi');
-      return;
-    }
-    var token = await (user.getIdToken ? user.getIdToken() : Promise.reject(new Error('no getIdToken')));
-    var payload = { type: type, title: String(title || '').slice(0,120), body: String(body || '').slice(0,500) };
-    if (targetUid) payload.targetUid = String(targetUid);
-    if (targetId) payload.targetId = String(targetId);
-    var res = await fetch(url + '/api/send-push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify(payload)
-    });
-    var raw = '';
-    try { raw = await res.text(); } catch(err){}
-    var parsed = {};
-    try { parsed = JSON.parse(raw); } catch(err){}
-    if (!res.ok) {
-      // 401/403 = jeton ou droits, 404 = fonction absente du déploiement,
-      // 429 = limite d'envoi, 500 = configuration Vercel.
-      record(res.status, raw);
-      console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', raw.slice(0, 200));
-      return;
-    }
-    record('ok', 'envoyés ' + Number(parsed.sent || 0) + '/' + Number(parsed.total || 0));
-  } catch(e){
-    record('network_error', (e && e.message) || e);
-    console.warn('push backend failed:', e);
-  }
-}
 
 /* Renouvellement silencieux du jeton FCM.
    `enablePushNotifications` n'est appelé que sur un clic : quand le jeton

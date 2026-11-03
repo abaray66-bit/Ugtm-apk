@@ -8896,7 +8896,9 @@ c.admin
 
 }
 
-else if(a==='addNews'&&S.isAdmin){
+else if(a==='addNews'){
+
+if(!S||!S.isAdmin){ if(typeof toast==='function') toast('Accès administrateur requis.',4000); return; }
 
 publishNews();
 
