@@ -22,6 +22,12 @@ globalThis.fetch = async function(url, opts) {
     };
   }
   const rawBody = opts && String(opts.body || '');
+  if (rawBody.indexOf('appareil-mort') !== -1) {
+    return {
+      status: 404,
+      json: async () => ({ error: { code: 404, status: 'NOT_FOUND', message: 'NotRegistered' } })
+    };
+  }
   if (rawBody.indexOf('validate_only') !== -1) {
     // Validation de jeton : aucun envoi, FCM repond 200 (corps vide) ou refuse.
     if (rawBody.indexOf('jeton-mort') !== -1) {
@@ -56,6 +62,20 @@ const mockVerifyIdToken = async function(token) {
 // Contenu Firestore simulé, modifiable par les tests qui en ont besoin.
 let mockDbState = { activeMembers: [], tokens: [] };
 
+// Reference de document : la suppression retire vraiment l'entree du registre
+// simule, sinon un test de purge ne prouverait rien.
+function docRef(name, id) {
+  const stored = name === 'fcmTokens' ? mockDbState.tokens.filter(t => t.id === id)[0] : null;
+  return {
+    get: async () => ({ exists: !!stored, data: () => (stored ? { token: stored.token } : null) }),
+    set: async () => {},
+    update: async () => {},
+    delete: async () => {
+      if (name === 'fcmTokens') mockDbState.tokens = mockDbState.tokens.filter(t => t.id !== id);
+    }
+  };
+}
+
 const mockFirestore = {
   collection: function(name) {
     return {
@@ -70,15 +90,10 @@ const mockFirestore = {
       },
       get: async () => ({
         docs: (name === 'fcmTokens' ? mockDbState.tokens : [])
-          .map(t => ({ id: t.id, data: () => ({ token: t.token }) }))
+          .map(t => ({ id: t.id, data: () => ({ token: t.token }), ref: docRef(name, t.id) }))
       }),
       doc: function(id) {
-        const stored = name === 'fcmTokens' ? mockDbState.tokens.filter(t => t.id === id)[0] : null;
-        return {
-          get: async () => ({ exists: !!stored, data: () => (stored ? { token: stored.token } : null) }),
-          set: async () => {},
-          update: async () => {}
-        };
+        return docRef(name, id);
       }
     };
   }
@@ -258,6 +273,56 @@ async function main() {
     assertEqual(res._body.total, 1);
     assertEqual(mockFcmCalls.length, 1);
     mockFcmCalls.length = 0;
+  });
+
+  await runTest('classificateur : la reponse reelle « NotRegistered » designe un jeton mort', async () => {
+    const classify = handler.classifyFcmError;
+    assertEqual(classify({
+      error: { code: 404, status: 'NOT_FOUND', message: 'NotRegistered' }
+    }), 'token');
+  });
+
+  await runTest('purge : un appareil desinstalle quitte le registre pendant l envoi', async () => {
+    setBaseEnv();
+    const deadToken = 'appareil-mort-0123456789abcdefghijklmnopqrstuvwxyz';
+    const liveToken = 'appareil-vivant-0123456789abcdefghijklmnopqrstuvwxyz';
+    mockDbState = {
+      activeMembers: ['m1', 'm2'],
+      tokens: [{ id: 'm1', token: deadToken }, { id: 'm2', token: liveToken }]
+    };
+    mockFcmCalls.length = 0;
+    const req = { method: 'POST', headers: { authorization: 'Bearer valid-admin-token' }, body: JSON.stringify({ type: 'news', title: 't', body: 'b', targetId: 'news1' }) };
+    const res = makeRes();
+    const logs = [];
+    const originalLog = console.log;
+    console.log = function(line) { logs.push(String(line)); };
+    try { await handler(req, res); } finally { console.log = originalLog; }
+
+    assertEqual(res._status, 200, logs.join(' | '));
+    assertEqual(res._body.sent, 1, 'un seul appareil joignable');
+    assertEqual(res._body.cleaned, 1, 'le jeton mort doit etre retire');
+    assertEqual(mockDbState.tokens.length, 1, 'registre apres purge');
+    assertEqual(mockDbState.tokens[0].id, 'm2', 'l appareil vivant doit rester');
+    mockDbState = { activeMembers: [], tokens: [] };
+    mockFcmCalls.length = 0;
+  });
+
+  await runTest('balayage : seuls les jetons refuses par FCM sont supprimes', async () => {
+    setBaseEnv();
+    mockDbState = {
+      activeMembers: [],
+      tokens: [
+        { id: 'a', token: 'appareil-mort-0123456789abcdefghijklmnopqrstuvwxyz' },
+        { id: 'b', token: 'appareil-vivant-0123456789abcdefghijklmnopqrstuvwxyz' }
+      ]
+    };
+    const summary = await handler.sweepStoredTokens('ugtm-fns-souss-massa', 'mock-access-token');
+    assertEqual(summary.checked, 2);
+    assertEqual(summary.deleted, 1, 'un seul jeton mort');
+    assertEqual(summary.valid, 1);
+    assertEqual(mockDbState.tokens.length, 1);
+    assertEqual(mockDbState.tokens[0].id, 'b');
+    mockDbState = { activeMembers: [], tokens: [] };
   });
 
   // Diagnostic approfondi : le sort de la reponse FCM doit etre traduit en cause.

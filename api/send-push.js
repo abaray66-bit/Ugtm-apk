@@ -172,21 +172,19 @@ async function describeMissingRecipients(type) {
   return info;
 }
 
-async function getActiveMemberTokens() {
+/* Retourne des couples { uid, token } : le proprietaire du jeton est
+   indispensable pour purger un appareil qui n'existe plus. */
+async function getActiveMemberEntries() {
   const db = getDb();
   const membersSnap = await db.collection('members').where('status', '==', 'active').get();
-  const activeUids = membersSnap.docs.map(d => d.id);
-  const tokens = [];
-  for (const uid of activeUids) {
-    const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
-    if (tokenSnap.exists) {
-      const token = tokenSnap.data().token;
-      if (token && isValidFcmToken(token)) {
-        tokens.push(token);
-      }
-    }
+  const entries = [];
+  for (const doc of membersSnap.docs) {
+    const tokenSnap = await db.collection('fcmTokens').doc(doc.id).get();
+    if (!tokenSnap.exists) continue;
+    const token = tokenSnap.data() && tokenSnap.data().token;
+    if (isValidFcmToken(token)) entries.push({ uid: doc.id, token: token });
   }
-  return tokens;
+  return entries;
 }
 
 async function notifyAdhesionManagers(requestUid, province, title, messageBody) {
@@ -215,7 +213,7 @@ async function notifyAdhesionManagers(requestUid, province, title, messageBody) 
   }
 
   const batch = db.batch();
-  const tokens = [];
+  const entries = [];
   for (const uid of managerUids) {
     const notificationRef = db.collection('notifications').doc(uid).collection('items').doc();
     batch.set(notificationRef, {
@@ -233,11 +231,11 @@ async function notifyAdhesionManagers(requestUid, province, title, messageBody) 
     const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
     if (tokenSnap.exists) {
       const token = tokenSnap.data() && tokenSnap.data().token;
-      if (isValidFcmToken(token)) tokens.push(token);
+      if (isValidFcmToken(token)) entries.push({ uid: uid, token: token });
     }
   }
   if (managerUids.size) await batch.commit();
-  return Array.from(new Set(tokens));
+  return entries;
 }
 
 async function getMemberToken(uid) {
@@ -293,7 +291,10 @@ function classifyFcmError(payload) {
     ? String(err.details[0].errorCode)
     : status;
   const message = String(err.message || '');
-  if (/registration token|not a valid fcm|requested entity was not found|unregistered/i.test(message) || code === 'UNREGISTERED' || code === 'SENDER_ID_MISMATCH') {
+  // FCM v1 repond « NotRegistered » (sans espace) pour un appareil desinstalle.
+  // Sans le motif `not\s*registered`, cette reponse tombait dans « unknown » :
+  // l'appareil mort n'etait jamais identifie, donc jamais retire du registre.
+  if (/registration token|not a valid fcm|requested entity was not found|unregistered|not\s*registered/i.test(message) || code === 'UNREGISTERED' || code === 'SENDER_ID_MISMATCH') {
     return 'token';
   }
   if (status === 'RESOURCE_EXHAUSTED' || err.code === 429) return 'quota';
@@ -410,6 +411,91 @@ async function probeStoredTokens(projectId, accessToken, limit) {
     }
   }
 
+  return summary;
+}
+
+async function fcmValidate(projectId, accessToken, token) {
+  const target = buildNotificationTarget('news', 'probe');
+  const payload = buildFcmMessage(
+    token,
+    'Test UGTM',
+    'Verification du circuit d envoi',
+    { targetUrl: target.toString() },
+    target.toString(),
+    'probe-probe'
+  );
+  payload.validate_only = true;
+  const res = await fetch(
+    'https://fcm.googleapis.com/v1/projects/' + projectId + '/messages:send',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+  if (res.status === 200) return { ok: true, reason: null };
+  let body = null;
+  try { body = await res.json(); } catch (e) { body = null; }
+  const message = String((body && body.error && body.error.message) || '');
+  return { ok: false, reason: message, status: res.status };
+}
+
+/* Retire du registre les appareils que FCM vient de refuser. La suppression
+   n'a lieu que si le document porte encore le jeton teste : un appareil qui
+   s'est reenregistre entre-temps garde son nouveau jeton. */
+async function purgeDeadTokens(pairs) {
+  if (!pairs || !pairs.length) return 0;
+  const db = getDb();
+  let deleted = 0;
+  for (const pair of pairs) {
+    if (!pair || !pair.uid) continue;
+    try {
+      const ref = db.collection('fcmTokens').doc(String(pair.uid));
+      const snap = await ref.get();
+      if (snap.exists && String((snap.data() && snap.data().token) || '') === pair.token) {
+        await ref.delete();
+        deleted++;
+      }
+    } catch (e) {
+      // Une purge ratee ne doit jamais faire echouer l'envoi deja effectue.
+    }
+  }
+  return deleted;
+}
+
+/* Balayage complet du registre, sans livrer de notification (validate_only).
+   Sert a reparer un registre laisse avec des appareils disparus. */
+async function sweepStoredTokens(projectId, accessToken) {
+  const db = getDb();
+  const snap = await db.collection('fcmTokens').get();
+  const summary = { checked: 0, valid: 0, deleted: 0, kept: 0, errors: 0 };
+  for (const doc of snap.docs) {
+    const token = doc.data() && doc.data().token;
+    if (!isValidFcmToken(token)) continue;
+    summary.checked++;
+    try {
+      const verdict = await fcmValidate(projectId, accessToken, token);
+      if (verdict.ok) {
+        summary.valid++;
+        summary.kept++;
+        continue;
+      }
+      if (/not\s*registered|requested entity was not found|unregistered|not a valid fcm registration token/i.test(verdict.reason)) {
+        await doc.ref.delete();
+        summary.deleted++;
+      } else {
+        // Refus lie a la configuration ou au message : ne pas supprimer un
+        // jeton valide pour une cause qui n'est pas l'appareil.
+        summary.kept++;
+        summary.errors++;
+      }
+    } catch (e) {
+      summary.errors++;
+    }
+  }
   return summary;
 }
 
@@ -543,15 +629,15 @@ module.exports = async function handler(req, res) {
     let msgBody = requestedBody || '';
 
     // Déterminer les destinataires depuis Firestore
-    let tokens = [];
+    let entries = [];
     if (type === 'news' || type === 'event') {
-      tokens = await getActiveMemberTokens();
+      entries = await getActiveMemberEntries();
     } else if (type === 'adhesion') {
       if (!targetUid) {
         return res.status(400).json({ error: 'Invalid request' });
       }
       const token = await getMemberToken(targetUid);
-      if (token) tokens = [token];
+      if (token) entries = [{ uid: String(targetUid), token: token }];
     } else if (type === 'adhesion_request') {
       const db = getDb();
       const requestSnap = await db.collection('adhesionRequests').doc(decodedToken.uid).get();
@@ -566,14 +652,18 @@ module.exports = async function handler(req, res) {
       const province = String(request.province || application.province || '');
       title = ('Nouvelle demande d’adhésion : ' + applicantName).slice(0, 120);
       msgBody = ('Province : ' + province).slice(0, 500);
-      tokens = await notifyAdhesionManagers(decodedToken.uid, province, title, msgBody);
+      entries = await notifyAdhesionManagers(decodedToken.uid, province, title, msgBody);
     }
 
     // Un même appareil peut être enregistré sous plusieurs comptes (le jeton
     // n'est pas effacé à la déconnexion) : sans dédoublonnage, la diffusion
-    // envoyait plusieurs messages identiques au même téléphone. Le chemin
-    // « demande d'adhésion » le faisait déjà, pas la diffusion aux membres.
-    tokens = Array.from(new Set(tokens));
+    // envoyait plusieurs messages identiques au même téléphone. On garde le
+    // premier uid associé à chaque jeton, pour pouvoir purger l'appareil mort.
+    const uidByToken = new Map();
+    for (const entry of entries) {
+      if (!uidByToken.has(entry.token)) uidByToken.set(entry.token, entry.uid);
+    }
+    let tokens = Array.from(uidByToken.keys());
 
     if (tokens.length === 0) {
       // Diagnostic sans exposer de secret : pourquoi personne n'est joignable.
@@ -623,6 +713,7 @@ module.exports = async function handler(req, res) {
 
     const pushTag = String(type) + '-' + String(targetId || type);
     const results = [];
+    const deadTokens = [];
     for (const token of tokens) {
       try {
         const r = await fetch(
@@ -637,11 +728,19 @@ module.exports = async function handler(req, res) {
           }
         );
         const data = await r.json();
-        results.push({ success: !!data.name, error: data.name ? null : classifyFcmError(data) });
+        const success = !!data.name;
+        const failure = success ? null : classifyFcmError(data);
+        results.push({ success: success, error: failure });
+        // « token » = FCM a accepte la charge utile puis refuse l'appareil :
+        // ce jeton ne recevra plus jamais rien, il doit quitter le registre.
+        if (failure === 'token') {
+          deadTokens.push({ uid: uidByToken.get(token), token: token });
+        }
       } catch (e) {
         results.push({ success: false, error: 'send_failed' });
       }
     }
+    const cleaned = await purgeDeadTokens(deadTokens);
 
     const sentCount = results.filter(r => r.success).length;
     const failures = {};
@@ -656,11 +755,12 @@ module.exports = async function handler(req, res) {
       recipientCount: tokens.length,
       successCount: sentCount,
       failures: failures,
+      cleanedTokens: cleaned,
       durationMs: Date.now() - startTime,
       timestamp: new Date().toISOString()
     }));
 
-    return res.status(200).json({ sent: sentCount, total: tokens.length });
+    return res.status(200).json({ sent: sentCount, total: tokens.length, cleaned: cleaned });
   } catch (e) {
     console.log(JSON.stringify({
       level: 'error',
@@ -682,3 +782,7 @@ module.exports.buildFcmMessage = buildFcmMessage;
 module.exports.classifyFcmError = classifyFcmError;
 module.exports.probeFcmSend = probeFcmSend;
 module.exports.probeStoredTokens = probeStoredTokens;
+module.exports.purgeDeadTokens = purgeDeadTokens;
+module.exports.sweepStoredTokens = sweepStoredTokens;
+module.exports.getActiveMemberEntries = getActiveMemberEntries;
+module.exports.setCorsHeaders = setCorsHeaders;
