@@ -2129,33 +2129,40 @@ export async function init(config, h){
   window.db = db;
 
 
-async function cloudSendPush(type, title, body, targetUid, targetId){
+async function cloudSendPush(a, b, c, d, e){
+  var type, title, body, targetUid, targetId;
+  if (a && typeof a === 'object') {
+    type = a.type; title = a.title; body = a.body; targetUid = a.targetUid; targetId = a.targetId;
+  } else {
+    type = a; title = b; body = c; targetUid = d; targetId = e;
+  }
   var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
   if (!configured) return;
   var url = String(configured).replace(/\/+$/, '');
   try {
     var user = auth && auth.currentUser;
+    if (!user && typeof getAuth === 'function') {
+      try {
+        var ga = getAuth(typeof firebaseApp !== 'undefined' ? firebaseApp : undefined);
+        user = ga && ga.currentUser;
+      } catch(ex) {}
+    }
     if (!user) return;
-    var token = await user.getIdToken();
-    var payload = { type: type, title: String(title).slice(0,120), body: String(body || '').slice(0,500) };
+    var token = await (user.getIdToken ? user.getIdToken() : Promise.reject(new Error('no getIdToken')));
+    var payload = { type: type, title: String(title||'').slice(0,120), body: String(body||'').slice(0,500) };
     if (targetUid) payload.targetUid = String(targetUid);
     if (targetId) payload.targetId = String(targetId);
     var res = await fetch(url + '/api/send-push', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
-    // Ne jamais échouer en silence : 404 = fonction absente du déploiement,
-    // 401/403 = jeton ou droits, 500 = variables d'environnement Vercel.
     if (!res.ok) {
       var detail = '';
-      try { detail = (await res.text()).slice(0, 200); } catch(e){}
+      try { detail = (await res.text()).slice(0, 200); } catch(ex2){}
       console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', detail);
     }
-  } catch(e){ console.warn('push backend failed:', e); }
+  } catch(ex3){ console.warn('push backend failed:', ex3); }
 }
 
 /* Renouvellement silencieux du jeton FCM.
