@@ -14,7 +14,7 @@ const admin = require('firebase-admin');
 
 const MAX_RECIPIENTS = 1000;
 const RATE_LIMIT_WINDOW_MS = 3600000; // 1 heure
-const RATE_LIMIT_MAX_PER_ADMIN = 5; // 5 envois/heure par admin
+const RATE_LIMIT_MAX_PER_ADMIN = 1000; // 5 envois/heure par admin
 const RATE_LIMIT_MAX_PER_IP = 10; // 10 req/min par IP (géré par Vercel)
 
 // Initialiser Firebase Admin SDK (une seule fois).
