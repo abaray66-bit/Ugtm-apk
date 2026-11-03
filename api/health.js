@@ -41,6 +41,8 @@ async function countRecipients() {
 }
 
 module.exports = async function handler(req, res) {
+  push.setCorsHeaders(req, res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
   res.setHeader('Cache-Control', 'no-store');
 
   if (req.method !== 'GET') {
