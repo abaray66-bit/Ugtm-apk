@@ -181,8 +181,11 @@ async function getActiveMemberEntries() {
   for (const doc of membersSnap.docs) {
     const tokenSnap = await db.collection('fcmTokens').doc(doc.id).get();
     if (!tokenSnap.exists) continue;
-    const token = tokenSnap.data() && tokenSnap.data().token;
-    if (isValidFcmToken(token)) entries.push({ uid: doc.id, token: token });
+    const data = tokenSnap.data() || {};
+    const tokenList = Array.isArray(data.tokens) ? data.tokens : (data.token ? [data.token] : []);
+    for (const token of tokenList) {
+      if (isValidFcmToken(token)) entries.push({ uid: doc.id, token: token });
+    }
   }
   return entries;
 }
@@ -238,16 +241,15 @@ async function notifyAdhesionManagers(requestUid, province, title, messageBody) 
   return entries;
 }
 
-async function getMemberToken(uid) {
+async function getMemberTokens(uid) {
   const db = getDb();
   const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
   if (tokenSnap.exists) {
-    const token = tokenSnap.data().token;
-    if (token && isValidFcmToken(token)) {
-      return token;
-    }
+    const data = tokenSnap.data() || {};
+    const list = Array.isArray(data.tokens) ? data.tokens : (data.token ? [data.token] : []);
+    return list.filter(isValidFcmToken);
   }
-  return null;
+  return [];
 }
 
 /* Construit le message FCM v1. Extrait de la boucle d'envoi pour que le
@@ -636,8 +638,8 @@ module.exports = async function handler(req, res) {
       if (!targetUid) {
         return res.status(400).json({ error: 'Invalid request' });
       }
-      const token = await getMemberToken(targetUid);
-      if (token) entries = [{ uid: String(targetUid), token: token }];
+      const toks = await getMemberTokens(targetUid);
+      entries = toks.map(function (t) { return { uid: String(targetUid), token: t }; });
     } else if (type === 'adhesion_request') {
       const db = getDb();
       const requestSnap = await db.collection('adhesionRequests').doc(decodedToken.uid).get();

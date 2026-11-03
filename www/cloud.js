@@ -12,7 +12,7 @@ import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
   onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
-  writeBatch
+  writeBatch, arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
@@ -2339,7 +2339,7 @@ async function cloudMarkNotificationRead(id){
           setTimeout(function(){ if(!done){ done=true; reject(new Error('Délai dépassé pour le jeton push natif.')); } }, 20000);
         });
         if (!nativeToken) throw new Error('Firebase n’a pas créé de jeton push natif.');
-        await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
+        await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { tokens: arrayUnion(nativeToken), token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
         try { PushNotifications.addListener('pushNotificationActionPerformed', function(action){ var data = (action && action.notification && action.notification.data) || {}; var url = data.targetUrl || data.url; if (url) { try { window.location.href = url; } catch(e){} } }); } catch(e){}
         return true;
       }
@@ -2357,7 +2357,7 @@ async function cloudMarkNotificationRead(id){
       if (!vapidKey) throw new Error('Clé VAPID absente de la configuration.');
       var token = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
       if (!token) throw new Error('Firebase n’a pas créé de jeton push.');
-      await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { token: token, updatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { tokens: arrayUnion(token), token: token, updatedAt: serverTimestamp() }, { merge: true });
       return true;
     },
 
