@@ -2312,11 +2312,47 @@ async function cloudMarkNotificationRead(id){
 
     enablePushNotifications: async function(){
       if (!auth || !auth.currentUser) throw new Error('Connectez-vous avant d’activer les notifications.');
+      var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+      if (isNative) {
+        var PushNotifications = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+        if (!PushNotifications) throw new Error('Plugin push natif indisponible.');
+        var perm = await PushNotifications.requestPermissions();
+        if (!perm || perm.receive !== 'granted') throw new Error('Autorisation de notification non accordée.');
+        var nativeToken = await new Promise(function(resolve, reject){
+          var done = false;
+          PushNotifications.addListener('registration', function(t){
+            if (done) return; done = true;
+            resolve(t && t.value ? t.value : null);
+          });
+          PushNotifications.addListener('registrationError', function(e){
+            if (done) return; done = true;
+            reject(new Error((e && e.error) || 'Erreur enregistrement push natif.'));
+          });
+          PushNotifications.register().catch(function(e){ if(!done){ done=true; reject(e); } });
+          setTimeout(function(){ if(!done){ done=true; reject(new Error('Délai dépassé pour le jeton push natif.')); } }, 20000);
+        });
+        if (!nativeToken) throw new Error('Firebase n’a pas créé de jeton push natif.');
+        await setDoc(doc(db, 'fcmTokens', auth.currentUser.uid), { token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
+        // Écouter les notifications reçues en premier plan.
+        try {
+          PushNotifications.addListener('pushNotificationReceived', function(notification){
+            try { console.log('push received', notification); } catch(e){}
+          });
+        } catch(e){}
+        // Ouvrir l'écran cible lors d'un tap sur la notification.
+        try {
+          PushNotifications.addListener('pushNotificationActionPerformed', function(action){
+            var data = (action && action.notification && action.notification.data) || {};
+            var url = data.targetUrl || data.url;
+            if (url) {
+              try { window.location.href = url; } catch(e){}
+            }
+          });
+        } catch(e){}
+        return true;
+      }
       if (typeof Notification === 'undefined' || !navigator.serviceWorker) {
-        var onNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
-        throw new Error(onNative
-          ? 'L’application Android ne peut pas recevoir ces notifications. Ouvrez ugtm-fns-souss-massa.web.app dans Chrome sur ce téléphone pour les activer.'
-          : 'Ce navigateur ne prend pas en charge les notifications push.');
+        throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
       }
       // L'appel à requestPermission est exécuté immédiatement depuis le clic utilisateur.
       var permission = await Notification.requestPermission();
