@@ -5120,7 +5120,8 @@ renderGallery();
   });
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
-      window.Capacitor.Plugins.App.addListener('backButton', function(){
+      window.Capacitor.Plugins.App.addListener('backButton', function(e){
+        if(e && typeof e.preventDefault === 'function') e.preventDefault();
         if($('gallery') && !$('gallery').hidden){ closeGallery(); }
         else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
         else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); }
