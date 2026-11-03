@@ -193,6 +193,8 @@ button,input,select,textarea{
   font-size:10px;
   line-height:1.2;
   white-space:nowrap;
+  hyphens:none;
+  word-break:keep-all;
   overflow:hidden;
   text-overflow:ellipsis;
   letter-spacing:-.2px
@@ -834,18 +836,17 @@ main{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
+.galley-track,
 .gallery-track{
   position:relative;width:100%;height:100%;max-height:78vh;
   display:flex;align-items:center;justify-content:center
 }
 .gallery-track img{
-  position:absolute;inset:0;width:auto;height:auto;
+  position:absolute;inset:0;margin:auto;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
-  opacity:0;transition:opacity .25s ease;
-  transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
-  will-change:transform
+  opacity:0;transition:opacity .2s ease;
+  transform:none;border-radius:var(--radius-s);
 }
-.gallery-track img.active{opacity:1;transform:scale(1)}
 .gallery-btn{
   position:absolute;top:50%;transform:translateY(-50%);
   width:44px;height:44px;border-radius:50%;
@@ -951,38 +952,34 @@ main{
   flex:1
 }
 
- .filters{
+.filters{
   display:flex;
   flex-wrap:nowrap;
   gap:6px;
   padding-bottom:12px;
-  min-width:0
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
 }
+.filters::-webkit-scrollbar{display:none}
 
 .fbtn{
-  flex:1 1 0;
-  width:auto;
-  min-width:0;
-  min-height:42px;
-  padding:6px 3px;
-  white-space:normal;
-  overflow-wrap:normal;
-  word-break:normal;
-  hyphens:none;
-  line-height:1.2;
-  text-align:center;
+  flex:0 0 auto;
+  min-width:fit-content;
+  min-height:38px;
+  padding:0 14px;
   border-radius:999px;
   border:1px solid var(--line);
   background:var(--surface);
   font-weight:600;
-  font-size:clamp(12px,3.4vw,14px);
-  cursor:pointer
+  font-size:clamp(12px,2.6vw,13px);
+  line-height:1.2;
+  white-space:nowrap;
+  word-break:normal;
+  hyphens:none;
+  cursor:pointer;
+  text-align:center
 }
-
-#admTabs .admin-tab-icon{display:block;width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#admTabs .admin-tab-label{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-
- .filter-lines{display:flex;flex-direction:column;align-items:center;line-height:1.05}
 
 .fbtn[aria-pressed="true"]{
   background:var(--primary);
@@ -1347,14 +1344,14 @@ main{
   display:flex;
   flex-wrap:wrap;
   align-items:baseline;
-  gap:4px 9px;
+  gap:4px 8px;
   font-size:12.5px;
   color:var(--muted);
   line-height:1.6;
   padding-inline-start:2px
 }
 .resp-name{min-width:0}
-.resp li .phone{direction:ltr;unicode-bidi:plaintext}
+.resp li .phone{direction:ltr;unicode-bidi:plaintext;white-space:nowrap}
 
 .resp li::marker{
   color:var(--accent)
@@ -1885,6 +1882,8 @@ button.danger:hover{
 #admMemSearch::placeholder{
   color:rgba(255,255,255,.55) !important;
 }
+#admMemFilters{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#admMemFilters::-webkit-scrollbar{display:none}
 </style>
 
 <style id="admin-dashboard-style">
@@ -3074,9 +3073,23 @@ button.primary:active {
   transition:background-color .15s ease,color .15s ease,border-color .15s ease,transform .12s ease
 }
 
-:focus-visible{
+.btn:focus-visible,.fbtn:focus-visible,.tab:focus-visible,.gallery-btn:focus-visible{
   outline:2px solid var(--focus);
   outline-offset:2px
+}
+/* Les boutons d'adhésion : pas de contour au focus,
+   le focus est indiqué par un changement de fond. */
+#s-home [data-go="adhesion"]:focus-visible,
+#meAdhesionButton:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px var(--primary);
+}
+.avatar-u{position:relative;}
+.avatar-u .notif-badge{
+  position:absolute;top:-4px;right:-6px;
+  background:#e43;color:#fff;font-size:10px;font-weight:bold;
+  border-radius:50%;padding:2px 6px;min-width:18px;height:18px;
+  line-height:18px;text-align:center;z-index:10;
 }
 
 /* Se déconnecter : action secondaire, visuellement discrète */
@@ -3127,23 +3140,11 @@ input[type=file]::file-selector-button{
 <span data-i18n="brandSub"></span>
 <span data-i18n="brandL3"></span>
 </div><button class="acctbtn" id="meBtn" type="button" hidden><span id="notifBadge" class="notif-badge" hidden></span></button>
-<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:160px;">
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(window.ugtmGo) window.ugtmGo('me');">Espace personnel</button>
-  <button id="notifMenuBtn" type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.setNotificationsPopup) window.setNotificationsPopup(true); if(typeof loadNotifications==='function') loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
-  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="if(window.CLOUD&&typeof window.CLOUD.signOut==='function') window.CLOUD.signOut(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Se déconnecter</button>
-
-</div>
-
-<div id="notifBackdrop" hidden aria-hidden="true" style="position:fixed;inset:0;z-index:1000;background:transparent;"></div>
-<div id="notifModal" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;z-index:1001;min-width:260px;max-width:320px;max-height:60vh;overflow:auto;padding:12px;color:#111;">
-  <h2 style="margin:0 0 8px;font-size:16px;">Notifications <span id="notifCount" hidden></span></h2>
-  <button id="enablePushBtn" type="button" style="width:100%;margin:0 0 8px;padding:8px 10px;border:1px solid #176b45;border-radius:6px;background:#e8f5ee;color:#145a39;cursor:pointer;" onclick="enablePushFromClick()">Activer les notifications push</button>
-  <p id="pushStatus" role="status" style="margin:0 0 8px;color:#555;font-size:13px;"></p>
-  <div id="notifList" style="min-height:40px;color:#111;"></div>
-  <p id="notifEmpty" style="color:#555;">Aucune notification pour le moment</p>
-  <div id="notifHistory" hidden></div>
-  <button type="button" style="margin-top:8px;padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;color:#111;cursor:pointer;" onclick="if(window.setNotificationsPopup)window.setNotificationsPopup(false);">Fermer</button>
-</div>
+<div id="authMenu" hidden style="position:fixed;top:60px;right:12px;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1001;min-width:160px;">
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var am=document.getElementById('authMenu'); if(am) am.hidden=true; go('me');">Espace personnel</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof window.loadNotifications==='function') window.loadNotifications(); var am=document.getElementById('authMenu'); if(am) am.hidden=true;">Notifications</button>
+  <button type="button" style="display:block;width:100%;padding:10px 14px;border:none;background:transparent;text-align:left;cursor:pointer;color:#111;" onclick="try{ if(window.CLOUD&&typeof window.CLOUD.signOut==='function'){ window.CLOUD.signOut().then(function(){ var am=document.getElementById('authMenu'); if(am) am.hidden=true; }).catch(function(err){ console.warn('signout err',err); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée. Réessayez.',4000); }); } else { console.warn('CLOUD.signOut indisponible'); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion indisponible.',4000); } }catch(e){ console.warn('signout err',e); var am=document.getElementById('authMenu'); if(am) am.hidden=true; if(typeof toast==='function') toast('Déconnexion échouée.',4000); }">Se déconnecter</button>
+ </div>
 
 <button class="langbtn" id="langBtn" type="button"></button>
 
@@ -3152,65 +3153,9 @@ input[type=file]::file-selector-button{
 <p data-i18n="heroP"></p>
 <div class="hero-actions">
 <button class="btn primary" type="button" data-go="report" data-i18n="heroBtn"></button>
-
+<button class="btn ghost small" type="button" onclick="if(window.S&&window.S.user){var m=document.getElementById('notifModal'); if(m) m.hidden=false; if(typeof loadNotifications==='function') loadNotifications();} else { try{ var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{}); if(typeof toast==='function') toast(rt.authRequired||'Authentifiez-vous pour consulter vos notifications.',4000); }catch(e){} }" aria-label="Notifications"><span id="homeNotifWrap" style="position:relative;display:inline-flex;align-items:center;justify-content:center;"><span id="homeNotifBell"></span><span id="homeNotifBadge" class="notif-badge" hidden style="top:-6px;right:-10px;"></span></span></button>
+<div id="notifModal" hidden style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding-top:80px;"><div id="notifModalBox" style="background:#fff;padding:16px;border-radius:12px;max-width:340px;width:92%;max-height:70vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.25);"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><h2 style="margin:0;font-size:18px;">Notifications <span id="notifCount" hidden></span></h2><div style="display:flex;gap:8px;align-items:center;"><button id="notifClearAllBtn" type="button" style="border:none;background:transparent;color:#d33;font-size:13px;cursor:pointer;" hidden>Vider tout</button><button type="button" aria-label="Fermer" style="border:none;background:transparent;font-size:18px;cursor:pointer;" onclick="var m=document.getElementById('notifModal'); if(m) m.hidden=true;">×</button></div></div><div id="notifList" style="min-height:40px;"></div><p id="notifEmpty">Aucune notification pour le moment</p><div id="notifHistory" hidden></div></div></div>
 <script>
-async function enablePushFromClick(){
-  var btn=document.getElementById('enablePushBtn');
-  var status=document.getElementById('pushStatus');
-  if(btn) btn.disabled=true;
-  if(status) status.textContent='Activation en cours…';
-  try{
-    if(!window.CLOUD||typeof window.CLOUD.enablePushNotifications!=='function') throw new Error('Service de notification indisponible. Rechargez la page.');
-    await window.CLOUD.enablePushNotifications();
-    if(status) status.textContent='Notifications push activées sur cet appareil.';
-    if(btn) btn.textContent='Notifications activées';
-    if(typeof refreshPushStatus==='function') refreshPushStatus();
-  }catch(e){
-    if(status) status.textContent=(e&&e.message)||'Impossible d’activer les notifications.';
-    if(btn) btn.disabled=false;
-  }
-}
-
-window.setNotificationsPopup=function(open){
-  var modal=document.getElementById('notifModal');
-  var backdrop=document.getElementById('notifBackdrop');
-  if(modal)modal.hidden=!open;
-  if(backdrop)backdrop.hidden=!open;
-  // Diagnostic lisible sans console : état de CET appareil et dernier envoi.
-  if(open && typeof refreshPushStatus==='function') refreshPushStatus();
-};
-
-/* Affiche, dans la fenêtre « Notifications », ce que l'appareil peut faire
-   et ce qu'a répondu le serveur au dernier envoi. Aucune console requise. */
-async function refreshPushStatus(){
-  var status=document.getElementById('pushStatus');
-  var btn=document.getElementById('enablePushBtn');
-  if(!status) return;
-  if(!window.CLOUD || typeof window.CLOUD.pushDeviceState!=='function') return;
-  var st=null;
-  try{ st=await window.CLOUD.pushDeviceState(); }catch(e){ return; }
-  if(!st) return;
-  var lines=[];
-  if(!st.supported) lines.push('Cet appareil ne peut pas recevoir de notifications push (navigateur sans service worker).');
-  else if(st.permission==='denied') lines.push('Notifications bloquées pour ce site : autorisez-les dans les réglages du navigateur.');
-  else if(st.permission==='granted' && st.tokenSaved) lines.push('Cet appareil est enregistré pour les notifications.');
-  else if(st.permission==='granted') lines.push('Autorisation accordée mais appareil non enregistré : appuyez sur « Activer les notifications push ».');
-  else lines.push('Notifications non activées sur cet appareil.');
-  if(btn && st.permission==='granted' && st.tokenSaved) btn.textContent='Notifications activées';
-  var last=(typeof window.CLOUD.lastPushAttempt==='function') ? window.CLOUD.lastPushAttempt() : null;
-  if(last && last.at){
-    var when=String(last.at);
-    try{ when=new Date(last.at).toLocaleString(); }catch(e){}
-    var verdict=(last.status==='ok')
-      ? 'accepté' + (last.detail ? ' (' + last.detail + ')' : '')
-      : 'refusé (' + String(last.status) + (last.detail ? ' : ' + last.detail : '') + ')';
-    lines.push('Dernier envoi ' + verdict + ' le ' + when + '.');
-  }
-  if(st.error) lines.push('Détail : ' + st.error);
-  status.textContent=lines.join(' ');
-}
-window.refreshPushStatus=refreshPushStatus;
-
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
   var countEl=document.getElementById('notifCount');
@@ -3219,6 +3164,13 @@ function renderNotifications(list){
   var historyEl=document.getElementById('notifHistory');
   var unread=arr.filter(function(n){return n && n.read===false;}).length;
   if(countEl){ if(unread>0){countEl.textContent='('+unread+')';countEl.hidden=false;}else{countEl.textContent='';countEl.hidden=true;} }
+  var clearBtn = document.getElementById('notifClearAllBtn');
+  if(clearBtn){
+    var session = (typeof window.ugtmSession === 'function') ? window.ugtmSession() : null;
+    var isAdmin = !!(session && (session.isAdmin || (window.S && window.S.isAdmin)));
+    if(isAdmin && arr.length){ clearBtn.hidden = false; clearBtn.onclick = function(){ clearAllNotifications(); }; }
+    else { clearBtn.hidden = true; }
+  }
   if(!listEl) return;
   listEl.innerHTML='';
   if(!arr.length){ if(emptyEl){emptyEl.hidden=false;listEl.appendChild(emptyEl);} return; }
@@ -3236,30 +3188,52 @@ function renderNotifications(list){
       p.style.color='#666';
       p.style.fontWeight='normal';
     }
-    var titleEl=document.createElement('strong');
-    titleEl.textContent=String(n.title||'Notification');
-    titleEl.style.display='block';
-    var bodyEl=document.createElement('span');
-    bodyEl.textContent=String(n.body||'');
-    bodyEl.style.display='block';
-    bodyEl.style.marginTop='3px';
-    p.appendChild(titleEl);
-    if(bodyEl.textContent) p.appendChild(bodyEl);
-    p.onclick=function(){
-      if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
-      else if(n.targetType==='news' && typeof go==='function') go('news');
-      else if(n.targetType==='event' && typeof go==='function') go('agenda');
-      else if(typeof go==='function') go('me');
-
-      if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
-      if(window.setNotificationsPopup)window.setNotificationsPopup(false);
+    var title = String(n.title||'');
+    var body = String(n.body||'');
+    p.innerHTML = '';
+    var tEl = document.createElement('div');
+    tEl.style.fontWeight = '600';
+    tEl.style.color = '#111';
+    tEl.textContent = title || body || 'Notification';
+    p.appendChild(tEl);
+    if(body && body !== title){
+      var bEl = document.createElement('div');
+      bEl.style.fontSize = '13px';
+      bEl.style.color = n.read===false?'#333':'#666';
+      bEl.style.marginTop = '2px';
+      bEl.textContent = body;
+      p.appendChild(bEl);
+    }
+    p.style.cursor = 'pointer';
+    p.title = 'Ouvrir';
+    p.onclick = function(){
+      try { if(typeof markNotificationRead==='function') markNotificationRead(n.id); } catch(e){}
+      var m=document.getElementById('notifModal');
+      if(m) m.hidden=true;
+      try {
+        var targetType = n.targetType || n.type || n.notificationType || '';
+        var targetId = n.targetId || n.newsId || n.id || '';
+        if(targetType === 'news' && targetId){
+          if(typeof go==='function') go('news');
+          if(typeof openNewsById==='function') openNewsById(targetId);
+          else if(typeof window.openNewsById==='function') window.openNewsById(targetId);
+          else if(typeof setHashAndGo==='function'){ /* try */ }
+        } else if(n.targetScreen === 'me' || targetType === 'me'){
+          var sess=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+          if(sess && sess.user && sess.user.uid){
+            try { if(typeof go==='function') go('me'); } catch(e){}
+            try { if(typeof renderMyAdhesionInfo==='function') renderMyAdhesionInfo(); } catch(e){}
+          }
+        } else if(targetType === 'event' && targetId){
+          if(typeof go==='function') go('agenda');
+        } else if(n.url){
+          try { window.location.href = n.url; } catch(e){}
+        }
+      } catch(e){ console.warn('notif click',e); }
     };
     if(n.read===false){
       var b=document.createElement('button');
       b.textContent='Marquer comme lu';
-      b.style.marginLeft='8px';
-      b.style.color='#111';
-
       b.onclick=function(e){ e.stopPropagation(); markNotificationRead(n.id); };
       p.appendChild(b);
     }
@@ -3276,14 +3250,68 @@ async function markNotificationRead(id){
 }
 async function loadNotifications(){
   try{
-    if(!window.CLOUD || typeof window.CLOUD.loadNotifications!=='function') return;
-    await window.CLOUD.loadNotifications();
-
-  }catch(e){ console.warn('notif load',e); }
+    if(!window.db || !window.ugtmSession) return;
+    var session=window.ugtmSession();
+    if(!session || !session.user || !session.user.uid) return;
+    var uid=session.user.uid;
+    var snap=await window.db.collection('notifications').doc(uid).collection('items').orderBy('createdAt','desc').limit(50).get();
+    var list=snap.docs.map(function(d){ var x=d.data()||{}; x.id=d.id; return x; });
+    renderNotifications(list);
+    var unread=list.filter(function(n){return n && n.read===false;}).length;
+    if(typeof window.updateNotifBadge==='function') window.updateNotifBadge(unread);
+    var hb=document.getElementById('homeNotifBadge');
+    if(hb){
+      if(unread>0){hb.textContent=unread>9?'9+':unread;hb.hidden=false;}
+      else{hb.textContent='';hb.hidden=true;}
+    }
+  }catch(e){ console.warn('notif load',e); var listEl=document.getElementById('notifList'); if(listEl){ listEl.innerHTML='<p>Erreur de chargement</p>'; } }
 }
-window.renderNotifications=renderNotifications;
-window.loadNotifications=loadNotifications;
-window.markNotificationRead=markNotificationRead;
+async function clearAllNotifications(){
+  try {
+    var session = (typeof window.ugtmSession === 'function') ? window.ugtmSession() : null;
+    if(!session || !session.user || !session.user.uid) return;
+    var uid = session.user.uid;
+    var isAdmin = !!(session.isAdmin || (window.S && window.S.isAdmin));
+    if(!isAdmin) return;
+    if(!confirm('Vider toutes les notifications ?')) return;
+    if(!window.db) return;
+    var col = window.db.collection('notifications').doc(uid).collection('items');
+    var snap = await col.get();
+    var batch = typeof window.db.batch === 'function' ? window.db.batch() : null;
+    var writes = [];
+    snap.docs.forEach(function(d){
+      if(batch){ batch.delete(d.ref); }
+      else if(typeof deleteDoc === 'function'){ writes.push(deleteDoc(d.ref)); }
+      else { writes.push(col.doc(d.id).delete()); }
+    });
+    if(batch){ await batch.commit(); }
+    else { await Promise.all(writes); }
+    await loadNotifications();
+    try { if(typeof window.updateNotifBadge === 'function') window.updateNotifBadge(0); } catch(e){}
+    var hb=document.getElementById('homeNotifBadge');
+    if(hb){ hb.textContent=''; hb.hidden=true; }
+    var amc=document.getElementById('notifClearAllBtn');
+    if(amc) amc.hidden = true;
+  } catch(e){ console.warn('clear notifications', e); if(typeof toast === 'function') toast('Erreur lors de la suppression', 3000); }
+}
+window.clearAllNotifications = clearAllNotifications;
+
+function openNewsById(id){
+  try {
+    if(!id) return;
+    try { if(typeof setFilter === 'function') setFilter('all'); else filter='all'; } catch(e){}
+    try { if(typeof renderNews === 'function') renderNews(); if(typeof renderFilters === 'function') renderFilters(); } catch(e){}
+    try { if(typeof go === 'function') go('news'); } catch(e){}
+    setTimeout(function(){
+      var el = document.querySelector('[data-item="'+String(id).replace(/"/g,'\"')+'"]');
+      if(el){
+        try { if(typeof el.click === 'function') el.click(); } catch(e){}
+        try { el.scrollIntoView({behavior:'smooth', block:'center'}); } catch(e){}
+      }
+    }, 200);
+  } catch(e){}
+}
+window.openNewsById = openNewsById;
 </script>
 <button class="btn gold" type="button" data-share-app data-i18n="heroShare"></button>
 </div>
@@ -3482,11 +3510,11 @@ window.markNotificationRead=markNotificationRead;
 
 </div><div class="mesreports" id="meReportsWrap" hidden><h2 class="h2" data-i18n="meReportsT"></h2><p class="hint" id="meReportsNone" data-i18n="meReportsNone" hidden></p><ul id="meReports"></ul></div></div></section><!-- Administration --><section class="screen adm" id="s-admin" hidden dir="ltr" lang="fr"><button class="link" type="button" data-go="me"><span class="back-arrow" aria-hidden="true">‹</span> <span data-i18n="admBack"></span></button>
 
-<h1 class="title" data-i18n="admTitle"></h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false" data-i18n-aria="admTabDashboard"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="10" width="8" height="11" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg><span class="admin-tab-label" data-i18n="admTabDashboard"></span></button><button type="button" class="fbtn" data-adm="members" aria-pressed="true" data-i18n-aria="admTabMembers"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.5A4.5 4.5 0 0 1 7 14h4a4.5 4.5 0 0 1 4.5 4.5V20M16 4.8a3.5 3.5 0 0 1 0 6.5M17 14h.5a4 4 0 0 1 4 4v2"/></svg><span class="admin-tab-label" data-i18n="admTabMembers"></span></button>
+<h1 class="title" data-i18n="admTitle"></h1><div class="filters" id="admTabs" role="group"><button type="button" class="fbtn" data-adm="dashboard" aria-pressed="false" data-i18n="admTabDashboard"></button><button type="button" class="fbtn" data-adm="members" aria-pressed="true" data-i18n="admTabMembers"></button>
 
-<button type="button" class="fbtn" data-adm="news" aria-pressed="false" data-i18n-aria="admTabNews"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 3.5h12l4 4V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M16 3.5V8h4M7.5 11h9M7.5 14.5h9M7.5 18h5"/></svg><span class="admin-tab-label" data-i18n="admTabNews"></span></button>
+<button type="button" class="fbtn" data-adm="news" aria-pressed="false" data-i18n="admTabNews"></button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n-aria="admTabEvents"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/></svg><span class="admin-tab-label" data-i18n="admTabEvents"></span></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n-aria="rAdminTab"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h14l-3 4 3 4H5"/></svg><span class="admin-tab-label" data-i18n="rAdminTab"></span></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n-aria="admTabAdhesions"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10a2 2 0 0 1 2 2V21H5V5.5a2 2 0 0 1 2-2z"/><path d="M9 3v4h6V3M8.5 13h7M8.5 16h4M14.5 18l1.5 1.5 3-3"/></svg><span class="admin-tab-label" data-i18n="admTabAdhesions"></span></button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n="admTabEvents"></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n="rAdminTab"></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n="admTabAdhesions"></button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -4814,13 +4842,6 @@ var filter='all';
    déclarations / Actualités syndicales / Rencontres et réunions). */
 var admNewsFilter='all';
 var openId=null;
-var pendingNotificationTarget=null;
-try{
-var notificationQuery=new URLSearchParams(window.location.search||'');
-var notificationType=notificationQuery.get('notificationType');
-var notificationId=notificationQuery.get('notificationId');
-if((notificationType==='news'||notificationType==='event')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
-}catch(notificationQueryError){}
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
 var agendaSelectedDate='';
@@ -4978,27 +4999,31 @@ try{history.pushState({gallery:true},'');}catch(e){}
 }
 
 function closeGallery(){
-$('gallery').hidden=true;
-document.body.style.overflow='';
-galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
-try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
+  if($('gallery') && !$('gallery').hidden){
+    $('gallery').hidden=true;
+    document.body.style.overflow='';
+    galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;
+    try{ history.back(); }catch(e){ try{history.popState();}catch(e2){} }
+  }
 }
 
 function renderGallery(){
-var track=$('galleryTrack');
-var counter=$('galleryCounter');
-if(!track||!counter)return;
-track.innerHTML='';
-galleryState.items.forEach(function(it,i){
-var img=document.createElement('img');
-img.src=it.src;
-img.alt=it.name||('image'+(i+1));
-img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-track.appendChild(img);
-});
-counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-/* gallery actions removed */
+  var track=$('galleryTrack');
+  var counter=$('galleryCounter');
+  if(!track||!counter)return;
+  track.innerHTML='';
+  galleryState.items.forEach(function(it,i){
+    var img=document.createElement('img');
+    img.src=it.src;
+    img.alt=it.name||('image'+(i+1));
+    img.className=i===galleryState.idx?'active':'';
+    img.draggable=false;
+    track.appendChild(img);
+  });
+  counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
+  $('galleryDelete').hidden=galleryState.items.length<=1;
+  $('galleryPrev').style.display=galleryState.items.length>1?'flex':'none';
+  $('galleryNext').style.display=galleryState.items.length>1?'flex':'none';
 }
 
 function galleryPrev(){
@@ -5047,7 +5072,16 @@ renderGallery();
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
+  $('galleryPrev').addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
+  $('galleryNext').addEventListener('click',function(e){e.stopPropagation();galleryNext();});
+  $('galleryDelete').addEventListener('click',function(e){e.stopPropagation();galleryDelete();});
+  $('galleryDownload').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;var a=document.createElement('a');a.href=it.src;a.download=it.name||'image';document.body.appendChild(a);a.click();document.body.removeChild(a);});
+  $('galleryShare').addEventListener('click',function(e){e.stopPropagation();var it=galleryState.items[galleryState.idx];if(!it)return;if(navigator.share){navigator.share({title:it.name||'image',text:it.name||'',url:it.src});}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
+  // Fermer en cliquant directement sur l'image aussi
+  ge.querySelectorAll('img').forEach(function(im){
+    im.addEventListener('click',function(ev){ev.stopPropagation();closeGallery();});
+  });
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
@@ -5089,39 +5123,15 @@ renderGallery();
       if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
     }
   },{passive:true});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
-  document.addEventListener('popstate',function(e){
-  var g=$('gallery');
-  if(g&&!g.hidden){closeLightbox();closeGallery();return;}
-  var attach=$('attachModal');
-  if(attach&&!attach.hidden){closeAttachModal(true);return;}
-});
-  document.addEventListener('click',function(e){
-    var btn=e.target && e.target.closest ? e.target.closest('#meBtn') : null;
-    if(!btn) return;
-    e.preventDefault(); e.stopPropagation();
-    var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
-    var connected=!!(session&&session.user&&session.user.uid);
-    if(!connected){
-      if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
-      else if(typeof toast==='function') toast(S.cloud==='error'
-        ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
-        : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
-      return;
-    }
-    var am=document.getElementById('authMenu');
-    if(am) am.hidden=!am.hidden;
-  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
+  document.addEventListener('popstate',function(e){if(e.state&&e.state.gallery){closeGallery();}});
   try{
-    if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
-      window.Capacitor.Plugins.App.addListener('backButton', function(){
-        if($('gallery') && !$('gallery').hidden){ closeGallery(); }
-        else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
-        else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); }
-      });
-    } else {
-      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
-    }
+    document.addEventListener('backbutton',function(){
+      var am=document.getElementById('authMenu');
+      if(am && !am.hidden){ am.hidden=true; return; }
+      if($('gallery') && !$('gallery').hidden){ closeGallery(); }
+      else{ closeLightbox(); closeGallery(); }
+    });
   }catch(e){}
   
   $('attachModal').addEventListener('click',function(e){
@@ -5237,14 +5247,6 @@ console.error(err);
 if(quiet)return;
 
 var code=(err&&(err.code||err.message))||'';
-if(typeof code === 'object') code = code.code || code.message || '';
-code = String(code);
-
-if(code.indexOf('permission-denied')>-1){
-  var t2=T();
-  toast(t2.rDenied || 'Envoi refusé par le serveur (permission-denied). Déconnectez-vous et reconnectez-vous avec votre compte administrateur.', 6000);
-  return;
-}
 
 toast(
 T().errPrefix+
@@ -5511,7 +5513,6 @@ function openUrl(url){
  var attachDataUri='';
  var attachType='';
  var attachTrigger=null;
- var attachHistoryOpen=false;
  
  function openAttachModal(url,name,type,dataUri){
  var body=$('attachBody');
@@ -5544,15 +5545,12 @@ function openUrl(url){
  attachUrl=url;
  $('attachTitle').textContent=name||T().attachTitle;
  $('attachModal').hidden=false;
- try{history.pushState({attachModal:true},'');attachHistoryOpen=true;}catch(e){attachHistoryOpen=false;}
  attachTrigger=document.activeElement;
  $('attachClose').focus();
  }
  
- function closeAttachModal(fromHistory){
+ function closeAttachModal(){
  if($('attachModal').hidden)return;
- var shouldGoBack=!fromHistory&&attachHistoryOpen;
- attachHistoryOpen=false;
  $('attachModal').hidden=true;
  $('attachBody').innerHTML='';
  $('attachNote').hidden=true;
@@ -5565,7 +5563,6 @@ function openUrl(url){
  attachName='';
  if(attachTrigger&&attachTrigger.focus)attachTrigger.focus();
  attachTrigger=null;
- if(shouldGoBack){try{if(history.state&&history.state.attachModal)history.back();}catch(e){}}
  }
  
  function openDataUrl(data,name){
@@ -5688,14 +5685,14 @@ function openWaUrl(url){
     var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
     var plugins=window.Capacitor&&window.Capacitor.Plugins;
     var capShare=isNative&&plugins?plugins.Share:null;
-    var fsPlug=isNative&&plugins?plugins.Filesystem:null;
+    var fs=isNative&&plugins?plugins.Filesystem:null;
     
     function fallback(){
-      try{ shareTextNative(text,title); }catch(e){ try{ shareTextFallback(text); }catch(_e){} }
+      try{ shareTextNative(text,title); }catch(e){ shareTextFallback(text); }
     }
     
     function tryNativeShareWithFiles(items){
-      if(!(capShare&&typeof capShare.share==='function'&&fsPlug&&fsPlug.writeFile)) return Promise.reject(new Error('no'));
+      if(!(capShare&&typeof capShare.share==='function'&&fs&&fs.writeFile)) return Promise.reject(new Error('no'));
       var writes = (items||[]).map(function(item,idx){
         if(!item)return Promise.resolve(null);
         var data=item.data||item.uri||'';
@@ -5704,8 +5701,7 @@ function openWaUrl(url){
           if(comma>-1) data=data.slice(comma+1);
         }
         var name=item.name||(report.attachmentName)||('piece-jointe-'+idx+'.jpg');
-        if(name.indexOf('.')===-1) name=name+'.jpg';
-        return fsPlug.writeFile({path:name,data:data,directory:'CACHE'}).then(function(saved){
+        return fs.writeFile({path:name,data:data,directory:'CACHE'}).then(function(saved){
           return saved&&saved.uri?saved.uri:null;
         }).catch(function(){return null;});
       });
@@ -5716,6 +5712,7 @@ function openWaUrl(url){
       });
     }
     
+    // Try to get attachments
     var p = Promise.resolve([]);
     if(report.attachmentData){
       try{
@@ -5729,49 +5726,29 @@ function openWaUrl(url){
         if(items.length){ p = Promise.resolve(items); }
       }catch(e){}
     }
-    if((!p || (Array.isArray(p)&&p.length===0)) && window.CLOUD&&window.CLOUD.getReportAttachment){
-      try{
-        p = window.CLOUD.getReportAttachment(report.id).then(function(arr){
-          var items=[];
-          if(Array.isArray(arr)){
-            arr.forEach(function(a,i){ if(a&&(a.data||a.uri)){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.uri}); } });
-          }
-          return items;
-        }).catch(function(){return [];});
-      }catch(e){ p = Promise.resolve([]); }
+    if(p === Promise.resolve([]) && window.CLOUD&&window.CLOUD.getReportAttachment){
+      p = window.CLOUD.getReportAttachment(report.id).then(function(arr){
+        var items=[];
+        if(Array.isArray(arr)){
+          arr.forEach(function(a,i){ if(a&&(a.data||a.uri)){ items.push({name:a.name||(report.attachmentName||('piece-jointe'+(i+1))),type:a.type||'',data:a.data||a.uri}); } });
+        }
+        return items;
+      }).catch(function(){return [];});
     }
-    if(!p) p = Promise.resolve([]);
     
-    Promise.resolve(p).then(function(items){
+    p.then(function(items){
       if(items && items.length){
         tryNativeShareWithFiles(items).then(function(){
+          // ok
         }).catch(function(err){
           if(err&&err.message&&/cancel/i.test(err.message)) return;
+          // fallback to share with text + try web share
           try{
             if(!isNative && navigator.share){
+              // try to convert to files for web share if possible
               try{
-                if(Array.isArray(items) && items.length && navigator.canShare){
-                  var webFiles=[];
-                  items.forEach(function(it,idx){
-                    try{
-                      if(typeof it.data==='string' && it.data.indexOf('data:')===0){
-                        var parts=it.data.split(',');
-                        var mime=it.data.substring(5,parts[0].indexOf(';'));
-                        var b64=parts[1]||'';
-                        var bin=atob(b64);
-                        var arrb=new Uint8Array(bin.length);
-                        for(var i=0;i<bin.length;i++)arrb[i]=bin.charCodeAt(i);
-                        var blob=new Blob([arrb],{type:mime||'application/octet-stream'});
-                        var fname=it.name||(report.attachmentName)||('piece-jointe'+(idx+1));
-                        var f=new File([blob],fname,{type:mime||blob.type});
-                        webFiles.push(f);
-                      }
-                    }catch(e){}
-                  });
-                  if(webFiles.length && navigator.canShare({files:webFiles})){
-                    navigator.share({title:title,text:text,files:webFiles}).catch(function(){shareTextFallback(text);});
-                    return;
-                  }
+                if(navigator.canShare){
+                  // not easily convertible from data URLs in all browsers; fallback
                 }
               }catch(e){}
               navigator.share({title:title,text:text}).catch(function(){shareTextFallback(text);});
@@ -6027,18 +6004,10 @@ var t=T();
 
 return [['all',t.fAll]].concat(CATS_ORDER.map(function(k){
 
-var label=CATS[k][lang]||CATS[k].fr;
-if(lang==='fr'&&(k==='urgent'||k==='events'))label=label.replace(' et ',' ');
-return [k,label];
+return [k,CATS[k][lang]||CATS[k].fr];
 
 }));
 
-}
-
-function catFilterLabel(k){
-if(lang==='fr'&&k[0]==='urgent')return '<span class="filter-lines"><span>Communiqués</span><span>déclarations</span></span>';
-if(lang==='fr'&&k[0]==='events')return '<span class="filter-lines"><span>Rencontres</span><span>réunions</span></span>';
-return esc(k[1]);
 }
 
 function renderFilters(){
@@ -6047,7 +6016,7 @@ var keys=catFilters();
 
 $('filters').innerHTML=keys.map(function(k){
 
-return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+catFilterLabel(k)+'</button>';
+return '<button type="button" class="fbtn" data-filter="'+k[0]+'" aria-pressed="'+(filter===k[0])+'">'+esc(k[1])+'</button>';
 
 }).join('');
 }
@@ -6155,54 +6124,8 @@ var list=EVENTS.filter(function(ev){
 return String(ev.date||'').slice(0,7)===monthKey&&(!agendaSelectedDate||ev.date===agendaSelectedDate);
 }).sort(function(a,b){return a.date===b.date?String(a.time||'').localeCompare(String(b.time||'')):a.date.localeCompare(b.date);});
 $('eventList').innerHTML=list.length
-?list.map(function(ev){return '<li id="event-'+esc(ev.id)+'">'+eventRow(ev,true)+'</li>';}).join('')
+?list.map(function(ev){return '<li>'+eventRow(ev,true)+'</li>';}).join('')
 :'<li class="empty">'+T().noEvent+'</li>';
-}
-
-function openNotificationTarget(type,id){
-  var targetType=String(type||'');
-  var targetId=String(id||'');
-  if(!targetId)return false;
-  if(targetType==='news'){
-    var publication=NEWS.filter(function(item){return String(item.id)===targetId;})[0];
-    if(!publication)return false;
-    filter='all';
-    renderFilters();
-    go('news');
-    openId=targetId;
-    renderNews();
-    if(publication.hasImage&&!publication.images)loadNewsImage(publication);
-    setTimeout(function(){var panel=document.getElementById('p-'+targetId);if(panel&&panel.scrollIntoView)panel.scrollIntoView({behavior:'smooth',block:'center'});},50);
-    return true;
-  }
-  if(targetType==='event'){
-    var eventItem=EVENTS.filter(function(item){return String(item.id)===targetId;})[0];
-    if(!eventItem)return false;
-    var dateParts=String(eventItem.date||'').split('-');
-    if(dateParts.length>=2)agendaCursor=new Date(Number(dateParts[0]),Number(dateParts[1])-1,1);
-    agendaSelectedDate=String(eventItem.date||'');
-    go('agenda');
-    renderAgenda();
-    setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
-    return true;
-  }
-  return false;
-}
-window.openNotificationTarget=openNotificationTarget;
-function clearNotificationTargetQuery(){
-  try{
-    var url=new URL(window.location.href);
-    url.searchParams.delete('notificationType');
-    url.searchParams.delete('notificationId');
-    window.history.replaceState(window.history.state,'',url.pathname+url.search+url.hash);
-  }catch(e){}
-}
-function processPendingNotificationTarget(){
-  if(!pendingNotificationTarget)return;
-  if(openNotificationTarget(pendingNotificationTarget.type,pendingNotificationTarget.id)){
-    pendingNotificationTarget=null;
-    clearNotificationTargetQuery();
-  }
 }
 
 /* =========================
@@ -6590,22 +6513,18 @@ btn.onclick=function(e){
   var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
   var connected=!!(session&&session.user&&session.user.uid);
   if(!connected){
-    e.preventDefault();
     e.stopPropagation();
-    if(window.CLOUD && typeof window.CLOUD.signIn==='function'){ try{ window.CLOUD.signIn(); }catch(ex){} }
-    else if(typeof toast==='function') toast(S.cloud==='error'
-      ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
-      : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
-    return false;
+    if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+    return;
   }
   var am=document.getElementById('authMenu');
   if(am){
-    e.preventDefault();
     e.stopPropagation();
-    am.hidden = !am.hidden;
-    return false;
+    am.hidden=!am.hidden;
+    return;
   }
-  try{ e.preventDefault(); e.stopPropagation(); if(typeof go==='function') go('me'); return false; }catch(ex){}
+  e.stopPropagation();
+  try{ if(typeof go==='function') go('me'); }catch(ex){}
 };
 
 
@@ -6721,7 +6640,7 @@ return '<li class="mrow">'+
 '<div class="mi">'+
 
 '<strong>'+
-esc((function(){var nm=String(m.name||''); nm=nm.replace(/undefined/g,'').replace(/\s+/g,' ').trim(); return nm||t.admMemNoName;})())+
+esc(m.name||t.admMemNoName)+
 ' <span class="tag st-'+esc(m.status)+'">'+
 esc(statusLabel(m.status))+
 '</span>'+
@@ -6817,7 +6736,7 @@ if(box){
 
 box.innerHTML=catFilters().map(function(k){
 
-return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+catFilterLabel(k)+'</button>';
+return '<button type="button" class="fbtn" data-adm-news-filter="'+k[0]+'" aria-pressed="'+(admNewsFilter===k[0])+'">'+esc(k[1])+'</button>';
 
 }).join('');
 
@@ -7402,7 +7321,7 @@ function adhesionPdfFileName(doc){
    référence) : tout PDF enregistré AVANT cette date est régénéré une
    fois. Constante côté client — aucun champ supplémentaire, les règles
    Firestore (hasOnly) restent inchangées. */
-var PDF_LAYOUT_SINCE=Date.UTC(2026,9,31,18,6,13);
+var PDF_LAYOUT_SINCE=Date.UTC(2026,9,21);
 function isAdhesionPdfFresh(saved,doc){
   if(!saved||!saved.data)return false;
   var s=(typeof saved.updatedAt==='number')?saved.updatedAt:0;
@@ -7446,7 +7365,7 @@ function generateAdhesionPdfForAdmin(id){
       /* Identité lisible du signataire : son profil s'il est connu de
          l'administrateur connecté, sinon son identifiant Firebase. */
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
-      doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      doc.signerName=signer?((signer.name||signer.email||'')+(signer.email&&signer.name?' ('+signer.email+')':'')):doc.signedBy;
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -7726,12 +7645,6 @@ reader.readAsDataURL(file);
 });
 }
 
-/* Un double appui sur « Publier » créait deux publications (donc deux
-   notifications et deux entrées dans la liste) : la publication est
-   verrouillée tant que l'enregistrement n'est pas terminé, comme le
-   formulaire d'adhésion le fait déjà. */
-var newsPublishing=false;
-
 function publishNews(){
 
 var c=cloud();
@@ -7768,8 +7681,6 @@ if(fr.t||fr.b)o.fr=fr;
 
 if(ar.t||ar.b)o.ar=ar;
 
-if(newsPublishing)return;
-newsPublishing=true;
 var editing=S.editNewsId;
 
 var files=Array.prototype.slice.call($('nImage').files||[]).slice(0,3);
@@ -7780,8 +7691,6 @@ return editing
 :c.admin.addNews(o);
 })
 .then(function(){
-
-newsPublishing=false;
 
 if(editing){
 endEditNews();
@@ -7799,13 +7708,8 @@ $('nImage').value='';
 toast(T().admNewsPublishedToast);
 
 })
-.catch(function(e){
-newsPublishing=false;
-showError(e);
-});
+.catch(showError);
 }
-
-var eventPublishing=false;
 
 function publishEvent(){
 
@@ -7842,16 +7746,12 @@ if(fr.t||fr.p)o.fr=fr;
 
 if(ar.t||ar.p)o.ar=ar;
 
-if(eventPublishing)return;
-eventPublishing=true;
 var editing=S.editEventId;
 
 (editing
 ?c.admin.updateEvent(editing,o)
 :c.admin.addEvent(o))
 .then(function(){
-
-eventPublishing=false;
 
 if(editing){
 endEditEvent();
@@ -7867,10 +7767,7 @@ $(id).value='';
 toast(T().admEventPublishedToast);
 
 })
-.catch(function(e){
-eventPublishing=false;
-showError(e);
-});
+.catch(showError);
 }
 
 /* =========================
@@ -7990,18 +7887,17 @@ return String(a.name||'').localeCompare(String(b.name||''));
 
 $('permResp').innerHTML=list.map(function(r){
 
-var nom=r.name||'';
-var role=r.title||'';
+var nom=String(r.name||'').trim();
+var role=String(r.title||'').trim();
 var phone=String(r.phone||'').trim();
 var waUrl=waHref(phone);
 
-var phoneHtml=phone
-  ? (waUrl
-      ?'<a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
-      :'<span class="phone-num">'+esc(phone)+'</span>')
-  : '';
+var label = role ? (nom ? role + ' : ' + nom : role) : nom;
+var phoneHtml=(phone&&waUrl)
+  ?' <a dir="ltr" href="'+esc(waUrl)+'" target="_blank" rel="noopener" class="phone"><span class="phone-num">'+esc(phone)+'</span></a>'
+  : (phone ? ' <span dir="ltr" class="phone"><span class="phone-num">'+esc(phone)+'</span></span>' : '');
 
-return '<li><span class="resp-name">'+esc(nom?(role?role+' : '+nom:nom):role)+'</span>'+phoneHtml+'</li>';
+return '<li><span class="resp-name">'+esc(label)+'</span>'+phoneHtml+'</li>';
 
 }).join('');
 
@@ -8235,40 +8131,6 @@ $('main').scrollTop=0;
 
 }
 
-function bindPageSwipeNavigation(){
-  var main=$('main');
-  if(!main||main.getAttribute('data-page-swipe-bound'))return;
-  main.setAttribute('data-page-swipe-bound','true');
-  var start=null;
-  var ignoreClickUntil=0;
-  main.addEventListener('click',function(e){
-    if(Date.now()<ignoreClickUntil){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();}
-  },true);
-  main.addEventListener('touchstart',function(e){
-    if(!e.touches||e.touches.length!==1||!document.querySelector('#tabs .tab[aria-selected="true"]')){start=null;return;}
-    var target=e.target;
-    if(target&&target.closest&&target.closest('input,textarea,select,[contenteditable="true"],.gallery,.lightbox,#attachModal,[role="dialog"]')){start=null;return;}
-    start={x:e.touches[0].clientX,y:e.touches[0].clientY};
-  },{passive:true});
-  main.addEventListener('touchend',function(e){
-    if(!start||!e.changedTouches||e.changedTouches.length!==1){start=null;return;}
-    var dx=e.changedTouches[0].clientX-start.x;
-    var dy=e.changedTouches[0].clientY-start.y;
-    start=null;
-    if(Math.abs(dx)<48||Math.abs(dx)<Math.abs(dy)*1.2)return;
-    var tabs=Array.prototype.slice.call(document.querySelectorAll('#tabs .tab[data-tab]'));
-    var active=document.querySelector('#tabs .tab[aria-selected="true"]');
-    var current=tabs.indexOf(active);
-    if(current<0)return;
-    var step=dx<0?1:-1;
-    if(window.getComputedStyle(document.documentElement).direction==='rtl')step=-step;
-    var next=tabs[current+step];
-    if(next){ignoreClickUntil=Date.now()+500;go(next.getAttribute('data-tab'));}
-  },{passive:true});
-  main.addEventListener('touchcancel',function(){start=null;},{passive:true});
-}
-bindPageSwipeNavigation();
-
 /* =========================
    CALENDRIER
    ========================= */
@@ -8424,32 +8286,27 @@ return;
 
     var goTarget=el.getAttribute('data-go');
 
-    /* Le formulaire d'adhésion applique sa propre règle d'accès */
-    if(goTarget==='adhesion'){
-      var adhSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
-      var adhConnected=!!(adhSession&&adhSession.user&&adhSession.user.uid);
-      if(!adhConnected){
-        try{
-          var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
-          var adhMsg=(rt&&rt.authRequired)?rt.authRequired:'Veuillez vous authentifier avec votre compte Google avant d\'accéder au formulaire d\'adhésion.';
-          if(typeof toast==='function') toast(adhMsg,5000);
-        }catch(eAdh){}
-        try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eAdh2){}
-        return;
-      }
-      if(typeof window.adhesionOpenGate==='function'){
-        window.adhesionOpenGate(el);
-        return;
-      }
+    /* Le formulaire d'adhésion applique sa propre règle d'accès
+       (dossier en attente, refusé, adhérent déjà validé) : la
+       navigation passe par la porte d'entrée du parcours, qui
+       statue AVANT l'ouverture de l'écran. */
+    if(goTarget==='adhesion'&&typeof window.adhesionOpenGate==='function'){
+
+      window.adhesionOpenGate(el);
+
+      return;
+
     }
 
+    /* Le formulaire de signalement exige une authentification. */
     if(goTarget==='report'){
       var repSession=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
       var repConnected=!!(repSession&&repSession.user&&repSession.user.uid);
       if(!repConnected){
         try{
           var rt=(typeof window.ugtmT==='function')?window.ugtmT():((typeof T==='function')?T():{});
-          if(typeof toast==='function')toast(rt.authRequired||'Authentifiez-vous avant d\'accéder au formulaire de signalement.',5000);
+          var repMsg=(rt&&rt.authRequired)?rt.authRequired:'Authentifiez-vous avant d\'accéder au formulaire de signalement.';
+          if(typeof toast==='function')toast(repMsg,5000);
         }catch(eRep){}
         try{ document.querySelectorAll('.avatar-u').forEach(function(a){ a.classList.add('avatar-u--guide'); }); }catch(eRep2){}
         return;
@@ -8673,12 +8530,7 @@ if(el.hasAttribute('data-act')){
 
 c=cloud();
 
-if(!c){
-  if(typeof toast==='function') toast(S.cloud==='error'
-    ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
-    : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
-  return;
-}
+if(!c)return;
 
 var act=el.getAttribute('data-act');
 
@@ -8896,9 +8748,7 @@ c.admin
 
 }
 
-else if(a==='addNews'){
-
-if(!S||!S.isAdmin){ if(typeof toast==='function') toast('Accès administrateur requis.',4000); return; }
+else if(a==='addNews'&&S.isAdmin){
 
 publishNews();
 
@@ -9345,7 +9195,6 @@ NEWS=list;
 renderHome();
 renderNews();
 renderAdminNews();
-processPendingNotificationTarget();
 
 },
 
@@ -9356,7 +9205,6 @@ EVENTS=list;
 renderHome();
 renderAgenda();
 renderAdminEvents();
-processPendingNotificationTarget();
 
 },
 
@@ -9386,10 +9234,10 @@ setSession:function(s){
 
 var wasManager=S.isAdmin||S.isSubAdmin;
 
-S.user = (s && s.user) ? s.user : null;
-S.member = (s && s.member) ? s.member : null;
-S.isAdmin=!!(s && s.isAdmin);
-S.isSubAdmin=!!(s && s.isSubAdmin);
+S.user=s.user;
+S.member=s.member;
+S.isAdmin=!!s.isAdmin;
+S.isSubAdmin=!!s.isSubAdmin;
 
 var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
 tabs.forEach(function(b){b.hidden=!S.isAdmin;});
@@ -9502,38 +9350,20 @@ if(
 location.protocol.indexOf('http')===0
 ){
 
-document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); var clickedOnBtn = btn && (e.target === btn || btn.contains(e.target)); if(am && !am.hidden && !clickedOnBtn && !am.contains(e.target)) am.hidden=true; });
-
-document.addEventListener('click',function(e){
-  var modal=document.getElementById('notifModal');
-  if(!modal||modal.hidden) return;
-  var target=e.target;
-  var menuButton=target&&target.closest?target.closest('#notifMenuBtn'):null;
-  if(!modal.contains(target)&&!menuButton){
-    e.preventDefault();
-    e.stopPropagation();
-    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-    if(window.setNotificationsPopup)window.setNotificationsPopup(false);
-  }
-},true);
-document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){
-    var modal=document.getElementById('notifModal');
-    if(modal&&!modal.hidden&&window.setNotificationsPopup)window.setNotificationsPopup(false);
-  }
-});
+document.addEventListener('click',function(e){ var am=document.getElementById('authMenu'); var btn=document.getElementById('meBtn'); if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true; });
 
 window.addEventListener(
 'load',
 function(){
 
-// Un seul service worker pour toute l'application : sw.js gère le cache hors
-// ligne ET les notifications push (SDK FCM chargé dedans). Enregistrer en plus
-// firebase-messaging-sw.js sur la même portée « / » faisait remplacer l'un par
-// l'autre à chaque chargement, ce qui détruisait l'abonnement push.
 navigator.serviceWorker
 .register('sw.js')
 .catch(function(){});
+
+// Enregistrement du service worker FCM pour les notifications en arrière-plan.
+navigator.serviceWorker
+  .register('firebase-messaging-sw.js')
+  .catch(function(){});
 
 });
 
@@ -10094,21 +9924,42 @@ window.UGTM.failed(err);
         loadLogo().then(function(logo){
 
           if(logo&&logo.data){
-            /* Logo agrandi et conservé dans ses proportions. */
+            /* Logo agrandi, inscrit dans un carré de 22 mm, à SON rapport
+               largeur/hauteur (aucune déformation verticale). */
             var ratio=(logo.w>0&&logo.h>0)?(logo.w/logo.h):1;
-            var boxL=Math.min(26,26*ratio);
+            var boxL=Math.min(22,22*ratio);
             var boxH=boxL/ratio;
-            pdf.addImage(logo.data,'JPEG',margin,8+(26-boxH)/2,boxL,boxH);
+            pdf.addImage(logo.data,'JPEG',margin,10+(22-boxH)/2,boxL,boxH);
           }
 
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(11);
+          pdf.text('Union Générale des Travailleurs du Maroc',56,15);
+          pdf.setFontSize(9.6);
+          pdf.text('Fédération nationale de la Santé',56,20);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8.8);
+          pdf.setTextColor(95,95,95);
+          pdf.text('Région Souss-Massa',56,24.5);
+          pdf.setTextColor(0,0,0);
+
+                    /* Référence unique du document : identifiant du document
+             adhesionRequests/{id} (provenance réelle du dossier). */
           var ref=(request&&request.id)?String(request.id)
             :((request&&request.uid)?String(request.uid):'');
+
           pdf.setFont(undefined,'bold');
           pdf.setFontSize(15);
           pdf.setTextColor(184,50,104);
-          pdf.text("DEMANDE D'ADHÉSION",pageW/2,25,{align:'center'});
+          pdf.text("DEMANDE D'ADHÉSION",pageW/2,35,{align:'center'});
           pdf.setTextColor(0,0,0);
-          y=38;
+
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8.6);
+          pdf.setTextColor(95,95,95);
+          pdf.text("Formulaire d'adhésion à la Fédération nationale de la Santé",pageW/2,40.5,{align:'center'});
+          pdf.setTextColor(0,0,0);
+          y=47;
 
           section('IDENTIFICATION DE L’ADHÉRENT');
           row2('Nom',app.nom,'Prénom',app.prenom);
@@ -10153,21 +10004,19 @@ window.UGTM.failed(err);
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
-          var signer=(request&&request.signerRoleLabel)?String(request.signerRoleLabel)
-            :((request&&request.signedByRole==='subadmin')?'Responsable provincial':'Administrateur');
+          var signer=(request&&request.signerName)?String(request.signerName):String((request&&request.signedBy)||'');
+          if(signer && signer.indexOf('@') >= 0){ signer='Responsable provincial'; }
+          if(!signer){ signer='Responsable provincial'; }
           var validationDate='';
           if(request&&request.signedAt){
-            try{
-              var signedAt=request.signedAt;
-              if(signedAt&&typeof signedAt.toDate==='function')signedAt=signedAt.toDate();
-              else if(signedAt&&typeof signedAt.toMillis==='function')signedAt=new Date(signedAt.toMillis());
-              else signedAt=new Date(signedAt);
-              if(signedAt&&!isNaN(signedAt.getTime()))validationDate=signedAt.toLocaleDateString('fr-FR');
-            }catch(eDate){}
+            try{validationDate=new Date(request.signedAt).toLocaleDateString('fr-FR');}catch(eDate){}
+          } else {
+            try{ validationDate = new Date().toLocaleDateString('fr-FR'); } catch(e){}
           }
+          if(validationDate === 'Invalid Date') validationDate = '';
           section('VALIDATION');
           row2('Validée par',signer,'Statut du dossier','VALIDÉE');
-          row1('Date de validation',validationDate);
+          row2('Date de validation',validationDate,'Référence',ref||'');
 
           /* Pied de page sur CHAQUE page : fil conducteur
              du document, avec numérotation. */
@@ -10492,9 +10341,6 @@ window.UGTM.failed(err);
      La version installée est celle du manifeste embarqué (www/update.json) ;
      sans elle, le dernier versionCode connu en cache fait référence. */
   (function checkOTA(){
-    // L'APK natif se met à jour avec UpdateManager au démarrage.
-    // Ne pas proposer son APK comme une seconde application web à installer.
-    if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return;
     var stored = parseInt(localStorage.getItem('ugtm_app_version_code') || '0', 10);
 
     /* Le manifeste embarqué donne la version réellement installée. */
@@ -10599,13 +10445,20 @@ window.UGTM.failed(err);
         document.body.appendChild(el);
 
         document.getElementById('otaUpdateBtn').onclick=function(){
-          if(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())return;
           if(!m.apkUrl) return;
           /* Le contrôle SHA-256 est effectué côté natif (UpdateManager.java)
              et par l'installateur Android. La bannière passe alors en
              état « téléchargée / redémarrage requis ». */
           writeState(remote,'requested');
-          window.open(m.apkUrl,'_system');
+          try{
+      if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser){
+        window.Capacitor.Plugins.Browser.open({url: m.apkUrl});
+      } else if(typeof Capacitor !== 'undefined' && Capacitor.Plugins && Capacitor.Plugins.AppLauncher){
+        Capacitor.Plugins.AppLauncher.openUrl({url: m.apkUrl});
+      } else {
+        window.location.href = m.apkUrl;
+      }
+    }catch(e){ window.location.href = m.apkUrl; };
           el.hidden=true;
           checkRemote(storedCode);
         };
@@ -10642,9 +10495,67 @@ window.UGTM.failed(err);
 .ota-banner .ota-dismiss{background:transparent;color:#000;border:1px solid #000;}
 </style>
 
+
+<script>
+(function(){
+  var tabs = ['home','news','agenda','report','contact','me','adhesion'];
+  var startX=0,startY=0,dx=0,dy=0,moving=false;
+  var container = document.querySelector('main') || document.body;
+  container.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1) return;
+    var t=e.touches[0];
+    startX=t.clientX; startY=t.clientY; dx=0; dy=0; moving=true;
+  },{passive:true});
+  container.addEventListener('touchmove',function(e){
+    if(!moving) return;
+    var t=e.touches[0];
+    dx=t.clientX-startX; dy=t.clientY-startY;
+  },{passive:true});
+  container.addEventListener('touchend',function(e){
+    if(!moving) return;
+    moving=false;
+    if(Math.abs(dy)>Math.abs(dx)) return;
+    if(Math.abs(dx)<60) return;
+    var current = null;
+    for(var i=0;i<tabs.length;i++){
+      var el=document.getElementById('s-'+tabs[i]) || document.querySelector('.screen#s-'+tabs[i]);
+      if(el && !el.hidden){ current = tabs[i]; break; }
+    }
+    if(!current) return;
+    var idx = tabs.indexOf(current);
+    if(idx===-1) return;
+    if(dx>0 && idx>0){
+      if(typeof go==='function') go(tabs[idx-1]);
+    } else if(dx<0 && idx<tabs.length-1){
+      if(typeof go==='function') go(tabs[idx+1]);
+    }
+  });
+})();
+</script>
+
+<div id="authDiag" style="position:fixed;bottom:10px;right:10px;z-index:9999;background:#000;color:#0f0;font:11px monospace;max-width:90vw;max-height:40vh;overflow:auto;padding:8px;border:1px solid #0f0;display:none;">
+<div style="display:flex;gap:6px;margin-bottom:4px;">
+<button onclick="document.getElementById('authDiag').style.display='none'" style="background:#000;color:#0f0;border:1px solid #0f0;">x</button>
+<button onclick="var t=document.getElementById('authDiagLog');var s=t.textContent;navigator.clipboard.writeText(s)" style="background:#000;color:#0f0;border:1px solid #0f0;">copy</button>
+<button onclick="document.getElementById('authDiagLog').textContent=''" style="background:#000;color:#0f0;border:1px solid #0f0;">clear</button>
+</div>
+<pre id="authDiagLog" style="margin:0;white-space:pre-wrap;word-break:break-all;"></pre>
+</div>
+<button onclick="document.getElementById('authDiag').style.display='block'" style="position:fixed;bottom:10px;left:10px;z-index:9999;background:#000;color:#0f0;border:1px solid #0f0;font:10px monospace;">DIAG</button>
+<script>
+window.AUTH_DIAG = function(msg){
+  try {
+    var el = document.getElementById('authDiagLog');
+    if(el){
+      var ts = new Date().toISOString().substr(11,12);
+      el.textContent += '['+ts+'] '+msg+'\n';
+      el.scrollTop = el.scrollHeight;
+    }
+  } catch(e){}
+};
+</script>
 </body>
 <style>
-#main{touch-action:pan-y;}
 .notif-badge{
   position:absolute;top:-4px;right:-6px;
 
@@ -10652,26 +10563,50 @@ window.UGTM.failed(err);
   border-radius:50%;padding:1px 4px;min-width:16px;height:16px;
   line-height:16px;text-align:center;z-index:10;
 }
+#authMenu .notif-badge{
+  top:4px;right:4px;
+}
 #meBtn{position:relative;}
 </style>
 <script>
 (function(){
 function updateNotifBadge(n){
     var b=document.getElementById('notifBadge');
+    var hb=document.getElementById('homeNotifBadge');
     var n=Math.max(0,Number(n||0));
-    if(b){ if(n<=0){b.textContent='';b.hidden=true;}else{b.textContent=n>9?'9+':n;b.hidden=false;} }
+    if(b){
+      if(n<=0){b.textContent='';b.hidden=true;}
+      else{b.textContent=n>9?'9+':n;b.hidden=false;}
+    }
+    if(hb){
+      if(n<=0){hb.textContent='';hb.hidden=true;}
+      else{hb.textContent=n>9?'9+':n;hb.hidden=false;}
+    }
   }
   window.updateNotifBadge=updateNotifBadge;
   var btn=document.getElementById('meBtn');
   if(btn){
-    btn.addEventListener('click',function(){
-      if(window.S&&window.S.user){
-        var m=document.getElementById('notifModal');
-        if(m){m.hidden=false;}
-        if(typeof loadNotifications==='function')loadNotifications();
+    btn.onclick=function(e){
+      e.stopPropagation();
+      var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
+      var connected=!!(session&&session.user&&session.user.uid);
+      if(!connected){
+        if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
+        return;
       }
-    });
+      var am=document.getElementById('authMenu');
+      if(am) am.hidden=!am.hidden;
+    };
   }
+})();
+</script>
+<script>
+(function(){
+  document.addEventListener('click',function(e){
+    var am=document.getElementById('authMenu');
+    var btn=document.getElementById('meBtn');
+    if(am && !am.hidden && e.target!==btn && !am.contains(e.target)) am.hidden=true;
+  },true);
 })();
 </script>
 </html>
