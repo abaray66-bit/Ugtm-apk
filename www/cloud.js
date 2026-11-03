@@ -1644,10 +1644,10 @@ var admin = {
                 }).catch(function(){});
               });
               // Push via backend (best-effort, non-blocking).
-              getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
-                var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-                cloudSendPush('news', title, body, null, ref.id);
-              }).catch(function(){});
+              // La liste des destinataires est calculée par le serveur : lire
+              // fcmTokens ici n'était qu'un vestige, et son échec (règles
+              // Firestore) empêchait silencieusement l'envoi.
+              cloudSendPush('news', title, body, null, ref.id).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
           })
@@ -1778,10 +1778,9 @@ var admin = {
             }).catch(function(){});
           });
           // Push via backend (best-effort, non-blocking).
-          getDocs(collection(db, 'fcmTokens')).then(function(tokSnap){
-            var tks = tokSnap.docs.map(function(t){ return t.data() && t.data().token; }).filter(Boolean);
-            cloudSendPush('event', title, body, null, ref.id);
-          }).catch(function(){});
+          // Même remarque que pour les actualités : plus de lecture de
+          // fcmTokens côté navigateur, le serveur choisit les destinataires.
+          cloudSendPush('event', title, body, null, ref.id).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
       }).then(function(){ return ref; });
@@ -2129,27 +2128,51 @@ export async function init(config, h){
   window.db = db;
 
 
+/* Envoi push via le backend Vercel.
+   Accepte les deux formes d'appel pour rester compatible avec le code déjà
+   publié : cloudSendPush(type, title, body, targetUid, targetId) et
+   cloudSendPush({ type, title, body, targetUid, targetId }). */
 async function cloudSendPush(a, b, c, d, e){
   var type, title, body, targetUid, targetId;
   if (a && typeof a === 'object') {
-    type = a.type; title = a.title; body = a.body; targetUid = a.targetUid; targetId = a.targetId;
+    type = a.type; title = a.title; body = a.body;
+    targetUid = a.targetUid; targetId = a.targetId;
   } else {
     type = a; title = b; body = c; targetUid = d; targetId = e;
   }
+
+  // Chaque abandon laisse une trace lisible sans console : la dernière
+  // tentative est rangée sous ugtm:push:last et affichée dans la fenêtre
+  // « Notifications » de l'application.
+  function record(status, detail){
+    var info = {
+      at: new Date().toISOString(),
+      type: String(type || ''),
+      status: status,
+      detail: detail ? String(detail).slice(0, 200) : ''
+    };
+    try { localStorage.setItem('ugtm:push:last', JSON.stringify(info)); } catch(err){}
+    window.UGTM_PUSH_LAST = info;
+    return info;
+  }
+
   var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
-  if (!configured) return;
+  if (!configured) {
+    record('config_missing', 'pushBackendUrl absent de data.js');
+    return;
+  }
   var url = String(configured).replace(/\/+$/, '');
   try {
     var user = auth && auth.currentUser;
     if (!user && typeof getAuth === 'function') {
-      try {
-        var ga = getAuth(typeof firebaseApp !== 'undefined' ? firebaseApp : undefined);
-        user = ga && ga.currentUser;
-      } catch(ex) {}
+      try { user = getAuth(firebaseApp).currentUser; } catch(err){}
     }
-    if (!user) return;
+    if (!user) {
+      record('no_session', 'aucun utilisateur connecté au moment de l\'envoi');
+      return;
+    }
     var token = await (user.getIdToken ? user.getIdToken() : Promise.reject(new Error('no getIdToken')));
-    var payload = { type: type, title: String(title||'').slice(0,120), body: String(body||'').slice(0,500) };
+    var payload = { type: type, title: String(title || '').slice(0,120), body: String(body || '').slice(0,500) };
     if (targetUid) payload.targetUid = String(targetUid);
     if (targetId) payload.targetId = String(targetId);
     var res = await fetch(url + '/api/send-push', {
@@ -2157,12 +2180,22 @@ async function cloudSendPush(a, b, c, d, e){
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify(payload)
     });
+    var raw = '';
+    try { raw = await res.text(); } catch(err){}
+    var parsed = {};
+    try { parsed = JSON.parse(raw); } catch(err){}
     if (!res.ok) {
-      var detail = '';
-      try { detail = (await res.text()).slice(0, 200); } catch(ex2){}
-      console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', detail);
+      // 401/403 = jeton ou droits, 404 = fonction absente du déploiement,
+      // 429 = limite d'envoi, 500 = configuration Vercel.
+      record(res.status, raw);
+      console.warn('push backend ' + res.status + ' ' + url + '/api/send-push', raw.slice(0, 200));
+      return;
     }
-  } catch(ex3){ console.warn('push backend failed:', ex3); }
+    record('ok', 'envoyés ' + Number(parsed.sent || 0) + '/' + Number(parsed.total || 0));
+  } catch(e){
+    record('network_error', (e && e.message) || e);
+    console.warn('push backend failed:', e);
+  }
 }
 
 /* Renouvellement silencieux du jeton FCM.
@@ -2183,11 +2216,49 @@ async function refreshPushTokenQuietly(user){
     if(!vapidKey) return;
     pushRefreshFor=user.uid;
     messaging=messaging||getMessaging(firebaseApp);
-    var registration=await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    // sw.js est le seul service worker : il porte aussi le SDK FCM.
+    await navigator.serviceWorker.register('sw.js');
+    var registration=await navigator.serviceWorker.ready;
     var token=await getToken(messaging,{vapidKey:vapidKey,serviceWorkerRegistration:registration});
     if(!token) return;
     await setDoc(doc(db,'fcmTokens',user.uid),{token:token,updatedAt:serverTimestamp()},{merge:true});
   }catch(e){ /* silencieux : jamais bloquant pour l'application */ }
+}
+
+/* État des notifications sur CET appareil. Sert au diagnostic affiché
+   dans la fenêtre « Notifications » : autorisation, service worker FCM,
+   et présence du jeton dans le registre. Lecture seule, aucun envoi. */
+async function pushDeviceState(){
+  var out = {
+    supported: (typeof Notification !== 'undefined') && !!navigator.serviceWorker,
+    permission: (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported',
+    registered: false,
+    tokenSaved: false,
+    error: ''
+  };
+  try {
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      var regs = await navigator.serviceWorker.getRegistrations();
+      out.registered = regs.some(function(r){
+        var sw = r.active || r.waiting || r.installing;
+        return !!(sw && /\/sw\.js$/.test(String(sw.scriptURL || '')));
+      });
+    }
+    var user = auth && auth.currentUser;
+    if (user) {
+      var snap = await getDoc(doc(db, 'fcmTokens', user.uid));
+      out.tokenSaved = !!(snap.exists() && String((snap.data() || {}).token || '').length > 0);
+    }
+  } catch(e){ out.error = String((e && e.message) || e).slice(0, 120); }
+  return out;
+}
+
+/* Dernière tentative d'envoi connue sur cet appareil (voir cloudSendPush). */
+function pushLastAttempt(){
+  try {
+    var raw = localStorage.getItem('ugtm:push:last');
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){ return null; }
 }
 
 async function cloudLoadNotifications(){
@@ -2250,7 +2321,8 @@ async function cloudMarkNotificationRead(id){
       var permission = await Notification.requestPermission();
       if (permission !== 'granted') throw new Error('Autorisation de notification non accordée.');
       messaging = messaging || getMessaging(firebaseApp);
-      var registration = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+      await navigator.serviceWorker.register('sw.js');
+      var registration = await navigator.serviceWorker.ready;
       var cfg = window.APP_DATA && window.APP_DATA.firebase || {};
       var vapidKey = cfg.vapidKey || cfg.messagingVapidKey || '';
       if (!vapidKey) throw new Error('Clé VAPID absente de la configuration.');
@@ -2262,6 +2334,8 @@ async function cloudMarkNotificationRead(id){
 
     loadNotifications: cloudLoadNotifications,
     markNotificationRead: cloudMarkNotificationRead,
+    pushDeviceState: pushDeviceState,
+    lastPushAttempt: pushLastAttempt,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){

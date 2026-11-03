@@ -3164,6 +3164,7 @@ async function enablePushFromClick(){
     await window.CLOUD.enablePushNotifications();
     if(status) status.textContent='Notifications push activées sur cet appareil.';
     if(btn) btn.textContent='Notifications activées';
+    if(typeof refreshPushStatus==='function') refreshPushStatus();
   }catch(e){
     if(status) status.textContent=(e&&e.message)||'Impossible d’activer les notifications.';
     if(btn) btn.disabled=false;
@@ -3175,7 +3176,40 @@ window.setNotificationsPopup=function(open){
   var backdrop=document.getElementById('notifBackdrop');
   if(modal)modal.hidden=!open;
   if(backdrop)backdrop.hidden=!open;
+  // Diagnostic lisible sans console : état de CET appareil et dernier envoi.
+  if(open && typeof refreshPushStatus==='function') refreshPushStatus();
 };
+
+/* Affiche, dans la fenêtre « Notifications », ce que l'appareil peut faire
+   et ce qu'a répondu le serveur au dernier envoi. Aucune console requise. */
+async function refreshPushStatus(){
+  var status=document.getElementById('pushStatus');
+  var btn=document.getElementById('enablePushBtn');
+  if(!status) return;
+  if(!window.CLOUD || typeof window.CLOUD.pushDeviceState!=='function') return;
+  var st=null;
+  try{ st=await window.CLOUD.pushDeviceState(); }catch(e){ return; }
+  if(!st) return;
+  var lines=[];
+  if(!st.supported) lines.push('Cet appareil ne peut pas recevoir de notifications push (navigateur sans service worker).');
+  else if(st.permission==='denied') lines.push('Notifications bloquées pour ce site : autorisez-les dans les réglages du navigateur.');
+  else if(st.permission==='granted' && st.tokenSaved) lines.push('Cet appareil est enregistré pour les notifications.');
+  else if(st.permission==='granted') lines.push('Autorisation accordée mais appareil non enregistré : appuyez sur « Activer les notifications push ».');
+  else lines.push('Notifications non activées sur cet appareil.');
+  if(btn && st.permission==='granted' && st.tokenSaved) btn.textContent='Notifications activées';
+  var last=(typeof window.CLOUD.lastPushAttempt==='function') ? window.CLOUD.lastPushAttempt() : null;
+  if(last && last.at){
+    var when=String(last.at);
+    try{ when=new Date(last.at).toLocaleString(); }catch(e){}
+    var verdict=(last.status==='ok')
+      ? 'accepté' + (last.detail ? ' (' + last.detail + ')' : '')
+      : 'refusé (' + String(last.status) + (last.detail ? ' : ' + last.detail : '') + ')';
+    lines.push('Dernier envoi ' + verdict + ' le ' + when + '.');
+  }
+  if(st.error) lines.push('Détail : ' + st.error);
+  status.textContent=lines.join(' ');
+}
+window.refreshPushStatus=refreshPushStatus;
 
 function renderNotifications(list){
   var arr=Array.isArray(list)?list:[];
@@ -9491,14 +9525,13 @@ window.addEventListener(
 'load',
 function(){
 
+// Un seul service worker pour toute l'application : sw.js gère le cache hors
+// ligne ET les notifications push (SDK FCM chargé dedans). Enregistrer en plus
+// firebase-messaging-sw.js sur la même portée « / » faisait remplacer l'un par
+// l'autre à chaque chargement, ce qui détruisait l'abonnement push.
 navigator.serviceWorker
 .register('sw.js')
 .catch(function(){});
-
-// Enregistrement du service worker FCM pour les notifications en arrière-plan.
-navigator.serviceWorker
-  .register('firebase-messaging-sw.js')
-  .catch(function(){});
 
 });
 
