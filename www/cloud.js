@@ -1030,7 +1030,7 @@ async function submitAdhesion(application,signature){
     return syncMemberPhone(u, clean.phone).then(function(){
       if (!result.completed) {
         var applicantName = (clean.prenom + ' ' + clean.nom).trim();
-        cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
+        window.cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
       }
       return result;
     });
@@ -1086,7 +1086,7 @@ await updateDoc(doc(db,'adhesionRequests',String(uid)),{
       // Push via backend (best-effort).
       getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
         var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-        cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+        window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
       }).catch(function(){});
     } catch(e){ console.warn('notif create', e); }
    return sig;
@@ -1624,7 +1624,7 @@ var admin = {
             var pushTitle = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
             var pushBody = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
             console.log('push: triggered news', pushTitle);
-            cloudSendPush('news', pushTitle, pushBody, null, ref.id).catch(function(){});
+            window.cloudSendPush('news', pushTitle, pushBody, null, ref.id).catch(function(){});
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
               var title = pushTitle;
@@ -1789,7 +1789,7 @@ var admin = {
           // Push via backend (best-effort, non-blocking).
           // Même remarque que pour les actualités : plus de lecture de
           // fcmTokens côté navigateur, le serveur choisit les destinataires.
-          cloudSendPush('event', title, body, null, ref.id).catch(function(){});
+          window.cloudSendPush('event', title, body, null, ref.id).catch(function(){});
           return Promise.all(writes);
         }).catch(function(){});
       }).then(function(){ return ref; });
@@ -2143,8 +2143,8 @@ export async function init(config, h){
 
 /* Envoi push via le backend Vercel.
    Accepte les deux formes d'appel pour rester compatible avec le code déjà
-   publié : cloudSendPush(type, title, body, targetUid, targetId) et
-   cloudSendPush({ type, title, body, targetUid, targetId }). */
+   publié : window.cloudSendPush(type, title, body, targetUid, targetId) et
+   window.cloudSendPush({ type, title, body, targetUid, targetId }). */
 async function cloudSendPush(a, b, c, d, e){
   var type, title, body, targetUid, targetId;
   if (a && typeof a === 'object') {
@@ -2210,6 +2210,7 @@ async function cloudSendPush(a, b, c, d, e){
     console.warn('push backend failed:', e);
   }
 }
+window.cloudSendPush = cloudSendPush;
 
 /* Renouvellement silencieux du jeton FCM.
    `enablePushNotifications` n'est appelé que sur un clic : quand le jeton
