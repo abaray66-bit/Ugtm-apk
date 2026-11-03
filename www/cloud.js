@@ -1620,11 +1620,15 @@ var admin = {
 
         return Promise.all(jobs)
           .then(function(){
+            var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
+            var pushTitle = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
+            var pushBody = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
+            console.log('push: triggered news', pushTitle);
+            cloudSendPush('news', pushTitle, pushBody, null, ref.id).catch(function(){});
             // Diffusion d'une notification à tous les membres.
             return getDocs(collection(db, 'members')).then(function(snap){
-              var newsSubject = (o.fr && o.fr.t) ? o.fr.t : ((o.ar && o.ar.t) ? o.ar.t : '');
-              var title = ('Nouveau communiqué' + (newsSubject ? ' : ' + String(newsSubject).trim() : '')).slice(0,120);
-              var body = (o.fr && o.fr.b) ? (o.fr.b) : ((o.ar && o.ar.b) ? (o.ar.b) : '');
+              var title = pushTitle;
+              var body = pushBody;
               var authorUid = (auth.currentUser && auth.currentUser.uid) ? auth.currentUser.uid : '';
               var tokens = [];
               var writes = snap.docs.map(function(d){
@@ -1643,11 +1647,6 @@ var admin = {
                   createdAt: serverTimestamp()
                 }).catch(function(){});
               });
-              // Push via backend (best-effort, non-blocking).
-              // La liste des destinataires est calculée par le serveur : lire
-              // fcmTokens ici n'était qu'un vestige, et son échec (règles
-              // Firestore) empêchait silencieusement l'envoi.
-              cloudSendPush('news', title, body, null, ref.id).catch(function(){});
               return Promise.all(writes);
             }).catch(function(){});
           })
