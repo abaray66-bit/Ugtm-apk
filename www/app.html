@@ -137,6 +137,16 @@ button,input,select,textarea{
   display:none!important
 }
 
+/* Contenu rédigé en arabe affiché dans une interface française
+   (publication ou événement saisi uniquement dans la case arabe) :
+   lecture et alignement de droite à gauche. Aucun changement de
+   display : les éléments concernés sont déjà des blocs. */
+.rtl{
+  direction:rtl;
+  text-align:right;
+  unicode-bidi:plaintext
+}
+
 .app{
   max-width:480px;
   height:100%;
@@ -801,15 +811,27 @@ main{
   inset:0;
   z-index:60;
   background:rgba(0,0,0,.93);
-  display:grid;
-  place-items:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   padding:8px;
+  overflow:hidden;
   cursor:zoom-out
 }
 
+/* La photo est centrée quelle que soit la taille de la fenêtre
+   (téléphone ou navigateur PC). Le conteneur est un flex dont la
+   largeur et la hauteur sont définies (inset:0) : les pourcentages
+   ci-dessous s'y résolvent correctement. Avec display:grid, la piste
+   implicite restait indéfinie, l'image gardait sa largeur naturelle
+   et débordait vers la droite — d'où l'impression de décalage. */
 .lightbox img{
+  display:block;
+  margin:auto;
+  width:auto;
+  height:auto;
   max-width:100%;
-  max-height:calc(100vh - 16px);
+  max-height:calc(100% - 16px);
   object-fit:contain;
   border-radius:var(--radius-s)
 }
@@ -3182,6 +3204,16 @@ window.setNotificationsPopup=function(open){
 
 /* Affiche, dans la fenêtre « Notifications », ce que l'appareil peut faire
    et ce qu'a répondu le serveur au dernier envoi. Aucune console requise. */
+/* Message d'échec adapté au contenant réel. Dans une WebView Android
+   (APK), renvoyer vers Chrome est trompeur : l'utilisateur est déjà dans
+   l'application installée, le problème est la version de l'APK. */
+function pushUnsupportedMessage(){
+  var ua=String((navigator&&navigator.userAgent)||'');
+  var webview=/Android/i.test(ua)&&/\bwv\b/.test(ua);
+  if(webview||window.Capacitor) return "Cette version de l'application ne contient pas le module de notifications push : installez la dernière version de l'APK.";
+  return "Cet appareil ne peut pas recevoir de notifications push : ce navigateur n'expose pas de service worker. Ouvrez l'application dans Chrome, et non dans le navigateur intégré d'une autre application.";
+}
+
 async function refreshPushStatus(){
   var status=document.getElementById('pushStatus');
   var btn=document.getElementById('enablePushBtn');
@@ -3191,7 +3223,15 @@ async function refreshPushStatus(){
   try{ st=await window.CLOUD.pushDeviceState(); }catch(e){ return; }
   if(!st) return;
   var lines=[];
-  if(!st.supported) lines.push('Cet appareil ne peut pas recevoir de notifications push (navigateur sans service worker).');
+  if(st.native){
+    /* APK : pas de service worker, c'est le plugin natif qui compte. */
+    if(!st.supported) lines.push("Cette version de l'application n'embarque pas le module de notifications : installez la dernière version.");
+    else if(st.permission==='denied') lines.push('Notifications bloquées pour cette application : autorisez-les dans les réglages Android de l\'application.');
+    else if(st.permission==='granted' && st.tokenSaved) lines.push('Cet appareil est enregistré pour les notifications.');
+    else if(st.permission==='granted') lines.push('Autorisation accordée mais appareil non enregistré : appuyez sur « Activer les notifications push ».');
+    else lines.push('Notifications non activées sur cet appareil.');
+  }
+  else if(!st.supported) lines.push(pushUnsupportedMessage());
   else if(st.permission==='denied') lines.push('Notifications bloquées pour ce site : autorisez-les dans les réglages du navigateur.');
   else if(st.permission==='granted' && st.tokenSaved) lines.push('Cet appareil est enregistré pour les notifications.');
   else if(st.permission==='granted') lines.push('Autorisation accordée mais appareil non enregistré : appuyez sur « Activer les notifications push ».');
@@ -3512,6 +3552,16 @@ window.markNotificationRead=markNotificationRead;
 
 </div>
 
+<div class="admin-panel" id="admAdminsPanel" hidden>
+<h3 data-i18n="admAdminsTitle"></h3>
+<ul class="list" id="admAdminsList"></ul>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+<input id="admAdminsEmail" type="email" data-i18n-ph="admAdminsPh" style="flex:1;min-width:200px;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:15px">
+<button class="btn primary small" type="button" data-adm-act="addAdminEmail" data-i18n="admAdminsAdd"></button>
+</div>
+<p class="hint" style="margin-top:8px" data-i18n="admAdminsHint"></p>
+</div>
+
 </div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" data-i18n-ph="admMemSearchPh" aria-label="Rechercher un adhérent" data-i18n-aria="admMemSearchAria" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv" data-i18n="admMemExportCsv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouvelle publication</h2></div><div class="field">
@@ -3640,6 +3690,7 @@ memFilter:'pending',
 reports:[],
 adhesions:[],
 provinceContacts:[],
+adminEmails:[],
 admTab:'members',
 editNewsId:null,
 editEventId:null,
@@ -3982,6 +4033,19 @@ deleted:`Données supprimées`,
   admMemEmpty:`Aucun membre dans cette catégorie.`,
   admMemNoName:`(sans nom)`,
   admMemNoProv:`Province non renseignée : seul l'administrateur principal peut valider cet adhérent.`,
+
+  /* Tableau de bord : gestion des administrateurs (config/admins) */
+  admAdminsTitle:`Administrateurs`,
+  admAdminsPh:`adresse@gmail.com`,
+  admAdminsAdd:`Ajouter`,
+  admAdminsRemove:`Retirer`,
+  admAdminsBootstrap:`liste de secours`,
+  admAdminsYou:`vous`,
+  admAdminsHint:`Les administrateurs ajoutés ici prennent effet aussitôt, sans mise à jour de l'application. L'adresse de secours (data.js) ne peut pas être retirée depuis ici.`,
+  admAdminsEmpty:`Aucun administrateur supplémentaire.`,
+  admToastAdminAdded:`Administrateur ajouté.`,
+  admToastAdminRemoved:`Administrateur retiré.`,
+  admConfirmRemoveAdmin:`Retirer l'administrateur %1 ?`,
   admMemNumber:`N°`,
   admMemFilterPending:`En attente`,
   admMemFilterActive:`Actifs`,
@@ -4563,6 +4627,19 @@ deleted:`تم حذف البيانات`,
   admMemEmpty:`لا يوجد أي عضو في هذه الفئة.`,
   admMemNoName:`(بدون اسم)`,
   admMemNoProv:`الإقليم غير محدد: لا يمكن إلا للمسؤول الرئيسي المصادقة على هذا المنخرط.`,
+
+  /* لوحة القيادة : تدبير المسؤولين (config/admins) */
+  admAdminsTitle:`المسؤولون`,
+  admAdminsPh:`adresse@gmail.com`,
+  admAdminsAdd:`إضافة`,
+  admAdminsRemove:`حذف`,
+  admAdminsBootstrap:`قائمة احتياطية`,
+  admAdminsYou:`أنت`,
+  admAdminsHint:`المسؤولون المضافون هنا يسري مفعولهم فوراً دون تحديث التطبيق. لا يمكن حذف القائمة الاحتياطية (data.js) من هنا.`,
+  admAdminsEmpty:`لا يوجد مسؤول إضافي.`,
+  admToastAdminAdded:`تمت إضافة المسؤول.`,
+  admToastAdminRemoved:`تم حذف المسؤول.`,
+  admConfirmRemoveAdmin:`حذف المسؤول %1؟`,
   admMemNumber:`رقم`,
   admMemFilterPending:`في انتظار المصادقة`,
   admMemFilterActive:`نشطون`,
@@ -4872,11 +4949,27 @@ if(lang==='ar')return(o.ar&&o.ar.t)||(o.fr&&o.fr.t)||'';
 return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
 }
 
+/* Un texte est considéré comme arabe quand ses lettres arabes sont au
+   moins aussi nombreuses que ses lettres latines : un titre mixte
+   (« UGTM » + arabe) garde l'alignement de l'interface. */
+function isArabicText(s){
+var str=String(s||'');
+var ar=str.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/g);
+if(!ar)return false;
+var lat=str.match(/[A-Za-z\u00C0-\u024F]/g);
+return ar.length>=(lat?lat.length:0);
+}
+
+/* Attribut de classe complet, ou chaîne vide. */
+function rtlAttr(s){
+return isArabicText(s)?' class="rtl"':'';
+}
+
 function paras(s){
 return String(s||'')
 .split(/\n{2,}/)
 .map(function(p){
-return '<p>'+esc(p).replace(/\n/g,'<br>')+'</p>';
+return '<p'+rtlAttr(p)+'>'+esc(p).replace(/\n/g,'<br>')+'</p>';
 })
 .join('');
 }
@@ -5121,10 +5214,17 @@ renderGallery();
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
       window.Capacitor.Plugins.App.addListener('backButton', function(e){
-        if(e && typeof e.preventDefault === 'function') e.preventDefault();
-        if($('gallery') && !$('gallery').hidden){ closeGallery(); }
-        else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); }
-        else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); }
+        /* 1. Galerie, image plein écran ou fenêtre modale : on ferme. */
+        if($('gallery') && !$('gallery').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeGallery(); return; }
+        if($('lightbox') && !$('lightbox').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeLightbox(); return; }
+        if($('attachModal') && !$('attachModal').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeAttachModal(); return; }
+        /* 2. Écran précédent de l'application. */
+        if(navStack.depth>0){
+          if(e&&e.preventDefault)e.preventDefault();
+          try{history.back();}catch(err){}
+          return;
+        }
+        /* 3. Écran d'accueil : on laisse Android quitter l'application. */
       });
     } else {
       document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
@@ -5929,9 +6029,9 @@ return '<div class="ev">'+
 
 '<div class="evb">'+
 
-'<strong>'+esc(x.t)+'</strong>'+
+'<strong'+rtlAttr(x.t)+'>'+esc(x.t)+'</strong>'+
 
-'<p>'+
+'<p'+rtlAttr(x.p)+'>'+
 fmtDate(ev.date,true)+
 (ev.time?' – '+fmtTime(ev.time):'')+
 (x.p?'<br>'+esc(x.p):'')+
@@ -6006,7 +6106,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt">'+esc(L(c).t)+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6086,7 +6186,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt">'+esc(L(c).t)+'</span>'+
+'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+'</span>'+
 
 '</span>'+
 
@@ -6850,7 +6950,7 @@ return '<li class="mrow">'+
 
 '<div class="mi">'+
 
-'<strong>'+esc(titleFor(c))+'</strong>'+
+'<strong'+rtlAttr(titleFor(c))+'>'+esc(titleFor(c))+'</strong>'+
 
 '<span>'+
 fmtDateFr(c.date)+
@@ -6894,7 +6994,7 @@ return '<li class="mrow">'+
 
 '<div class="mi">'+
 
-'<strong>'+esc(titleFor(ev))+'</strong>'+
+'<strong'+rtlAttr(titleFor(ev))+'>'+esc(titleFor(ev))+'</strong>'+
 
 '<span>'+
 fmtDateFr(ev.date)+
@@ -6971,6 +7071,47 @@ renderAdminNews();
 renderAdminEvents();
 renderAdminReports();
 renderAdminAdhesions();
+renderAdminAdmins();
+
+}
+
+
+/* Liste des administrateurs (config/admins, cf. cloud.js getAdminEmails).
+   Le rendu est pur : l'état arrive par le hook setAdminEmails. */
+function renderAdminAdmins(){
+
+var panel=$('admAdminsPanel');
+if(!panel)return;
+
+var t=T();
+
+/* Réservé à l'administrateur général : un sous-admin ne gère pas les admins. */
+panel.hidden=!S.isAdmin;
+
+if(!S.isAdmin)return;
+
+var list=S.adminEmails||[];
+var bootstrap=(D.adminEmails||[]).map(function(x){return String(x).toLowerCase();});
+
+if(!list.length){
+$('admAdminsList').innerHTML='<li class="empty">'+esc(t.admAdminsEmpty)+'</li>';
+return;
+}
+
+$('admAdminsList').innerHTML=list.map(function(em){
+
+var isBoot=bootstrap.indexOf(em)>=0;
+var isSelf=S.user&&String(S.user.email||'').toLowerCase()===em;
+
+var tag=isBoot?'<span class="hint"> ('+esc(t.admAdminsBootstrap)+')</span>':'';
+var you=isSelf?'<span class="hint"> ('+esc(t.admAdminsYou)+')</span>':'';
+
+var rm=isBoot?'':'<button class="btn ghost small danger" type="button" data-adm-act="removeAdminEmail" data-email="'+esc(em)+'">'+esc(t.admAdminsRemove)+'</button>';
+
+return '<li style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0">'+
+'<span>'+esc(em)+tag+you+'</span>'+rm+'</li>';
+
+}).join('');
 
 }
 
@@ -8244,7 +8385,64 @@ renderAdminAll();
 
 $('main').scrollTop=0;
 
+S.screen=name;
+
+pushScreenHistory(name);
+
 }
+
+/* =========================
+   BOUTON RETOUR (web + APK)
+   ========================= */
+
+/* Chaque changement d'écran ouvre une entrée d'historique : le bouton
+   retour du navigateur (PC) et le bouton retour Android ramènent à
+   l'écran précédent au lieu de quitter l'application ou de revenir au
+   site consulté avant. La galerie et les fenêtres modales gardent leur
+   propre gestion (voir popstate et backButton). */
+
+var navStack={screen:null,pending:false,depth:0};
+
+function pushScreenHistory(name){
+
+if(navStack.pending)return;
+
+if(navStack.screen===name)return;
+
+navStack.screen=name;
+navStack.depth+=1;
+
+try{history.pushState({ugtm:'screen',screen:name},'');}catch(e){}
+
+}
+
+function initScreenHistory(){
+
+navStack.screen='home';
+navStack.depth=0;
+S.screen='home';
+
+try{history.replaceState({ugtm:'screen',screen:'home'},'');}catch(e){}
+
+}
+
+document.addEventListener('popstate',function(e){
+
+var st=e.state||{};
+
+if(st.ugtm!=='screen'||!st.screen)return;
+
+if(st.screen===S.screen)return;
+
+navStack.screen=st.screen;
+
+if(navStack.depth>0)navStack.depth-=1;
+
+navStack.pending=true;
+
+try{go(st.screen);}finally{navStack.pending=false;}
+
+});
 
 function bindPageSwipeNavigation(){
   var main=$('main');
@@ -8824,6 +9022,37 @@ toast(String(t.admToastSubAdminNamed).replace('%1',provName(assigned,lang)||assi
 
 }
 
+else if(a==='addAdminEmail'&&S.isAdmin){
+
+var input=$('admAdminsEmail');
+var email=input?String(input.value||'').trim():'';
+
+if(!email)return;
+
+c.admin.addAdminEmail(email)
+.then(function(){
+if(input)input.value='';
+toast(t.admToastAdminAdded);
+renderAdminAdmins();
+})
+.catch(showError);
+
+}
+else if(a==='removeAdminEmail'&&S.isAdmin){
+
+var em=el.getAttribute('data-email');
+if(!em)return;
+
+if(!window.confirm(String(t.admConfirmRemoveAdmin).replace('%1',em)))return;
+
+c.admin.removeAdminEmail(em)
+.then(function(){
+toast(t.admToastAdminRemoved);
+renderAdminAdmins();
+})
+.catch(showError);
+
+}
 else if(a==='removeSubAdmin'&&m&&S.isAdmin){
 
 c.admin.removeSubAdmin(uid)
@@ -9391,6 +9620,11 @@ renderResponsables();
 renderAdminMembers();
 },
 
+setAdminEmails:function(list){
+S.adminEmails=Array.isArray(list)?list.slice():[];
+if(S.isAdmin&&S.admTab==='dashboard')renderAdminAdmins();
+},
+
 setSession:function(s){
 
 var wasManager=S.isAdmin||S.isSubAdmin;
@@ -9423,6 +9657,13 @@ purgeSession();
 
 renderAccountButton();
 renderMe();
+
+if(S.isAdmin&&window.CLOUD&&CLOUD.admin&&CLOUD.admin.getAdminEmails){
+CLOUD.admin.getAdminEmails().then(function(list){
+S.adminEmails=Array.isArray(list)?list:[];
+renderAdminAdmins();
+}).catch(function(){});
+}
 
 try{
   var mb=document.getElementById('meBtn');
@@ -9551,6 +9792,8 @@ navigator.serviceWorker
 /* =========================
    INITIALISATION
    ========================= */
+
+initScreenHistory();
 
 applyI18n();
 

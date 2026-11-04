@@ -38,4 +38,10 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Notifications (Android 13 et plus) : sans cette déclaration,
+         PushNotifications.requestPermissions() renvoie « denied » et
+         aucun jeton FCM ne peut être obtenu. Le plugin Capacitor ne la
+         déclare pas lui-même. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

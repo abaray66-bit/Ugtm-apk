@@ -48,7 +48,8 @@ var unsubs = {
   adhesions: null,
   responsables: null,
   notifications: null,
-  publicProvinceContacts: null
+  publicProvinceContacts: null,
+  adminEmails: null
 };
 
 var newsMode = null;
@@ -416,10 +417,72 @@ function subscribeReports(){
    AUTHENTIFICATION
    ========================================================= */
 
+/* =========================================================
+   LISTE DES ADMINISTRATEURS (config/admins)
+   Liste de secours : window.APP_DATA.adminEmails (data.js).
+   Liste vivante : document config/admins, modifiable depuis
+   l'espace administrateur sans redéploiement.
+   ========================================================= */
+
+function bootstrapAdminList(){
+  return (hooks.adminEmails || []).map(function(x){
+    return String(x).toLowerCase();
+  });
+}
+
+function storedAdminList(snap){
+  if (!snap || !snap.exists()) return [];
+  var emails = snap.data() && snap.data().emails;
+  if (!Array.isArray(emails)) return [];
+  return emails.map(function(x){
+    return String(x).toLowerCase();
+  });
+}
+
+function mergedAdminList(stored){
+  var out = bootstrapAdminList();
+  (stored || []).forEach(function(x){
+    if (out.indexOf(x) < 0) out.push(x);
+  });
+  return out;
+}
+
+function isAdminUser(user, stored){
+  if (!user || !user.emailVerified) return false;
+  return mergedAdminList(stored).indexOf((user.email || '').toLowerCase()) >= 0;
+}
+
+/* Abonnement léger à config/admins : un administrateur ajouté ou retiré
+   prend effet immédiatement côté règles et, ici, côté interface. */
+function subscribeAdminEmails(user){
+
+  unsub('adminEmails');
+
+  if (!user) return;
+
+  unsubs.adminEmails = onSnapshot(
+    doc(db, 'config', 'admins'),
+    function(snap){
+      var stored = storedAdminList(snap);
+      var isAdmin = isAdminUser(user, stored);
+      if (isAdmin !== session.isAdmin){
+        session.isAdmin = isAdmin;
+        if (isAdmin) syncPublicProvinceContacts();
+        hooks.setSession(session);
+      }
+      if (hooks.setAdminEmails && typeof hooks.setAdminEmails === 'function'){
+        try { hooks.setAdminEmails(mergedAdminList(stored)); } catch (e) {}
+      }
+    },
+    function(){ /* liste absente ou illisible : data.js reste la référence */ }
+  );
+}
+
 function onUser(user){
 
   unsub('member');
   unsub('members');
+  unsub('adminEmails');
 
   if (!user){
 
@@ -449,18 +512,9 @@ function onUser(user){
   // l'autorisation de notification est déjà accordée.
   try { if (typeof refreshPushTokenQuietly === "function") refreshPushTokenQuietly(user); } catch(e) { console.warn("push refresh:", e); }
 
-  var admins =
-    (hooks.adminEmails || [])
-    .map(function(x){
-      return String(x).toLowerCase();
-    });
-
-
-  var isAdmin =
-    !!user.emailVerified &&
-    admins.indexOf(
-      (user.email || '').toLowerCase()
-    ) >= 0;
+  /* Décision immédiate sur la liste de secours (data.js) : disponible
+     sans attendre Firestore. L'abonnement config/admins affine ensuite. */
+  var isAdmin = isAdminUser(user, null);
 
   if (isAdmin) syncPublicProvinceContacts();
 
@@ -588,6 +642,8 @@ function onUser(user){
   subscribeNews();
   subscribeReports();
   subscribeAdhesions();
+
+  subscribeAdminEmails(user);
 
 }
 
@@ -1373,6 +1429,69 @@ function syncPublicProvinceContacts(){
   }).catch(function(e){hooks.error(e, true);});
 }
 var admin = {
+
+  /* ----------------------------------------------------
+     ADMINISTRATEURS (config/admins)
+     La liste de secours (data.js) ne peut pas être retirée
+     depuis l'application : la règle Firestore l'exige aussi.
+     ---------------------------------------------------- */
+
+  getAdminEmails:
+    function(){
+      return getDoc(doc(db, 'config', 'admins')).then(function(snap){
+        return mergedAdminList(storedAdminList(snap));
+      }).catch(function(){
+        return mergedAdminList(null);
+      });
+    },
+
+  addAdminEmail:
+    function(email){
+      var e = String(email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e))
+        return Promise.reject(new Error('Adresse e-mail invalide.'));
+
+      return getDoc(doc(db, 'config', 'admins')).then(function(snap){
+        var stored = storedAdminList(snap);
+        if (mergedAdminList(stored).indexOf(e) >= 0)
+          throw new Error('Cette adresse est déjà administrateur.');
+        if (stored.length >= 10)
+          throw new Error('10 adresses administrateur au maximum (hors liste de secours).');
+
+        /* La règle exige que la liste stockée contienne la liste de
+           secours : on la joint à la première écriture. */
+        bootstrapAdminList().forEach(function(b){
+          if (stored.indexOf(b) < 0) stored.push(b);
+        });
+
+        stored.push(e);
+
+        return setDoc(doc(db, 'config', 'admins'), {
+          emails: stored,
+          updatedAt: serverTimestamp()
+        });
+      });
+    },
+
+  removeAdminEmail:
+    function(email){
+      var e = String(email || '').trim().toLowerCase();
+      if (bootstrapAdminList().indexOf(e) >= 0)
+        return Promise.reject(new Error(
+          'Cette adresse fait partie de la liste de secours : elle se retire dans www/data.js, pas ici.'
+        ));
+
+      return getDoc(doc(db, 'config', 'admins')).then(function(snap){
+        var stored = storedAdminList(snap);
+        var next = stored.filter(function(x){ return x !== e; });
+        if (next.length === stored.length)
+          throw new Error('Cette adresse n\'est pas dans la liste.');
+        return setDoc(doc(db, 'config', 'admins'), {
+          emails: next,
+          updatedAt: serverTimestamp()
+        });
+      });
+    },
 
   setSubAdmin:
     function(uid, province){
@@ -2243,14 +2362,28 @@ async function refreshPushTokenQuietly(user){
    dans la fenêtre « Notifications » : autorisation, service worker FCM,
    et présence du jeton dans le registre. Lecture seule, aucun envoi. */
 async function pushDeviceState(){
+  /* L'APK n'a PAS de service worker : les notifications y passent par le
+     plugin natif @capacitor/push-notifications. « supported » doit donc
+     décrire le canal réellement disponible, sinon l'application annonce à
+     tort « navigateur sans service worker » sur Android. */
+  var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  var NativePush = isNative && window.Capacitor.Plugins ? window.Capacitor.Plugins.PushNotifications : null;
   var out = {
-    supported: (typeof Notification !== 'undefined') && !!navigator.serviceWorker,
-    permission: (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported',
+    native: isNative,
+    supported: isNative ? !!NativePush : ((typeof Notification !== 'undefined') && !!navigator.serviceWorker),
+    permission: isNative ? 'prompt' : ((typeof Notification !== 'undefined') ? Notification.permission : 'unsupported'),
     registered: false,
     tokenSaved: false,
     error: ''
   };
   try {
+    if (isNative && NativePush && typeof NativePush.checkPermissions === 'function') {
+      try {
+        var nativePerm = await NativePush.checkPermissions();
+        if (nativePerm && nativePerm.receive) out.permission = nativePerm.receive;
+        out.registered = out.permission === 'granted';
+      } catch(e){ /* permission inconnue : on garde « prompt » */ }
+    }
     if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
       var regs = await navigator.serviceWorker.getRegistrations();
       out.registered = regs.some(function(r){
@@ -2328,7 +2461,7 @@ async function cloudMarkNotificationRead(id){
       var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
       if (isNative) {
         var PushNotifications = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
-        if (!PushNotifications) throw new Error('Plugin push natif indisponible.');
+        if (!PushNotifications) throw new Error("Le module de notifications de l'application est absent : installez la dernière version de l'APK.");
         var perm = await PushNotifications.requestPermissions();
         if (!perm || perm.receive !== 'granted') throw new Error('Autorisation de notification non accordée.');
         var nativeToken = await new Promise(function(resolve, reject){
@@ -2344,7 +2477,7 @@ async function cloudMarkNotificationRead(id){
         return true;
       }
       if (typeof Notification === 'undefined' || !navigator.serviceWorker) {
-        throw new Error('Ce navigateur ne prend pas en charge les notifications push.');
+        throw new Error("Ce navigateur ne prend pas en charge les notifications push : ouvrez l'application dans Chrome, et non dans le navigateur intégré d'une autre application.");
       }
       // L'appel à requestPermission est exécuté immédiatement depuis le clic utilisateur.
       var permission = await Notification.requestPermission();
