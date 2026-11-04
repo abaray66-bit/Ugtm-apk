@@ -848,11 +848,11 @@ main{
 }
 
 .news-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;justify-content:center}
-.news-thumbs img{width:70px;height:70px;object-fit:cover;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent}
+.news-thumbs img{width:70px;height:70px;object-fit:contain;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent;background:#fff}
 .news-thumbs img.active{border-color:var(--accent)}
 
 .gallery{
-  position:fixed;inset:0;z-index:70;background:#000;
+  position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:70;background:rgba(0,0,0,.9);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
@@ -862,7 +862,7 @@ main{
 }
 .gallery-track img{
   position:relative;width:auto;height:auto;
-  max-width:100%;max-height:100%;object-fit:contain;
+  max-width:95%;max-height:90vh;object-fit:contain;margin:auto;
   opacity:0;transition:opacity .25s ease;
   transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
   will-change:transform
@@ -893,7 +893,7 @@ main{
   text-align:center;color:#fff;font-size:13px;opacity:.8
 }
 
-.lb-close,.gallery-close{
+.gallery-close{
   position:absolute;
   top:12px;
   right:12px;
@@ -910,7 +910,6 @@ main{
   z-index:71;
   padding:0;
 }
-.lb-close{z-index:61}
 
 .attachmodal{
   position:fixed;
@@ -970,7 +969,9 @@ main{
   max-width:100%;
   max-height:58vh;
   display:block;
-  border-radius:var(--radius-s)
+  margin:auto;
+  border-radius:var(--radius-s);
+  object-fit:contain
 }
 
 .attachmodal-body iframe,
@@ -3673,7 +3674,7 @@ window.markNotificationRead=markNotificationRead;
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" aria-label="Fermer">×</button><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <button type="button" class="gallery-close" aria-label="Fermer">×</button>
   <div class="gallery-track" id="galleryTrack"></div>
@@ -5090,23 +5091,14 @@ galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0
 renderGallery();
 $('gallery').hidden=false;
 document.body.style.overflow='hidden';
-try{history.pushState({gallery:true},'');}catch(e){}
+try{history.pushState({galleryOpen:true},'','#gallery');}catch(e){}
 }
 
 function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
-/* Ne pas quitter l'application sur mobile : history.back() pourrait
-   naviguer hors de l'app Capacitor. On revient seulement si l'état
-   galerie a été poussé dans l'historique web (PWA/bureau). */
-try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
-}
-
-function closeLightbox(){
-$('lightbox').hidden=true;
-$('lightboxImg').src='';
-document.body.style.overflow='';
+try{ history.back(); }catch(e){}
 }
 
 function renderGallery(){
@@ -5166,17 +5158,11 @@ renderGallery();
 
 (function(){
  
-  var lb=$('lightbox');
-  
-  lb.addEventListener('click',function(){closeLightbox();closeGallery();});
-  var lbClose=lb.querySelector('.lb-close');
-  if(lbClose) lbClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
-  
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
   var gClose=ge.querySelector('.gallery-close');
-  if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
+  if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeGallery();});
   var ts=0,touchX=0,touchY=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
@@ -5222,13 +5208,16 @@ renderGallery();
       /* Swipe horizontal : changer de photo */
       if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
       /* Swipe vers le bas : fermer la galerie sans quitter l'app */
-      if(dy>100){e.stopPropagation();closeLightbox();closeGallery();return;}
+      if(dy>100){e.stopPropagation();closeGallery();return;}
     }
   },{passive:true});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){
-  var g=$('gallery');
-  if(g&&!g.hidden){closeLightbox();closeGallery();return;}
+  var st=e.state||{};
+  if(st&&st.galleryOpen){
+    var g=$('gallery');
+    if(g&&!g.hidden){closeGallery();return;}
+  }
   var attach=$('attachModal');
   if(attach&&!attach.hidden){closeAttachModal(true);return;}
 });
@@ -5253,7 +5242,6 @@ renderGallery();
       window.Capacitor.Plugins.App.addListener('backButton', function(e){
         /* 1. Galerie, image plein écran ou fenêtre modale : on ferme. */
         if($('gallery') && !$('gallery').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeGallery(); return; }
-        if($('lightbox') && !$('lightbox').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeLightbox(); return; }
         if($('attachModal') && !$('attachModal').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeAttachModal(); return; }
         /* 2. Écran précédent de l'application. */
         if(navStack.depth>0){
@@ -5264,7 +5252,7 @@ renderGallery();
         /* 3. Écran d'accueil : on laisse Android quitter l'application. */
       });
     } else {
-      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
+      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
     }
   }catch(e){}
   
@@ -5328,7 +5316,7 @@ $('attachDownload').addEventListener('click',async function(){
  document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
   if(!$('attachModal').hidden){closeAttachModal();return;}
-  if(!lb.hidden)closeLightbox();
+  if($('gallery')&&!$('gallery').hidden){closeGallery();return;}
   }
  });
  
@@ -8994,12 +8982,21 @@ var repItem=(S.reports||[]).filter(function(x){return x.id===repId;})[0];
 if(!repItem)return;
 
 // Anciens signalements : la pièce était encodée dans le document.
+ var items=[];
  if(repItem.attachmentData){
- openDataUrl(repItem.attachmentData,repItem.attachmentName);
+ var ad=repItem.attachmentData;
+ if(typeof ad==='string'&&ad){
+ items.push({src:ad,name:repItem.attachmentName||'piece-jointe',type:repItem.attachmentType||''});
+ }else if(Array.isArray(ad)){
+ ad.forEach(function(a,i){if(a){items.push({src:a.data||a.uri||a,name:a.name||('attachment'+(i+1)),type:a.type||''});}});
+ }
+ }
+ if(items.length){
+ openGallery(items,0);
  return;
  }
- 
-  if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
+
+ if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
   
   el.disabled=true;
   window.CLOUD.getReportAttachment(repId)
