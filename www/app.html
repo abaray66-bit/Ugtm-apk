@@ -806,63 +806,24 @@ main{
 
 .news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:var(--radius-m);margin:0 0 12px;cursor:zoom-in}
 
-.lightbox{
-  position:fixed;
-  inset:0;
-  z-index:60;
-  background:rgba(0,0,0,.93);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:8px;
-  overflow:hidden;
-  cursor:zoom-out
-}
-
-/* La photo est centrée quelle que soit la taille de la fenêtre
-   (téléphone ou navigateur PC). Le conteneur est un flex dont la
-   largeur et la hauteur sont définies (inset:0) : les pourcentages
-   ci-dessous s'y résolvent correctement. Avec display:grid, la piste
-   implicite restait indéfinie, l'image gardait sa largeur naturelle
-   et débordait vers la droite — d'où l'impression de décalage. */
-.lightbox img{
-  display:block;
-  margin:auto;
-  width:auto;
-  height:auto;
-  max-width:100%;
-  max-height:calc(100% - 16px);
-  object-fit:contain;
-  border-radius:var(--radius-s)
-}
-
-.lightbox .lb-hint{
-  position:absolute;
-  bottom:18px;
-  left:0;
-  right:0;
-  text-align:center;
-  color:#fff;
-  font-size:13px;
-  opacity:.75
-}
-
 .news-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;justify-content:center}
-.news-thumbs img{width:70px;height:70px;object-fit:contain;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent;background:#fff}
+.news-thumbs img{width:70px;height:70px;object-fit:cover;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent}
 .news-thumbs img.active{border-color:var(--accent)}
 
 .gallery{
   position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:70;background:rgba(0,0,0,.9);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .gallery-track{
-  position:relative;width:100%;height:100%;max-height:90vh;
-  display:flex;align-items:center;justify-content:center
+  display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;scroll-snap-stop:always;
+  width:max-content;height:auto;align-items:center;justify-content:center;
 }
 .gallery-track img{
-  position:relative;width:auto;height:auto;
-  max-width:95%;max-height:90vh;object-fit:contain;margin:auto;
+  scroll-snap-align:center;
+  position:relative;width:auto;height:auto;max-height:none;max-width:none;object-fit:contain;
+  overscroll-behavior:contain;
   opacity:0;transition:opacity .25s ease;
   transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
   will-change:transform
@@ -893,7 +854,7 @@ main{
   text-align:center;color:#fff;font-size:13px;opacity:.8
 }
 
-.gallery-close{
+.lb-close,.gallery-close{
   position:absolute;
   top:12px;
   right:12px;
@@ -910,6 +871,7 @@ main{
   z-index:71;
   padding:0;
 }
+.lb-close{z-index:61}
 
 .attachmodal{
   position:fixed;
@@ -969,9 +931,7 @@ main{
   max-width:100%;
   max-height:58vh;
   display:block;
-  margin:auto;
-  border-radius:var(--radius-s);
-  object-fit:contain
+  border-radius:var(--radius-s)
 }
 
 .attachmodal-body iframe,
@@ -5111,7 +5071,7 @@ var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
 img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+if(i===galleryState.idx) img.style.transform='scale('+galleryState.zoom+')';
 track.appendChild(img);
 });
 counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
@@ -5157,67 +5117,15 @@ renderGallery();
 }
 
 (function(){
- 
-  /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
+  /* Galerie plein écran : nav, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
   ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
   var gClose=ge.querySelector('.gallery-close');
   if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeGallery();});
-  var ts=0,touchX=0,touchY=0;
-  ge.addEventListener('touchstart',function(e){
-    ts=e.timeStamp;
-    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; touchY=(e.touches[0]||e.changedTouches[0]).clientY; galleryState.panStartX=galleryState.tx; galleryState.panStartY=galleryState.ty; galleryState.panning=false; }
-    if(e.touches && e.touches.length===2){
-      var dx2=e.touches[0].clientX-e.touches[1].clientX;
-      var dy2=e.touches[0].clientY-e.touches[1].clientY;
-      galleryState.pinchDist=Math.hypot(dx2,dy2);
-      galleryState.pinchScale=galleryState.zoom||1;
-    }
-  },{passive:true});
-  ge.addEventListener('touchmove',function(e){
-    if(e.touches && e.touches.length===1){
-      e.preventDefault();
-    }
-    if(e.touches && e.touches.length===1 && galleryState.zoom>1){
-      e.preventDefault();
-      var dx=(e.touches[0].clientX-touchX);
-      var dy=(e.touches[0].clientY-touchY);
-      galleryState.tx=galleryState.panStartX+dx;
-      galleryState.ty=galleryState.panStartY+dy;
-      galleryState.panning=true;
-      var img=gt.querySelector('img.active');
-      if(img) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-      return;
-    }
-    if(e.touches && e.touches.length===2 && galleryState.pinchDist){
-      e.preventDefault();
-      var dx2=e.touches[0].clientX-e.touches[1].clientX;
-      var dy2=e.touches[0].clientY-e.touches[1].clientY;
-      var dist=Math.hypot(dx2,dy2);
-      galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
-      var img2=gt.querySelector('img.active');
-      if(img2) img2.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-    }
-  },{passive:false});
-  ge.addEventListener('touchend',function(e){
-    galleryState.pinchDist=0;
-    if(galleryState.panning){ galleryState.panning=false; return; }
-    if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
-      var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
-      var dy=(e.changedTouches[0]||e.changedTouches[0]).clientY-touchY;
-      /* Swipe horizontal : changer de photo */
-      if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
-      /* Swipe vers le bas : fermer la galerie sans quitter l'app */
-      if(dy>100){e.stopPropagation();closeGallery();return;}
-    }
-  },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){
-  var st=e.state||{};
-  if(st&&st.galleryOpen){
-    var g=$('gallery');
-    if(g&&!g.hidden){closeGallery();return;}
-  }
+  var g=$('gallery');
+  if(g&&!g.hidden){closeGallery();return;}
   var attach=$('attachModal');
   if(attach&&!attach.hidden){closeAttachModal(true);return;}
 });
@@ -8982,21 +8890,12 @@ var repItem=(S.reports||[]).filter(function(x){return x.id===repId;})[0];
 if(!repItem)return;
 
 // Anciens signalements : la pièce était encodée dans le document.
- var items=[];
  if(repItem.attachmentData){
- var ad=repItem.attachmentData;
- if(typeof ad==='string'&&ad){
- items.push({src:ad,name:repItem.attachmentName||'piece-jointe',type:repItem.attachmentType||''});
- }else if(Array.isArray(ad)){
- ad.forEach(function(a,i){if(a){items.push({src:a.data||a.uri||a,name:a.name||('attachment'+(i+1)),type:a.type||''});}});
- }
- }
- if(items.length){
- openGallery(items,0);
+ openDataUrl(repItem.attachmentData,repItem.attachmentName);
  return;
  }
-
- if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
+ 
+  if(!window.CLOUD||!window.CLOUD.getReportAttachment)return;
   
   el.disabled=true;
   window.CLOUD.getReportAttachment(repId)
