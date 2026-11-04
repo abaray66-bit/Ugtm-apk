@@ -5097,6 +5097,9 @@ function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
+/* Ne pas quitter l'application sur mobile : history.back() pourrait
+   naviguer hors de l'app Capacitor. On revient seulement si l'état
+   galerie a été poussé dans l'historique web (PWA/bureau). */
 try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
@@ -5174,7 +5177,7 @@ renderGallery();
   ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
   var gClose=ge.querySelector('.gallery-close');
   if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
-  var ts=0,touchX=0;
+  var ts=0,touchX=0,touchY=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
     if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; touchY=(e.touches[0]||e.changedTouches[0]).clientY; galleryState.panStartX=galleryState.tx; galleryState.panStartY=galleryState.ty; galleryState.panning=false; }
@@ -5215,7 +5218,11 @@ renderGallery();
     if(galleryState.panning){ galleryState.panning=false; return; }
     if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
       var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
+      var dy=(e.changedTouches[0]||e.changedTouches[0]).clientY-touchY;
+      /* Swipe horizontal : changer de photo */
       if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
+      /* Swipe vers le bas : fermer la galerie sans quitter l'app */
+      if(dy>100){e.stopPropagation();closeLightbox();closeGallery();return;}
     }
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
