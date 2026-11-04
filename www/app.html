@@ -893,6 +893,25 @@ main{
   text-align:center;color:#fff;font-size:13px;opacity:.8
 }
 
+.lb-close,.gallery-close{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:44px;height:44px;
+  border-radius:50%;
+  border:none;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  font-size:28px;
+  font-weight:700;
+  line-height:1;
+  cursor:pointer;
+  display:grid;place-items:center;
+  z-index:71;
+  padding:0;
+}
+.lb-close{z-index:61}
+
 .attachmodal{
   position:fixed;
   inset:0;
@@ -3654,8 +3673,9 @@ window.markNotificationRead=markNotificationRead;
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" aria-label="Fermer">×</button><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
+  <button type="button" class="gallery-close" aria-label="Fermer">×</button>
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
 </div>
@@ -5080,6 +5100,12 @@ galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom
 try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
+function closeLightbox(){
+$('lightbox').hidden=true;
+$('lightboxImg').src='';
+document.body.style.overflow='';
+}
+
 function renderGallery(){
 var track=$('galleryTrack');
 var counter=$('galleryCounter');
@@ -5140,10 +5166,14 @@ renderGallery();
   var lb=$('lightbox');
   
   lb.addEventListener('click',function(){closeLightbox();closeGallery();});
+  var lbClose=lb.querySelector('.lb-close');
+  if(lbClose) lbClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
   
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
   ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
+  var gClose=ge.querySelector('.gallery-close');
+  if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
