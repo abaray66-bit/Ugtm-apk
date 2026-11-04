@@ -11,6 +11,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   doc,
+  getDoc,
   setDoc,
   updateDoc,
   writeBatch,
@@ -133,4 +134,81 @@ test('un administrateur général conserve l’activation de migration', async (
   await assertSucceeds(updateDoc(doc(db, 'members', uid), {
     status: 'active', memberNo: 'SM-0099', activatedAt: serverTimestamp()
   }));
+});
+
+/* ==========================================================
+   LISTE DES ADMINISTRATEURS (config/admins)
+   Document unique modifiable depuis l'espace administrateur.
+   La liste de secours (bootstrapAdminEmails dans les règles)
+   doit toujours y rester : impossible de se verrouiller.
+   ========================================================== */
+
+const BOOTSTRAP = 'abaray66@gmail.com';
+const SECOND_ADMIN = { email: 'second.admin@example.com', email_verified: true };
+const adminsPayload = (emails) => ({ emails, updatedAt: serverTimestamp() });
+
+test('config/admins : un visiteur non connecté ne peut pas lire la liste', async () => {
+  const db = env.unauthenticatedContext().firestore();
+  await assertFails(getDoc(doc(db, 'config', 'admins')));
+});
+
+test('config/admins : un compte connecté lit la liste (affichage)', async () => {
+  const db = env.authenticatedContext(MEMBER, userToken(MEMBER)).firestore();
+  await assertSucceeds(getDoc(doc(db, 'config', 'admins')));
+});
+
+test('config/admins : un adhérent ne peut pas écrire la liste', async () => {
+  const db = env.authenticatedContext(MEMBER, userToken(MEMBER)).firestore();
+  await assertFails(setDoc(doc(db, 'config', 'admins'), adminsPayload(['pirate@example.com'])));
+});
+
+test('config/admins : un e-mail admin non vérifié est refusé', async () => {
+  const db = env.authenticatedContext('sneaky', { email: BOOTSTRAP, email_verified: false }).firestore();
+  await assertFails(setDoc(doc(db, 'config', 'admins'), adminsPayload([BOOTSTRAP, 'x@example.com'])));
+});
+
+test('config/admins : l’admin crée la liste avec la liste de secours', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertSucceeds(setDoc(doc(db, 'config', 'admins'), adminsPayload([BOOTSTRAP])));
+});
+
+test('config/admins : l’admin ajoute un second administrateur', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertSucceeds(setDoc(doc(db, 'config', 'admins'),
+    adminsPayload([BOOTSTRAP, 'second.admin@example.com']), { merge: true }));
+});
+
+test('config/admins : impossible de retirer la liste de secours', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertFails(setDoc(doc(db, 'config', 'admins'),
+    adminsPayload(['second.admin@example.com']), { merge: true }));
+});
+
+test('config/admins : liste vide refusée', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertFails(setDoc(doc(db, 'config', 'admins'), adminsPayload([])));
+});
+
+test('config/admins : plus de 10 adresses refusé', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  const many = [BOOTSTRAP];
+  for (let i = 0; i < 10; i++) many.push('admin' + i + '@example.com');
+  await assertFails(setDoc(doc(db, 'config', 'admins'), adminsPayload(many)));
+});
+
+test('config/admins : un champ parasite est refusé', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertFails(setDoc(doc(db, 'config', 'admins'), {
+    emails: [BOOTSTRAP], role: 'superuser', updatedAt: serverTimestamp()
+  }));
+});
+
+test('config/admins : la suppression du document est refusée', async () => {
+  const db = env.authenticatedContext('main-admin', ADMIN_TOKEN).firestore();
+  await assertFails(deleteDoc(doc(db, 'config', 'admins')));
+});
+
+test('config/admins : le second admin ajouté est reconnu', async () => {
+  const db = env.authenticatedContext('second-uid', SECOND_ADMIN).firestore();
+  await assertSucceeds(getDoc(doc(db, 'members', MEMBER)));
 });

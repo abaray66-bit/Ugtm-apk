@@ -110,7 +110,7 @@ try {
     return out.sort();
   }
   var dataEmails = emailsOf(read('www/data.js'), /adminEmails\s*:\s*\[([^\]]*)\]/);
-  var rulesEmails = emailsOf(read('firestore.rules'), /function adminEmails\(\)\s*\{\s*return\s*\[([^\]]*)\]/);
+  var rulesEmails = emailsOf(read('firestore.rules'), /function bootstrapAdminEmails\(\)\s*\{\s*return\s*\[([^\]]*)\]/);
   if (!dataEmails || !dataEmails.length) fail('www/data.js (adminEmails)', 'liste introuvable');
   else if (!rulesEmails || !rulesEmails.length) fail('firestore.rules (adminEmails)', 'liste introuvable');
   else if (dataEmails.join('|') !== rulesEmails.join('|')) {

@@ -133,12 +133,25 @@ async function checkRateLimit(adminUid) {
   return { allowed: true, remaining: RATE_LIMIT_MAX_PER_ADMIN - 1, resetAt: now + RATE_LIMIT_WINDOW_MS };
 }
 
-function getAdminEmails() {
+async function getAdminEmails() {
   const envEmails = process.env.ADMIN_EMAILS || '';
-  if (envEmails) {
-    return envEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-  }
-  return ['abaray66@gmail.com'];
+  const list = envEmails
+    ? envEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+    : ['abaray66@gmail.com'];
+
+  // La liste vivante (config/admins) se gère depuis l'application : un
+  // administrateur ajouté là doit aussi pouvoir envoyer des notifications.
+  // En cas d'échec de lecture, la configuration Vercel reste la référence.
+  try {
+    const snap = await getDb().doc('config/admins').get();
+    const stored = snap.exists && Array.isArray(snap.data().emails) ? snap.data().emails : [];
+    for (const raw of stored) {
+      const email = String(raw || '').trim().toLowerCase();
+      if (email && !list.includes(email)) list.push(email);
+    }
+  } catch (e) { /* liste absente ou illisible */ }
+
+  return list;
 }
 
 /* Compte les destinataires potentiels quand la liste de jetons est vide.
@@ -196,7 +209,7 @@ async function notifyAdhesionManagers(requestUid, province, title, messageBody) 
   const auth = getFirebaseApp().auth();
 
   // Administrateurs principaux configurés dans Vercel.
-  for (const email of getAdminEmails()) {
+  for (const email of await getAdminEmails()) {
     try {
       const user = await auth.getUserByEmail(email);
       if (user.uid !== requestUid) managerUids.add(user.uid);
@@ -600,7 +613,7 @@ module.exports = async function handler(req, res) {
       timestamp: new Date().toISOString()
     }));
 
-    const adminEmails = getAdminEmails();
+    const adminEmails = await getAdminEmails();
     const isAdmin = adminEmails.includes((decodedToken.email || '').toLowerCase());
     if (type === 'adhesion_request') {
       if (!targetUid || targetUid !== decodedToken.uid) {

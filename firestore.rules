@@ -7,14 +7,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function adminEmails() {
+    // LISTE DES ADMINISTRATEURS — externalisée dans config/admins.
+    // Deux sources, testées à l'identique dans isAdmin() :
+    //  1. Cette liste de SECOURS, codée en dur : elle garantit que le
+    //     responsable du projet garde toujours la main, même si le
+    //     document config/admins manquait ou était corrompu.
+    //     Elle ne peut pas être vidée depuis l'application.
+    //  2. Le document config/admins, modifiable depuis l'espace
+    //     administrateur, sans redéploiement des règles.
+    function bootstrapAdminEmails() {
       return ['abaray66@gmail.com'];
+    }
+
+    function storedAdminEmails() {
+      return exists(/databases/$(database)/documents/config/admins)
+        ? get(/databases/$(database)/documents/config/admins).data.emails
+        : [];
     }
 
     function isAdmin() {
       return signedIn()
         && request.auth.token.email_verified == true
-        && request.auth.token.email in adminEmails();
+        && (request.auth.token.email in bootstrapAdminEmails()
+            || request.auth.token.email in storedAdminEmails());
     }
 
     function isSubAdmin() {
@@ -46,6 +61,28 @@ service cloud.firestore {
 
     function okText(v, max) {
       return v is string && v.size() <= max;
+    }
+
+    // ==========================================================
+    // LISTE DES ADMINISTRATEURS — document unique config/admins
+    // Lecture réservée aux comptes connectés (elle alimente
+    // l'affichage ; les droits réels restent portés par isAdmin()).
+    // Écriture réservée aux administrateurs, avec trois garde-fous :
+    // la liste de secours doit rester entière (impossible de se
+    // verrouiller), 10 adresses maximum, clés exactes.
+    // ==========================================================
+    match /config/admins {
+      allow read: if signedIn();
+
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['emails', 'updatedAt'])
+        && request.resource.data.emails is list
+        && request.resource.data.emails.size() >= 1
+        && request.resource.data.emails.size() <= 10
+        && request.resource.data.emails.hasAll(bootstrapAdminEmails())
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
     }
 
     match /members/{uid} {
