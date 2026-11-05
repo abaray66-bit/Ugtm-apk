@@ -5026,6 +5026,33 @@ function fmtTime(t){
 return lang==='fr'?String(t).replace(':','h'):t;
 }
 
+function newsTime(item){
+var ms=+(item&&item.createdAt||0);
+if(!ms)return '';
+var d=new Date(ms);
+if(isNaN(d.getTime()))return '';
+var h=d.getHours(),m=d.getMinutes();
+var t=(h<10?'0':'')+h+':' +(m<10?'0':'')+m;
+return fmtTime(t);
+}
+
+function fmtNewsDate(item,withDay){
+var base=item&&item.date?fmtDate(item.date,withDay):'';
+var tm=newsTime(item);
+return tm?(base?base+' – '+tm:tm):base;
+}
+
+function fmtNewsDateFr(item){
+var base=item&&item.date?fmtDateFr(item.date):'';
+var ms=+(item&&item.createdAt||0);
+if(!ms)return base;
+var d=new Date(ms);
+if(isNaN(d.getTime()))return base;
+var h=d.getHours(),m=d.getMinutes();
+var tm=(h<10?'0':'')+h+'h'+(m<10?'0':'')+m;
+return base?base+' – '+tm:tm;
+}
+
 function provName(v,l){
 var f=PROVS.filter(function(p){
 return p.v===v;
@@ -6131,7 +6158,7 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
 tagHTML(c)+
 audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
+'<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
 '<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
@@ -6209,7 +6236,7 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 '<span class="meta">'+
 tagHTML(c)+
 audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
+'<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
 '<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+'</span>'+
@@ -6979,7 +7006,7 @@ return '<li class="mrow">'+
 '<strong'+rtlAttr(titleFor(c))+'>'+esc(titleFor(c))+'</strong>'+
 
 '<span>'+
-fmtDateFr(c.date)+
+fmtNewsDateFr(c)+
 ' – '+
 esc(cat)+
 (c.audience==='members'
