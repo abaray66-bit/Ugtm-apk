@@ -860,14 +860,17 @@ main{
   position:relative;width:100%;height:100%;max-height:90vh;
   display:flex;align-items:center;justify-content:center
 }
-.gallery-track img{
-  position:relative;width:auto;height:auto;
+.gallery-frame{
+  position:relative;display:inline-block;max-width:100%;max-height:100%
+}
+.gallery-frame img{
+  display:block;width:auto;height:auto;
   max-width:100%;max-height:100%;object-fit:contain;
   opacity:0;transition:opacity .25s ease;
   transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
   will-change:transform
 }
-.gallery-track img.active{opacity:1;transform:scale(1)}
+.gallery-frame img.active{opacity:1;transform:scale(1)}
 .gallery-btn{
   position:absolute;top:50%;transform:translateY(-50%);
   width:44px;height:44px;border-radius:50%;
@@ -875,8 +878,8 @@ main{
   font-size:24px;cursor:pointer;z-index:10;
   display:flex;align-items:center;justify-content:center
 }
-.gallery-prev{left:12px}
-.gallery-next{right:12px}
+.gallery-prev{left:-60px}
+.gallery-next{right:-60px}
 @media (max-width:768px){
   .gallery-prev,.gallery-next{display:none}
 }
@@ -3679,8 +3682,6 @@ window.markNotificationRead=markNotificationRead;
 </button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" aria-label="Fermer">×</button><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <button type="button" class="gallery-close" aria-label="Fermer">×</button>
-  <button type="button" class="gallery-btn gallery-prev" aria-label="Photo précédente">‹</button>
-  <button type="button" class="gallery-btn gallery-next" aria-label="Photo suivante">›</button>
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
 </div>
@@ -5121,16 +5122,34 @@ function renderGallery(){
 var track=$('galleryTrack');
 var counter=$('galleryCounter');
 if(!track||!counter)return;
-track.innerHTML='';
+var old=track.querySelector('.gallery-frame');
+if(old)old.remove();
 if(galleryState.items.length===0){counter.textContent='0 / 0';return;}
 var i=galleryState.idx;
 var it=galleryState.items[i];
+var frame=document.createElement('div');
+frame.className='gallery-frame';
 var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
 img.className='active';
 img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-track.appendChild(img);
+frame.appendChild(img);
+var bPrev=document.createElement('button');
+bPrev.type='button';
+bPrev.className='gallery-btn gallery-prev';
+bPrev.setAttribute('aria-label','Photo précédente');
+bPrev.textContent='‹';
+bPrev.addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
+var bNext=document.createElement('button');
+bNext.type='button';
+bNext.className='gallery-btn gallery-next';
+bNext.setAttribute('aria-label','Photo suivante');
+bNext.textContent='›';
+bNext.addEventListener('click',function(e){e.stopPropagation();galleryNext();});
+frame.appendChild(bPrev);
+frame.appendChild(bNext);
+track.appendChild(frame);
 counter.textContent=(i+1)+' / '+galleryState.items.length;
 }
 
@@ -5192,10 +5211,6 @@ renderGallery();
   });
   var gClose=ge.querySelector('.gallery-close');
   if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeGallery();});
-  var gPrev=ge.querySelector('.gallery-prev');
-  if(gPrev) gPrev.addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
-  var gNext=ge.querySelector('.gallery-next');
-  if(gNext) gNext.addEventListener('click',function(e){e.stopPropagation();galleryNext();});
 
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
