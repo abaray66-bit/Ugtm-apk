@@ -6276,7 +6276,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6356,7 +6356,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+'</span>'+
+'<span class="tt'+rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'</span>'+
 
 '</span>'+
 
@@ -7120,7 +7120,7 @@ return '<li class="mrow">'+
 
 '<div class="mi">'+
 
-'<strong'+rtlAttr(titleFor(c))+'>'+esc(titleFor(c))+'</strong>'+
+'<strong'+rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'>'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'</strong>'+
 
 '<span>'+
 fmtDateFr(c.date)+
