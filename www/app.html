@@ -6355,6 +6355,12 @@ function openNotificationTarget(type,id){
     setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
     return true;
   }
+  if(targetType==='adhesion'){
+    if(!S.isAdmin&&!S.isSubAdmin)return false;
+    go('me');
+    openAdhesionDossier(targetId,false);
+    return true;
+  }
   return false;
 }
 window.openNotificationTarget=openNotificationTarget;
@@ -9927,6 +9933,8 @@ initScreenHistory();
 applyI18n();
 
 go('home');
+
+processPendingNotificationTarget();
 
 /* Version de l'application : le manifeste OTA embarqué est lu
    au démarrage pour que le message de partage porte le numéro
