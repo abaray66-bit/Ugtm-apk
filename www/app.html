@@ -6287,7 +6287,7 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
 tagHTML(c)+
 audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
+'<time>'+fmtDate(c.date)+(c.time?' '+fmtTime(c.time):'')+'</time>'+
 '</span>'+
 
 '<span class="tt'+(rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))?' rtl':'')+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+(c.hasImage?' 📷':'')+'</span>'+
