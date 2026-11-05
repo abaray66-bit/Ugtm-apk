@@ -33,7 +33,7 @@ function notificationTargetUrl(data){
   }
   var type=String(info.notificationType||info.targetType||'');
   var id=String(info.notificationId||info.targetId||'');
-  if((type==='news'||type==='event')&&id){
+  if((type==='news'||type==='event'||type==='adhesion')&&id){
     target.searchParams.set('notificationType',type);
     target.searchParams.set('notificationId',id);
   }
