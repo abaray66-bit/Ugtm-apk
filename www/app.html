@@ -5080,6 +5080,7 @@ el.classList.remove('show');
 
 var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
 var galleryHistoryOpen=false;
+var galleryPopstateGuard=false;
 
 function openGallery(items,startIdx,opts){
 if(!items||!items.length)return;
@@ -5104,7 +5105,9 @@ document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
 if(galleryHistoryOpen){
   galleryHistoryOpen=false;
+  galleryPopstateGuard=true;
   try{history.back();}catch(e){}
+  setTimeout(function(){ galleryPopstateGuard=false; },200);
 }
 }
 
@@ -5219,6 +5222,10 @@ renderGallery();
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
 document.addEventListener('popstate',function(e){
+if(galleryPopstateGuard){
+  galleryPopstateGuard=false;
+  return;
+}
 var g=$('gallery');
 if(g&&!g.hidden){
 /* Le navigateur a déjà retiré l'état galerie de l'historique.
