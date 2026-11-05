@@ -6281,7 +6281,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+(rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))?' rtl':'')+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6361,7 +6361,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'</span>'+
+'<span class="tt'+(rtlAttr(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))?' rtl':'')+'">'+esc(titleFor(c)||(lang==='ar'?'بدون عنوان':'Sans titre'))+'</span>'+
 
 '</span>'+
 
