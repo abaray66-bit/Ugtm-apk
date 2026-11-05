@@ -5049,9 +5049,21 @@ contacts.forEach(function(c){
 html+="</ul>";
 box.innerHTML=html;
 }
+function newsSortTime(item){
+var ms=+(item&&item.createdAt||0);
+if(ms)return ms;
+var d=String(item&&item.date||'');
+return d?/^\d{4}-\d{2}-\d{2}$/.test(d)?Date.parse(d+'T00:00:00Z')||0:Date.parse(d)||0:0;
+}
 function sortedNews(){
 return NEWS.slice().sort(function(a,b){
-return a.date<b.date?1:(a.date>b.date?-1:0);
+var ad=String(a&&a.date||''),bd=String(b&&b.date||'');
+if(ad<bd)return 1;
+if(ad>bd)return -1;
+var at=newsSortTime(a),bt=newsSortTime(b);
+if(at<bt)return 1;
+if(at>bt)return -1;
+return String(b&&b.id||'')<String(a&&a.id||'')?-1:(String(b&&b.id||'')>String(a&&a.id||'')?1:0);
 });
 }
 
@@ -6103,26 +6115,11 @@ if(headBox)headBox.textContent=fallback?T().lastEventT:T().nextT;
 $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
-/* Accueil : les publications récentes de CHAQUE rubrique, pas seulement
-   les communiqués. Les rubriques sans publication visible pour
-   l'utilisateur sont omises ; l'ordre suit la nomenclature
-   institutionnelle. */
-var groups=CATS_ORDER.map(function(k){
+/* Accueil : publications récentes, toutes rubriques confondues, triées
+   par date puis par heure de création (les plus récentes d'abord). */
+var recentItems=sortedNews().slice(0,6);
 
-return {
-key:k,
-items:sortedNews().filter(function(c){return c.cat===k;}).slice(0,3)
-};
-
-}).filter(function(g){return g.items.length;});
-
-var recentHtml='';
-
-groups.forEach(function(g){
-
-recentHtml+='<li class="rgroup">'+esc(CATS[g.key][lang]||CATS[g.key].fr)+'</li>';
-
-recentHtml+=g.items.map(function(c){
+var recentHtml=recentItems.map(function(c){
 
 return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
@@ -6146,8 +6143,6 @@ audTag(c)+
 '</li>';
 
 }).join('');
-
-});
 
 $('recentList').innerHTML=recentHtml
 

@@ -141,6 +141,7 @@ function subscribeNews(){
             cat: x.cat,
             audience: x.audience,
             date: x.date,
+            createdAt: ms(x.createdAt),
             image: x.image || '',
             hasImage: !!(x.hasImage || x.image),
             fr: x.fr,
