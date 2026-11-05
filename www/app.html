@@ -3792,6 +3792,8 @@ adhSaveError:`Impossible d’enregistrer la demande.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`Signer et valider`,
 admGeneratePdf:`Générer le PDF`,
+admSharePdf:`Partager le PDF sur WhatsApp`,
+admSharePdfMsg:`Pièce jointe : PDF d'adhésion UGTM (fiche signée et validée).`,
 admSignTitle:`Signature électronique du responsable`,
 admDossierTitle:`Dossier d’adhésion`,
 admViewDossier:`Consulter`,
@@ -4334,6 +4336,8 @@ adhSaveError:`تعذر تسجيل الطلب.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`التوقيع والمصادقة`,
 admGeneratePdf:`إنشاء ملف PDF`,
+admSharePdf:`مشاركة ملف PDF عبر واتساب`,
+admSharePdfMsg:`مرفق: ملف PDF انخراط UGTM (طلب موقع ومصدق عليه).`,
 admSignTitle:`التوقيع الإلكتروني للمسؤول`,
 admDossierTitle:`ملف الانخراط`,
 admViewDossier:`استعراض`,
@@ -4388,6 +4392,8 @@ adhSaveError:`تعذر تسجيل الطلب.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`التوقيع والمصادقة`,
 admGeneratePdf:`إنشاء ملف PDF`,
+admSharePdf:`مشاركة ملف PDF عبر واتساب`,
+admSharePdfMsg:`مرفق: ملف PDF انخراط UGTM (طلب موقع ومصدق عليه).`,
 admSignTitle:`التوقيع الإلكتروني للمسؤول`,
 admDossierTitle:`ملف الانخراط`,
 admViewDossier:`استعراض`,
@@ -7325,10 +7331,11 @@ el.innerHTML=list.length?list.map(function(a){
        actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
        actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
      }
-     /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
-     if(a.status==='accepted'&&a.signed){
-       actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
-     }
+      /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
+      if(a.status==='accepted'&&a.signed){
+        actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
+        actions+='<button type="button" class="btn ghost small" data-adm-act="shareAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admSharePdf)+'</button>';
+      }
      /* Suppression du dossier : administrateur général seulement (les
         règles Firestore n'autorisent la suppression qu'à l'admin). Elle
         emporte le PDF signé et les deux signatures. */
@@ -7671,6 +7678,68 @@ function generateAdhesionPdfForAdmin(id){
     .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
   })
   .catch(function(err){
+    toast(t.admPdfErr+(err&&err.message?' — '+err.message:''),6000);
+  })
+  .then(function(){delete pdfJobs[id];});
+}
+
+/* Partage du PDF officiel d'une adhésion sur WhatsApp :
+   génère le PDF (ou le récupère s'il est déjà stocké), l'écrit dans le
+   cache de l'appareil, puis l'ouvre dans le dialogue de partage système
+   pour que l'administrateur puisse choisir WhatsApp. */
+function shareAdhesionPdf(id){
+  var t=T();
+  var c=cloud();
+  if(!c||!c.getAdhesionDoc){toast(t.adhServiceUnavailable,5000);return;}
+  if(pdfJobs[id])return;
+  pdfJobs[id]=true;
+  toast(t.admPdfGenerating,3500);
+
+  c.getAdhesionDoc(id)
+  .then(function(doc){
+    if(!doc)throw new Error(t.admPdfErr);
+    if(doc.status!=='accepted'||!doc.adminSignature)
+    throw new Error(t.admPdfOnlyValidated);
+    var fileName=adhesionPdfFileName(doc);
+    return c.getSavedAdhesionPdf(id)
+    .then(function(saved){
+      if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
+      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+      doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      if(typeof window.generateAdhesionPdf!=='function')
+      throw new Error('PDF indisponible');
+      return window.generateAdhesionPdf(doc).then(function(b64){
+        if(!b64)throw new Error(t.admPdfErr);
+        return c.saveAdhesionPdf(id,b64,fileName)
+        .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
+        .then(function(){return{fresh:b64,fileName:fileName};});
+      });
+    });
+  })
+  .then(function(res){
+    var b64=res.stored||res.fresh;
+    if(!b64)throw new Error(t.admPdfErr);
+    var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+    var plugins=window.Capacitor&&window.Capacitor.Plugins;
+    var fs=isNative&&plugins?plugins.Filesystem:null;
+    var share=isNative&&plugins?plugins.Share:null;
+    if(!(fs&&fs.writeFile&&share&&typeof share.share==='function'))
+    throw new Error('Partage indisponible');
+    /* Écrit le PDF dans le cache pour obtenir un URI partageable. */
+    return fs.writeFile({path:fileName,data:b64,directory:'CACHE'})
+    .then(function(saved){
+      var uri=(saved&&saved.uri)?String(saved.uri):'';
+      if(!uri)throw new Error('URI PDF introuvable');
+      return share.share({files:[uri],dialogTitle:fileName,text:t.admSharePdfMsg||'PDF d\'adhésion UGTM'});
+    });
+  })
+  .catch(function(err){
+    /* Si le partage natif échoue, repli sur WhatsApp texte uniquement. */
+    if(err&&/Partage indisponible|URI PDF introuvable/.test(err&&err.message)){
+      var msg=String(t.admSharePdfMsg||'PDF d\'adhésion UGTM')+'\n'+publicAppUrl();
+      shareTextFallback(msg);
+      return;
+    }
     toast(t.admPdfErr+(err&&err.message?' — '+err.message:''),6000);
   })
   .then(function(){delete pdfJobs[id];});
@@ -9233,6 +9302,10 @@ openAdhesionDossier(id,false);
 
 else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
 generateAdhesionPdfForAdmin(id);
+}
+
+else if(a==='shareAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+shareAdhesionPdf(id);
 }
 
 else if(a==='delAdhesion'&&S.isAdmin){
