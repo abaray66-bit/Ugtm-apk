@@ -5052,7 +5052,8 @@ box.innerHTML=html;
 }
 function sortedNews(){
 return NEWS.slice().sort(function(a,b){
-return a.date<b.date?1:(a.date>b.date?-1:0);
+if(a.date!==b.date)return a.date<b.date?1:-1;
+return(b.createdAt||0)-(a.createdAt||0);
 });
 }
 
