@@ -5052,7 +5052,9 @@ box.innerHTML=html;
 }
 function sortedNews(){
 return NEWS.slice().map(function(c,i){return{c:c,i:i};}).sort(function(a,b){
-if(a.c.date!==b.c.date)return a.c.date<b.c.date?1:-1;
+var da=a.c.date+(a.c.time||'');
+var db=b.c.date+(b.c.time||'');
+if(da!==db)return da<db?1:-1;
 return a.i-b.i;
 }).map(function(x){return x.c;});
 }
@@ -6263,26 +6265,14 @@ if(headBox)headBox.textContent=fallback?T().lastEventT:T().nextT;
 $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
-/* Accueil : les publications récentes de CHAQUE rubrique, pas seulement
-   les communiqués. Les rubriques sans publication visible pour
-   l'utilisateur sont omises ; l'ordre suit la nomenclature
-   institutionnelle. */
-var groups=CATS_ORDER.map(function(k){
-
-return {
-key:k,
-items:sortedNews().filter(function(c){return c.cat===k;}).slice(0,3)
-};
-
-}).filter(function(g){return g.items.length;});
+/* Accueil : publications récentes par ordre chronologique décroissant,
+   quel que soit la catégorie. L'ordre par rubrique est réservé à la page
+   « Publications ». */
+var recent=sortedNews().slice(0,6);
 
 var recentHtml='';
 
-groups.forEach(function(g){
-
-recentHtml+='<li class="rgroup">'+esc(CATS[g.key][lang]||CATS[g.key].fr)+'</li>';
-
-recentHtml+=g.items.map(function(c){
+recentHtml+=recent.map(function(c){
 
 return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
@@ -6306,8 +6296,6 @@ audTag(c)+
 '</li>';
 
 }).join('');
-
-});
 
 $('recentList').innerHTML=recentHtml
 
