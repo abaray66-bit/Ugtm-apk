@@ -5052,6 +5052,8 @@ box.innerHTML=html;
 }
 function sortedNews(){
 return NEWS.slice().map(function(c,i){return{c:c,i:i};}).sort(function(a,b){
+var ca=a.c.createdAt||0, cb=b.c.createdAt||0;
+if(ca!==cb)return cb-ca;
 var da=a.c.date+(a.c.time||'');
 var db=b.c.date+(b.c.time||'');
 if(da!==db)return da<db?1:-1;
