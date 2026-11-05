@@ -10422,8 +10422,13 @@ window.UGTM.failed(err);
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
-          var signer=(request&&request.signerRoleLabel)?String(request.signerRoleLabel)
-            :((request&&request.signedByRole==='subadmin')?'Responsable provincial':'Administrateur');
+          var signedBy = request && request.signedBy ? String(request.signedBy) : '';
+          var signerMember = (S.members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
+          var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
+          var isRegionalAdmin = S.isAdmin && !S.isSubAdmin;
+          var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
+          var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
+          var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
           var validationDate='';
           if(request&&request.signedAt){
             try{
