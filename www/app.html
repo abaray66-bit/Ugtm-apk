@@ -4967,10 +4967,11 @@ function titleFr(o){
 return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
 }
 
-/* Titre d'une publication / d'un événement : l'arabe s'affiche en priorité
-   (alignement RTL automatique via rtlAttr), repli sur le français si absent. */
+/* Titre d'une publication / d'un événement dans la langue de l'interface
+   (repli sur l'autre langue quand la version courante manque). */
 function titleFor(o){
-  return(o.ar&&o.ar.t)||(o.fr&&o.fr.t)||'';
+  if(lang==='ar')return(o.ar&&o.ar.t)||(o.fr&&o.fr.t)||'';
+  return(o.fr&&o.fr.t)||(o.ar&&o.ar.t)||'';
 }
 
 /* Un texte est considéré comme arabe quand ses lettres arabes sont au
