@@ -5051,10 +5051,10 @@ html+="</ul>";
 box.innerHTML=html;
 }
 function sortedNews(){
-return NEWS.slice().sort(function(a,b){
-if(a.date!==b.date)return a.date<b.date?1:-1;
-return(b.createdAt||0)-(a.createdAt||0);
-});
+return NEWS.slice().map(function(c,i){return{c:c,i:i};}).sort(function(a,b){
+if(a.c.date!==b.c.date)return a.c.date<b.c.date?1:-1;
+return a.i-b.i;
+}).map(function(x){return x.c;});
 }
 
 function upcoming(){
