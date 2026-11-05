@@ -6266,7 +6266,8 @@ $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
 /* Accueil : publications récentes par ordre chronologique décroissant,
-   quel que soit la catégorie. L'ordre par rubrique est réservé à la page
+   quel que soit la catégorie. Pas de libellé de catégorie intermédiaire
+   sur l'accueil ; l'ordre par rubrique est réservé à la page
    « Publications ». */
 var recent=sortedNews().slice(0,6);
 
