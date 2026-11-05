@@ -5053,6 +5053,8 @@ box.innerHTML=html;
 function sortedNews(){
 return NEWS.slice().map(function(c,i){return{c:c,i:i};}).sort(function(a,b){
 var ca=a.c.createdAt||0, cb=b.c.createdAt||0;
+if(ca&&ca.seconds)ca=ca.seconds;
+if(cb&&cb.seconds)cb=cb.seconds;
 if(ca!==cb)return cb-ca;
 var da=a.c.date+(a.c.time||'');
 var db=b.c.date+(b.c.time||'');
