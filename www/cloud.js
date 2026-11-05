@@ -121,10 +121,11 @@ function subscribeNews(){
   unsub('news');
 
   var q = mode === 'all'
-    ? collection(db, 'news')
+    ? query(collection(db, 'news'), orderBy('date', 'desc'))
     : query(
         collection(db, 'news'),
-        where('audience', '==', 'public')
+        where('audience', '==', 'public'),
+        orderBy('date', 'desc')
       );
 
   unsubs.news = onSnapshot(
