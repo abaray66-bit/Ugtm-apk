@@ -146,6 +146,14 @@ button,input,select,textarea{
   text-align:right;
   unicode-bidi:plaintext
 }
+/* Titre arabe dans une interface française : le span tt est inline,
+   on le force en bloc-en-ligne pleine largeur pour que text-align:right
+   s'applique visuellement malgré le conteneur .head en text-align:start. */
+.tt.rtl{
+  display:inline-block;
+  width:100%;
+  text-align:right
+}
 
 .app{
   max-width:480px;
