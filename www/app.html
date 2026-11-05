@@ -5213,13 +5213,17 @@ renderGallery();
       var dy2=e.touches[0].clientY-e.touches[1].clientY;
       galleryState.pinchDist=Math.hypot(dx2,dy2);
       galleryState.pinchScale=galleryState.zoom||1;
+      galleryState.panStartX=galleryState.tx;
+      galleryState.panStartY=galleryState.ty;
     }
   },{passive:true});
 
   ge.addEventListener('touchend',function(e){
     lastTouchEnd=e.timeStamp;
+    var wasPinching=!!galleryState.pinchDist;
     galleryState.pinchDist=0;
     if(galleryState.panning){ galleryState.panning=false; return; }
+    if(wasPinching && galleryState.zoom===1){ galleryState.tx=0; galleryState.ty=0; }
     if(e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
       var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
       var dy=(e.changedTouches[0]||e.changedTouches[0]).clientY-touchY;
@@ -5274,6 +5278,7 @@ renderGallery();
       var dy2=e.touches[0].clientY-e.touches[1].clientY;
       var dist=Math.hypot(dx2,dy2);
       galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
+      galleryState.tx=0; galleryState.ty=0;
       var img2=gt.querySelector('img.active');
       if(img2) img2.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
     }
@@ -6762,10 +6767,10 @@ return '<li class="mrow"><div class="mi">'+
 '<strong>'+esc(reportCategoryLabelI18n(r.category))+' · '+esc(reportStatusLabelI18n(r.status))+'</strong>'+
 (head?'<span>'+esc(head)+'</span>':'')+
 (r.etab?'<span>'+esc(r.etab)+'</span>':'')+
-'<span>'+esc(r.description||'')+'</span>'+
+'<span'+rtlAttr(r.description||'')+'>'+esc(r.description||'')+'</span>'+
 ((r.attachmentCount>0||r.attachmentName)?'<button type="button" class="btn ghost small" data-attach="'+esc(r.id)+'">📎 '+(r.attachmentName||'Pièces jointes')+'</button>':'')+
 '<button type="button" class="btn ghost small" data-share-report="'+esc(r.id)+'">'+esc(t.share)+'</button>'+
-(r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> '+esc(r.response)+'</span>':'')+
+(r.response?'<span><strong>'+esc(t.meReportsResp)+'</strong> <span'+rtlAttr(r.response||'')+'>'+esc(r.response)+'</span></span>':'')+
 '</div></li>';
 }).join('');
 }
