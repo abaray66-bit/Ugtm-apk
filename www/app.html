@@ -5097,7 +5097,6 @@ function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
-try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
 function renderGallery(){
