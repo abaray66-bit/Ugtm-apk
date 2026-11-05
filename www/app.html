@@ -6266,22 +6266,15 @@ $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
 /* Accueil : publications récentes par ordre chronologique décroissant,
-   quel que soit la catégorie. Le libellé de catégorie s'affiche quand
-   la catégorie change. L'ordre par rubrique est réservé à la page
+   quel que soit la catégorie. L'ordre par rubrique est réservé à la page
    « Publications ». */
 var recent=sortedNews().slice(0,6);
 
 var recentHtml='';
-var lastCat=null;
 
 recentHtml+=recent.map(function(c){
 
-var out='';
-if(c.cat!==lastCat){
-lastCat=c.cat;
-out+='<li class="rgroup">'+esc(CATS[c.cat][lang]||CATS[c.cat].fr)+'</li>';
-}
-out+='<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
+return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
 '<button type="button" class="head" data-open="'+esc(c.id)+'">'+
 
@@ -6301,8 +6294,6 @@ audTag(c)+
 '</button>'+
 
 '</li>';
-
-return out;
 
 }).join('');
 
