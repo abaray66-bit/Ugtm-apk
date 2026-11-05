@@ -5084,6 +5084,8 @@ el.classList.remove('show');
 }
 
 var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
+var galleryHistoryOpen=false;
+var galleryPopstateGuard=false;
 
 function openGallery(items,startIdx,opts){
 if(!items||!items.length)return;
@@ -5095,12 +5097,23 @@ galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0
 renderGallery();
 $('gallery').hidden=false;
 document.body.style.overflow='hidden';
+var state=Object.assign({},history.state||{},{ugtmGallery:true});
+try{
+  history.pushState(state,'');
+  galleryHistoryOpen=true;
+}catch(e){}
 }
 
 function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
+if(galleryHistoryOpen){
+  galleryHistoryOpen=false;
+  galleryPopstateGuard=true;
+  try{history.back();}catch(e){}
+  setTimeout(function(){ galleryPopstateGuard=false; },200);
+}
 }
 
 function renderGallery(){
@@ -5224,8 +5237,22 @@ renderGallery();
   },{passive:true});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){
-  var attach=$('attachModal');
-  if(attach&&!attach.hidden){closeAttachModal(true);return;}
+if(galleryPopstateGuard){
+  galleryPopstateGuard=false;
+  return;
+}
+var g=$('gallery');
+if(g&&!g.hidden){
+/* Le navigateur a déjà retiré l'état galerie de l'historique (swipe de bord).
+   On masque juste la galerie, pas de history.back() supplémentaire. */
+$('gallery').hidden=true;
+document.body.style.overflow='';
+galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
+galleryHistoryOpen=false;
+return;
+}
+var attach=$('attachModal');
+if(attach&&!attach.hidden){closeAttachModal(true);return;}
 });
   document.addEventListener('click',function(e){
     var btn=e.target && e.target.closest ? e.target.closest('#meBtn') : null;
