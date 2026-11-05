@@ -3349,8 +3349,10 @@ window.markNotificationRead=markNotificationRead;
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
         <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
-        <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><input id="adhFunction" required></div>
-        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><input id="adhSpecialty"></div>
+        <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
+        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail"></div>
+        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option><option value="general_practitioner" data-i18n="adhSpecialtyGeneralPractitioner"></option><option value="specialist_physician" data-i18n="adhSpecialtySpecialistPhysician"></option><option value="pharmacist" data-i18n="adhSpecialtyPharmacist"></option><option value="dentist" data-i18n="adhSpecialtyDentist"></option><option value="general_nurse" data-i18n="adhSpecialtyGeneralNurse"></option><option value="specialized_nurse" data-i18n="adhSpecialtySpecializedNurse"></option><option value="midwife" data-i18n="adhSpecialtyMidwife"></option><option value="health_technician" data-i18n="adhSpecialtyHealthTechnician"></option><option value="lab_technician" data-i18n="adhSpecialtyLabTechnician"></option><option value="radiology_technician" data-i18n="adhSpecialtyRadiologyTechnician"></option><option value="physiotherapist" data-i18n="adhSpecialtyPhysiotherapist"></option><option value="psychologist" data-i18n="adhSpecialtyPsychologist"></option><option value="dietitian" data-i18n="adhSpecialtyDietitian"></option><option value="administrator" data-i18n="adhSpecialtyAdministrator"></option><option value="engineer" data-i18n="adhSpecialtyEngineer"></option><option value="it_technician" data-i18n="adhSpecialtyITTechnician"></option><option value="secretary" data-i18n="adhSpecialtySecretary"></option><option value="administrative_assistant" data-i18n="adhSpecialtyAdministrativeAssistant"></option><option value="maintenance_staff" data-i18n="adhSpecialtyMaintenanceStaff"></option><option value="other" data-i18n="adhSpecialtyOtherCat"></option></select></div>
+        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther"></div>
         <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr"></div>
       </div>
     </div>
@@ -3705,7 +3707,33 @@ heroShare:`Partager l'application`,
 adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
-adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Spécialité`, adhPpr:`PPR`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`,
+adhFunctionChoose:`Choisir une fonction`,
+adhFunctionToSpecify:`Fonction à préciser`,
+adhFunctionNone:`Sans fonction`,
+adhFunctionDetail:`Préciser votre fonction`,
+adhSpecialtyChoose:`Sélectionner une catégorie professionnelle`,
+adhSpecialtyGeneralPractitioner:`Médecin généraliste`,
+adhSpecialtySpecialistPhysician:`Médecin spécialiste`,
+adhSpecialtyPharmacist:`Pharmacien`,
+adhSpecialtyDentist:`Chirurgien-dentiste`,
+adhSpecialtyGeneralNurse:`Infirmier polyvalent`,
+adhSpecialtySpecializedNurse:`Infirmier spécialisé`,
+adhSpecialtyMidwife:`Sage-femme`,
+adhSpecialtyHealthTechnician:`Technicien de santé`,
+adhSpecialtyLabTechnician:`Technicien de laboratoire`,
+adhSpecialtyRadiologyTechnician:`Technicien de radiologie`,
+adhSpecialtyPhysiotherapist:`Kinésithérapeute`,
+adhSpecialtyPsychologist:`Psychologue`,
+adhSpecialtyDietitian:`Diététicien`,
+adhSpecialtyAdministrator:`Administrateur`,
+adhSpecialtyEngineer:`Ingénieur`,
+adhSpecialtyITTechnician:`Technicien informatique`,
+adhSpecialtySecretary:`Secrétaire`,
+adhSpecialtyAdministrativeAssistant:`Adjoint administratif`,
+adhSpecialtyMaintenanceStaff:`Personnel de maintenance`,
+adhSpecialtyOtherCat:`Autre catégorie professionnelle`,
+adhSpecialtyOther:`Précisez votre catégorie :`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Continuer`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
@@ -4246,7 +4274,33 @@ heroShare:`شاركوا التطبيق`,
 adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
-adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`التخصص`, adhPpr:`PPR`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`,
+adhFunctionChoose:`اختر وظيفة`,
+adhFunctionToSpecify:`وظيفة لتحديد`,
+adhFunctionNone:`بدون وظيفة`,
+adhFunctionDetail:`حدد وظيفتك`,
+adhSpecialtyChoose:`اختر فئة مهنية`,
+adhSpecialtyGeneralPractitioner:`طبيب عام`,
+adhSpecialtySpecialistPhysician:`طبيب متخصص`,
+adhSpecialtyPharmacist:`صيدلي`,
+adhSpecialtyDentist:`جراح أسنان`,
+adhSpecialtyGeneralNurse:`ممرض عام`,
+adhSpecialtySpecializedNurse:`ممرض متخصص`,
+adhSpecialtyMidwife:`قابلة`,
+adhSpecialtyHealthTechnician:`فني صحة`,
+adhSpecialtyLabTechnician:`فني مختبر`,
+adhSpecialtyRadiologyTechnician:`فني أشعة`,
+adhSpecialtyPhysiotherapist:`معالج طبيعي`,
+adhSpecialtyPsychologist:`أخصائي نفسي`,
+adhSpecialtyDietitian:`أخصائي تغذية`,
+adhSpecialtyAdministrator:`إداري`,
+adhSpecialtyEngineer:`مهندس`,
+adhSpecialtyITTechnician:`فني معلوماتية`,
+adhSpecialtySecretary:`سكرتير`,
+adhSpecialtyAdministrativeAssistant:`مساعد إداري`,
+adhSpecialtyMaintenanceStaff:`عامل صيانة`,
+adhSpecialtyOtherCat:`فئة أخرى`,
+adhSpecialtyOther:`حدد الفئة :`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`متابعة`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
@@ -10035,6 +10089,44 @@ window.UGTM.failed(err);
       resetAdhesionForAccount(uid);
       if(!uid)return;
 
+      var fEl=$('adhFunction');
+      var sEl=$('adhSpecialty');
+
+      /* Affichage dynamique des champs conditionnels au changement. */
+      fEl.addEventListener('change',function(){
+        var wrap=$('adhFunctionDetailWrap');
+        var inp=$('adhFunctionDetail');
+        if(fEl.value==='function_to_specify'){
+          wrap.style.display=''; inp.required=true;
+        }else{
+          wrap.style.display='none'; inp.required=false; inp.value='';
+        }
+      });
+      sEl.addEventListener('change',function(){
+        var wrap=$('adhSpecialtyOtherWrap');
+        var inp=$('adhSpecialtyOther');
+        if(sEl.value==='other'){
+          wrap.style.display=''; inp.required=true;
+        }else{
+          wrap.style.display='none'; inp.required=false; inp.value='';
+        }
+      });
+
+      /* Applique l'affichage des champs conditionnels selon la valeur
+         courante des deux selects (appelé après chaque préremplissage). */
+      function applyFieldVisibility(){
+        if(fEl&&fEl.value==='function_to_specify'){
+          $('adhFunctionDetailWrap').style.display=''; $('adhFunctionDetail').required=true;
+        }else{
+          $('adhFunctionDetailWrap').style.display='none'; $('adhFunctionDetail').required=false;
+        }
+        if(sEl&&sEl.value==='other'){
+          $('adhSpecialtyOtherWrap').style.display=''; $('adhSpecialtyOther').required=true;
+        }else{
+          $('adhSpecialtyOtherWrap').style.display='none'; $('adhSpecialtyOther').required=false;
+        }
+      }
+
       var session=adhesionSession();
 
       var member=
@@ -10065,6 +10157,25 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhSpecialty',draft.specialty||'');
           prefillIfEmpty('adhPpr',draft.ppr||'');
         }
+
+        /* Champs conditionnels : fonction de détail et précision de catégorie.
+           Si une ancienne valeur texte ne correspond à aucune option du select,
+           on l'affiche dans le champ de détail correspondant (pas de perte). */
+        if(fEl&&draft.function&&!['function_to_specify','no_function'].includes(draft.function)){
+          fEl.value='function_to_specify';
+          $('adhFunctionDetailWrap').style.display='';
+          $('adhFunctionDetail').value=draft.function;
+        }
+        if(sEl&&draft.specialty&&draft.specialty!=='other'){
+          var found=Array.prototype.some.call(sEl.options,function(o){return o.value===draft.specialty;});
+          if(!found){
+            sEl.value='other';
+            $('adhSpecialtyOtherWrap').style.display='';
+            $('adhSpecialtyOther').value=draft.specialty;
+          }
+        }
+
+        applyFieldVisibility();
       }catch(e){}
 
       prefillIfEmpty('adhPhone',member.phone||'');
@@ -10111,6 +10222,24 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
+
+          /* Compatibilité anciennes demandes : si la valeur texte libre
+             enregistrée ne correspond à aucune option du select, on l'affiche
+             dans le champ de détail correspondant. */
+          if(fEl&&app.function&&!['function_to_specify','no_function'].includes(app.function)){
+            fEl.value='function_to_specify';
+            $('adhFunctionDetailWrap').style.display='';
+            $('adhFunctionDetail').value=app.function;
+          }
+          if(sEl&&app.specialty&&app.specialty!=='other'){
+            var found2=Array.prototype.some.call(sEl.options,function(o){return o.value===app.specialty;});
+            if(!found2){
+              sEl.value='other';
+              $('adhSpecialtyOtherWrap').style.display='';
+              $('adhSpecialtyOther').value=app.specialty;
+            }
+          }
+          applyFieldVisibility();
           if(app.type==='renewal'){
             var rr=document.querySelector('input[name="adhType"][value="renewal"]');
             if(rr)rr.checked=true;
@@ -10549,8 +10678,16 @@ window.UGTM.failed(err);
         province:document.getElementById('adhProvince').value,
         establishment:document.getElementById('adhEstablishment').value.trim(),
         service:document.getElementById('adhService').value.trim(),
-        function:document.getElementById('adhFunction').value.trim(),
-        specialty:document.getElementById('adhSpecialty').value.trim(),
+        function:(function(){
+          var el=$('adhFunction');
+          if(el.value==='function_to_specify')return String($('adhFunctionDetail').value||'').trim()||el.value;
+          return el.value;
+        })(),
+        specialty:(function(){
+          var el=$('adhSpecialty');
+          if(el.value==='other')return String($('adhSpecialtyOther').value||'').trim()||el.value;
+          return el.value;
+        })(),
         ppr:document.getElementById('adhPpr').value.trim(),
         type:type,
         reason:reason,
@@ -10887,8 +11024,6 @@ window.UGTM.failed(err);
       .catch(function(){});
     }
   })();
-
-})();
 </script>
 <style>
 .ota-banner{
