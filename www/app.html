@@ -5100,27 +5100,21 @@ galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom
 try{ if (history.state && history.state.gallery) history.back(); }catch(e){}
 }
 
-function closeLightbox(){
-$('lightbox').hidden=true;
-$('lightboxImg').src='';
-document.body.style.overflow='';
-}
-
 function renderGallery(){
 var track=$('galleryTrack');
 var counter=$('galleryCounter');
 if(!track||!counter)return;
 track.innerHTML='';
-galleryState.items.forEach(function(it,i){
+if(galleryState.items.length===0){counter.textContent='0 / 0';return;}
+var i=galleryState.idx;
+var it=galleryState.items[i];
 var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
-img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+img.className='active';
+img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
 track.appendChild(img);
-});
-counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-/* gallery actions removed */
+counter.textContent=(i+1)+' / '+galleryState.items.length;
 }
 
 function galleryPrev(){
@@ -5162,18 +5156,15 @@ renderGallery();
 }
 
 (function(){
- 
-  var lb=$('lightbox');
-  
-  lb.addEventListener('click',function(){closeLightbox();closeGallery();});
-  var lbClose=lb.querySelector('.lb-close');
-  if(lbClose) lbClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
-  
   /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  ge.addEventListener('click',function(e){if(e.target===ge){closeLightbox();closeGallery();}});
+  ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
   var gClose=ge.querySelector('.gallery-close');
-  if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeLightbox();closeGallery();});
+  if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeGallery();});
+  var gPrev=ge.querySelector('.gallery-prev');
+  if(gPrev) gPrev.addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
+  var gNext=ge.querySelector('.gallery-next');
+  if(gNext) gNext.addEventListener('click',function(e){e.stopPropagation();galleryNext();});
   var ts=0,touchX=0;
   ge.addEventListener('touchstart',function(e){
     ts=e.timeStamp;
@@ -5218,10 +5209,10 @@ renderGallery();
       if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
     }
   },{passive:true});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeLightbox();closeGallery();}});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){
   var g=$('gallery');
-  if(g&&!g.hidden){closeLightbox();closeGallery();return;}
+  if(g&&!g.hidden){closeGallery();return;}
   var attach=$('attachModal');
   if(attach&&!attach.hidden){closeAttachModal(true);return;}
 });
@@ -5246,7 +5237,6 @@ renderGallery();
       window.Capacitor.Plugins.App.addListener('backButton', function(e){
         /* 1. Galerie, image plein écran ou fenêtre modale : on ferme. */
         if($('gallery') && !$('gallery').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeGallery(); return; }
-        if($('lightbox') && !$('lightbox').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeLightbox(); return; }
         if($('attachModal') && !$('attachModal').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeAttachModal(); return; }
         /* 2. Écran précédent de l'application. */
         if(navStack.depth>0){
@@ -5257,7 +5247,7 @@ renderGallery();
         /* 3. Écran d'accueil : on laisse Android quitter l'application. */
       });
     } else {
-      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('lightbox') && !$('lightbox').hidden){ closeLightbox(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
+      document.addEventListener('backbutton', function(){ if($('gallery') && !$('gallery').hidden){ closeGallery(); } else if($('attachModal') && !$('attachModal').hidden){ closeAttachModal(); } });
     }
   }catch(e){}
   
@@ -5321,7 +5311,7 @@ $('attachDownload').addEventListener('click',async function(){
  document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
   if(!$('attachModal').hidden){closeAttachModal();return;}
-  if(!lb.hidden)closeLightbox();
+  if($('gallery')&&!$('gallery').hidden){closeGallery();return;}
   }
  });
  
@@ -6136,7 +6126,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+rtlAttr(titleFor(c).t)+'">'+esc(titleFor(c).t)+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6216,7 +6206,7 @@ audTag(c)+
 '<time>'+fmtDate(c.date)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+'</span>'+
+'<span class="tt'+rtlAttr(titleFor(c).t)+'">'+esc(titleFor(c).t)+'</span>'+
 
 '</span>'+
 
