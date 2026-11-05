@@ -4987,14 +4987,14 @@ return ar.length>=(lat?lat.length:0);
 
 /* Attribut de classe complet, ou chaîne vide. */
 function rtlAttr(s){
-return isArabicText(s)?' class="rtl"':'';
+ return isArabicText(s)?' class="rtl"':'';
 }
 
 function paras(s){
 return String(s||'')
 .split(/\n{2,}/)
 .map(function(p){
-return '<p'+rtlAttr(p)+'>'+esc(p).replace(/\n/g,'<br>')+'</p>';
+return '<p'+(isArabicText(p)?' class="rtl"':'')+'>'+esc(p).replace(/\n/g,'<br>')+'</p>';
 })
 .join('');
 }
@@ -6164,7 +6164,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6242,7 +6242,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(titleFor(c))+'">'+esc(titleFor(c))+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
