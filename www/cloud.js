@@ -1051,7 +1051,7 @@ async function submitAdhesion(application,signature){
   if(clean.type==='first')clean.reason='';
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature est manquante.');
-  if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
   var result = await runTransaction(db,async function(tx){
     var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
@@ -1089,6 +1089,13 @@ async function submitAdhesion(application,signature){
         window.cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
       }
       return result;
+    }).catch(function(e){
+      console.warn('syncMemberPhone:', e);
+      if (!result.completed) {
+        var applicantName = (clean.prenom + ' ' + clean.nom).trim();
+        window.cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
+      }
+      return result;
     });
   });
   return result;
@@ -1106,7 +1113,7 @@ async function signAdhesion(uid,signature,note){
   if(!u) throw new Error('Non connecté');
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature du responsable est manquante.');
-  if(sig.length>180000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
 await updateDoc(doc(db,'adhesionRequests',String(uid)),{
      status:'accepted',
      adminSignature:sig,
