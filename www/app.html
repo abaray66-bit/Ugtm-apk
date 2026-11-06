@@ -148,6 +148,14 @@ button,input,select,textarea{
   text-align:right;
   unicode-bidi:plaintext
 }
+/* Titre arabe dans une interface française : le span tt est inline,
+   on le force en bloc-en-ligne pleine largeur pour que text-align:right
+   s'applique visuellement malgré le conteneur .head en text-align:start. */
+.tt.rtl{
+  display:inline-block;
+  width:100%;
+  text-align:right
+}
 
 .app{
   max-width:480px;
@@ -814,23 +822,63 @@ main{
 
 .news-photo{display:block;width:100%;max-height:320px;object-fit:cover;border-radius:var(--radius-m);margin:0 0 12px;cursor:zoom-in}
 
+.lightbox{
+  position:fixed;
+  inset:0;
+  z-index:60;
+  background:rgba(0,0,0,.93);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px;
+  overflow:hidden;
+  cursor:zoom-out
+}
+
+/* La photo est centrée quelle que soit la taille de la fenêtre
+   (téléphone ou navigateur PC). Le conteneur est un flex dont la
+   largeur et la hauteur sont définies (inset:0) : les pourcentages
+   ci-dessous s'y résolvent correctement. Avec display:grid, la piste
+   implicite restait indéfinie, l'image gardait sa largeur naturelle
+   et débordait vers la droite — d'où l'impression de décalage. */
+.lightbox img{
+  display:block;
+  margin:auto;
+  width:auto;
+  height:auto;
+  max-width:100%;
+  max-height:calc(100% - 16px);
+  object-fit:contain;
+  border-radius:var(--radius-s)
+}
+
+.lightbox .lb-hint{
+  position:absolute;
+  bottom:18px;
+  left:0;
+  right:0;
+  text-align:center;
+  color:#fff;
+  font-size:13px;
+  opacity:.75
+}
+
 .news-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;justify-content:center}
 .news-thumbs img{width:70px;height:70px;object-fit:cover;border-radius:var(--radius-s);cursor:pointer;border:2px solid transparent}
 .news-thumbs img.active{border-color:var(--accent)}
 
 .gallery{
-  position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.9);
-  display:flex;align-items:center;justify-content:center;
-  padding:env(safe-area-inset-top,12px) env(safe-area-inset-right,12px) env(safe-area-inset-bottom,12px) env(safe-area-inset-left,12px);
-  overflow:auto;touch-action:none;user-select:none;-webkit-user-select:none;
+  position:fixed;inset:0;z-index:70;background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px;touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .gallery-track{
-  position:relative;width:100%;height:100%;max-height:100%;
-  display:flex;align-items:center;justify-content:center;direction:ltr
+  position:relative;width:100%;height:100%;max-height:90vh;
+  display:flex;align-items:center;justify-content:center
 }
 .gallery-track img{
   position:relative;width:auto;height:auto;
-  max-width:100%;max-height:100%;object-fit:contain;margin:auto;
+  max-width:100%;max-height:100%;object-fit:contain;
   opacity:0;transition:opacity .25s ease;
   transform:scale(.92);border-radius:var(--radius-s);cursor:zoom-in;
   will-change:transform
@@ -845,6 +893,9 @@ main{
 }
 .gallery-prev{left:12px}
 .gallery-next{right:12px}
+@media (max-width:768px){
+  .gallery-prev,.gallery-next{display:none}
+}
 .gallery-counter{
   position:absolute;bottom:66px;left:0;right:0;
   text-align:center;color:#fff;font-size:13px;
@@ -3654,11 +3705,11 @@ window.markNotificationRead=markNotificationRead;
 <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>
 </svg><span data-i18n="tabContact"></span>
 
-</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div>
+</button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" aria-label="Fermer">×</button><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <button type="button" class="gallery-close" aria-label="Fermer">×</button>
-  <button type="button" class="gallery-btn gallery-prev" aria-label="Image précédente">‹</button>
-  <button type="button" class="gallery-btn gallery-next" aria-label="Image suivante">›</button>
+  <button type="button" class="gallery-prev" aria-label="Photo précédente">‹</button>
+  <button type="button" class="gallery-next" aria-label="Photo suivante">›</button>
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
 </div>
@@ -3797,6 +3848,8 @@ adhSaveError:`Impossible d’enregistrer la demande.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`Signer et valider`,
 admGeneratePdf:`Générer le PDF`,
+admSharePdf:`Partager le PDF sur WhatsApp`,
+admSharePdfMsg:`Pièce jointe : PDF d'adhésion UGTM (fiche signée et validée).`,
 admSignTitle:`Signature électronique du responsable`,
 admDossierTitle:`Dossier d’adhésion`,
 admViewDossier:`Consulter`,
@@ -4366,6 +4419,8 @@ adhSaveError:`تعذر تسجيل الطلب.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`التوقيع والمصادقة`,
 admGeneratePdf:`إنشاء ملف PDF`,
+admSharePdf:`مشاركة ملف PDF عبر واتساب`,
+admSharePdfMsg:`مرفق: ملف PDF انخراط UGTM (طلب موقع ومصدق عليه).`,
 admSignTitle:`التوقيع الإلكتروني للمسؤول`,
 admDossierTitle:`ملف الانخراط`,
 admViewDossier:`استعراض`,
@@ -4420,6 +4475,8 @@ adhSaveError:`تعذر تسجيل الطلب.`,
 /* Espace responsable : signature électronique et génération du PDF */
 admSignValidate:`التوقيع والمصادقة`,
 admGeneratePdf:`إنشاء ملف PDF`,
+admSharePdf:`مشاركة ملف PDF عبر واتساب`,
+admSharePdfMsg:`مرفق: ملف PDF انخراط UGTM (طلب موقع ومصدق عليه).`,
 admSignTitle:`التوقيع الإلكتروني للمسؤول`,
 admDossierTitle:`ملف الانخراط`,
 admViewDossier:`استعراض`,
@@ -4974,8 +5031,6 @@ lang='ar';
 
 }catch(e){}
 
-applyI18n();
-
 function $(id){
 return document.getElementById(id);
 }
@@ -5021,14 +5076,14 @@ return ar.length>=(lat?lat.length:0);
 
 /* Attribut de classe complet, ou chaîne vide. */
 function rtlAttr(s){
-return isArabicText(s)?' class="rtl"':'';
+ return isArabicText(s)?' class="rtl"':'';
 }
 
 function paras(s){
 return String(s||'')
 .split(/\n{2,}/)
 .map(function(p){
-return '<p'+rtlAttr(p)+'>'+esc(p).replace(/\n/g,'<br>')+'</p>';
+return '<p'+(isArabicText(p)?' class="rtl"':'')+'>'+esc(p).replace(/\n/g,'<br>')+'</p>';
 })
 .join('');
 }
@@ -5060,6 +5115,33 @@ function fmtTime(t){
 return lang==='fr'?String(t).replace(':','h'):t;
 }
 
+function newsTime(item){
+var ms=+(item&&item.createdAt||0);
+if(!ms)return '';
+var d=new Date(ms);
+if(isNaN(d.getTime()))return '';
+var h=d.getHours(),m=d.getMinutes();
+var t=(h<10?'0':'')+h+':' +(m<10?'0':'')+m;
+return fmtTime(t);
+}
+
+function fmtNewsDate(item,withDay){
+var base=item&&item.date?fmtDate(item.date,withDay):'';
+var tm=newsTime(item);
+return tm?(base?base+' – '+tm:tm):base;
+}
+
+function fmtNewsDateFr(item){
+var base=item&&item.date?fmtDateFr(item.date):'';
+var ms=+(item&&item.createdAt||0);
+if(!ms)return base;
+var d=new Date(ms);
+if(isNaN(d.getTime()))return base;
+var h=d.getHours(),m=d.getMinutes();
+var tm=(h<10?'0':'')+h+'h'+(m<10?'0':'')+m;
+return base?base+' – '+tm:tm;
+}
+
 function provName(v,l){
 var f=PROVS.filter(function(p){
 return p.v===v;
@@ -5083,9 +5165,20 @@ contacts.forEach(function(c){
 html+="</ul>";
 box.innerHTML=html;
 }
+function newsSortTime(item){
+/* Tri par date de publication (champ « date ») en priorité,
+   puis par date de création en repli. Les plus récentes d'abord. */
+var d=String(item&&item.date||'');
+var ms=d?/^\d{4}-\d{2}-\d{2}$/.test(d)?Date.parse(d+'T00:00:00Z')||0:Date.parse(d)||0:0;
+if(ms)return ms;
+return +(item&&item.createdAt||0)||0;
+}
 function sortedNews(){
 return NEWS.slice().sort(function(a,b){
-return a.date<b.date?1:(a.date>b.date?-1:0);
+var at=newsSortTime(a),bt=newsSortTime(b);
+if(at<bt)return 1;
+if(at>bt)return -1;
+return String(b&&b.id||'')<String(a&&a.id||'')?-1:(String(b&&b.id||'')>String(a&&a.id||'')?1:0);
 });
 }
 
@@ -5118,7 +5211,6 @@ el.classList.remove('show');
 }
 
 var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
-var galleryPopstate=false;
 
 function openGallery(items,startIdx,opts){
 if(!items||!items.length)return;
@@ -5130,14 +5222,12 @@ galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0
 renderGallery();
 $('gallery').hidden=false;
 document.body.style.overflow='hidden';
-try{history.pushState({galleryOpen:true},'','#gallery');}catch(e){}
 }
 
 function closeGallery(){
 $('gallery').hidden=true;
 document.body.style.overflow='';
 galleryState.items=[];galleryState.idx=0;galleryState.ctx=null;galleryState.zoom=1;galleryState.tx=0;galleryState.ty=0;galleryState.pinchDist=0;galleryState.pinchScale=1;
-if(!galleryPopstate){ try{ history.back(); }catch(e){} }
 }
 
 function renderGallery(){
@@ -5145,18 +5235,16 @@ var track=$('galleryTrack');
 var counter=$('galleryCounter');
 if(!track||!counter)return;
 track.innerHTML='';
-galleryState.items.forEach(function(it,i){
+if(galleryState.items.length===0){counter.textContent='0 / 0';return;}
+var i=galleryState.idx;
+var it=galleryState.items[i];
 var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
-img.className=i===galleryState.idx?'active':'';
-if(i===galleryState.idx) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+img.className='active';
+img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
 track.appendChild(img);
-});
-counter.textContent=(galleryState.idx+1)+' / '+galleryState.items.length;
-var g=$('gallery'), nav=g.querySelectorAll('.gallery-btn');
-nav.forEach(function(b){b.style.display=galleryState.items.length>1?'flex':'none';});
-/* gallery actions removed */
+counter.textContent=(i+1)+' / '+galleryState.items.length;
 }
 
 function galleryPrev(){
@@ -5198,93 +5286,71 @@ renderGallery();
 }
 
 (function(){
-  /* Galerie plein écran : pan tactile/souris, nav, clic, Échap, retour Android */
+  /* Galerie plein écran : nav, swipe, clic, Échap, retour Android */
   var gt=$('galleryTrack'), ge=$('gallery');
-  var tapStart=0,tapPos={x:0,y:0},panStart={x:0,y:0},isPanning=false,edgeStart=false;
-
-  function getActive(){ return gt.querySelector('img.active'); }
-  function applyPan(){
-    var img=getActive();
-    if(!img)return;
-    img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
-  }
-
-  /* --- Toucher (web mobile + APK) --- */
-  ge.addEventListener('touchstart',function(e){
-    if(e.target!==getActive())return;
-    tapStart=e.timeStamp;
-    tapPos.x=(e.touches[0]||e.changedTouches[0]).clientX;
-    tapPos.y=(e.touches[0]||e.changedTouches[0]).clientY;
-    panStart.x=galleryState.tx; panStart.y=galleryState.ty;
-    isPanning=false;
-    edgeStart=tapPos.x<24||tapPos.x>ge.clientWidth-24;
-  },{passive:false});
-
-  ge.addEventListener('touchmove',function(e){
-    if(e.touches.length!==1||e.target!==getActive())return;
-    var dx=(e.touches[0].clientX-tapPos.x);
-    var dy=(e.touches[0].clientY-tapPos.y);
-    if(Math.abs(dx)>8||Math.abs(dy)>8)isPanning=true;
-    if(isPanning&&!edgeStart&&Math.abs(dx)>Math.abs(dy))e.preventDefault();
-    galleryState.tx=panStart.x+dx; galleryState.ty=panStart.y+dy;
-    applyPan();
-  },{passive:false});
-
-  ge.addEventListener('touchend',function(e){
-    if(e.changedTouches.length!==1)return;
-    var dx=(e.changedTouches[0].clientX-tapPos.x);
-    var dy=(e.changedTouches[0].clientY-tapPos.y);
-    var dt=e.timeStamp-tapStart;
-    if(!isPanning&&dt<400){
-      galleryZoomToggle();
-    }else if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)&&dt<500){
-      dx>0?galleryPrev():galleryNext();
-    }else if(dy>120){
-      closeGallery();
-    }else{
-      galleryState.tx=0;galleryState.ty=0;applyPan();
-    }
-  },{passive:false});
-
-  /* --- Souris (PC) --- */
-  ge.addEventListener('mousedown',function(e){
-    if(e.target!==getActive())return;
-    tapPos.x=e.clientX; tapPos.y=e.clientY;
-    panStart.x=galleryState.tx; panStart.y=galleryState.ty;
-    isPanning=false;
-    ge.addEventListener('mousemove',onMouseMove);
-    ge.addEventListener('mouseup',onMouseUp);
-    e.preventDefault();
-  });
-  function onMouseMove(e){
-    var dx=e.clientX-tapPos.x;
-    var dy=e.clientY-tapPos.y;
-    if(Math.abs(dx)>5||Math.abs(dy)>5)isPanning=true;
-    galleryState.tx=panStart.x+dx; galleryState.ty=panStart.y+dy;
-    applyPan();
-  }
-  function onMouseUp(e){
-    ge.removeEventListener('mousemove',onMouseMove);
-    ge.removeEventListener('mouseup',onMouseUp);
-    var dx=e.clientX-tapPos.x;
-    var dy=e.clientY-tapPos.y;
-    if(!isPanning){ galleryZoomToggle(); return; }
-    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)){ dx>0?galleryPrev():galleryNext(); }
-    else if(dy>120){ closeGallery(); }
-    else{ galleryState.tx=0;galleryState.ty=0;applyPan(); }
-  }
-
   ge.addEventListener('click',function(e){if(e.target===ge){closeGallery();}});
   var gClose=ge.querySelector('.gallery-close');
   if(gClose) gClose.addEventListener('click',function(e){e.stopPropagation();closeGallery();});
-  document.addEventListener('keydown',function(e){
-  if(e.key==='Escape'){closeGallery();}
-  else if(e.key==='ArrowLeft'){galleryPrev();}
-  else if(e.key==='ArrowRight'){galleryNext();}
-});
+  var gPrev=ge.querySelector('.gallery-prev');
+  if(gPrev) gPrev.addEventListener('click',function(e){e.stopPropagation();galleryPrev();});
+  var gNext=ge.querySelector('.gallery-next');
+  if(gNext) gNext.addEventListener('click',function(e){e.stopPropagation();galleryNext();});
+  var ts=0,touchX=0,touchY=0,swipeThreshold=60,swipeDone=false;
+  ge.addEventListener('touchstart',function(e){
+    ts=e.timeStamp;
+    swipeDone=false;
+    if(e.touches && e.touches.length===1){ touchX=(e.touches[0]||e.changedTouches[0]).clientX; touchY=(e.touches[0]||e.changedTouches[0]).clientY; galleryState.panStartX=galleryState.tx; galleryState.panStartY=galleryState.ty; galleryState.panning=false; }
+    if(e.touches && e.touches.length===2){
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      galleryState.pinchDist=Math.hypot(dx2,dy2);
+      galleryState.pinchScale=galleryState.zoom||1;
+    }
+  },{passive:true});
+  ge.addEventListener('touchmove',function(e){
+    if(e.touches && e.touches.length===1){
+      e.preventDefault();
+      if(galleryState.zoom>1){
+        var dx=(e.touches[0].clientX-touchX);
+        var dy=(e.touches[0].clientY-touchY);
+        galleryState.tx=galleryState.panStartX+dx;
+        galleryState.ty=galleryState.panStartY+dy;
+        galleryState.panning=true;
+        var img=gt.querySelector('img.active');
+        if(img) img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+        return;
+      }
+      if(!swipeDone){
+        var dx=(e.touches[0].clientX-touchX);
+        var dy=(e.touches[0].clientY-touchY);
+        if(Math.abs(dx)>swipeThreshold&&Math.abs(dx)>Math.abs(dy)){
+          swipeDone=true;
+          e.stopPropagation();
+          dx>0?galleryPrev():galleryNext();
+          return;
+        }
+      }
+    }
+    if(e.touches && e.touches.length===2 && galleryState.pinchDist){
+      e.preventDefault();
+      var dx2=e.touches[0].clientX-e.touches[1].clientX;
+      var dy2=e.touches[0].clientY-e.touches[1].clientY;
+      var dist=Math.hypot(dx2,dy2);
+      galleryState.zoom=Math.min(4,Math.max(1, galleryState.pinchScale*(dist/galleryState.pinchDist)));
+      var img2=gt.querySelector('img.active');
+      if(img2) img2.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+    }
+  },{passive:false});
+  ge.addEventListener('touchend',function(e){
+    galleryState.pinchDist=0;
+    if(galleryState.panning){ galleryState.panning=false; return; }
+    if(!swipeDone&&e.changedTouches && e.changedTouches.length===1 && e.timeStamp-ts<500){
+      var dx=(e.changedTouches[0]||e.changedTouches[0]).clientX-touchX;
+      if(Math.abs(dx)>30){e.stopPropagation();dx>0?galleryPrev():galleryNext();return;}
+    }
+  },{passive:true});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeGallery();}});
   document.addEventListener('popstate',function(e){
-  var g=$('gallery');
-  if(g&&!g.hidden){galleryPopstate=true;closeGallery();galleryPopstate=false;return;}
   var attach=$('attachModal');
   if(attach&&!attach.hidden){closeAttachModal(true);return;}
 });
@@ -5308,7 +5374,7 @@ renderGallery();
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
       window.Capacitor.Plugins.App.addListener('backButton', function(e){
         /* 1. Galerie, image plein écran ou fenêtre modale : on ferme. */
-        if($('gallery') && !$('gallery').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeGallery(); return; }
+        if($('gallery') && !$('gallery').hidden){ if(e&&typeof e.preventDefault==='function')e.preventDefault(); closeGallery(); return; }
         if($('attachModal') && !$('attachModal').hidden){ if(e&&e.preventDefault)e.preventDefault(); closeAttachModal(); return; }
         /* 2. Écran précédent de l'application. */
         if(navStack.depth>0){
@@ -6164,26 +6230,11 @@ if(headBox)headBox.textContent=fallback?T().lastEventT:T().nextT;
 $('nextEvent').innerHTML=nextList.length
 ?nextList.map(function(ev){return eventRow(ev,false);}).join('')
 :'<p class="empty">'+T().noEvent+'</p>';
-/* Accueil : les publications récentes de CHAQUE rubrique, pas seulement
-   les communiqués. Les rubriques sans publication visible pour
-   l'utilisateur sont omises ; l'ordre suit la nomenclature
-   institutionnelle. */
-var groups=CATS_ORDER.map(function(k){
+/* Accueil : publications récentes, toutes rubriques confondues, triées
+   par date puis par heure de création (les plus récentes d'abord). */
+var recentItems=sortedNews().slice(0,6);
 
-return {
-key:k,
-items:sortedNews().filter(function(c){return c.cat===k;}).slice(0,3)
-};
-
-}).filter(function(g){return g.items.length;});
-
-var recentHtml='';
-
-groups.forEach(function(g){
-
-recentHtml+='<li class="rgroup">'+esc(CATS[g.key][lang]||CATS[g.key].fr)+'</li>';
-
-recentHtml+=g.items.map(function(c){
+var recentHtml=recentItems.map(function(c){
 
 return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
@@ -6195,10 +6246,10 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 
 tagHTML(c)+
 audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
+'<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
 
 '</span>'+
 
@@ -6207,8 +6258,6 @@ audTag(c)+
 '</li>';
 
 }).join('');
-
-});
 
 $('recentList').innerHTML=recentHtml
 
@@ -6275,10 +6324,10 @@ return '<li class="item '+(c.cat==='urgent'?'urgent':'')+'">'+
 '<span class="meta">'+
 tagHTML(c)+
 audTag(c)+
-'<time>'+fmtDate(c.date)+'</time>'+
+'<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+rtlAttr(L(c).t)+'">'+esc(L(c).t)+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
@@ -6383,6 +6432,12 @@ function openNotificationTarget(type,id){
     go('agenda');
     renderAgenda();
     setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
+    return true;
+  }
+  if(targetType==='adhesion'){
+    if(!S.isAdmin&&!S.isSubAdmin)return false;
+    go('me');
+    openAdhesionDossier(targetId,false);
     return true;
   }
   return false;
@@ -7045,7 +7100,7 @@ return '<li class="mrow">'+
 '<strong'+rtlAttr(titleFor(c))+'>'+esc(titleFor(c))+'</strong>'+
 
 '<span>'+
-fmtDateFr(c.date)+
+fmtNewsDateFr(c)+
 ' – '+
 esc(cat)+
 (c.audience==='members'
@@ -7361,10 +7416,11 @@ el.innerHTML=list.length?list.map(function(a){
        actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
        actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
      }
-     /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
-     if(a.status==='accepted'&&a.signed){
-       actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
-     }
+      /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
+      if(a.status==='accepted'&&a.signed){
+        actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
+        actions+='<button type="button" class="btn ghost small" data-adm-act="shareAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admSharePdf)+'</button>';
+      }
      /* Suppression du dossier : administrateur général seulement (les
         règles Firestore n'autorisent la suppression qu'à l'admin). Elle
         emporte le PDF signé et les deux signatures. */
@@ -7707,6 +7763,68 @@ function generateAdhesionPdfForAdmin(id){
     .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
   })
   .catch(function(err){
+    toast(t.admPdfErr+(err&&err.message?' — '+err.message:''),6000);
+  })
+  .then(function(){delete pdfJobs[id];});
+}
+
+/* Partage du PDF officiel d'une adhésion sur WhatsApp :
+   génère le PDF (ou le récupère s'il est déjà stocké), l'écrit dans le
+   cache de l'appareil, puis l'ouvre dans le dialogue de partage système
+   pour que l'administrateur puisse choisir WhatsApp. */
+function shareAdhesionPdf(id){
+  var t=T();
+  var c=cloud();
+  if(!c||!c.getAdhesionDoc){toast(t.adhServiceUnavailable,5000);return;}
+  if(pdfJobs[id])return;
+  pdfJobs[id]=true;
+  toast(t.admPdfGenerating,3500);
+
+  c.getAdhesionDoc(id)
+  .then(function(doc){
+    if(!doc)throw new Error(t.admPdfErr);
+    if(doc.status!=='accepted'||!doc.adminSignature)
+    throw new Error(t.admPdfOnlyValidated);
+    var fileName=adhesionPdfFileName(doc);
+    return c.getSavedAdhesionPdf(id)
+    .then(function(saved){
+      if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
+      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+      doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      if(typeof window.generateAdhesionPdf!=='function')
+      throw new Error('PDF indisponible');
+      return window.generateAdhesionPdf(doc).then(function(b64){
+        if(!b64)throw new Error(t.admPdfErr);
+        return c.saveAdhesionPdf(id,b64,fileName)
+        .catch(function(errSave){console.info('PDF non enregistré :',errSave);})
+        .then(function(){return{fresh:b64,fileName:fileName};});
+      });
+    });
+  })
+  .then(function(res){
+    var b64=res.stored||res.fresh;
+    if(!b64)throw new Error(t.admPdfErr);
+    var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+    var plugins=window.Capacitor&&window.Capacitor.Plugins;
+    var fs=isNative&&plugins?plugins.Filesystem:null;
+    var share=isNative&&plugins?plugins.Share:null;
+    if(!(fs&&fs.writeFile&&share&&typeof share.share==='function'))
+    throw new Error('Partage indisponible');
+    /* Écrit le PDF dans le cache pour obtenir un URI partageable. */
+    return fs.writeFile({path:fileName,data:b64,directory:'CACHE'})
+    .then(function(saved){
+      var uri=(saved&&saved.uri)?String(saved.uri):'';
+      if(!uri)throw new Error('URI PDF introuvable');
+      return share.share({files:[uri],dialogTitle:fileName,text:t.admSharePdfMsg||'PDF d\'adhésion UGTM'});
+    });
+  })
+  .catch(function(err){
+    /* Si le partage natif échoue, repli sur WhatsApp texte uniquement. */
+    if(err&&/Partage indisponible|URI PDF introuvable/.test(err&&err.message)){
+      var msg=String(t.admSharePdfMsg||'PDF d\'adhésion UGTM')+'\n'+publicAppUrl();
+      shareTextFallback(msg);
+      return;
+    }
     toast(t.admPdfErr+(err&&err.message?' — '+err.message:''),6000);
   })
   .then(function(){delete pdfJobs[id];});
@@ -9271,6 +9389,10 @@ else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
 generateAdhesionPdfForAdmin(id);
 }
 
+else if(a==='shareAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+shareAdhesionPdf(id);
+}
+
 else if(a==='delAdhesion'&&S.isAdmin){
 var adh=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
 if(adh&&window.confirm(String(t.admConfirmDeleteAdhesion).replace('%1',((adh.nom||'')+' '+(adh.prenom||'')).trim()||id))){
@@ -9704,6 +9826,7 @@ renderMeReports();
 setAdhesions:function(list){
 S.adhesions=list||[];
 renderAdminAdhesions();
+processPendingNotificationTarget();
 },
 
 setResponsables:function(list){
@@ -9890,6 +10013,8 @@ initScreenHistory();
 applyI18n();
 
 go('home');
+
+processPendingNotificationTarget();
 
 /* Version de l'application : le manifeste OTA embarqué est lu
    au démarrage pour que le message de partage porte le numéro
@@ -10571,8 +10696,13 @@ window.UGTM.failed(err);
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
-          var signer=(request&&request.signerRoleLabel)?String(request.signerRoleLabel)
-            :((request&&request.signedByRole==='subadmin')?'Responsable provincial':'Administrateur');
+          var signedBy = request && request.signedBy ? String(request.signedBy) : '';
+          var signerMember = (S.members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
+          var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
+          var isRegionalAdmin = S.isAdmin && !S.isSubAdmin;
+          var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
+          var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
+          var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
           var validationDate='';
           if(request&&request.signedAt){
             try{
