@@ -10096,31 +10096,37 @@ window.UGTM.failed(err);
     function prefillDigitalAdhesion(){
       var uid=currentAdhesionUid();
       resetAdhesionForAccount(uid);
-      if(!uid)return;
 
       var fEl=$('adhFunction');
       var sEl=$('adhSpecialty');
 
       /* Affichage dynamique des champs conditionnels au changement. */
-      fEl.addEventListener('change',function(){
-        var wrap=$('adhFunctionDetailWrap');
-        var inp=$('adhFunctionDetail');
-        if(fEl.value==='function_to_specify'){
-          wrap.style.display=''; inp.required=true;
-        }else{
-          wrap.style.display='none'; inp.required=false; inp.value='';
-        }
-      });
-      sEl.addEventListener('change',function(){
-        var wrap=$('adhSpecialtyOtherWrap');
-        var inp=$('adhSpecialtyOther');
-        if(sEl.value==='other'){
-          wrap.style.display=''; inp.required=true;
-        }else{
-          wrap.style.display='none'; inp.required=false; inp.value='';
-        }
-      });
+      if(fEl && !fEl._adhBound){
+        fEl._adhBound=true;
+        fEl.addEventListener('change',function(){
+          var wrap=$('adhFunctionDetailWrap');
+          var inp=$('adhFunctionDetail');
+          if(fEl.value==='function_to_specify'){
+            wrap.style.display=''; inp.required=true;
+          }else{
+            wrap.style.display='none'; inp.required=false; inp.value='';
+          }
+        });
+      }
+      if(sEl && !sEl._adhBound){
+        sEl._adhBound=true;
+        sEl.addEventListener('change',function(){
+          var wrap=$('adhSpecialtyOtherWrap');
+          var inp=$('adhSpecialtyOther');
+          if(sEl.value==='other'){
+            wrap.style.display=''; inp.required=true;
+          }else{
+            wrap.style.display='none'; inp.required=false; inp.value='';
+          }
+        });
+      }
 
+      if(!uid)return;
       /* Applique l'affichage des champs conditionnels selon la valeur
          courante des deux selects (appelé après chaque préremplissage). */
       function applyFieldVisibility(){
