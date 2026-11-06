@@ -1110,6 +1110,7 @@ main{
 .field input[type="tel"],
 .field input[type="date"],
 .field input[type="time"],
+.field input:not([type]),
 .field select,
 .field textarea{
   width:100%;
@@ -1119,7 +1120,8 @@ main{
   border-radius:var(--radius-s);
   background:var(--surface);
   font-size:16px;
-  box-sizing:border-box
+  box-sizing:border-box;
+  max-width:100%
 }
 
 .field textarea{
@@ -3027,6 +3029,7 @@ button.primary:active {
     background:var(--surface);
     color:var(--ink);
     font-size:16px;
+    box-sizing:border-box;
     appearance:auto;
     -webkit-appearance:auto;
     pointer-events:auto;
@@ -3340,7 +3343,7 @@ window.markNotificationRead=markNotificationRead;
       <div class="adh-grid">
         <div class="field"><label for="adhNom" data-i18n="adhNom"></label><input id="adhNom" required></div>
         <div class="field"><label for="adhPrenom" data-i18n="adhPrenom"></label><input id="adhPrenom" required></div>
-        <div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" required></div>
+        <div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" type="text" required></div>
         <div class="field"><label for="adhDob" data-i18n="adhDob"></label><input id="adhDob" type="date" required></div>
         <div class="field"><label for="adhPhone" data-i18n="adhPhone"></label><input id="adhPhone" type="tel" required></div>
         <div class="field adh-full"><label for="adhAddress" data-i18n="adhAddress"></label><textarea id="adhAddress" rows="2" required></textarea></div>
@@ -3354,10 +3357,10 @@ window.markNotificationRead=markNotificationRead;
         <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
         <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
-        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail"></div>
+        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail" type="text"></div>
         <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option><option value="general_practitioner" data-i18n="adhSpecialtyGeneralPractitioner"></option><option value="specialist_physician" data-i18n="adhSpecialtySpecialistPhysician"></option><option value="pharmacist" data-i18n="adhSpecialtyPharmacist"></option><option value="dentist" data-i18n="adhSpecialtyDentist"></option><option value="general_nurse" data-i18n="adhSpecialtyGeneralNurse"></option><option value="specialized_nurse" data-i18n="adhSpecialtySpecializedNurse"></option><option value="midwife" data-i18n="adhSpecialtyMidwife"></option><option value="health_technician" data-i18n="adhSpecialtyHealthTechnician"></option><option value="lab_technician" data-i18n="adhSpecialtyLabTechnician"></option><option value="radiology_technician" data-i18n="adhSpecialtyRadiologyTechnician"></option><option value="physiotherapist" data-i18n="adhSpecialtyPhysiotherapist"></option><option value="psychologist" data-i18n="adhSpecialtyPsychologist"></option><option value="dietitian" data-i18n="adhSpecialtyDietitian"></option><option value="administrator" data-i18n="adhSpecialtyAdministrator"></option><option value="engineer" data-i18n="adhSpecialtyEngineer"></option><option value="it_technician" data-i18n="adhSpecialtyITTechnician"></option><option value="secretary" data-i18n="adhSpecialtySecretary"></option><option value="administrative_assistant" data-i18n="adhSpecialtyAdministrativeAssistant"></option><option value="maintenance_staff" data-i18n="adhSpecialtyMaintenanceStaff"></option><option value="other" data-i18n="adhSpecialtyOtherCat"></option></select></div>
-        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther"></div>
-        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr"></div>
+        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther" type="text"></div>
+        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr" type="text"></div>
       </div>
     </div>
 
