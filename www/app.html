@@ -3341,12 +3341,12 @@ window.markNotificationRead=markNotificationRead;
     <div class="adh-step">
       <div class="adh-step-title"><span>01</span><strong data-i18n="adhIdentity"></strong></div>
       <div class="adh-grid">
-        <div class="field"><label for="adhNom" data-i18n="adhNom"></label><input id="adhNom" required></div>
-        <div class="field"><label for="adhPrenom" data-i18n="adhPrenom"></label><input id="adhPrenom" required></div>
-        <div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" type="text" required></div>
+<div class="field"><label for="adhNom" data-i18n="adhNom"></label><input id="adhNom" type="text" maxlength="100" required></div>
+<div class="field"><label for="adhPrenom" data-i18n="adhPrenom"></label><input id="adhPrenom" type="text" maxlength="100" required></div>
+<div class="field"><label for="adhCin" data-i18n="adhCin"></label><input id="adhCin" type="text" maxlength="30" required></div>
         <div class="field"><label for="adhDob" data-i18n="adhDob"></label><input id="adhDob" type="date" required></div>
-        <div class="field"><label for="adhPhone" data-i18n="adhPhone"></label><input id="adhPhone" type="tel" required></div>
-        <div class="field adh-full"><label for="adhAddress" data-i18n="adhAddress"></label><textarea id="adhAddress" rows="2" required></textarea></div>
+<div class="field"><label for="adhPhone" data-i18n="adhPhone"></label><input id="adhPhone" type="tel" maxlength="30" required></div>
+<div class="field adh-full"><label for="adhAddress" data-i18n="adhAddress"></label><textarea id="adhAddress" rows="2" maxlength="250" required></textarea></div>
       </div>
     </div>
 
@@ -3354,13 +3354,13 @@ window.markNotificationRead=markNotificationRead;
       <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
       <div class="adh-grid">
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
-        <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" required></div>
-        <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService"></div>
+<div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" required></div>
+<div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService" type="text" maxlength="120"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
-        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail" type="text"></div>
+        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail" type="text" maxlength="120"></div>
         <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option><option value="general_practitioner" data-i18n="adhSpecialtyGeneralPractitioner"></option><option value="specialist_physician" data-i18n="adhSpecialtySpecialistPhysician"></option><option value="pharmacist" data-i18n="adhSpecialtyPharmacist"></option><option value="dentist" data-i18n="adhSpecialtyDentist"></option><option value="general_nurse" data-i18n="adhSpecialtyGeneralNurse"></option><option value="specialized_nurse" data-i18n="adhSpecialtySpecializedNurse"></option><option value="midwife" data-i18n="adhSpecialtyMidwife"></option><option value="health_technician" data-i18n="adhSpecialtyHealthTechnician"></option><option value="lab_technician" data-i18n="adhSpecialtyLabTechnician"></option><option value="radiology_technician" data-i18n="adhSpecialtyRadiologyTechnician"></option><option value="physiotherapist" data-i18n="adhSpecialtyPhysiotherapist"></option><option value="psychologist" data-i18n="adhSpecialtyPsychologist"></option><option value="dietitian" data-i18n="adhSpecialtyDietitian"></option><option value="administrator" data-i18n="adhSpecialtyAdministrator"></option><option value="engineer" data-i18n="adhSpecialtyEngineer"></option><option value="it_technician" data-i18n="adhSpecialtyITTechnician"></option><option value="secretary" data-i18n="adhSpecialtySecretary"></option><option value="administrative_assistant" data-i18n="adhSpecialtyAdministrativeAssistant"></option><option value="maintenance_staff" data-i18n="adhSpecialtyMaintenanceStaff"></option><option value="other" data-i18n="adhSpecialtyOtherCat"></option></select></div>
-        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther" type="text"></div>
-        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr" type="text"></div>
+        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther" type="text" maxlength="120"></div>
+        <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr" type="text" maxlength="30"></div>
       </div>
     </div>
 
@@ -3389,7 +3389,7 @@ window.markNotificationRead=markNotificationRead;
       <div class="adh-step-title"><span>05</span><strong data-i18n="adhSignature"></strong></div>
       <p class="adh-sign-hint" data-i18n="adhSignHint"></p>
       <div class="adh-signbox">
-        <canvas id="adhSignature" width="900" height="300"></canvas>
+        <canvas id="adhSignature" width="900" height="300" aria-label="Zone de signature" tabindex="0"></canvas>
       </div>
       <div class="adh-sign-actions">
         <button class="btn ghost" type="button" id="adhClearSign" data-i18n="adhClearSign"></button>
@@ -3744,6 +3744,7 @@ adhSpecialtyOther:`Précisez votre catégorie :`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Envoyer ma demande d’adhésion`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
+adhRequiredField:`Champ obligatoire manquant : `, adhCinInvalid:`Numéro de CIN invalide.`, adhPhoneInvalid:`Numéro de téléphone invalide.`, adhDobInvalid:`Date de naissance invalide.`,
 adhLabel:`Espace adhérent`,
 adhT:`Adhérez maintenant`,
 adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre téléphone.`,
@@ -4311,6 +4312,7 @@ adhSpecialtyOther:`حدد الفئة :`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`إرسال طلب الانخراط`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
+adhRequiredField:`حقل إجباري مفقود : `, adhCinInvalid:`رقم البطاقة الوطنية غير صالح.`, adhPhoneInvalid:`رقم الهاتف غير صالح.`, adhDobInvalid:`تاريخ الازدياد غير صالح.`,
 adhLabel:`فضاء المنخرطين`,
 adhT:`انخرط معنا الآن`,
 adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّعوا ثم أعيدوها عبر هاتفكم.`,
@@ -10204,9 +10206,9 @@ window.UGTM.failed(err);
         if(split.prenom)prenomEl.value=split.prenom;
       }
 
-      var date=document.getElementById('adhDate');
-      if(date&&!date.value)
-        date.value=new Date().toISOString().slice(0,10);
+var date=document.getElementById('adhDate');
+if(date&&!date.value)
+  date.value=todayStr();
 
       /* Reprise d'un dossier existant (complément demandé
          ou renouvellement) : les données déjà transmises
@@ -10645,10 +10647,38 @@ window.UGTM.failed(err);
         if(missing){
           submitting=false;
           missing.focus();
-          setAdhStatus(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',false);
-          adm(t.adhRequired||'Veuillez remplir tous les champs obligatoires.',4000);
+          var missingLabel='';
+          try{
+            var lbl=document.querySelector('label[for="'+missing.id+'"]');
+            if(lbl) missingLabel=lbl.textContent.trim();
+          }catch(e){}
+          var msgMissing=missingLabel
+            ? (t.adhRequiredField||'Champ obligatoire manquant : ')+missingLabel
+            : (t.adhRequired||'Veuillez remplir tous les champs obligatoires.');
+          setAdhStatus(msgMissing,false);
+          adm(msgMissing,4000);
           return;
         }
+      }
+
+      /* Validation de format : CIN, téléphone, date de naissance. */
+      var cinVal=document.getElementById('adhCin').value.trim();
+      var phoneVal=document.getElementById('adhPhone').value.trim();
+      var dobVal=document.getElementById('adhDob').value;
+      var fmtMsg='';
+      if(cinVal && !/^[A-Za-z0-9]{4,30}$/.test(cinVal)) fmtMsg=t.adhCinInvalid||'Numéro de CIN invalide.';
+      else if(phoneVal && !/^[0-9+\s\-()]{6,30}$/.test(phoneVal)) fmtMsg=t.adhPhoneInvalid||'Numéro de téléphone invalide.';
+      else if(dobVal){
+        var dobDate=new Date(dobVal);
+        var today=new Date();
+        var age=today.getFullYear()-dobDate.getFullYear();
+        if(isNaN(dobDate.getTime()) || dobDate>today || age>120 || age<16) fmtMsg=t.adhDobInvalid||'Date de naissance invalide.';
+      }
+      if(fmtMsg){
+        submitting=false;
+        setAdhStatus(fmtMsg,false);
+        adm(fmtMsg,4000);
+        return;
       }
 
       if(!signed){
