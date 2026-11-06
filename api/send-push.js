@@ -72,7 +72,7 @@ function isValidFcmToken(t) {
 function buildNotificationTarget(type, targetId) {
   const url = new URL('https://ugtm-fns-souss-massa.web.app/app.html');
   const id = String(targetId || '');
-  if ((type === 'news' || type === 'event') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
+  if ((type === 'news' || type === 'event' || type === 'adhesion') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
     url.searchParams.set('notificationType', type);
     url.searchParams.set('notificationId', id);
   }
@@ -719,12 +719,12 @@ module.exports = async function handler(req, res) {
     }
     const accessToken = await getAccessToken(serviceAccount);
 
-    const pushTarget = buildNotificationTarget(type, targetId);
-    const pushData = { targetUrl: pushTarget.toString() };
-    if ((type === 'news' || type === 'event') && /^[A-Za-z0-9_-]{1,150}$/.test(String(targetId || ''))) {
-      pushData.notificationType = type;
-      pushData.notificationId = String(targetId);
-    }
+  const pushTarget = buildNotificationTarget(type, targetId);
+  const pushData = { targetUrl: pushTarget.toString() };
+  if ((type === 'news' || type === 'event' || type === 'adhesion') && /^[A-Za-z0-9_-]{1,150}$/.test(String(targetId || ''))) {
+    pushData.notificationType = type;
+    pushData.notificationId = String(targetId);
+  }
 
     const pushTag = String(type) + '-' + String(targetId || type);
     const results = [];

@@ -33,7 +33,7 @@ function notificationTargetUrl(data){
   }
   var type=String(info.notificationType||info.targetType||'');
   var id=String(info.notificationId||info.targetId||'');
-  if((type==='news'||type==='event')&&id){
+  if((type==='news'||type==='event'||type==='adhesion')&&id){
     target.searchParams.set('notificationType',type);
     target.searchParams.set('notificationId',id);
   }
@@ -141,6 +141,7 @@ function subscribeNews(){
             cat: x.cat,
             audience: x.audience,
             date: x.date,
+            createdAt: ms(x.createdAt),
             image: x.image || '',
             hasImage: !!(x.hasImage || x.image),
             fr: x.fr,
