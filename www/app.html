@@ -3363,9 +3363,15 @@ window.markNotificationRead=markNotificationRead;
 <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" required></div>
 <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService" type="text" maxlength="120"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
-        <div class="field" id="adhFunctionDetailWrap" style="display:none"><label data-i18n="adhFunctionDetail"></label><input id="adhFunctionDetail" type="text" maxlength="120"></div>
+        <div class="field adh-full" id="adhFunctionDetailWrap" style="display:none">
+          <label for="adhFunctionDetail" data-i18n="adhFunctionDetail"></label>
+          <input id="adhFunctionDetail" type="text" maxlength="120">
+        </div>
         <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option><option value="general_practitioner" data-i18n="adhSpecialtyGeneralPractitioner"></option><option value="specialist_physician" data-i18n="adhSpecialtySpecialistPhysician"></option><option value="pharmacist" data-i18n="adhSpecialtyPharmacist"></option><option value="dentist" data-i18n="adhSpecialtyDentist"></option><option value="general_nurse" data-i18n="adhSpecialtyGeneralNurse"></option><option value="specialized_nurse" data-i18n="adhSpecialtySpecializedNurse"></option><option value="midwife" data-i18n="adhSpecialtyMidwife"></option><option value="health_technician" data-i18n="adhSpecialtyHealthTechnician"></option><option value="lab_technician" data-i18n="adhSpecialtyLabTechnician"></option><option value="radiology_technician" data-i18n="adhSpecialtyRadiologyTechnician"></option><option value="physiotherapist" data-i18n="adhSpecialtyPhysiotherapist"></option><option value="psychologist" data-i18n="adhSpecialtyPsychologist"></option><option value="dietitian" data-i18n="adhSpecialtyDietitian"></option><option value="administrator" data-i18n="adhSpecialtyAdministrator"></option><option value="engineer" data-i18n="adhSpecialtyEngineer"></option><option value="it_technician" data-i18n="adhSpecialtyITTechnician"></option><option value="secretary" data-i18n="adhSpecialtySecretary"></option><option value="administrative_assistant" data-i18n="adhSpecialtyAdministrativeAssistant"></option><option value="maintenance_staff" data-i18n="adhSpecialtyMaintenanceStaff"></option><option value="other" data-i18n="adhSpecialtyOtherCat"></option></select></div>
-        <div class="field" id="adhSpecialtyOtherWrap" style="display:none"><label data-i18n="adhSpecialtyOther"></label><input id="adhSpecialtyOther" type="text" maxlength="120"></div>
+        <div class="field adh-full" id="adhSpecialtyOtherWrap" style="display:none">
+          <label for="adhSpecialtyOther" data-i18n="adhSpecialtyOther"></label>
+          <input id="adhSpecialtyOther" type="text" maxlength="120">
+        </div>
         <div class="field"><label for="adhPpr" data-i18n="adhPpr"></label><input id="adhPpr" type="text" maxlength="30"></div>
       </div>
     </div>
@@ -10106,63 +10112,62 @@ window.UGTM.failed(err);
       var fEl=$('adhFunction');
       var sEl=$('adhSpecialty');
 
-      /* Affichage dynamique des champs conditionnels au changement. */
+      /* 1. Fonction centrale de gestion des champs conditionnels */
+      window.toggleConditionalFields = function(){
+        var fEl=document.getElementById('adhFunction');
+        var sEl=document.getElementById('adhSpecialty');
+        var fWrap=document.getElementById('adhFunctionDetailWrap');
+        var fInp=document.getElementById('adhFunctionDetail');
+        var sWrap=document.getElementById('adhSpecialtyOtherWrap');
+        var sInp=document.getElementById('adhSpecialtyOther');
+
+        /* Gestion de la Fonction */
+        if(fEl && fWrap && fInp){
+          if(fEl.value==='function_to_specify'){
+            fWrap.style.display='';
+            fInp.required=true;
+          }else{
+            fWrap.style.display='none';
+            fInp.required=false;
+            fInp.value='';
+          }
+        }
+
+        /* Gestion de la Catégorie / Spécialité */
+        if(sEl && sWrap && sInp){
+          if(sEl.value==='other'){
+            sWrap.style.display='';
+            sInp.required=true;
+          }else{
+            sWrap.style.display='none';
+            sInp.required=false;
+            sInp.value='';
+          }
+        }
+      };
+
+      /* 2. Attacher les écouteurs (change ET input pour compatibilité mobile) */
       if(fEl && !fEl._adhBound){
         fEl._adhBound=true;
-        fEl.addEventListener('change',function(){
-          var wrap=$('adhFunctionDetailWrap');
-          var inp=$('adhFunctionDetail');
-          if(fEl.value==='function_to_specify'){
-            wrap.style.display=''; inp.required=true;
-          }else{
-            wrap.style.display='none'; inp.required=false; inp.value='';
-          }
-        });
+        fEl.addEventListener('change',window.toggleConditionalFields);
+        fEl.addEventListener('input',window.toggleConditionalFields);
       }
       if(sEl && !sEl._adhBound){
         sEl._adhBound=true;
-        sEl.addEventListener('change',function(){
-          var wrap=$('adhSpecialtyOtherWrap');
-          var inp=$('adhSpecialtyOther');
-          if(sEl.value==='other'){
-            wrap.style.display=''; inp.required=true;
-          }else{
-            wrap.style.display='none'; inp.required=false; inp.value='';
-          }
-        });
+        sEl.addEventListener('change',window.toggleConditionalFields);
+        sEl.addEventListener('input',window.toggleConditionalFields);
       }
 
       if(!uid)return;
-      /* Applique l'affichage des champs conditionnels selon la valeur
-         courante des deux selects (appelé après chaque préremplissage). */
-      function applyFieldVisibility(){
-        if(fEl&&fEl.value==='function_to_specify'){
-          $('adhFunctionDetailWrap').style.display=''; $('adhFunctionDetail').required=true;
-        }else{
-          $('adhFunctionDetailWrap').style.display='none'; $('adhFunctionDetail').required=false;
-        }
-        if(sEl&&sEl.value==='other'){
-          $('adhSpecialtyOtherWrap').style.display=''; $('adhSpecialtyOther').required=true;
-        }else{
-          $('adhSpecialtyOtherWrap').style.display='none'; $('adhSpecialtyOther').required=false;
-        }
-      }
 
       var session=adhesionSession();
+      var member=session.member||((typeof S!=='undefined' && S.member)?S.member:{});
+      var currentUser=session.user||((typeof S!=='undefined' && S.user)?S.user:{});
 
-      var member=
-        session.member
-        ||((typeof S!=='undefined' && S.member)?S.member:{});
-
-      var currentUser=
-        session.user
-        ||((typeof S!=='undefined' && S.user)?S.user:{});
-
+      /* 3. Préremplissage depuis le brouillon LOCALSTORAGE */
       try{
         var draftKey=adhesionStorageKey('ugtm-adhesion-draft');
-        var draft=JSON.parse(
-          (draftKey&&localStorage.getItem(draftKey))||'null'
-        );
+        var draft=JSON.parse((draftKey&&localStorage.getItem(draftKey))||'null');
 
         if(draft&&typeof draft==='object'){
           prefillIfEmpty('adhNom',draft.nom||'');
@@ -10179,31 +10184,27 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhPpr',draft.ppr||'');
         }
 
-        /* Champs conditionnels : fonction de détail et précision de catégorie.
-           Si une ancienne valeur texte ne correspond à aucune option du select,
-           on l'affiche dans le champ de détail correspondant (pas de perte). */
+        /* Compatibilité brouillon : anciennes valeurs textes libres */
         if(fEl&&draft.function&&!['function_to_specify','no_function'].includes(draft.function)){
           fEl.value='function_to_specify';
-          $('adhFunctionDetailWrap').style.display='';
-          $('adhFunctionDetail').value=draft.function;
+          document.getElementById('adhFunctionDetailWrap').style.display='';
+          document.getElementById('adhFunctionDetail').value=draft.function;
         }
         if(sEl&&draft.specialty&&draft.specialty!=='other'){
           var found=Array.prototype.some.call(sEl.options,function(o){return o.value===draft.specialty;});
           if(!found){
             sEl.value='other';
-            $('adhSpecialtyOtherWrap').style.display='';
-            $('adhSpecialtyOther').value=draft.specialty;
+            document.getElementById('adhSpecialtyOtherWrap').style.display='';
+            document.getElementById('adhSpecialtyOther').value=draft.specialty;
           }
         }
-
-        applyFieldVisibility();
       }catch(e){}
 
+      /* 4. Préremplissage depuis le Profil Membre */
       prefillIfEmpty('adhPhone',member.phone||'');
       prefillIfEmpty('adhProvince',member.prov||'');
       prefillIfEmpty('adhEstablishment',member.etab||'');
 
-      /* Nom complet du profil Google : appliqué UNIQUEMENT après le       brouillon et le dossier existant, et seulement si les deux champs       d'identité sont encore vides — les informations déjà saisies par         l'adhérent ne sont jamais écrasées. */
       var identityFilled=false;
       function fillIdentityFromProfile(){
         if(identityFilled)return;
@@ -10218,19 +10219,16 @@ window.UGTM.failed(err);
         if(split.prenom)prenomEl.value=split.prenom;
       }
 
-var date=document.getElementById('adhDate');
-if(date&&!date.value)
-  date.value=todayStr();
+      var date=document.getElementById('adhDate');
+      if(date&&!date.value) date.value=todayStr();
 
-      /* Reprise d'un dossier existant (complément demandé
-         ou renouvellement) : les données déjà transmises
-         sont rechargées depuis Firestore — l'adhérent
-         complète ce qui manque au lieu de tout ressaisir. */
+      /* 5. Préremplissage depuis Firestore (Dossier existant) */
       if(window.CLOUD&&typeof window.CLOUD.getMyAdhesionRequest==='function'){
         window.CLOUD.getMyAdhesionRequest().then(function(req){
           if(currentAdhesionUid()!==uid)return;
           var app=(req&&req.application)||{};
           if(!app||!app.nom)return;
+
           prefillIfEmpty('adhNom',app.nom||'');
           prefillIfEmpty('adhPrenom',app.prenom||'');
           prefillIfEmpty('adhCin',app.cin||'');
@@ -10244,23 +10242,21 @@ if(date&&!date.value)
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
 
-          /* Compatibilité anciennes demandes : si la valeur texte libre
-             enregistrée ne correspond à aucune option du select, on l'affiche
-             dans le champ de détail correspondant. */
+          /* Compatibilité anciennes demandes */
           if(fEl&&app.function&&!['function_to_specify','no_function'].includes(app.function)){
             fEl.value='function_to_specify';
-            $('adhFunctionDetailWrap').style.display='';
-            $('adhFunctionDetail').value=app.function;
+            document.getElementById('adhFunctionDetailWrap').style.display='';
+            document.getElementById('adhFunctionDetail').value=app.function;
           }
           if(sEl&&app.specialty&&app.specialty!=='other'){
             var found2=Array.prototype.some.call(sEl.options,function(o){return o.value===app.specialty;});
             if(!found2){
               sEl.value='other';
-              $('adhSpecialtyOtherWrap').style.display='';
-              $('adhSpecialtyOther').value=app.specialty;
+              document.getElementById('adhSpecialtyOtherWrap').style.display='';
+              document.getElementById('adhSpecialtyOther').value=app.specialty;
             }
           }
-          applyFieldVisibility();
+
           if(app.type==='renewal'){
             var rr=document.querySelector('input[name="adhType"][value="renewal"]');
             if(rr)rr.checked=true;
@@ -10268,16 +10264,19 @@ if(date&&!date.value)
           }
           syncRenewalReason();
           if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+
+          /* Appliquer l'affichage final */
+          window.toggleConditionalFields();
         }).catch(function(){}).then(function(){
-          /* Dossier chargé (ou absent/indisponible) : le profil ne         comble que ce qui reste vide. */
           fillIdentityFromProfile();
         });
       }else{
         fillIdentityFromProfile();
       }
 
-      /* Le reset du formulaire remet le choix « première adhésion » par
-         défaut : on ré-applique le verrou renouvellement juste après. */
+      /* 6. Forcer l'affichage au chargement initial */
+      window.toggleConditionalFields();
+
       if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
     }
 
