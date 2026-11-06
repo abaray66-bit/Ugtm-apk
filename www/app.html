@@ -10234,8 +10234,8 @@ window.UGTM.failed(err);
       var uid=currentAdhesionUid();
       resetAdhesionForAccount(uid);
 
-      var fEl=$('adhFunction');
-      var sEl=$('adhSpecialty');
+      var fEl=document.getElementById('adhFunction');
+      var sEl=document.getElementById('adhSpecialty');
 
       /* 1. Fonction centrale de gestion des champs conditionnels */
       window.toggleConditionalFields = function(){
@@ -10857,13 +10857,13 @@ window.UGTM.failed(err);
         establishment:document.getElementById('adhEstablishment').value.trim(),
         service:document.getElementById('adhService').value.trim(),
         function:(function(){
-          var el=$('adhFunction');
-          if(el.value==='function_to_specify')return String($('adhFunctionDetail').value||'').trim()||el.value;
+          var el=document.getElementById('adhFunction');
+          if(el.value==='function_to_specify')return String(document.getElementById('adhFunctionDetail').value||'').trim()||el.value;
           return el.value;
         })(),
         specialty:(function(){
-          var el=$('adhSpecialty');
-          if(el.value==='other')return String($('adhSpecialtyOther').value||'').trim()||el.value;
+          var el=document.getElementById('adhSpecialty');
+          if(el.value==='other')return String(document.getElementById('adhSpecialtyOther').value||'').trim()||el.value;
           return el.value;
         })(),
         ppr:document.getElementById('adhPpr').value.trim(),
