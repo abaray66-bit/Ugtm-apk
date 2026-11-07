@@ -6304,7 +6304,7 @@ function renderNews(){
 
 var t=T();
 
-console.log('[Debug NEWS]', NEWS);
+if(window.DEBUG) console.log('[Debug NEWS]', NEWS);
 
 var list=sortedNews().filter(function(c){
 return filter==='all'||c.cat===filter;
@@ -7752,7 +7752,7 @@ function generateAdhesionPdfForAdmin(id){
          l'administrateur connecté, sinon son identifiant Firebase. */
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
-      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
+      if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -7801,7 +7801,7 @@ function shareAdhesionPdf(id){
       if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
-      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
+      if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -10078,9 +10078,9 @@ window.UGTM.failed(err);
     function adhesionPdfBase64(request){
       return new Promise(function(resolve,reject){
         var app=(request&&request.application)||{};
-        console.log('[Debug PDF] request=', request, 'app=', app, 'hasApplication=', !!request.application);
+        if(window.DEBUG) console.log('[Debug PDF] request=', request, 'app=', app, 'hasApplication=', !!request.application);
         var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-        console.log('[Debug PDF] window.jspdf=', !!window.jspdf, 'window.jspdf.jsPDF=', !!window.jspdf?.jsPDF);
+        if(window.DEBUG) console.log('[Debug PDF] window.jspdf=', !!window.jspdf, 'window.jspdf.jsPDF=', !!window.jspdf?.jsPDF);
         if(!jsPDF){console.error('[Debug PDF] jsPDF constructor not available');reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
