@@ -7901,6 +7901,14 @@ function shareAdhesionPdf(id){
   if(confirmBtn)confirmBtn.addEventListener('click',confirmSignAdhesion);
 })();
 
+function todayStr(){
+var d=new Date();
+
+return d.getFullYear()+'-'+
+pad(d.getMonth()+1)+'-'+
+pad(d.getDate());
+}
+
 var admMemSearchEl=$('admMemSearch');
 if(admMemSearchEl){
  admMemSearchEl.addEventListener('input',function(){
