@@ -7565,8 +7565,8 @@ function renderAdhesionDossierInfo(doc){
     row(t.admDocAddress,a.address)+
     row(t.admDocEtab,a.establishment)+
     row(t.admDocService,a.service)+
-    row(t.admDocFunction,a['function'])+
-    row(t.admDocSpecialty,a.specialty)+
+    row(t.admDocFunction,(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return a.functionDetail||'Fonction à préciser';var t2=(typeof T==='function')?T():{};return t2['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a['function']))+
+    row(t.admDocSpecialty,(function(v){if(!v)return '';if(v==='other')return a.specialtyOther||'Autre';var t2=(typeof T==='function')?T():{};return t2['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a.specialty))+
     row(t.admDocPpr,a.ppr)+
     row(t.admDocType,a.type==='renewal'?t.admDocTypeRenewal:t.admDocTypeFirst)+
     (a.type==='renewal'?row(t.admDocReason,a.reason):'')+
