@@ -10255,8 +10255,8 @@ window.UGTM.failed(err);
 
           section('SITUATION PROFESSIONNELLE');
           row1('Établissement / structure',app.establishment);
-          row2('Service / unité',app.service,'Fonction',app['function']);
-          row2('Spécialité',app.specialty,'PPR',app.ppr);
+          row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app['function']));
+          row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app.specialty),'PPR',app.ppr);
 
           section('ADHÉSION');
           row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
