@@ -10332,6 +10332,8 @@ window.UGTM.failed(err);
     window.generateAdhesionPdf=adhesionPdfBase64;
 
   function initDigitalAdhesion(){
+    function pad(n){return (n<10?'0':'')+n;}
+    function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
