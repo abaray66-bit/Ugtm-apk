@@ -10749,6 +10749,7 @@ window.UGTM.failed(err);
       });
     }
 
+    window.generateAdhesionPdf=adhesionPdfBase64;
     var submitting=false;
 
     form.addEventListener('submit',function(e){
@@ -11075,7 +11076,6 @@ window.UGTM.failed(err);
      formulaire après le premier enregistrement du profil
      (hook onFirstProfile de app.html). */
   window.initDigitalAdhesion=initDigitalAdhesion;
-  window.generateAdhesionPdf=adhesionPdfBase64;
 
   setTimeout(function(){
     initDigitalAdhesion();
