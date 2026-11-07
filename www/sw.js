@@ -3,6 +3,10 @@
    - Sans connexion : la dernière version en cache s'ouvre quand même.
    Si vous changez ce fichier ou l'application, augmentez le numéro de version ci-dessous. */
 var VERSION = 'ugtm-v64';
+var VERSION = 'ugtm-v64';
+=======
+var VERSION = 'ugtm-v63';
+>>>>>>> origin/main
 var SHELL = [
   './',
   'index.html',
