@@ -474,14 +474,12 @@ function subscribeAdminEmails(user){
         if (isAdmin) syncPublicProvinceContacts();
         hooks.setSession(session);
          if (isAdmin){
-           subscribeMembers();
-           subscribeReports();
-           subscribeAdhesions();
-           subscribeNews();
+            subscribeMembers();
+            subscribeReports();
+            subscribeAdhesions();
+            subscribeNews();
          }
-       }
->>>>>>> origin/main
-      }
+        }
       if (hooks.setAdminEmails && typeof hooks.setAdminEmails === 'function'){
         try { hooks.setAdminEmails(mergedAdminList(stored)); } catch (e) {}
       }
