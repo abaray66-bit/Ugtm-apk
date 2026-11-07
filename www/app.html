@@ -7267,6 +7267,13 @@ function renderAdminDashboard(){
 
 if(!$('admDashKpis'))return;
 
+if(!(S.isAdmin||S.isSubAdmin)){
+  $('admDashKpis').innerHTML='<div class="admin-kpi"><span>Accès</span><strong class="warn">Refusé</strong></div>';
+  $('admDashProvs').innerHTML='';
+  $('admDashTodo').innerHTML='<div class="admin-todo empty"><span>Accès administrateur requis</span></div>';
+  return;
+}
+
 var t=T();
 
 var members=S.members||[];

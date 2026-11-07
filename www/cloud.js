@@ -470,6 +470,11 @@ function subscribeAdminEmails(user){
         session.isAdmin = isAdmin;
         if (isAdmin) syncPublicProvinceContacts();
         hooks.setSession(session);
+        if (isAdmin){
+          subscribeMembers();
+          subscribeReports();
+          subscribeAdhesions();
+        }
       }
       if (hooks.setAdminEmails && typeof hooks.setAdminEmails === 'function'){
         try { hooks.setAdminEmails(mergedAdminList(stored)); } catch (e) {}
