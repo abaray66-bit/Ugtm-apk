@@ -6304,6 +6304,8 @@ function renderNews(){
 
 var t=T();
 
+console.log('[Debug NEWS]', NEWS);
+
 var list=sortedNews().filter(function(c){
 return filter==='all'||c.cat===filter;
 });
