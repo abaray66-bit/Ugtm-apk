@@ -3708,8 +3708,8 @@ window.markNotificationRead=markNotificationRead;
 </button></nav></div><div class="toast" id="toast" role="status" aria-live="polite"></div><div class="lightbox" id="lightbox" hidden><button type="button" class="lb-close" aria-label="Fermer">×</button><img id="lightboxImg" alt=""><p class="lb-hint" data-i18n="lbClose"></p></div>
 <div class="gallery" id="gallery" hidden role="dialog" aria-modal="true" aria-label="Galerie">
   <button type="button" class="gallery-close" aria-label="Fermer">×</button>
-  <button type="button" class="gallery-prev" aria-label="Photo précédente">‹</button>
-  <button type="button" class="gallery-next" aria-label="Photo suivante">›</button>
+  <button type="button" class="gallery-btn gallery-prev" aria-label="Photo précédente">‹</button>
+  <button type="button" class="gallery-btn gallery-next" aria-label="Photo suivante">›</button>
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
 </div>
@@ -6304,6 +6304,8 @@ function renderNews(){
 
 var t=T();
 
+console.log('[Debug NEWS]', NEWS);
+
 var list=sortedNews().filter(function(c){
 return filter==='all'||c.cat===filter;
 });
@@ -7267,6 +7269,13 @@ function renderAdminDashboard(){
 
 if(!$('admDashKpis'))return;
 
+if(!(S.isAdmin||S.isSubAdmin)){
+  $('admDashKpis').innerHTML='<div class="admin-kpi"><span>Accès</span><strong class="warn">Refusé</strong></div>';
+  $('admDashProvs').innerHTML='';
+  $('admDashTodo').innerHTML='<div class="admin-todo empty"><span>Accès administrateur requis</span></div>';
+  return;
+}
+
 var t=T();
 
 var members=S.members||[];
@@ -7743,6 +7752,7 @@ function generateAdhesionPdfForAdmin(id){
          l'administrateur connecté, sinon son identifiant Firebase. */
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -7791,6 +7801,7 @@ function shareAdhesionPdf(id){
       if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -10051,6 +10062,262 @@ window.UGTM.failed(err);
 <script src="jspdf.umd.min.js"></script>
 <script id="digital-adhesion-js">
 (function(){
+    function adhesionPdfBase64(request){
+      return new Promise(function(resolve,reject){
+        var app=(request&&request.application)||{};
+        console.log('[Debug PDF] request=', request, 'app=', app, 'hasApplication=', !!request.application);
+        var jsPDF=window.jspdf&&window.jspdf.jsPDF;
+        console.log('[Debug PDF] window.jspdf=', !!window.jspdf, 'window.jspdf.jsPDF=', !!window.jspdf?.jsPDF);
+        if(!jsPDF){console.error('[Debug PDF] jsPDF constructor not available');reject(new Error('PDF indisponible'));return;}
+
+        var pdf=new jsPDF({unit:'mm',format:'a4'});
+        var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
+
+        function loadLogo(){
+          return new Promise(function(resolve){
+            var done=false;
+            /* Résout {data,w,h} (rapport conservé) ou '' sans logo. */
+            var finish=function(v){if(done)return;done=true;resolve(v);};
+            /* Filet de sécurité : si l'image ne se charge jamais (WebView
+               d'APK), on continue SANS logo plutôt que de bloquer la
+               génération en silence. */
+            var timer=setTimeout(function(){finish('');},4000);
+            var img=new Image();
+            img.onload=function(){
+              clearTimeout(timer);
+              try{
+                /* Le logo UGTM est carré (512x512) : on conserve SON
+                   rapport largeur/hauteur. L'ancienne version l'écrasait
+                   dans un canevas 420x140 — d'où le logo comprimé
+                   verticalement dans le PDF. */
+                var iw=Number(img.naturalWidth||img.width||0);
+                var ih=Number(img.naturalHeight||img.height||0);
+                /* Repli (WebView qui ne mesure pas le SVG) : format carré
+                   réel du logo du dépôt, jamais de déformation imposée. */
+                if(!(iw>0)||!(ih>0)){iw=512;ih=512;}
+                var s=Math.min(512/iw,512/ih);
+                var c=document.createElement('canvas');
+                c.width=Math.max(1,Math.round(iw*s));
+                c.height=Math.max(1,Math.round(ih*s));
+                var cx=c.getContext('2d');
+                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut,
+                   un JPEG équivalent pèse quelques Ko. */
+                cx.fillStyle='#ffffff';
+                cx.fillRect(0,0,c.width,c.height);
+                cx.drawImage(img,0,0,c.width,c.height);
+                finish({data:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height});
+              }catch(e){finish('');}
+            };
+            img.onerror=function(){clearTimeout(timer);finish('');};
+            img.src='icons/ugtm-logo.svg';
+          });
+        }
+
+        /* Barre de titre de rubrique (8 mm) : la mise en page reste
+           compacte pour tenir sur UNE seule page A4. */
+        function section(title){
+          /* Filet de page : un contenu long ne doit jamais être dessiné
+             hors de la feuille (la section VALIDATION et sa référence
+             disparaissaient ainsi en pied de document). */
+          if(y+22>274){pdf.addPage();y=24;}
+          pdf.setFillColor(248,235,242);
+          pdf.roundedRect(margin,y-4,fullW,8,1.5,1.5,'F');
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(184,50,104);
+          pdf.text(title,margin+3,y+0.8);
+          pdf.setTextColor(0,0,0);
+          y+=10.5;
+        }
+
+        /* Une case « libellé : valeur ». Renvoie la hauteur occupée (mm).
+           Une valeur trop longue pour la ligne passe sous son libellé. */
+        function cell(label,value,x,w){
+          w=w||colW;
+          var lbl=String(label||'')+' : ';
+          var lblSize=8.6,valSize=9.2,gap=0.8;
+          var val=(value===undefined||value===null)?'':String(value);
+          /* Le libellé est mesuré ET dessiné à la MÊME taille : l'ancienne
+             version mesurait en 8,6 pt puis redessinait en 9,2 pt (taille
+             laissée par la mesure de la valeur), ce qui faisait
+             chevaucher les intitulés et les informations. */
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(lblSize);
+          var lw=pdf.getTextWidth(lbl);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(valSize);
+          var vw=val?pdf.getTextWidth(val):0;
+          var h=4.6;
+          if(val&&lw+gap+vw>w-1){
+            /* Valeur trop longue : libellé seul sur sa ligne, puis la
+               valeur sur la ou les lignes suivantes. */
+            pdf.setTextColor(95,95,95);
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(lblSize);
+            pdf.text(lbl,x,y);
+            pdf.setTextColor(0,0,0);
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(valSize);
+            var lines=pdf.splitTextToSize(val,w);
+            for(var i=0;i<lines.length;i++)pdf.text(lines[i],x,y+4.4+i*4.1);
+            h=4.4+lines.length*4.1;
+          }else{
+            pdf.setTextColor(95,95,95);
+            pdf.setFont(undefined,'bold');
+            pdf.setFontSize(lblSize);
+            pdf.text(lbl,x,y);
+            pdf.setTextColor(0,0,0);
+            if(val){
+              pdf.setFont(undefined,'normal');
+              pdf.setFontSize(valSize);
+              pdf.text(val,x+lw+gap,y);
+            }
+          }
+          pdf.setTextColor(0,0,0);
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(valSize);
+          return h;
+        }
+
+        /* Une ligne à deux colonnes (la seconde est facultative). */
+        function row2(l1,v1,l2,v2){
+          if(y+22>274){pdf.addPage();y=24;}
+          var h1=cell(l1,v1,margin,colW);
+          var h2=(l2!==undefined&&l2!==null)?cell(l2,v2,col2,colW):0;
+          y+=Math.max(h1,h2)+1.6;
+        }
+
+        /* Une ligne pleine largeur. */
+        function row1(l,v){
+          if(y+22>274){pdf.addPage();y=24;}
+          y+=cell(l,v,margin,fullW)+1.6;
+        }
+
+        /* Les DEUX cases de signature (adhérent puis responsable) sont
+           dessinées côte à côte : elles tiennent toujours sur la même
+           page, l'une à côté de l'autre. */
+        function drawSignatureBox(title,x,boxY,image){
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(9.5);
+          pdf.setTextColor(60,60,60);
+          pdf.text(title,x,boxY);
+          pdf.setDrawColor(170,170,170);
+          pdf.setLineWidth(.5);
+          pdf.roundedRect(x,boxY+4,colW-3,32,1.5,1.5,'S');
+          if(image){
+            try{pdf.addImage(image,'JPEG',x+3,boxY+6,colW-9,28);}catch(e){}
+          }
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(8);
+          pdf.setTextColor(120,120,120);
+          pdf.text('Signature',x+3,boxY+40);
+          pdf.setTextColor(0,0,0);
+        }
+
+        loadLogo().then(function(logo){
+
+          if(logo&&logo.data){
+            /* Logo agrandi et conservé dans ses proportions. */
+            var ratio=(logo.w>0&&logo.h>0)?(logo.w/logo.h):1;
+            var boxL=Math.min(26,26*ratio);
+            var boxH=boxL/ratio;
+            pdf.addImage(logo.data,'JPEG',margin,8+(26-boxH)/2,boxL,boxH);
+          }
+
+          var ref=(request&&request.id)?String(request.id)
+            :((request&&request.uid)?String(request.uid):'');
+          pdf.setFont(undefined,'bold');
+          pdf.setFontSize(15);
+          pdf.setTextColor(184,50,104);
+          pdf.text("DEMANDE D'ADHÉSION",pageW/2,25,{align:'center'});
+          pdf.setTextColor(0,0,0);
+          y=38;
+
+          section('IDENTIFICATION DE L’ADHÉRENT');
+          row2('Nom',app.nom,'Prénom',app.prenom);
+          row2('CIN',app.cin,'Date de naissance',app.dob);
+          row2('Téléphone',app.phone,'Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
+          row1('Adresse',app.address);
+
+          section('SITUATION PROFESSIONNELLE');
+          row1('Établissement / structure',app.establishment);
+          row2('Service / unité',app.service,'Fonction',app['function']);
+          row2('Spécialité',app.specialty,'PPR',app.ppr);
+
+          section('ADHÉSION');
+          row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
+          if(app.type==='renewal')row1('Motif du renouvellement',app.reason);
+
+          section('ENGAGEMENT');
+          /* Engagement de l'adhérent : encadré sur toute la largeur. */
+          pdf.setFillColor(248,235,242);
+          pdf.roundedRect(margin,y-4,fullW,17,1.5,1.5,'F');
+          pdf.setFont(undefined,'normal');
+          pdf.setFontSize(9.2);
+          pdf.setTextColor(60,60,60);
+          pdf.text([
+            "Je déclare adhérer à la Fédération nationale de la Santé",
+            "et accepter ses statuts ainsi que son règlement intérieur."
+          ],margin+3,y+3);
+          pdf.setTextColor(0,0,0);
+          y+=19;
+
+          /* Les deux cases de signature (44 mm) doivent tenir sur la
+             MÊME page : bascule de page AVANT dessin si nécessaire. */
+          if(y+62>274){pdf.addPage();y=24;}
+          section('SIGNATURES');
+          var signatureY=y;
+          /* Les deux cases de signature sont toujours dessinées côte à
+             côte : jamais l'une sur une page, l'autre sur l'autre. */
+          drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
+          drawSignatureBox('Signature du responsable syndical',col2,signatureY,request&&request.adminSignature);
+
+          y=signatureY+44;
+
+          /* Identité du signataire et date de validation : le PDF officiel
+             porte la trace de qui a validé le dossier et quand. */
+          var signedBy = request && request.signedBy ? String(request.signedBy) : '';
+          var signerMember = (S.members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
+          var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
+          var isRegionalAdmin = S.isAdmin && !S.isSubAdmin;
+          var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
+          var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
+          var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
+          var validationDate='';
+          if(request&&request.signedAt){
+            try{
+              var signedAt=request.signedAt;
+              if(signedAt&&typeof signedAt.toDate==='function')signedAt=signedAt.toDate();
+              else if(signedAt&&typeof signedAt.toMillis==='function')signedAt=new Date(signedAt.toMillis());
+              else signedAt=new Date(signedAt);
+              if(signedAt&&!isNaN(signedAt.getTime()))validationDate=signedAt.toLocaleDateString('fr-FR');
+            }catch(eDate){}
+          }
+          section('VALIDATION');
+          row2('Validée par',signer,'Statut du dossier','VALIDÉE');
+          row1('Date de validation',validationDate);
+
+          /* Pied de page sur CHAQUE page : fil conducteur
+             du document, avec numérotation. */
+          var pages=pdf.getNumberOfPages();
+          for(var p=1;p<=pages;p++){
+            pdf.setPage(p);
+            pdf.setFont(undefined,'normal');
+            pdf.setFontSize(8);
+            pdf.setTextColor(120,120,120);
+            pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
+            pdf.text('Page '+p+'/'+pages,pageW-margin,287,{align:'right'});
+            pdf.setTextColor(0,0,0);
+          }
+
+          var b64=String(pdf.output('datauristring')||'').split(',')[1]||'';
+          resolve(b64);
+        }).catch(reject);
+      });
+    }
+
+    window.generateAdhesionPdf=adhesionPdfBase64;
+
   function initDigitalAdhesion(){
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
@@ -10484,260 +10751,6 @@ window.UGTM.failed(err);
        responsable — DEUX cases de signature au total — et tient sur UNE
        seule page A4 (mise en page compacte à deux colonnes).
        Retourne le base64 du PDF. */
-    function adhesionPdfBase64(request){
-      return new Promise(function(resolve,reject){
-        var app=(request&&request.application)||{};
-        var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-        if(!jsPDF){reject(new Error('PDF indisponible'));return;}
-
-        var pdf=new jsPDF({unit:'mm',format:'a4'});
-        var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
-
-        function loadLogo(){
-          return new Promise(function(resolve){
-            var done=false;
-            /* Résout {data,w,h} (rapport conservé) ou '' sans logo. */
-            var finish=function(v){if(done)return;done=true;resolve(v);};
-            /* Filet de sécurité : si l'image ne se charge jamais (WebView
-               d'APK), on continue SANS logo plutôt que de bloquer la
-               génération en silence. */
-            var timer=setTimeout(function(){finish('');},4000);
-            var img=new Image();
-            img.onload=function(){
-              clearTimeout(timer);
-              try{
-                /* Le logo UGTM est carré (512x512) : on conserve SON
-                   rapport largeur/hauteur. L'ancienne version l'écrasait
-                   dans un canevas 420x140 — d'où le logo comprimé
-                   verticalement dans le PDF. */
-                var iw=Number(img.naturalWidth||img.width||0);
-                var ih=Number(img.naturalHeight||img.height||0);
-                /* Repli (WebView qui ne mesure pas le SVG) : format carré
-                   réel du logo du dépôt, jamais de déformation imposée. */
-                if(!(iw>0)||!(ih>0)){iw=512;ih=512;}
-                var s=Math.min(512/iw,512/ih);
-                var c=document.createElement('canvas');
-                c.width=Math.max(1,Math.round(iw*s));
-                c.height=Math.max(1,Math.round(ih*s));
-                var cx=c.getContext('2d');
-                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut,
-                   un JPEG équivalent pèse quelques Ko. */
-                cx.fillStyle='#ffffff';
-                cx.fillRect(0,0,c.width,c.height);
-                cx.drawImage(img,0,0,c.width,c.height);
-                finish({data:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height});
-              }catch(e){finish('');}
-            };
-            img.onerror=function(){clearTimeout(timer);finish('');};
-            img.src='icons/ugtm-logo.svg';
-          });
-        }
-
-        /* Barre de titre de rubrique (8 mm) : la mise en page reste
-           compacte pour tenir sur UNE seule page A4. */
-        function section(title){
-          /* Filet de page : un contenu long ne doit jamais être dessiné
-             hors de la feuille (la section VALIDATION et sa référence
-             disparaissaient ainsi en pied de document). */
-          if(y+22>274){pdf.addPage();y=24;}
-          pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-4,fullW,8,1.5,1.5,'F');
-          pdf.setFont(undefined,'bold');
-          pdf.setFontSize(9.5);
-          pdf.setTextColor(184,50,104);
-          pdf.text(title,margin+3,y+0.8);
-          pdf.setTextColor(0,0,0);
-          y+=10.5;
-        }
-
-        /* Une case « libellé : valeur ». Renvoie la hauteur occupée (mm).
-           Une valeur trop longue pour la ligne passe sous son libellé. */
-        function cell(label,value,x,w){
-          w=w||colW;
-          var lbl=String(label||'')+' : ';
-          var lblSize=8.6,valSize=9.2,gap=0.8;
-          var val=(value===undefined||value===null)?'':String(value);
-          /* Le libellé est mesuré ET dessiné à la MÊME taille : l'ancienne
-             version mesurait en 8,6 pt puis redessinait en 9,2 pt (taille
-             laissée par la mesure de la valeur), ce qui faisait
-             chevaucher les intitulés et les informations. */
-          pdf.setFont(undefined,'bold');
-          pdf.setFontSize(lblSize);
-          var lw=pdf.getTextWidth(lbl);
-          pdf.setFont(undefined,'normal');
-          pdf.setFontSize(valSize);
-          var vw=val?pdf.getTextWidth(val):0;
-          var h=4.6;
-          if(val&&lw+gap+vw>w-1){
-            /* Valeur trop longue : libellé seul sur sa ligne, puis la
-               valeur sur la ou les lignes suivantes. */
-            pdf.setTextColor(95,95,95);
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(lblSize);
-            pdf.text(lbl,x,y);
-            pdf.setTextColor(0,0,0);
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(valSize);
-            var lines=pdf.splitTextToSize(val,w);
-            for(var i=0;i<lines.length;i++)pdf.text(lines[i],x,y+4.4+i*4.1);
-            h=4.4+lines.length*4.1;
-          }else{
-            pdf.setTextColor(95,95,95);
-            pdf.setFont(undefined,'bold');
-            pdf.setFontSize(lblSize);
-            pdf.text(lbl,x,y);
-            pdf.setTextColor(0,0,0);
-            if(val){
-              pdf.setFont(undefined,'normal');
-              pdf.setFontSize(valSize);
-              pdf.text(val,x+lw+gap,y);
-            }
-          }
-          pdf.setTextColor(0,0,0);
-          pdf.setFont(undefined,'normal');
-          pdf.setFontSize(valSize);
-          return h;
-        }
-
-        /* Une ligne à deux colonnes (la seconde est facultative). */
-        function row2(l1,v1,l2,v2){
-          if(y+22>274){pdf.addPage();y=24;}
-          var h1=cell(l1,v1,margin,colW);
-          var h2=(l2!==undefined&&l2!==null)?cell(l2,v2,col2,colW):0;
-          y+=Math.max(h1,h2)+1.6;
-        }
-
-        /* Une ligne pleine largeur. */
-        function row1(l,v){
-          if(y+22>274){pdf.addPage();y=24;}
-          y+=cell(l,v,margin,fullW)+1.6;
-        }
-
-        /* Les DEUX cases de signature (adhérent puis responsable) sont
-           dessinées côte à côte : elles tiennent toujours sur la même
-           page, l'une à côté de l'autre. */
-        function drawSignatureBox(title,x,boxY,image){
-          pdf.setFont(undefined,'bold');
-          pdf.setFontSize(9.5);
-          pdf.setTextColor(60,60,60);
-          pdf.text(title,x,boxY);
-          pdf.setDrawColor(170,170,170);
-          pdf.setLineWidth(.5);
-          pdf.roundedRect(x,boxY+4,colW-3,32,1.5,1.5,'S');
-          if(image){
-            try{pdf.addImage(image,'JPEG',x+3,boxY+6,colW-9,28);}catch(e){}
-          }
-          pdf.setFont(undefined,'normal');
-          pdf.setFontSize(8);
-          pdf.setTextColor(120,120,120);
-          pdf.text('Signature',x+3,boxY+40);
-          pdf.setTextColor(0,0,0);
-        }
-
-        loadLogo().then(function(logo){
-
-          if(logo&&logo.data){
-            /* Logo agrandi et conservé dans ses proportions. */
-            var ratio=(logo.w>0&&logo.h>0)?(logo.w/logo.h):1;
-            var boxL=Math.min(26,26*ratio);
-            var boxH=boxL/ratio;
-            pdf.addImage(logo.data,'JPEG',margin,8+(26-boxH)/2,boxL,boxH);
-          }
-
-          var ref=(request&&request.id)?String(request.id)
-            :((request&&request.uid)?String(request.uid):'');
-          pdf.setFont(undefined,'bold');
-          pdf.setFontSize(15);
-          pdf.setTextColor(184,50,104);
-          pdf.text("DEMANDE D'ADHÉSION",pageW/2,25,{align:'center'});
-          pdf.setTextColor(0,0,0);
-          y=38;
-
-          section('IDENTIFICATION DE L’ADHÉRENT');
-          row2('Nom',app.nom,'Prénom',app.prenom);
-          row2('CIN',app.cin,'Date de naissance',app.dob);
-          row2('Téléphone',app.phone,'Province / Préfecture',(typeof provName==='function')?provName(app.province,'fr'):app.province);
-          row1('Adresse',app.address);
-
-          section('SITUATION PROFESSIONNELLE');
-          row1('Établissement / structure',app.establishment);
-          row2('Service / unité',app.service,'Fonction',app['function']);
-          row2('Spécialité',app.specialty,'PPR',app.ppr);
-
-          section('ADHÉSION');
-          row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
-          if(app.type==='renewal')row1('Motif du renouvellement',app.reason);
-
-          section('ENGAGEMENT');
-          /* Engagement de l'adhérent : encadré sur toute la largeur. */
-          pdf.setFillColor(248,235,242);
-          pdf.roundedRect(margin,y-4,fullW,17,1.5,1.5,'F');
-          pdf.setFont(undefined,'normal');
-          pdf.setFontSize(9.2);
-          pdf.setTextColor(60,60,60);
-          pdf.text([
-            "Je déclare adhérer à la Fédération nationale de la Santé",
-            "et accepter ses statuts ainsi que son règlement intérieur."
-          ],margin+3,y+3);
-          pdf.setTextColor(0,0,0);
-          y+=19;
-
-          /* Les deux cases de signature (44 mm) doivent tenir sur la
-             MÊME page : bascule de page AVANT dessin si nécessaire. */
-          if(y+62>274){pdf.addPage();y=24;}
-          section('SIGNATURES');
-          var signatureY=y;
-          /* Les deux cases de signature sont toujours dessinées côte à
-             côte : jamais l'une sur une page, l'autre sur l'autre. */
-          drawSignatureBox("Signature de l’adhérent",margin,signatureY,request&&request.signature);
-          drawSignatureBox('Signature du responsable syndical',col2,signatureY,request&&request.adminSignature);
-
-          y=signatureY+44;
-
-          /* Identité du signataire et date de validation : le PDF officiel
-             porte la trace de qui a validé le dossier et quand. */
-          var signedBy = request && request.signedBy ? String(request.signedBy) : '';
-          var signerMember = (S.members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
-          var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
-          var isRegionalAdmin = S.isAdmin && !S.isSubAdmin;
-          var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
-          var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
-          var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
-          var validationDate='';
-          if(request&&request.signedAt){
-            try{
-              var signedAt=request.signedAt;
-              if(signedAt&&typeof signedAt.toDate==='function')signedAt=signedAt.toDate();
-              else if(signedAt&&typeof signedAt.toMillis==='function')signedAt=new Date(signedAt.toMillis());
-              else signedAt=new Date(signedAt);
-              if(signedAt&&!isNaN(signedAt.getTime()))validationDate=signedAt.toLocaleDateString('fr-FR');
-            }catch(eDate){}
-          }
-          section('VALIDATION');
-          row2('Validée par',signer,'Statut du dossier','VALIDÉE');
-          row1('Date de validation',validationDate);
-
-          /* Pied de page sur CHAQUE page : fil conducteur
-             du document, avec numérotation. */
-          var pages=pdf.getNumberOfPages();
-          for(var p=1;p<=pages;p++){
-            pdf.setPage(p);
-            pdf.setFont(undefined,'normal');
-            pdf.setFontSize(8);
-            pdf.setTextColor(120,120,120);
-            pdf.text('Union Générale des Travailleurs du Maroc – Fédération nationale de la Santé – Région Souss-Massa',105,287,{align:'center'});
-            pdf.text('Page '+p+'/'+pages,pageW-margin,287,{align:'right'});
-            pdf.setTextColor(0,0,0);
-          }
-
-          var b64=String(pdf.output('datauristring')||'').split(',')[1]||'';
-          resolve(b64);
-        }).catch(reject);
-      });
-    }
-
-    window.generateAdhesionPdf=adhesionPdfBase64;
-
     var submitting=false;
 
     form.addEventListener('submit',function(e){

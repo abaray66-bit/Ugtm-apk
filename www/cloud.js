@@ -265,6 +265,7 @@ function subscribeMembers(){
     ? collection(db, 'members')
     : query(collection(db, 'members'), where('prov', '==', adminProvince));
   unsubs.members = onSnapshot(membersQuery, function(snap){
+    console.log('[Debug Admin] subscribeMembers: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'isSubAdmin=', session.isSubAdmin);
     hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
   }, function(err){hooks.error(err);});
 }
@@ -296,6 +297,7 @@ function subscribeAdhesions(){
   if (session.isAdmin) q = collection(db, 'adhesionRequests');
   else q = query(collection(db, 'adhesionRequests'), where('province', '==', String(session.member && session.member.adminProvince || '')));
   unsubs.adhesions = onSnapshot(q, function(snap){
+    console.log('[Debug Admin] subscribeAdhesions: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'province=', session.member && session.member.adminProvince);
     hooks.setAdhesions(snap.docs.map(function(d){
       var x = d.data();
       var app = x.application || {};
@@ -466,11 +468,19 @@ function subscribeAdminEmails(user){
     function(snap){
       var stored = storedAdminList(snap);
       var isAdmin = isAdminUser(user, stored);
+      console.log('[Debug Admin] subscribeAdminEmails: stored=', stored, 'isAdmin=', isAdmin, 'session.isAdmin=', session.isAdmin, 'userEmail=', user && user.email);
       if (isAdmin !== session.isAdmin){
         session.isAdmin = isAdmin;
         if (isAdmin) syncPublicProvinceContacts();
         hooks.setSession(session);
-        subscribeNews();
+         if (isAdmin){
+           subscribeMembers();
+           subscribeReports();
+           subscribeAdhesions();
+           subscribeNews();
+         }
+       }
+>>>>>>> origin/main
       }
       if (hooks.setAdminEmails && typeof hooks.setAdminEmails === 'function'){
         try { hooks.setAdminEmails(mergedAdminList(stored)); } catch (e) {}
