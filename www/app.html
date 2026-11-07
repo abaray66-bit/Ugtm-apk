@@ -10070,6 +10070,11 @@ window.UGTM.failed(err);
 <script src="jspdf.umd.min.js"></script>
 <script id="digital-adhesion-js">
 (function(){
+    function todayStr(){
+      var d=new Date();
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    }
+    function pad(n){return (n<10?'0':'')+n;}
     function adhesionPdfBase64(request){
       return new Promise(function(resolve,reject){
         var app=(request&&request.application)||{};
