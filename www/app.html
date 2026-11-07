@@ -10627,7 +10627,10 @@ window.UGTM.failed(err);
       }
 
       var date=document.getElementById('adhDate');
-      if(date&&!date.value) date.value=todayStr();
+      if(date&&!date.value){
+        var _d=new Date();
+        date.value=_d.getFullYear()+'-'+(_d.getMonth()+1<10?'0':'')+(_d.getMonth()+1)+'-'+(_d.getDate()<10?'0':'')+_d.getDate();
+      }
 
       /* 5. Préremplissage depuis Firestore (Dossier existant) */
       if(window.CLOUD&&typeof window.CLOUD.getMyAdhesionRequest==='function'){
