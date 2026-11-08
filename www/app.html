@@ -9927,7 +9927,7 @@ if(window.prefillDigitalAdhesion){
 }
 
 if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function' && S.user){
-  try { window.CLOUD.ensurePushRegistration(); } catch(e){}
+  (async function(){ try { var ok = await window.CLOUD.ensurePushRegistration(); if(ok && typeof refreshPushStatus === 'function') refreshPushStatus(); } catch(e){} })();
 }
 
 if(
