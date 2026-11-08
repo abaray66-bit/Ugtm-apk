@@ -3751,6 +3751,7 @@ editEventId:null,
 responsables:[],
 formDirty:false
 };
+window.UGTM_SESSION = S;
 
 var I18N = {
 
@@ -6304,7 +6305,7 @@ function renderNews(){
 
 var t=T();
 
-console.log('[Debug NEWS]', NEWS);
+if(window.DEBUG) console.log('[Debug NEWS]', NEWS);
 
 var list=sortedNews().filter(function(c){
 return filter==='all'||c.cat===filter;
@@ -7564,8 +7565,8 @@ function renderAdhesionDossierInfo(doc){
     row(t.admDocAddress,a.address)+
     row(t.admDocEtab,a.establishment)+
     row(t.admDocService,a.service)+
-    row(t.admDocFunction,a['function'])+
-    row(t.admDocSpecialty,a.specialty)+
+    row(t.admDocFunction,(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return a.functionDetail||'Fonction à préciser';var t2=(typeof T==='function')?T():{};return t2['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a['function']))+
+    row(t.admDocSpecialty,(function(v){if(!v)return '';if(v==='other')return a.specialtyOther||'Autre';var t2=(typeof T==='function')?T():{};return t2['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a.specialty))+
     row(t.admDocPpr,a.ppr)+
     row(t.admDocType,a.type==='renewal'?t.admDocTypeRenewal:t.admDocTypeFirst)+
     (a.type==='renewal'?row(t.admDocReason,a.reason):'')+
@@ -7752,7 +7753,7 @@ function generateAdhesionPdfForAdmin(id){
          l'administrateur connecté, sinon son identifiant Firebase. */
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
-      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
+      if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -7801,7 +7802,7 @@ function shareAdhesionPdf(id){
       if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
       var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
       doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
-      console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
+      if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
       return window.generateAdhesionPdf(doc).then(function(b64){
@@ -10070,12 +10071,17 @@ window.UGTM.failed(err);
 <script src="jspdf.umd.min.js"></script>
 <script id="digital-adhesion-js">
 (function(){
+    function todayStr(){
+      var d=new Date();
+      return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+    }
+    function pad(n){return (n<10?'0':'')+n;}
     function adhesionPdfBase64(request){
       return new Promise(function(resolve,reject){
         var app=(request&&request.application)||{};
-        console.log('[Debug PDF] request=', request, 'app=', app, 'hasApplication=', !!request.application);
+        if(window.DEBUG) console.log('[Debug PDF] request=', request, 'app=', app, 'hasApplication=', !!request.application);
         var jsPDF=window.jspdf&&window.jspdf.jsPDF;
-        console.log('[Debug PDF] window.jspdf=', !!window.jspdf, 'window.jspdf.jsPDF=', !!window.jspdf?.jsPDF);
+        if(window.DEBUG) console.log('[Debug PDF] window.jspdf=', !!window.jspdf, 'window.jspdf.jsPDF=', !!window.jspdf?.jsPDF);
         if(!jsPDF){console.error('[Debug PDF] jsPDF constructor not available');reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
@@ -10249,8 +10255,8 @@ window.UGTM.failed(err);
 
           section('SITUATION PROFESSIONNELLE');
           row1('Établissement / structure',app.establishment);
-          row2('Service / unité',app.service,'Fonction',app['function']);
-          row2('Spécialité',app.specialty,'PPR',app.ppr);
+          row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app['function']));
+          row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app.specialty),'PPR',app.ppr);
 
           section('ADHÉSION');
           row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
@@ -10285,9 +10291,9 @@ window.UGTM.failed(err);
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
           var signedBy = request && request.signedBy ? String(request.signedBy) : '';
-          var signerMember = (S.members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
+          var signerMember = (((window.UGTM_SESSION)||{}).members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
           var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
-          var isRegionalAdmin = S.isAdmin && !S.isSubAdmin;
+          var isRegionalAdmin = ((window.UGTM_SESSION)||{}).isAdmin && !((window.UGTM_SESSION)||{}).isSubAdmin;
           var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
           var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
           var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
@@ -10327,6 +10333,8 @@ window.UGTM.failed(err);
     window.generateAdhesionPdf=adhesionPdfBase64;
 
   function initDigitalAdhesion(){
+    function pad(n){return (n<10?'0':'')+n;}
+    function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
     var canvas=document.getElementById('adhSignature');
     var form=document.getElementById('adhesionForm');
     if(!canvas||!form||canvas.dataset.ready)return;
@@ -10620,7 +10628,10 @@ window.UGTM.failed(err);
       }
 
       var date=document.getElementById('adhDate');
-      if(date&&!date.value) date.value=todayStr();
+      if(date&&!date.value){
+        var _d=new Date();
+        date.value=_d.getFullYear()+'-'+(_d.getMonth()+1<10?'0':'')+(_d.getMonth()+1)+'-'+(_d.getDate()<10?'0':'')+_d.getDate();
+      }
 
       /* 5. Préremplissage depuis Firestore (Dossier existant) */
       if(window.CLOUD&&typeof window.CLOUD.getMyAdhesionRequest==='function'){
@@ -11268,7 +11279,7 @@ function updateNotifBadge(n){
   var btn=document.getElementById('meBtn');
   if(btn){
     btn.addEventListener('click',function(){
-      if(window.S&&window.S.user){
+      if(window.UGTM_SESSION&&window.UGTM_SESSION.user){
         var m=document.getElementById('notifModal');
         if(m){m.hidden=false;}
         if(typeof loadNotifications==='function')loadNotifications();
