@@ -3881,7 +3881,7 @@ admSignedBadge:`Signée et validée électroniquement`,
   admStatusRefused:`Refusée`,
   admAskCompletion:`Demander un complément`,
   admRefuse:`Refuser`,
-  admGeneratePdfLong:`Générer / Télécharger le PDF signé`,
+  admGeneratePdfLong:`Générer / partager le PDF signé`,
 
 nextT:`Prochain rendez-vous`,
 lastEventT:`Dernier rendez-vous publié`,
@@ -7430,7 +7430,6 @@ el.innerHTML=list.length?list.map(function(a){
       /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
       if(a.status==='accepted'&&a.signed){
         actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
-        actions+='<button type="button" class="btn ghost small" data-adm-act="shareAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admSharePdf)+'</button>';
       }
      /* Suppression du dossier : administrateur général seulement (les
         règles Firestore n'autorisent la suppression qu'à l'admin). Elle
