@@ -7770,7 +7770,7 @@ function generateAdhesionPdfForAdmin(id){
     var b64=res.stored||res.fresh;
     /* Le succès n'est affiché qu'après confirmation de
        l'enregistrement effectif du fichier sur l'appareil. */
-    return savePdfToDevice(b64,res.fileName)
+    return savePdfToDevice(b64,(res&&res.fileName)?res.fileName:'demande-adhesion.pdf')
     .then(function(){toast(res.stored?t.admPdfFetched:t.admPdfDone,5000);});
   })
   .catch(function(err){
@@ -7823,7 +7823,7 @@ function shareAdhesionPdf(id){
     if(!(fs&&fs.writeFile&&share&&typeof share.share==='function'))
     throw new Error('Partage indisponible');
     /* Écrit le PDF dans le cache pour obtenir un URI partageable. */
-    return fs.writeFile({path:fileName,data:b64,directory:'CACHE'})
+    return fs.writeFile({path:(fileName||'demande-adhesion.pdf'),data:b64,directory:'CACHE'})
     .then(function(saved){
       var uri=(saved&&saved.uri)?String(saved.uri):'';
       if(!uri)throw new Error('URI PDF introuvable');
