@@ -2424,6 +2424,34 @@ function pushLastAttempt(){
     return raw ? JSON.parse(raw) : null;
   } catch(e){ return null; }
 }
+async function ensurePushRegistration(){
+  if(!auth || !auth.currentUser) return false;
+  var isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if(!isNative) return false;
+  var PushNotifications = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications;
+  if(!PushNotifications) return false;
+  try {
+    var perm = await PushNotifications.checkPermissions();
+    if(!perm || perm.receive !== "granted") return false;
+    var nativeToken = await new Promise(function(resolve, reject){
+      var done = false;
+      PushNotifications.addListener("registration", function(t){ if(done) return; done=true; resolve(t && t.value ? t.value : null); });
+      PushNotifications.addListener("registrationError", function(e){ if(done) return; done=true; reject(new Error((e && e.error) || "err")); });
+      PushNotifications.register().catch(function(e){ if(!done){ done=true; reject(e); } });
+      setTimeout(function(){ if(!done){ done=true; resolve(null); } }, 20000);
+    });
+    if(!nativeToken) return false;
+    var snap = await getDoc(doc(db, "fcmTokens", auth.currentUser.uid));
+    var data = snap.exists() ? (snap.data() || {}) : {};
+    var tokens = Array.isArray(data.tokens) ? data.tokens : [];
+    if(tokens.indexOf(nativeToken) < 0){
+      await setDoc(doc(db, "fcmTokens", auth.currentUser.uid), { tokens: arrayUnion(nativeToken), token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
+    } else {
+      await setDoc(doc(db, "fcmTokens", auth.currentUser.uid), { token: nativeToken, updatedAt: serverTimestamp() }, { merge: true });
+    }
+    return true;
+  } catch(e){ return false; }
+}
 
 async function cloudLoadNotifications(){
   if (!auth || !auth.currentUser) return;
@@ -2515,6 +2543,7 @@ async function cloudMarkNotificationRead(id){
     markNotificationRead: cloudMarkNotificationRead,
     pushDeviceState: pushDeviceState,
     lastPushAttempt: pushLastAttempt,
+    ensurePushRegistration: ensurePushRegistration,
 
     // Chargement à la demande : les listes ne transportent pas les gros champs.
     getNewsImage: function(id){

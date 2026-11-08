@@ -9926,6 +9926,10 @@ if(window.prefillDigitalAdhesion){
   window.prefillDigitalAdhesion();
 }
 
+if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function' && S.user){
+  try { window.CLOUD.ensurePushRegistration(); } catch(e){}
+}
+
 if(
 (wasManager&&!S.isAdmin&&!S.isSubAdmin)||
 !s.user
