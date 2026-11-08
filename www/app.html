@@ -7820,8 +7820,20 @@ function shareAdhesionPdf(id){
     var plugins=window.Capacitor&&window.Capacitor.Plugins;
     var fs=isNative&&plugins?plugins.Filesystem:null;
     var share=isNative&&plugins?plugins.Share:null;
-    if(!(fs&&fs.writeFile&&share&&typeof share.share==='function'))
-    throw new Error('Partage indisponible');
+    if(!(fs&&fs.writeFile&&share&&typeof share.share==='function')){
+      if(!isNative && typeof navigator!=='undefined' && typeof navigator.share==='function' && typeof navigator.canShare==='function'){
+        try{
+          var bin=atob(b64); var arr=new Uint8Array(bin.length);
+          for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+          var blob=new Blob([arr],{type:'application/pdf'});
+          var file=new File([blob],fileName||'demande-adhesion.pdf',{type:'application/pdf'});
+          if(navigator.canShare({files:[file]})){
+            return navigator.share({files:[file],title:fileName||'PDF',text:t.admSharePdfMsg||'PDF adhesion UGTM'});
+          }
+        }catch(e){}
+      }
+      throw new Error('Partage indisponible');
+    }
     /* Écrit le PDF dans le cache pour obtenir un URI partageable. */
     return fs.writeFile({path:(fileName||'demande-adhesion.pdf'),data:b64,directory:'CACHE'})
     .then(function(saved){
