@@ -1,4 +1,19 @@
-<!DOCTYPE html><html lang="fr" dir="ltr">
+var SPECIALITE_FR={
+ medecins_pharmaciens_dentistes:`Corps des médecins, pharmaciens et chirurgiens-dentistes`,
+ ingenieurs_architectes:`Corps des ingénieurs et des architectes`,
+ administrateurs:`Corps des administrateurs`,
+ infirmiers_techniciens_sante:`Corps des infirmiers et techniciens de santé`,
+ infirmiers_assistants:`Cadre des infirmiers auxiliaires`,
+ techniciens:`Corps des techniciens`,
+ assistants_sante_prepa:`Cadre assistants santé (préparatoire)`,
+ autres_sante_etat:`Cadre assistants santé (d\u00c9tat)`,
+ attaches_scientifiques:`Attachés scientifiques`,
+ redacteurs:`Rédacteurs`,
+ assistants_administratifs:`Assistants administratifs`,
+ assistants_techniques:`Assistants techniques`,
+ assistants_sante:`Assistants de santé`,
+ autre:`Autre`, other:`Autre`
+};<!DOCTYPE html><html lang="fr" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -3420,7 +3435,21 @@ window.markNotificationRead=markNotificationRead;
           <label for="adhFunctionDetail" data-i18n="adhFunctionDetail"></label>
           <input id="adhFunctionDetail" type="text" maxlength="120">
         </div>
-        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option><option value="general_practitioner" data-i18n="adhSpecialtyGeneralPractitioner"></option><option value="specialist_physician" data-i18n="adhSpecialtySpecialistPhysician"></option><option value="pharmacist" data-i18n="adhSpecialtyPharmacist"></option><option value="dentist" data-i18n="adhSpecialtyDentist"></option><option value="general_nurse" data-i18n="adhSpecialtyGeneralNurse"></option><option value="specialized_nurse" data-i18n="adhSpecialtySpecializedNurse"></option><option value="midwife" data-i18n="adhSpecialtyMidwife"></option><option value="health_technician" data-i18n="adhSpecialtyHealthTechnician"></option><option value="lab_technician" data-i18n="adhSpecialtyLabTechnician"></option><option value="radiology_technician" data-i18n="adhSpecialtyRadiologyTechnician"></option><option value="physiotherapist" data-i18n="adhSpecialtyPhysiotherapist"></option><option value="psychologist" data-i18n="adhSpecialtyPsychologist"></option><option value="dietitian" data-i18n="adhSpecialtyDietitian"></option><option value="administrator" data-i18n="adhSpecialtyAdministrator"></option><option value="engineer" data-i18n="adhSpecialtyEngineer"></option><option value="it_technician" data-i18n="adhSpecialtyITTechnician"></option><option value="secretary" data-i18n="adhSpecialtySecretary"></option><option value="administrative_assistant" data-i18n="adhSpecialtyAdministrativeAssistant"></option><option value="maintenance_staff" data-i18n="adhSpecialtyMaintenanceStaff"></option><option value="other" data-i18n="adhSpecialtyOtherCat"></option></select></div>
+        <div class="field"><label for="adhSpecialty" data-i18n="adhSpecialty"></label><select id="adhSpecialty"><option value="" data-i18n="adhSpecialtyChoose"></option>
+<option value="medecins_pharmaciens_dentistes" data-i18n="adhSpecialtyMedecinsPharmaciensDentistes"></option>
+<option value="ingenieurs_architectes" data-i18n="adhSpecialtyIngenieursArchitectes"></option>
+<option value="administrateurs" data-i18n="adhSpecialtyAdministrateurs"></option>
+<option value="infirmiers_techniciens_sante" data-i18n="adhSpecialtyInfirmiersTechniciensSante"></option>
+<option value="infirmiers_assistants" data-i18n="adhSpecialtyInfirmiersAssistants"></option>
+<option value="assistants_sante_prepa" data-i18n="adhSpecialtyAssistantsSantePrepa"></option>
+<option value="assistants_sante_etat" data-i18n="adhSpecialtyAssistantsSanteEtat"></option>
+<option value="attaches_scientifiques" data-i18n="adhSpecialtyAttachesScientifiques"></option>
+<option value="redacteurs" data-i18n="adhSpecialtyRedacteurs"></option>
+<option value="techniciens" data-i18n="adhSpecialtyTechniciens"></option>
+<option value="assistants_administratifs" data-i18n="adhSpecialtyAssistantsAdministratifs"></option>
+<option value="assistants_techniques" data-i18n="adhSpecialtyAssistantsTechniques"></option>
+<option value="assistants_sante" data-i18n="adhSpecialtyAssistantsSante"></option>
+<option value="other" data-i18n="adhSpecialtyOtherCat"></option>
         <div class="field adh-full" id="adhSpecialtyOtherWrap" style="display:none">
           <label for="adhSpecialtyOther" data-i18n="adhSpecialtyOther"></label>
           <input id="adhSpecialtyOther" type="text" maxlength="120">
@@ -3786,27 +3815,20 @@ adhFunctionToSpecify:`Fonction à préciser`,
 adhFunctionNone:`Sans fonction`,
 adhFunctionDetail:`Préciser votre fonction`,
 adhSpecialtyChoose:`Sélectionner une catégorie professionnelle`,
-adhSpecialtyGeneralPractitioner:`Médecin généraliste`,
-adhSpecialtySpecialistPhysician:`Médecin spécialiste`,
-adhSpecialtyPharmacist:`Pharmacien`,
-adhSpecialtyDentist:`Chirurgien-dentiste`,
-adhSpecialtyGeneralNurse:`Infirmier polyvalent`,
-adhSpecialtySpecializedNurse:`Infirmier spécialisé`,
-adhSpecialtyMidwife:`Sage-femme`,
-adhSpecialtyHealthTechnician:`Technicien de santé`,
-adhSpecialtyLabTechnician:`Technicien de laboratoire`,
-adhSpecialtyRadiologyTechnician:`Technicien de radiologie`,
-adhSpecialtyPhysiotherapist:`Kinésithérapeute`,
-adhSpecialtyPsychologist:`Psychologue`,
-adhSpecialtyDietitian:`Diététicien`,
-adhSpecialtyAdministrator:`Administrateur`,
-adhSpecialtyEngineer:`Ingénieur`,
-adhSpecialtyITTechnician:`Technicien informatique`,
-adhSpecialtySecretary:`Secrétaire`,
-adhSpecialtyAdministrativeAssistant:`Adjoint administratif`,
-adhSpecialtyMaintenanceStaff:`Personnel de maintenance`,
-adhSpecialtyOtherCat:`Autre catégorie professionnelle`,
-adhSpecialtyOther:`Précisez votre catégorie :`,
+adhSpecialtyMedecinsPharmaciensDentistes:`Corps des médecins, pharmaciens et chirurgiens-dentistes`,
+adhSpecialtyIngenieursArchitectes:`Corps des ingénieurs et des architectes`,
+adhSpecialtyAdministrateurs:`Corps des administrateurs`,
+adhSpecialtyInfirmiersTechniciensSante:`Corps des infirmiers et techniciens de santé`,
+adhSpecialtyInfirmiersAssistants:`Cadre des infirmiers auxiliaires`,
+adhSpecialtyAssistantsSantePrepa:`Cadre assistants santé (préparatoire)`,
+adhSpecialtyAssistantsSanteEtat:`Cadre assistants santé (d'État)`,
+adhSpecialtyAttachesScientifiques:`Attachés scientifiques`,
+adhSpecialtyRedacteurs:`Rédacteurs`,
+adhSpecialtyTechniciens:`Corps des techniciens`,
+adhSpecialtyAssistantsAdministratifs:`Assistants administratifs`,
+adhSpecialtyAssistantsTechniques:`Assistants techniques`,
+adhSpecialtyAssistantsSante:`Assistants de santé`,
+adhSpecialtyOtherCat:`Autre catégorie professionnelle`,adhSpecialtyOther:`Précisez votre catégorie :`,
 adhUnion:`Situation syndicale`, adhFirst:`Première adhésion`, adhRenewal:`Renouvellement`, adhRenewalReason:`Motif du renouvellement`, adhRenewalOnly:`Votre adhésion est déjà validée : ce formulaire sert uniquement au renouvellement. Le motif est obligatoire.`,
 adhCommitment:`Engagement`, adhCommitText:`Je déclare adhérer à la Fédération Nationale de la Santé de l'UGTM, accepter ses statuts et son règlement intérieur, et m'engage à les respecter.`,
 adhSignature:`Signature numérique`, adhSignHint:`Signez dans le cadre ci-dessous avec votre doigt.`, adhClearSign:`Effacer la signature`, adhNoSignature:`Signature non renseignée`, adhSigned:`Signature enregistrée`, adhDate:`Date`, adhContinue:`Envoyer ma demande d’adhésion`, adhDigitalNext:`En validant, votre fiche signée est transmise à l’administration de votre province. Un responsable la signe électroniquement pour valider votre adhésion, puis génère le PDF à sa demande.`,
@@ -4356,27 +4378,20 @@ adhFunctionToSpecify:`وظيفة لتحديد`,
 adhFunctionNone:`بدون وظيفة`,
 adhFunctionDetail:`حدد وظيفتك`,
 adhSpecialtyChoose:`اختر فئة مهنية`,
-adhSpecialtyGeneralPractitioner:`طبيب عام`,
-adhSpecialtySpecialistPhysician:`طبيب متخصص`,
-adhSpecialtyPharmacist:`صيدلي`,
-adhSpecialtyDentist:`جراح أسنان`,
-adhSpecialtyGeneralNurse:`ممرض عام`,
-adhSpecialtySpecializedNurse:`ممرض متخصص`,
-adhSpecialtyMidwife:`قابلة`,
-adhSpecialtyHealthTechnician:`فني صحة`,
-adhSpecialtyLabTechnician:`فني مختبر`,
-adhSpecialtyRadiologyTechnician:`فني أشعة`,
-adhSpecialtyPhysiotherapist:`معالج طبيعي`,
-adhSpecialtyPsychologist:`أخصائي نفسي`,
-adhSpecialtyDietitian:`أخصائي تغذية`,
-adhSpecialtyAdministrator:`إداري`,
-adhSpecialtyEngineer:`مهندس`,
-adhSpecialtyITTechnician:`فني معلوماتية`,
-adhSpecialtySecretary:`سكرتير`,
-adhSpecialtyAdministrativeAssistant:`مساعد إداري`,
-adhSpecialtyMaintenanceStaff:`عامل صيانة`,
-adhSpecialtyOtherCat:`فئة أخرى`,
-adhSpecialtyOther:`حدد الفئة :`,
+adhSpecialtyMedecinsPharmaciensDentistes:`هيئة الأطباء والصيادلة وأطباء الأسنان`,
+adhSpecialtyIngenieursArchitectes:`هيئة المهندسين والمهندسين المعماريين`,
+adhSpecialtyAdministrateurs:`هيئة المتصرفين`,
+adhSpecialtyInfirmiersTechniciensSante:`هيئة الممرضين وتقنيي الصحة`,
+adhSpecialtyInfirmiersAssistants:`إطار الممرضين المساعدين`,
+adhSpecialtyAssistantsSantePrepa:`إطار مساعدي الصحة الحاصلون على الإعدادية`,
+adhSpecialtyAssistantsSanteEtat:`إطار مساعدي الصحة المجازون من الدولة`,
+adhSpecialtyAttachesScientifiques:`هيئة الملحقين العلميين`,
+adhSpecialtyRedacteurs:`هيئة المحررين`,
+adhSpecialtyTechniciens:`هيئة التقنيين`,
+adhSpecialtyAssistantsAdministratifs:`هيئة المساعدين الإداريين`,
+adhSpecialtyAssistantsTechniques:`هيئة المساعدين التقنيين`,
+adhSpecialtyAssistantsSante:`هيئة مساعدي الصحة`,
+adhSpecialtyOtherCat:`فئة أخرى`,adhSpecialtyOther:`حدد الفئة :`,
 adhUnion:`الوضعية النقابية`, adhFirst:`انخراط أول`, adhRenewal:`تجديد الانخراط`, adhRenewalReason:`سبب تجديد الانخراط`, adhRenewalOnly:`انخراطكم مسجل مسبقا: هذا النموذج مخصص للتجديد فقط، وذكر السبب إجباري.`,
 adhCommitment:`الالتزام`, adhCommitText:`أصرح بانخراطي في الجامعة الوطنية للصحة التابعة للاتحاد العام للشغالين بالمغرب، وبقبولي لنظامها الأساسي ونظامها الداخلي والتزامي باحترامهما.`,
 adhSignature:`التوقيع الرقمي`, adhSignHint:`وقعوا داخل الإطار باستعمال الإصبع.`, adhClearSign:`مسح التوقيع`, adhNoSignature:`لم يتم إدخال التوقيع`, adhSigned:`تم تسجيل التوقيع`, adhDate:`التاريخ`, adhContinue:`إرسال طلب الانخراط`, adhDigitalNext:`عند التأكيد يتم إرسال استمارتكم الموقّعة إلى إدارة إقليمكم. يوقّعها أحد المسؤولين إلكترونياً للمصادقة على انخراطكم، ثم يتم إنشاء ملف PDF بطلب من الإدارة.`,
