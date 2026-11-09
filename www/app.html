@@ -3291,7 +3291,8 @@ async function refreshPushStatus(){
     lines.push('Dernier envoi ' + verdict + ' le ' + when + '.');
   }
   if(st.error) lines.push('Détail : ' + st.error);
-  status.textContent=lines.join(' ');
+  if(st.permission==='granted' && st.tokenSaved){ status.textContent=''; status.hidden=true; }
+  else { status.textContent=lines.join(' '); status.hidden=false; }
 }
 window.refreshPushStatus=refreshPushStatus;
 
