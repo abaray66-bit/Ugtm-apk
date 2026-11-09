@@ -9912,7 +9912,9 @@ S.user = (s && s.user) ? s.user : null;
 S.member = (s && s.member) ? s.member : null;
 S.isAdmin=!!(s && s.isAdmin);
 S.isSubAdmin=!!(s && s.isSubAdmin);
-if(window.CLOUD&&typeof window.CLOUD.pushDeviceState==='function'&&typeof window.refreshPushStatus==='function'){
+if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function' && S.user){
+  (async function(){ try { var ok = await window.CLOUD.ensurePushRegistration(); if(ok && typeof refreshPushStatus === 'function') refreshPushStatus(); } catch(e){} })();
+} else if(window.CLOUD&&typeof window.CLOUD.pushDeviceState==='function'&&typeof window.refreshPushStatus==='function'){
   try{window.refreshPushStatus();}catch(e){}
 }
 
