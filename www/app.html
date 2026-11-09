@@ -9912,10 +9912,18 @@ S.user = (s && s.user) ? s.user : null;
 S.member = (s && s.member) ? s.member : null;
 S.isAdmin=!!(s && s.isAdmin);
 S.isSubAdmin=!!(s && s.isSubAdmin);
-if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function' && S.user){
-  (async function(){ try { var ok = await window.CLOUD.ensurePushRegistration(); if(ok && typeof refreshPushStatus === 'function') refreshPushStatus(); } catch(e){} })();
-} else if(window.CLOUD&&typeof window.CLOUD.pushDeviceState==='function'&&typeof window.refreshPushStatus==='function'){
-  try{window.refreshPushStatus();}catch(e){}
+if(S.user){
+  (async function(){
+    for(var i=0; i<20; i++){
+      if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function') break;
+      await new Promise(function(r){setTimeout(r,100);});
+    }
+    if(window.CLOUD && typeof window.CLOUD.ensurePushRegistration === 'function'){
+      try { var ok = await window.CLOUD.ensurePushRegistration(); if(ok && typeof refreshPushStatus === 'function') refreshPushStatus(); } catch(e){}
+    } else if(window.CLOUD && typeof window.CLOUD.pushDeviceState === 'function' && typeof window.refreshPushStatus === 'function'){
+      try { window.refreshPushStatus(); } catch(e){}
+    }
+  })();
 }
 
 var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
