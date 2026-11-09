@@ -9882,6 +9882,9 @@ S.user = (s && s.user) ? s.user : null;
 S.member = (s && s.member) ? s.member : null;
 S.isAdmin=!!(s && s.isAdmin);
 S.isSubAdmin=!!(s && s.isSubAdmin);
+if(window.CLOUD&&typeof window.CLOUD.pushDeviceState==='function'&&typeof window.refreshPushStatus==='function'){
+  try{window.refreshPushStatus();}catch(e){}
+}
 
 var tabs=document.querySelectorAll('#admTabs button[data-adm="news"],#admTabs button[data-adm="events"]');
 tabs.forEach(function(b){b.hidden=!S.isAdmin;});
