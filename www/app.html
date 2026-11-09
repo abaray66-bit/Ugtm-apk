@@ -5096,6 +5096,50 @@ function pad(n){
 return(n<10?'0':'')+n;
 }
 
+/* Traduction des valeurs brutes stockées (fonction / spécialité) vers le
+   français, pour le PDF et le détail. Les clés T() (adhFunction…/adhSpecialty…)
+   sont consultées en priorité ; cette table sert de repli pour les valeurs
+   anciennes ou saisies en anglais. */
+var FUNCTION_FR={
+  directeur:'Directeur', director:'Directeur',
+  docteur:'Docteur', doctor:'Docteur',
+  infirmier:'Infirmier', infirmiere:'Infirmière', nurse:'Infirmier',
+  sage_femme:'Sage-femme', midwife:'Sage-femme',
+  technicien:'Technicien', technician:'Technicien',
+  pharmacien:'Pharmacien', pharmacist:'Pharmacien',
+  dentiste:'Chirurgien-dentiste', dentist:'Chirurgien-dentiste',
+  kinesitherapeute:'Kinésithérapeute', physiotherapist:'Kinésithérapeute',
+  psychologue:'Psychologue', psychologist:'Psychologue',
+  dieteticien:'Diététicien', dietitian:'Diététicien',
+  administrateur:'Administrateur', administrator:'Administrateur',
+  ingenieur:'Ingénieur', engineer:'Ingénieur',
+  secretaire:'Secrétaire', secretary:'Secrétaire',
+  comptable:'Comptable', accountant:'Comptable',
+  enseignant:'Enseignant', teacher:'Enseignant',
+  professeur:'Professeur', professor:'Professeur',
+  chauffeur:'Chauffeur', driver:'Chauffeur',
+  agent_entretien:'Agent d\'entretien', cleaner:'Agent d\'entretien',
+  maintenance:'Personnel de maintenance', maintenance_staff:'Personnel de maintenance',
+  autre:'Autre', other:'Autre'
+};
+var SPECIALITE_FR={
+  medecin_generaliste:'Médecin généraliste', general_practitioner:'Médecin généraliste',
+  medecin_specialiste:'Médecin spécialiste', specialist_physician:'Médecin spécialiste',
+  pharmacien:'Pharmacien', pharmacist:'Pharmacien',
+  chirurgien_dentiste:'Chirurgien-dentiste', dentist:'Chirurgien-dentiste',
+  infirmier_polyvalent:'Infirmier polyvalent', general_nurse:'Infirmier polyvalent',
+  infirmier_specialise:'Infirmier spécialisé', specialized_nurse:'Infirmier spécialisé',
+  sage_femme:'Sage-femme', midwife:'Sage-femme',
+  technicien_sante:'Technicien de santé', health_technician:'Technicien de santé',
+  technicien_laboratoire:'Technicien de laboratoire', lab_technician:'Technicien de laboratoire',
+  technicien_radiologie:'Technicien de radiologie', radiology_technician:'Technicien de radiologie',
+  kinésitherapeute:'Kinésithérapeute', physiotherapist:'Kinésithérapeute',
+  psychologue:'Psychologue', psychologist:'Psychologue',
+  dieteticien:'Diététicien', dietitian:'Diététicien',
+  cardiologie:'Cardiologie', pediatrie:'Pédiatrie', chirurgie:'Chirurgie',
+  autre:'Autre', other:'Autre'
+};
+
 function todayStr(){
 var d=new Date();
 
@@ -7567,8 +7611,8 @@ function renderAdhesionDossierInfo(doc){
     row(t.admDocAddress,a.address)+
     row(t.admDocEtab,a.establishment)+
     row(t.admDocService,a.service)+
-    row(t.admDocFunction,(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return a.functionDetail||'Fonction à préciser';var t2=(typeof T==='function')?T():{};return t2['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a['function']))+
-    row(t.admDocSpecialty,(function(v){if(!v)return '';if(v==='other')return a.specialtyOther||'Autre';var t2=(typeof T==='function')?T():{};return t2['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(a.specialty))+
+    row(t.admDocFunction,(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return a.functionDetail||'Fonction à préciser';var t2=(typeof T==='function')?T():{};return t2['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(a['function']))+
+    row(t.admDocSpecialty,(function(v){if(!v)return '';if(v==='other')return a.specialtyOther||'Autre';var t2=(typeof T==='function')?T():{};return t2['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(a.specialty))+
     row(t.admDocPpr,a.ppr)+
     row(t.admDocType,a.type==='renewal'?t.admDocTypeRenewal:t.admDocTypeFirst)+
     (a.type==='renewal'?row(t.admDocReason,a.reason):'')+
@@ -10276,8 +10320,8 @@ window.UGTM.failed(err);
 
           section('SITUATION PROFESSIONNELLE');
           row1('Établissement / structure',app.establishment);
-          row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app['function']));
-          row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||v;})(app.specialty),'PPR',app.ppr);
+          row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(app['function']));
+          row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(app.specialty),'PPR',app.ppr);
 
           section('ADHÉSION');
           row2('Type',app.type==='renewal'?'Renouvellement':'Première adhésion','Date',app.date);
