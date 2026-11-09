@@ -3280,7 +3280,8 @@ async function refreshPushStatus(){
   else if(st.permission==='granted' && st.tokenSaved) lines.push('Cet appareil est enregistré pour les notifications.');
   else if(st.permission==='granted') lines.push('Autorisation accordée mais appareil non enregistré : appuyez sur « Activer les notifications push ».');
   else lines.push('Notifications non activées sur cet appareil.');
-  if(btn && st.permission==='granted' && st.tokenSaved) btn.textContent='Notifications activées';
+  if(btn && st.permission==='granted' && st.tokenSaved){ btn.textContent='Notifications activées'; btn.hidden=true; btn.disabled=true; }
+  else if(btn){ btn.hidden=false; btn.disabled=false; }
   var last=(typeof window.CLOUD.lastPushAttempt==='function') ? window.CLOUD.lastPushAttempt() : null;
   if(last && last.at){
     var when=String(last.at);
