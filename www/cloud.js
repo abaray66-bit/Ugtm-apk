@@ -1086,13 +1086,27 @@ async function submitAdhesion(application,signature){
       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
-  }).then(function(result){
+  }).then(async function(result){
     /* Le formulaire d'adhésion est la saisie de
        référence du téléphone (le formulaire de profil
        a été retiré) : le numéro saisi est reporté sur
        la fiche membre, puis — quand le compte en porte
        un — sur la fiche de responsable et le contact de
        province (liste publique). */
+
+    /* Synchroniser aussi la province sur le profil membre dès
+       la soumission, afin que le dossier apparaisse avec sa
+       province avant même d'être validé par un responsable. */
+    if (clean.province) {
+      try {
+        await updateDoc(doc(db,'members',uid), {
+          prov: String(clean.province||'').trim(),
+          adminProvince: String(clean.province||'').trim(),
+          updatedAt: serverTimestamp()
+        });
+      } catch(e){ console.warn('syncMemberProvince:', e); }
+    }
+
     return syncMemberPhone(u, clean.phone).then(function(){
       if (!result.completed) {
         var applicantName = (clean.prenom + ' ' + clean.nom).trim();
