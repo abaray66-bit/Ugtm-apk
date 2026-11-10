@@ -9089,15 +9089,8 @@ if(el.hasAttribute('data-open-event')){
   })[0];
 
   if(ev){
-    if(ev.hasImage&&!ev.images)
-    getEventImage(ev.id).then(function(images){
-      ev.images=(Array.isArray(images)?images:[]).filter(Boolean);
-      openEventDetail(ev);
-    }).catch(function(){
-      openEventDetail(ev);
-    });
-    else
-    openEventDetail(ev);
+    agendaSelectedDate=String(ev.date||'');
+    go('agenda');
   }
 
   return;
