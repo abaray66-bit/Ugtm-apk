@@ -1941,9 +1941,6 @@ button.danger:hover{
   display:inline-block;
   transform:scaleX(-1)
 }
-[dir="rtl"] #adhSpecialty{
-  text-align:right
-}
 #admMemSearch{
   color:var(--ink) !important;
   border-color:var(--border-accent-strong) !important;
@@ -1951,6 +1948,9 @@ button.danger:hover{
 }
 #admMemSearch::placeholder{
   color:rgba(255,255,255,.55) !important;
+}
+[dir="rtl"] #adhSpecialty{
+  text-align:right;
 }
 </style>
 
@@ -3682,7 +3682,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">📋</span><h2 class="h2" data-i18n="admAdhesionsTitle">Adhésions</h2></div><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -3895,7 +3895,7 @@ fUrgent:`Communiqués et déclarations`,
 fStatut:`Actualités syndicales`,
 fEvents:`Rencontres et réunions`,
 
-  share:`Partager`,
+share:`Partager sur WhatsApp`,
  shareNewsLabel:`Publication`,
  shareEventLabel:`Événement`,
  shareOrg:`Union Générale des Travailleurs du Maroc
@@ -4082,7 +4082,6 @@ deleted:`Données supprimées`,
  admMemSearch:`Rechercher un adhérent`,
   admMemSearchHint:`Recherche par nom, e-mail, établissement ou province.`,
   admMembersTitle:`Membres`,
-  admAdhesionsTitle:`Adhésions`,
   admMemExportCsv:`Exporter la liste (CSV)`,
 
   /* Espace administration : libellés, onglets et actions */
@@ -4440,17 +4439,15 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
 admAdhesionSigned:`موقّع إلكترونياً`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
-  admMembersTitle:`الأعضاء`,
-  admAdhesionsTitle:`الانخراطات`,
-  admMemExportCsv:`تصدير القائمة (CSV)`,
+admMembersTitle:`الأعضاء`,
+admMemExportCsv:`تصدير القائمة (CSV)`,
 AdhesionFallback:`منخرط`,
 admStatusPending:`في انتظار المصادقة`,
 admStatusCompletion:`تم طلب معلومات إضافية`,
 admStatusValidated:`تمت المصادقة`,
 admStatusRefused:`مرفوض`,
-  admMembersTitle:`الأعضاء`,
-  admAdhesionsTitle:`الانخراطات`,
-  admMemExportCsv:`تصدير القائمة (CSV)`,
+admMembersTitle:`الأعضاء`,
+admMemExportCsv:`تصدير القائمة (CSV)`,
 admAskCompletion:`طلب معلومات إضافية`,
     admRefuse:`رفض`,
 adhStatusCompletion:`طلب الانخراط : تم طلب معلومات إضافية. افتحوا الاستمارة لاستكمالها.`,
@@ -4518,7 +4515,7 @@ fUrgent:`البيانات والبلاغات`,
 fStatut:`مستجدات نقابية`,
 fEvents:`اللقاءات والاجتماعات`,
 
-  share:`مشاركة`,
+share:`مشاركة عبر واتساب`,
  shareNewsLabel:`منشور`,
  shareEventLabel:`حدث`,
  shareOrg:`الاتحاد العام للشغالين بالمغرب
@@ -5114,24 +5111,22 @@ var FUNCTION_FR={
  autre:'Autre', other:'Autre'
 };
 var SPECIALITE_FR={
- medecins_pharmaciens_dentistes:'Corps des médecins, pharmaciens et chirurgiens-dentistes',
- ingenieurs_architectes:'Corps des ingénieurs et des architectes',
- administrateurs:'Corps des administrateurs',
- infirmiers_techniciens_sante:'Corps des infirmiers et des techniciens de santé',
- infirmiers_assistants:'Cadre des infirmiers auxiliaires',
- assistants_sante_prepa:'Cadre des adjoints de santé brevetés',
- assistants_sante_etat:'Cadre des adjoints de santé diplômés d\'État',
- attaches_scientifiques:'Corps des attachés scientifiques',
- redacteurs:'Corps des rédacteurs',
- techniciens:'Corps des techniciens',
- assistants_administratifs:'Corps des adjoints administratifs',
- assistants_techniques:'Corps des adjoints techniques',
- assistants_sante:'Corps des auxiliaires de santé',
- general_nurse:'Infirmier général',
- autre:'Autre', other:'Autre'
+ medecins_pharmaciens_dentistes:'Médecins, pharmaciens, chirurgiens-dentistes',
+ ingenieurs_architectes:'Ingénieurs et architectes',
+ administrateurs:'Administrateurs',
+ infirmiers_techniciens_sante:'Infirmiers et techniciens de santé',
+ infirmiers_assistants:'Cadre infirmiers assistants',
+ assistants_sante_prepa:'Cadre assistants santé (é preparatoire)',
+ assistants_sante_etat:'Cadre assistants santé (d\'État)',
+ attaches_scientifiques:'Attachés scientifiques',
+ redacteurs:'Rédacteurs',
+ techniciens:'Techniciens',
+ assistants_administratifs:'Assistants administratifs',
+ assistants_techniques:'Assistants techniques',
+ assistants_sante:'Assistants de santé',
+ autre:'Autre', other:'Autre',
+ general_nurse:'Infirmier général'
 };
-window.FUNCTION_FR=FUNCTION_FR;
-window.SPECIALITE_FR=SPECIALITE_FR;
 
 function todayStr(){
 var d=new Date();
@@ -5140,6 +5135,9 @@ return d.getFullYear()+'-'+
 pad(d.getMonth()+1)+'-'+
 pad(d.getDate());
 }
+
+window.FUNCTION_FR=FUNCTION_FR;
+window.SPECIALITE_FR=SPECIALITE_FR;
 window.todayStr=todayStr;
 
 function fmtDate(str,withDay){
@@ -5779,20 +5777,18 @@ function openUrl(url){
     return lines.join('\n');
   }
 
-  /* Partage natif Android d'une publication (dialogue système : WhatsApp, Facebook, etc.). */
+  /* Partage WhatsApp d'une publication. */
   function shareNewsItem(n){
 
     if(!n)return;
 
     var title=L(n).t;
     var dateLine=n.date?fmtDate(n.date,true):'';
-    var text=shareContentText(T().shareNewsLabel,title,dateLine,L(n).b);
-    var files = (n.images && n.images.length) ? [n.images[0]] : null;
 
-    shareTextNative(text, title, files);
+    shareTextFallback(shareContentText(T().shareNewsLabel,title,dateLine,L(n).b));
   }
 
-  /* Partage natif Android d'un événement (dialogue système : WhatsApp, Facebook, etc.). */
+  /* Partage WhatsApp d'un événement (rencontre, réunion, assembly). */
   function shareEventItem(ev){
 
     if(!ev)return;
@@ -5801,10 +5797,8 @@ function openUrl(url){
     var dateLine=ev.date?fmtDate(ev.date,true):'';
 
     if(ev.time)dateLine+=(dateLine?' – ':'')+fmtTime(ev.time);
-    var text=shareContentText(T().shareEventLabel,title,dateLine,L(ev).p);
-    var files = (ev.images && ev.images.length) ? [ev.images[0]] : null;
 
-    shareTextNative(text, title, files);
+    shareTextFallback(shareContentText(T().shareEventLabel,title,dateLine,L(ev).p));
   }
 
   /* Version de l'application : celle du manifeste OTA
