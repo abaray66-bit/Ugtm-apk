@@ -40,10 +40,6 @@
     ],
     "rewrites": [
       {
-        "source": "/share/**",
-        "function": "sharePage"
-      },
-      {
         "source": "**",
         "destination": "/app.html"
       }
