@@ -1947,6 +1947,17 @@ var admin = {
     },
 
 
+  deleteNotificationsForTarget:
+    function(targetId){
+      if(!auth || !auth.currentUser) return Promise.resolve();
+      return getDocs(
+        query(collection(db, 'notifications', auth.currentUser.uid, 'items'), where('targetId', '==', targetId))
+      ).then(function(snap){
+        var writes = snap.docs.map(function(d){ return deleteDoc(d.ref); });
+        return Promise.all(writes);
+      }).catch(function(){ return Promise.resolve(); });
+    },
+
   deleteEvent:
     function(id){
 
