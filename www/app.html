@@ -8151,7 +8151,10 @@ $('eDate').value=todayStr();
 function imageData(file){
 return new Promise(function(resolve,reject){
 if(!file){resolve('');return;}
-if(!file.type||!/image\//.test(file.type)){if(!/\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name||'')){reject(new Error(T().newsPhotoError));return;}}
+// Vérification du format : accepte JPG, PNG, WebP, GIF (extension ou MIME type)
+var isImageType = /image\//.test(file.type||'');
+var isImageExt = /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name||'');
+if(!isImageType && !isImageExt){reject(new Error(T().newsPhotoError));return;}
 if(file.size>50000000){reject(new Error(T().newsPhotoError));return;}
 var reader=new FileReader();
 reader.onerror=function(){reject(new Error(T().newsPhotoError));};
@@ -8160,10 +8163,11 @@ var img=new Image();
 img.onerror=function(){reject(new Error(T().newsPhotoError));};
 img.onload=function(){
 try{
-var scale=Math.min(1,1400/Math.max(img.width,img.height));
+var scale=Math.min(1,1200/Math.max(img.width,img.height));
 var canvas=document.createElement('canvas');
-var quality=.82,data='';
-for(var attempt=0;attempt<60;attempt++){
+var quality=.85,data='';
+var minScale=0.05;
+for(var attempt=0;attempt<80;attempt++){
 canvas.width=Math.max(1,Math.round(img.width*scale));
 canvas.height=Math.max(1,Math.round(img.height*scale));
 var ctx=canvas.getContext('2d');
@@ -8171,11 +8175,12 @@ if(!ctx){reject(new Error(T().newsPhotoError));return;}
 ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
 ctx.drawImage(img,0,0,canvas.width,canvas.height);
 data=canvas.toDataURL('image/jpeg',quality);
-if(data.length<=380000)break;
-if(quality>.3){quality=Math.max(.3,quality-.08);}
-else{scale*=.7;quality=.6;}
+if(data.length<=500000)break;
+if(quality>.35){quality=Math.max(.35,quality-.08);}
+else if(scale>minScale){scale*=0.6;quality=.7;}
+else{reject(new Error(T().newsPhotoError));return;}
 }
-if(data.length>380000){reject(new Error(T().newsPhotoError));return;}
+if(data.length>500000){reject(new Error(T().newsPhotoError));return;}
 resolve(data);
 }catch(err){reject(new Error(T().newsPhotoError));}
 };
