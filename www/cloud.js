@@ -175,7 +175,9 @@ function subscribeEvents(){
             date: x.date,
             time: x.time || '',
             fr: x.fr,
-            ar: x.ar
+            ar: x.ar,
+            hasImage: x.hasImage === true,
+            imageCount: x.imageCount || 0
           };
 
         })
@@ -2549,6 +2551,16 @@ async function cloudMarkNotificationRead(id){
     getNewsImage: function(id){
       return Promise.all([0,1,2].map(function(idx){
         return getDoc(doc(db, 'newsImages', id + '_' + idx))
+          .then(function(s){ return s.exists() ? String(s.data().data || '') : null; })
+          .catch(function(){ return null; });
+      })).then(function(results){
+        return results.filter(Boolean);
+      });
+    },
+
+    getEventImage: function(id){
+      return Promise.all([0,1,2].map(function(idx){
+        return getDoc(doc(db, 'eventImages', id + '_' + idx))
           .then(function(s){ return s.exists() ? String(s.data().data || '') : null; })
           .catch(function(){ return null; });
       })).then(function(results){
