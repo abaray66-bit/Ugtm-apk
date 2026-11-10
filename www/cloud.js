@@ -1468,9 +1468,13 @@ async function deleteAccount(){
     ========================================================= */
 
 function savePublicProvinceContact(province, name, phone){
+  var provKey=String(province || '').toLowerCase();
+  var contactName=String(name || '').trim();
+  // Ne pas enregistrer le nom de la province (ou son code) comme nom du responsable
+  if(contactName && (contactName.toLowerCase()===provKey || contactName===province)) contactName='';
   return setDoc(doc(db, 'publicProvinceContacts', province), {
     province: String(province || '').slice(0,40),
-    name: String(name || '').slice(0,120),
+    name: contactName.slice(0,120),
     phone: String(phone || '').slice(0,30)
   });
 }
