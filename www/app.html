@@ -9089,8 +9089,11 @@ if(el.hasAttribute('data-open-event')){
   })[0];
 
   if(ev){
+    var dateParts=String(ev.date||'').split('-');
+    if(dateParts.length>=2)agendaCursor=new Date(Number(dateParts[0]),Number(dateParts[1])-1,1);
     agendaSelectedDate=String(ev.date||'');
     go('agenda');
+    renderAgenda();
   }
 
   return;
