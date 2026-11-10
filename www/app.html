@@ -5195,6 +5195,14 @@ return p.v===v;
 return f?f[l||lang]:(v||'');
 }
 
+/* Trouve la province d’un membre depuis ses demandes d’adhésion en attente,
+   quand le champ prov du membre est vide (dossier non encore validé). */
+function findAdhesionProvince(uid){
+if(!uid)return '';
+var a=(S.adhesions||[]).filter(function(x){return String(x.uid||'')===String(uid);})[0];
+return a&&a.province?String(a.province):'';
+}
+
 function renderProvinceContacts(){
 var box=$('provinceLeaders');
 if(!box)return;
@@ -7033,7 +7041,7 @@ acts+='<button type="button" class="btn ghost small danger" data-adm-act="delMem
 
 var info=[
 m.etab,
-provName(m.prov,lang)
+provName(m.prov || findAdhesionProvince(m.uid),lang)
 ].filter(Boolean).join(' – ');
 
 /* Téléphone de l'adhérent : visible et cliquable (WhatsApp) dans
@@ -7067,7 +7075,7 @@ esc(statusLabel(m.status))+
 +
 phoneHtml
 +
-(!m.prov
+(!(m.prov || findAdhesionProvince(m.uid))
 ?'<span class="hint" style="display:inline-flex;align-items:flex-start;gap:6px"><span style="flex-shrink:0">⚠</span><span>'+esc(t.admMemNoProv)+'</span></span>'
 :'')+
 
