@@ -39,13 +39,7 @@
       }
     ],
     "rewrites": [
-      {
-        "source": "**",
-        "destination": "/app.html"
-      }
+      { "source": "**", "destination": "/app.html" }
     ]
-  },
-  "functions": {
-    "source": "functions"
   }
 }
