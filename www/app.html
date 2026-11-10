@@ -5779,44 +5779,30 @@ function openUrl(url){
     return lines.join('\n');
   }
 
-  /* Partage natif Android d'une publication (dialogue système : WhatsApp, Facebook, etc.). */
+  /* Partage natif Android d'une publication (lien OG pour aperçu WhatsApp/Facebook). */
   function shareNewsItem(n){
 
     if(!n)return;
 
     var title=L(n).t;
-    var dateLine=n.date?fmtDate(n.date,true):'';
-    var text=shareContentText(T().shareNewsLabel,title,dateLine,L(n).b);
-    var files = (n.images && n.images.length) ? [n.images[0]] : null;
+    var id=n.id;
+    var shareUrl='https://ugtm-fns-souss-massa.web.app/share/news/'+id;
+    var text=(title||'')+'\n'+shareUrl;
 
-    /* L'URL de l'image est aussi ajoutée au texte pour que Facebook
-       puisse récupérer l'aperçu visuel lors du partage natif. */
-    if(n.images && n.images.length){
-      text += '\nImage : ' + n.images[0];
-    }
-
-    shareTextNative(text, title, files);
+    shareTextNative(text, title);
   }
 
-  /* Partage natif Android d'un événement (dialogue système : WhatsApp, Facebook, etc.). */
+  /* Partage natif Android d'un événement (lien OG pour aperçu WhatsApp/Facebook). */
   function shareEventItem(ev){
 
     if(!ev)return;
 
     var title=L(ev).t;
-    var dateLine=ev.date?fmtDate(ev.date,true):'';
+    var id=ev.id;
+    var shareUrl='https://ugtm-fns-souss-massa.web.app/share/event/'+id;
+    var text=(title||'')+'\n'+shareUrl;
 
-    if(ev.time)dateLine+=(dateLine?' – ':'')+fmtTime(ev.time);
-    var text=shareContentText(T().shareEventLabel,title,dateLine,L(ev).p);
-    var files = (ev.images && ev.images.length) ? [ev.images[0]] : null;
-
-    /* L'URL de l'image est aussi ajoutée au texte pour que Facebook
-       puisse récupérer l'aperçu visuel lors du partage natif. */
-    if(ev.images && ev.images.length){
-      text += '\nImage : ' + ev.images[0];
-    }
-
-    shareTextNative(text, title, files);
+    shareTextNative(text, title);
   }
 
   /* Version de l'application : celle du manifeste OTA
