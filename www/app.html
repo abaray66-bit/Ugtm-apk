@@ -5779,18 +5779,20 @@ function openUrl(url){
     return lines.join('\n');
   }
 
-  /* Partage WhatsApp d'une publication. */
+  /* Partage natif Android d'une publication (dialogue système : WhatsApp, Facebook, etc.). */
   function shareNewsItem(n){
 
     if(!n)return;
 
     var title=L(n).t;
     var dateLine=n.date?fmtDate(n.date,true):'';
+    var text=shareContentText(T().shareNewsLabel,title,dateLine,L(n).b);
+    var files = (n.images && n.images.length) ? [n.images[0]] : null;
 
-    shareTextFallback(shareContentText(T().shareNewsLabel,title,dateLine,L(n).b));
+    shareTextNative(text, title, files);
   }
 
-  /* Partage WhatsApp d'un événement (rencontre, réunion, assembly). */
+  /* Partage natif Android d'un événement (dialogue système : WhatsApp, Facebook, etc.). */
   function shareEventItem(ev){
 
     if(!ev)return;
@@ -5799,8 +5801,10 @@ function openUrl(url){
     var dateLine=ev.date?fmtDate(ev.date,true):'';
 
     if(ev.time)dateLine+=(dateLine?' – ':'')+fmtTime(ev.time);
+    var text=shareContentText(T().shareEventLabel,title,dateLine,L(ev).p);
+    var files = (ev.images && ev.images.length) ? [ev.images[0]] : null;
 
-    shareTextFallback(shareContentText(T().shareEventLabel,title,dateLine,L(ev).p));
+    shareTextNative(text, title, files);
   }
 
   /* Version de l'application : celle du manifeste OTA
