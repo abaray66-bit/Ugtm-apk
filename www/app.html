@@ -3895,7 +3895,7 @@ fUrgent:`Communiqués et déclarations`,
 fStatut:`Actualités syndicales`,
 fEvents:`Rencontres et réunions`,
 
-share:`Partager sur WhatsApp`,
+  share:`Partager`,
  shareNewsLabel:`Publication`,
  shareEventLabel:`Événement`,
  shareOrg:`Union Générale des Travailleurs du Maroc
@@ -4518,7 +4518,7 @@ fUrgent:`البيانات والبلاغات`,
 fStatut:`مستجدات نقابية`,
 fEvents:`اللقاءات والاجتماعات`,
 
-share:`مشاركة عبر واتساب`,
+  share:`مشاركة`,
  shareNewsLabel:`منشور`,
  shareEventLabel:`حدث`,
  shareOrg:`الاتحاد العام للشغالين بالمغرب
@@ -5789,6 +5789,12 @@ function openUrl(url){
     var text=shareContentText(T().shareNewsLabel,title,dateLine,L(n).b);
     var files = (n.images && n.images.length) ? [n.images[0]] : null;
 
+    /* L'URL de l'image est aussi ajoutée au texte pour que Facebook
+       puisse récupérer l'aperçu visuel lors du partage natif. */
+    if(n.images && n.images.length){
+      text += '\nImage : ' + n.images[0];
+    }
+
     shareTextNative(text, title, files);
   }
 
@@ -5803,6 +5809,12 @@ function openUrl(url){
     if(ev.time)dateLine+=(dateLine?' – ':'')+fmtTime(ev.time);
     var text=shareContentText(T().shareEventLabel,title,dateLine,L(ev).p);
     var files = (ev.images && ev.images.length) ? [ev.images[0]] : null;
+
+    /* L'URL de l'image est aussi ajoutée au texte pour que Facebook
+       puisse récupérer l'aperçu visuel lors du partage natif. */
+    if(ev.images && ev.images.length){
+      text += '\nImage : ' + ev.images[0];
+    }
 
     shareTextNative(text, title, files);
   }
