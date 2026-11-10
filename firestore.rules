@@ -496,6 +496,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // =========================
+    // IMAGES DES ÉVÉNEMENTS
+    // Stockées à part pour que la liste des événements reste légère.
+    // =========================
+    match /eventImages/{id} {
+      allow read: if resource.data.audience == 'public'
+        || isActive()
+        || isAdmin();
+      allow write: if isAdmin();
+    }
+
     // ==========================================================
     // DEMANDES D'ADHÉSION NUMÉRIQUES — dossiers privés
     // L'adhérent dépose son dossier signé une fois ; il ne peut plus
