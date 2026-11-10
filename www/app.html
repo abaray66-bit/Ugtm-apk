@@ -3332,10 +3332,15 @@ function renderNotifications(list){
     bodyEl.textContent=String(n.body||'');
     bodyEl.style.display='block';
     bodyEl.style.marginTop='3px';
+    bodyEl.className='notif-body';
     p.appendChild(titleEl);
     if(bodyEl.textContent) p.appendChild(bodyEl);
     p.onclick=function(){
       if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
+      else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
+        if(!S.isAdmin&&!S.isSubAdmin){ go('me'); }
+        else { go('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
+      }
       else if(n.targetType==='news' && typeof go==='function') go('news');
       else if(n.targetType==='event' && typeof go==='function') go('agenda');
       else if(typeof go==='function') go('me');
@@ -11367,6 +11372,15 @@ window.UGTM.failed(err);
 }
 .ota-banner .ota-install{background:#000;color:#fff;}
 .ota-banner .ota-dismiss{background:transparent;color:#000;border:1px solid #000;}
+.notif-body{
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.4;
+  max-height:calc(1.4em * 3);
+}
 </style>
 
 <div id="eventDetailModal" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);overflow-y:auto;padding:16px;">

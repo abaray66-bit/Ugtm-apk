@@ -1112,14 +1112,48 @@ async function submitAdhesion(application,signature){
     return syncMemberPhone(u, clean.phone).then(function(){
       if (!result.completed) {
         var applicantName = (clean.prenom + ' ' + clean.nom).trim();
-        window.cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
+        var isRenewal = clean.type === 'renewal';
+        window.cloudSendPush(
+          isRenewal ? 'adhesion_renewal' : 'adhesion_request',
+          isRenewal ? 'Renouvellement d’adhésion : ' + applicantName : 'Nouvelle demande d’adhésion : ' + applicantName,
+          'Province : ' + clean.province,
+          uid
+        );
+        /* Notification aux administrateurs (écriture Firestore pour affichage
+           dans la liste des notifications de l’application). */
+        var adminEmails = (hooks && hooks.adminEmails) || [];
+        if(adminEmails.length){
+          var adminQuery = query(collection(db,'members'), where('email','in',adminEmails));
+          getDocs(adminQuery).then(function(snap){
+            snap.docs.forEach(function(dSnap){
+              var adminUid = dSnap.id;
+              addDoc(collection(db,'notifications',adminUid,'items'), {
+                title: isRenewal ? 'Renouvellement d’adhésion : ' + applicantName : 'Nouvelle demande d’adhésion : ' + applicantName,
+                body: 'Province : ' + clean.province,
+                type: isRenewal ? 'adhesion_renewal' : 'adhesion_request',
+                read: false,
+                authorUid: uid,
+                createdAt: serverTimestamp(),
+                targetScreen: 'admin',
+                targetId: String(uid),
+                province: clean.province
+              });
+            });
+          }).catch(function(e){ console.warn('notif admin:', e); });
+        }
       }
       return result;
     }).catch(function(e){
       console.warn('syncMemberPhone:', e);
       if (!result.completed) {
         var applicantName = (clean.prenom + ' ' + clean.nom).trim();
-        window.cloudSendPush('adhesion_request', 'Nouvelle demande d’adhésion : ' + applicantName, 'Province : ' + clean.province, uid);
+        var isRenewal = clean.type === 'renewal';
+        window.cloudSendPush(
+          isRenewal ? 'adhesion_renewal' : 'adhesion_request',
+          isRenewal ? 'Renouvellement d’adhésion : ' + applicantName : 'Nouvelle demande d’adhésion : ' + applicantName,
+          'Province : ' + clean.province,
+          uid
+        );
       }
       return result;
     });
