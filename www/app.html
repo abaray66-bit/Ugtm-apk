@@ -6227,7 +6227,7 @@ return '<div class="ev">'+
 
 '<div class="evb">'+
 
-'<strong'+rtlAttr(x.t)+'>'+esc(x.t)+(ev.hasImage?' 📷':'')+'</strong>'+
+'<strong'+rtlAttr(x.t)+' data-open-event="'+esc(ev.id)+'">'+esc(x.t)+(ev.hasImage?' 📷':'')+'</strong>'+
 
 '<p'+rtlAttr(x.p)+'>'+
 fmtDate(ev.date,true)+
@@ -6408,6 +6408,37 @@ renderNews();
 item.imageLoading=false;
 renderNews();
 });
+}
+
+function openEventDetail(ev){
+var modal=document.getElementById('eventDetailModal');
+if(!modal)return;
+var titleEl=document.getElementById('eventDetailTitle');
+var dateEl=document.getElementById('eventDetailDate');
+var timeEl=document.getElementById('eventDetailTime');
+var placeEl=document.getElementById('eventDetailPlace');
+var descEl=document.getElementById('eventDetailDesc');
+var imgEl=document.getElementById('eventDetailImage');
+var imgWrap=document.getElementById('eventDetailImageWrap');
+var x=L(ev);
+titleEl.textContent=x.t||'';
+dateEl.textContent=ev.date?fmtDate(ev.date,true):'';
+timeEl.textContent=ev.time?ev.time:'';
+placeEl.textContent=x.p||'';
+descEl.textContent=x.p||'';
+if(ev.hasImage){
+imgWrap.hidden=false;
+if(ev.images&&ev.images.length){
+imgEl.src=ev.images[0];
+imgEl.hidden=false;
+} else {
+imgEl.hidden=true;
+}
+} else {
+imgWrap.hidden=true;
+imgEl.hidden=true;
+}
+modal.hidden=false;
 }
 
 function renderCalendar(){
@@ -8873,7 +8904,7 @@ function purgeSession(){
 document.addEventListener('click',function(e){
 
 var el=e.target.closest(
-'[data-go],[data-tab],[data-item],[data-open],'+
+'[data-go],[data-tab],[data-item],[data-open],[data-open-event],'+
 '[data-filter],[data-adm-news-filter],[data-form],[data-link],[data-share],[data-share-event],[data-share-app],[data-sendto],[data-share-report],[data-attach],'+
 '[data-cal],[data-calnav],[data-caldate],[data-act],[data-adm],[data-adm-act],[data-memf],'+
 '#langBtn,#meAdhesionInfoBtn'
@@ -9045,6 +9076,29 @@ if(el.hasAttribute('data-open')){
   renderNews();
 
   go('news');
+
+  return;
+}
+
+if(el.hasAttribute('data-open-event')){
+
+  openId=el.getAttribute('data-open-event');
+
+  var ev=EVENTS.filter(function(x){
+    return x.id===openId;
+  })[0];
+
+  if(ev){
+    if(ev.hasImage&&!ev.images)
+    getEventImage(ev.id).then(function(images){
+      ev.images=(Array.isArray(images)?images:[]).filter(Boolean);
+      openEventDetail(ev);
+    }).catch(function(){
+      openEventDetail(ev);
+    });
+    else
+    openEventDetail(ev);
+  }
 
   return;
 }
@@ -11313,6 +11367,20 @@ window.UGTM.failed(err);
 .ota-banner .ota-install{background:#000;color:#fff;}
 .ota-banner .ota-dismiss{background:transparent;color:#000;border:1px solid #000;}
 </style>
+
+<div id="eventDetailModal" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);overflow-y:auto;padding:16px;">
+<div style="background:#fff;border-radius:12px;padding:20px;max-width:520px;margin:40px auto;position:relative;">
+<button id="eventDetailClose" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:30px;line-height:1;cursor:pointer;color:#999;" onclick="document.getElementById('eventDetailModal').hidden=true">×</button>
+<h2 id="eventDetailTitle" style="margin:0 0 10px;font-size:18px;line-height:1.4;"></h2>
+<div id="eventDetailImageWrap" style="margin:10px 0;border-radius:8px;overflow:hidden;background:#eee;display:none;">
+<img id="eventDetailImage" style="width:100%;height:auto;display:block;">
+</div>
+<p style="margin:8px 0;color:#555;font-size:14px;"><strong>Date :</strong> <span id="eventDetailDate"></span></p>
+<p style="margin:8px 0;color:#555;font-size:14px;"><strong>Heure :</strong> <span id="eventDetailTime"></span></p>
+<p style="margin:8px 0;color:#555;font-size:14px;"><strong>Lieu :</strong> <span id="eventDetailPlace"></span></p>
+<p style="margin:12px 0 0;color:#333;font-size:16px;line-height:1.5;" id="eventDetailDesc"></p>
+</div>
+</div>
 
 </body>
 <style>
