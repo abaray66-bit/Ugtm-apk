@@ -5203,6 +5203,17 @@ var a=(S.adhesions||[]).filter(function(x){return String(x.uid||'')===String(uid
 return a&&a.province?String(a.province):'';
 }
 
+/* Trouve le vrai nom d’un adhérent depuis sa demande d’adhésion,
+   quand le champ name du membre ressemble au nom de sa province
+   (donnée erronée). */
+function findAdhesionName(uid){
+if(!uid)return '';
+var a=(S.adhesions||[]).filter(function(x){return String(x.uid||'')===String(uid);})[0];
+if(!a||!a.nom&&!a.prenom)return '';
+var nom=String(a.nom||'').trim(), prenom=String(a.prenom||'').trim();
+return (prenom?prenom+' ':'')+nom;
+}
+
 function renderProvinceContacts(){
 var box=$('provinceLeaders');
 if(!box)return;
@@ -7065,7 +7076,7 @@ return '<li class="mrow">'+
 '<div class="mi">'+
 
 '<strong>'+
-esc((function(){var nm=String(m.name||''); nm=nm.replace(/undefined/g,'').replace(/\s+/g,' ').trim(); return nm||t.admMemNoName;})())+
+esc((function(){var nm=String(m.name||''); nm=nm.replace(/undefined/g,'').replace(/\s+/g,' ').trim(); var prov=(m.prov||findAdhesionProvince(m.uid)||'').toLowerCase(); if(nm.toLowerCase()===prov || nm===m.prov){var fn=findAdhesionName(m.uid); nm=fn||nm;} return nm||t.admMemNoName;})())+
 ' <span class="tag st-'+esc(m.status)+'">'+
 esc(statusLabel(m.status))+
 '</span>'+
