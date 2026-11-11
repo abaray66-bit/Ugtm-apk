@@ -42,6 +42,17 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.adminProvince;
     }
 
+    function isSubAdminLocal() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.status == 'active'
+        && get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'subadminLocal';
+    }
+
+    function assignedLocalStructure() {
+      return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.adminStructure;
+    }
+
     function assignedProvinceLabel() {
       return assignedProvince() == 'agadir' ? 'Agadir Ida-Outanane' :
              assignedProvince() == 'inezgane' ? 'Inezgane-Aït Melloul' :
@@ -87,7 +98,8 @@ service cloud.firestore {
     match /members/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
-        || (isSubAdmin() && resource.data.prov == assignedProvince());
+        || (isSubAdmin() && resource.data.prov == assignedProvince())
+        || (isSubAdminLocal() && resource.data.adminStructure == assignedLocalStructure());
 
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.status == 'pending'
@@ -123,6 +135,27 @@ service cloud.firestore {
             && okText(request.resource.data.phone, 30)
             && okText(request.resource.data.memberNo, 30)
             && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+              .lastMemberNo == request.resource.data.memberNo)
+        || (isAdmin()
+            && request.resource.data.status == 'active'
+            && request.resource.data.role == 'subadminLocal'
+            && request.resource.data.keys().hasOnly([
+              'name', 'email', 'photo', 'etab', 'prov',
+              'phone', 'status', 'memberNo', 'activatedAt', 'createdAt',
+              'role', 'adminStructure'
+            ])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && okText(request.resource.data.adminStructure, 40)
+            && request.resource.data.adminStructure.size() > 0
+            && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo);
 
@@ -162,6 +195,20 @@ service cloud.firestore {
             && okText(request.resource.data.etab, 160)
             && okText(request.resource.data.prov, 40)
             && okText(request.resource.data.phone, 30))
+        // Gestion des membres de sa structure par le sous-admin local.
+        || (isSubAdminLocal() && resource.data.adminStructure == assignedLocalStructure()
+            && request.resource.data.adminStructure == assignedLocalStructure()
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'updatedAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && (request.resource.data.status == 'active'
+                || request.resource.data.status == 'blocked'
+                || request.resource.data.status == resource.data.status))
         || (signedIn() && request.auth.uid == uid
             && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['name', 'etab', 'phone', 'updatedAt'])
@@ -170,12 +217,15 @@ service cloud.firestore {
             && okText(request.resource.data.prov, 40)
             && okText(request.resource.data.phone, 30));
 
-      // Un administrateur de province (sous-admin) ne peut pas supprimer son
-      // propre compte : seul l'administrateur principal peut le faire.
-      // ('role' absent des profils classiques = non sous-admin, autorisé.)
+      // Un administrateur de province (sous-admin) ou local (subadminLocal)
+      // ne peut pas supprimer son propre compte : seul l'administrateur
+      // principal peut le faire. ('role' absent des profils classiques
+      // = non sous-admin, autorisé.)
       allow delete: if isAdmin()
         || (signedIn() && request.auth.uid == uid
-            && (!('role' in resource.data) || resource.data.role != 'subadmin'));
+            && (!('role' in resource.data)
+                || (resource.data.role != 'subadmin'
+                    && resource.data.role != 'subadminLocal')));
     }
 
     // ==========================================================
@@ -188,7 +238,7 @@ service cloud.firestore {
     // un membre PENDANT de sa propre province.
     // ==========================================================
     match /counters/{counterId} {
-      allow read: if isAdmin() || isSubAdmin();
+      allow read: if isAdmin() || isSubAdmin() || isSubAdminLocal();
 
       allow create: if isAdmin()
         || (isSubAdmin()
@@ -229,7 +279,128 @@ service cloud.firestore {
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .memberNo == request.resource.data.lastMemberNo
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .prov == assignedProvince());
+            .prov == assignedProvince())
+        // Sous-admin local : met à jour le compteur uniquement pour activer
+        // un membre de SA structure (identifié par adminStructure).
+        || (isSubAdminLocal()
+          && counterId == 'memberNumbers'
+          && request.resource.data.keys().hasAll(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.next == resource.data.next + 1
+          && request.resource.data.lastMemberNo is string
+          && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
+          && request.resource.data.memberUid is string
+          && request.resource.data.updatedAt == request.time
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid)) || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending')
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'active'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .memberNo == request.resource.data.lastMemberNo
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .adminStructure == assignedLocalStructure());
+    }
+
+    // ==========================================================
+    // STRUCTURES LOCALES — unités de rattachement du sous-admin local
+    // Créées et archivées uniquement par l'administrateur général.
+    // La clé de sécurité est structureId (identifiant du document),
+    // jamais le texte libre etab/province.
+    // ==========================================================
+    match /localStructures/{structureId} {
+      allow read: if isAdmin()
+        || isSubAdmin()
+        || isSubAdminLocal();
+
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'name', 'etab', 'province', 'structureId', 'createdBy',
+          'createdAt', 'updatedAt', 'archived', 'archivedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && okText(request.resource.data.etab, 160)
+        && okText(request.resource.data.province, 40)
+        && request.resource.data.structureId == structureId
+        && request.resource.data.structureId is string
+        && request.resource.data.structureId.size() > 0
+        && request.resource.data.structureId.size() <= 40
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.archived == false
+        && request.resource.data.get('archivedAt', '') == '';
+
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'name', 'etab', 'province', 'updatedAt', 'archived', 'archivedAt'
+        ])
+        && (request.resource.data.archived == true
+          ? (request.resource.data.archivedAt == request.time
+             && request.resource.data.keys().hasAll(['archived', 'archivedAt']))
+          : (request.resource.data.get('archived', false) == false
+             || request.resource.data.get('archivedAt', '') == ''))
+        && okText(request.resource.data.get('name', ''), 120)
+        && okText(request.resource.data.get('etab', ''), 160)
+        && okText(request.resource.data.get('province', ''), 40)
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if false;
+    }
+
+    // ==========================================================
+    // PROPOSITIONS DE SOUS-ADMIN LOCAL — faites par le sous-admin
+    // provincial, approuvées ou rejetées par l'admin général.
+    // ==========================================================
+    match /localAdminProposals/{proposalId} {
+      allow read: if isAdmin()
+        || isSubAdmin()
+        || isSubAdminLocal();
+
+      allow create: if isSubAdmin()
+        && request.resource.data.keys().hasOnly([
+          'uid', 'structureId', 'province', 'proposedBy',
+          'proposedAt', 'status', 'approvedBy', 'approvedAt'
+        ])
+        && request.resource.data.uid is string
+        && request.resource.data.uid.size() > 0
+        && request.resource.data.structureId is string
+        && request.resource.data.structureId.size() > 0
+        && request.resource.data.structureId.size() <= 40
+        && request.resource.data.province == assignedProvince()
+        && request.resource.data.proposedBy == request.auth.uid
+        && request.resource.data.proposedAt == request.time
+        && request.resource.data.status == 'pending'
+        && request.resource.data.get('approvedBy', '') == ''
+        && request.resource.data.get('approvedAt', '') == ''
+        && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
+        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false;
+
+      allow update: if (
+          (isAdmin()
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'approvedBy', 'approvedAt', 'updatedAt'])
+            && request.resource.data.status in ['approved', 'rejected']
+            && request.resource.data.updatedAt == request.time
+            && (
+              (request.resource.data.status == 'approved'
+                && request.resource.data.approvedBy == request.auth.uid
+                && request.resource.data.approvedAt == request.time)
+              || (request.resource.data.status == 'rejected'
+                && request.resource.data.approvedBy == request.auth.uid
+                && request.resource.data.approvedAt == request.time)
+            ))
+        || (isSubAdmin()
+          && resource.data.status == 'pending'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'updatedAt'])
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.proposedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time);
+
+      allow delete: if isAdmin();
     }
 
     match /provinceContacts/{province} {
@@ -549,6 +720,13 @@ service cloud.firestore {
           || province == adhesionProvinceLabel(adhesionSubAdminProvince()));
     }
 
+    // Vrai quand le sous-admin local en cours est rattaché à la structure
+    // portée par le dossier d'adhésion (champ structureId).
+    function adhesionIsSubAdminLocalOf(structureId) {
+      return isSubAdminLocal()
+        && structureId == assignedLocalStructure();
+    }
+
     function adhesionProvinces() {
       return ['agadir', 'inezgane', 'chtouka', 'taroudant', 'tiznit', 'tata',
               'Agadir Ida-Outanane', 'Inezgane-Aït Melloul', 'Chtouka-Aït Baha',
@@ -558,7 +736,8 @@ service cloud.firestore {
     function adhesionTopKeys() {
       return ['uid', 'email', 'province', 'application', 'signature',
               'status', 'adminNote', 'adminSignature', 'signedBy',
-              'signedAt', 'createdAt', 'updatedAt'];
+              'signedAt', 'createdAt', 'updatedAt',
+              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'];
     }
 
     // Contenu du dossier (application) : toutes les clés attendues,
@@ -614,7 +793,8 @@ service cloud.firestore {
         ])
         && request.resource.data.keys().hasOnly([
           'uid', 'email', 'province', 'application', 'signature',
-          'status', 'adminNote', 'createdAt', 'updatedAt'
+          'status', 'adminNote', 'createdAt', 'updatedAt',
+          'structureId'
         ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -636,9 +816,11 @@ service cloud.firestore {
       // (signer = valider l'adhésion), par le responsable qui la produit,
       // et horodatée au moment de l'écriture.
       allow update: if (
-          (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', '')))
+          (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', ''))
+              || adhesionIsSubAdminLocalOf(resource.data.get('structureId', '')))
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'adminNote', 'adminSignature', 'signedBy', 'signedAt', 'updatedAt'])
+            .hasOnly(['status', 'adminNote', 'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
+                      'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'])
           && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
           && okText(request.resource.data.adminNote, 1000)
           && request.resource.data.updatedAt == request.time
@@ -647,13 +829,27 @@ service cloud.firestore {
             request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['status', 'adminNote', 'updatedAt'])
             || (
-              // Signature électronique du responsable = validation de l'adhésion.
-              request.resource.data.status == 'accepted'
+              // Validation par l'administrateur général ou le sous-admin de province
+              // (signature électronique = validation de l'adhésion).
+              (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', '')))
+              && request.resource.data.status == 'accepted'
               && request.resource.data.adminSignature is string
               && request.resource.data.adminSignature.size() > 0
               && request.resource.data.adminSignature.size() <= 20000
               && request.resource.data.signedBy == request.auth.uid
               && request.resource.data.signedAt == request.time
+            )
+            || (
+              // Validation par le sous-admin local de la structure du dossier
+              // (traces de validation : validatedBy/validatedAt/validatedByRole).
+              adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''))
+              && request.resource.data.status == 'accepted'
+              && okText(request.resource.data.validatedBy, 120)
+              && request.resource.data.validatedBy.size() > 0
+              && request.resource.data.validatedBy == request.auth.uid
+              && request.resource.data.validatedAt == request.time
+              && okText(request.resource.data.validatedByRole, 60)
+              && request.resource.data.validatedByRole == 'subadminLocal'
             )
           )
         )
