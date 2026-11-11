@@ -260,14 +260,25 @@ function subscribeResponsables(){
 
 function subscribeMembers(){
   unsub('members');
-  if (!session.user || !(session.isAdmin || session.isSubAdmin)) { hooks.setMembers([]); return; }
-  var adminProvince = String((session.member && session.member.adminProvince) || '');
-  if (!session.isAdmin && !adminProvince) { hooks.setMembers([]); return; }
-  var membersQuery = session.isAdmin
-    ? collection(db, 'members')
-    : query(collection(db, 'members'), where('prov', '==', adminProvince));
-  unsubs.members = onSnapshot(membersQuery, function(snap){
-    if(window.DEBUG) console.log('[Debug Admin] subscribeMembers: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'isSubAdmin=', session.isSubAdmin);
+  if (!session.user || !(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal)) { hooks.setMembers([]); return; }
+  if (session.isAdmin) {
+    unsubs.members = onSnapshot(collection(db, 'members'), function(snap){
+      hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
+    }, function(err){hooks.error(err);});
+    return;
+  }
+  if (session.isSubAdmin) {
+    var adminProvince = String((session.member && session.member.adminProvince) || '');
+    if (!adminProvince) { hooks.setMembers([]); return; }
+    unsubs.members = onSnapshot(query(collection(db, 'members'), where('prov', '==', adminProvince)), function(snap){
+      hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
+    }, function(err){hooks.error(err);});
+    return;
+  }
+  // sous-admin local : uniquement les membres de SA structure (adminStructure)
+  var adminStructure = String((session.member && session.member.adminStructure) || '');
+  if (!adminStructure) { hooks.setMembers([]); return; }
+  unsubs.members = onSnapshot(query(collection(db, 'members'), where('adminStructure', '==', adminStructure)), function(snap){
     hooks.setMembers(snap.docs.map(function(d){return normalizeMember(d.data(), d.id);}));
   }, function(err){hooks.error(err);});
 }
@@ -294,12 +305,20 @@ function reportProvinceLabel(code){
    ========================= */
 function subscribeAdhesions(){
   unsub('adhesions');
-  if (!session.user || !(session.isAdmin || session.isSubAdmin)) { hooks.setAdhesions([]); return; }
+  if (!session.user || !(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal)) { hooks.setAdhesions([]); return; }
   var q;
-  if (session.isAdmin) q = collection(db, 'adhesionRequests');
-  else q = query(collection(db, 'adhesionRequests'), where('province', '==', String(session.member && session.member.adminProvince || '')));
+  if (session.isAdmin) {
+    q = collection(db, 'adhesionRequests');
+  } else if (session.isSubAdmin) {
+    q = query(collection(db, 'adhesionRequests'), where('province', '==', String(session.member && session.member.adminProvince || '')));
+  } else {
+    // sous-admin local : uniquement les adhésions de SA structure (structureId)
+    var adminStructure = String((session.member && session.member.adminStructure) || '');
+    if (!adminStructure) { hooks.setAdhesions([]); return; }
+    q = query(collection(db, 'adhesionRequests'), where('structureId', '==', adminStructure));
+  }
   unsubs.adhesions = onSnapshot(q, function(snap){
-    if(window.DEBUG) console.log('[Debug Admin] subscribeAdhesions: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'province=', session.member && session.member.adminProvince);
+    if(window.DEBUG) console.log('[Debug Admin] subscribeAdhesions: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'isSubAdmin=', session.isSubAdmin, 'isSubAdminLocal=', session.isSubAdminLocal);
     hooks.setAdhesions(snap.docs.map(function(d){
       var x = d.data();
       var app = x.application || {};
@@ -307,20 +326,69 @@ function subscribeAdhesions(){
         id: d.id,
         uid: x.uid || '',
         province: x.province || '',
+        structureId: x.structureId || '',
         status: x.status || 'pending',
         adminNote: x.adminNote || '',
         nom: app.nom || '', prenom: app.prenom || '', cin: app.cin || '',
         dob: app.dob || '', phone: app.phone || '',
         establishment: app.establishment || '', specialty: app.specialty || '',
         type: app.type || 'first', reason: app.reason || '', date: app.date || '',
-        // Indicateurs de validation (les images de signature sont
-        // récupérées à la demande dans getAdhesionDoc()).
         signed: !!x.adminSignature,
         signedBy: x.signedBy || '',
         signedAt: ms(x.signedAt),
+        validatedBy: x.validatedBy || '',
+        validatedAt: ms(x.validatedAt),
+        validatedByRole: x.validatedByRole || '',
         createdAt: ms(x.createdAt), updatedAt: ms(x.updatedAt)
       };
     }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+  }, function(err){ hooks.error(err, true); });
+}
+
+function subscribeLocalStructures(){
+  unsub('localStructures');
+  if (!session.user || !(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal)) {
+    hooks.setLocalStructures && hooks.setLocalStructures([]);
+    return;
+  }
+  unsubs.localStructures = onSnapshot(collection(db, 'localStructures'), function(snap){
+    hooks.setLocalStructures && hooks.setLocalStructures(snap.docs.map(function(d){
+      var x = d.data();
+      return {
+        id: d.id,
+        structureId: d.id,
+        name: x.name || '',
+        etab: x.etab || '',
+        province: x.province || '',
+        archived: !!x.archived,
+        createdAt: ms(x.createdAt),
+        updatedAt: ms(x.updatedAt)
+      };
+    }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+  }, function(err){ hooks.error(err, true); });
+}
+
+function subscribeLocalAdminProposals(){
+  unsub('localAdminProposals');
+  if (!session.user || !(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal)) {
+    hooks.setLocalAdminProposals && hooks.setLocalAdminProposals([]);
+    return;
+  }
+  unsubs.localAdminProposals = onSnapshot(collection(db, 'localAdminProposals'), function(snap){
+    hooks.setLocalAdminProposals && hooks.setLocalAdminProposals(snap.docs.map(function(d){
+      var x = d.data();
+      return {
+        id: d.id,
+        uid: x.uid || '',
+        structureId: x.structureId || '',
+        province: x.province || '',
+        proposedBy: x.proposedBy || '',
+        proposedAt: ms(x.proposedAt),
+        status: x.status || 'pending',
+        approvedBy: x.approvedBy || '',
+        approvedAt: ms(x.approvedAt)
+      };
+    }).sort(function(a,b){ return (b.proposedAt||0)-(a.proposedAt||0); }));
   }, function(err){ hooks.error(err, true); });
 }
 
@@ -341,6 +409,13 @@ function subscribeReports(){
     q = query(
       collection(db, 'reports'),
       where('province', '==', reportProvinceLabel(session.member.adminProvince))
+    );
+
+  } else if (session.isSubAdminLocal) {
+
+    q = query(
+      collection(db, 'reports'),
+      where('province', '==', reportProvinceLabel(session.member.prov || session.member.adminProvince || ''))
     );
 
   } else {
@@ -476,11 +551,13 @@ function subscribeAdminEmails(user){
         if (isAdmin) syncPublicProvinceContacts();
         hooks.setSession(session);
          if (isAdmin){
-            subscribeMembers();
-            subscribeReports();
-            subscribeAdhesions();
-            subscribeNews();
-         }
+             subscribeMembers();
+             subscribeReports();
+             subscribeAdhesions();
+             subscribeLocalStructures();
+             subscribeLocalAdminProposals();
+             subscribeNews();
+          }
         }
       if (hooks.setAdminEmails && typeof hooks.setAdminEmails === 'function'){
         try { hooks.setAdminEmails(mergedAdminList(stored)); } catch (e) {}
@@ -506,7 +583,8 @@ function onUser(user){
       user: null,
       member: null,
       isAdmin: false,
-      isSubAdmin: false
+      isSubAdmin: false,
+      isSubAdminLocal: false
     };
 
     hooks.setSession(session);
@@ -542,7 +620,8 @@ function onUser(user){
     member: null,
 
     isAdmin: isAdmin,
-    isSubAdmin: false
+    isSubAdmin: false,
+    isSubAdminLocal: false
 
   };
 
@@ -630,9 +709,12 @@ function onUser(user){
           user.uid
         );
       session.isSubAdmin = session.member.status === 'active' && session.member.role === 'subadmin';
+      session.isSubAdminLocal = session.member.status === 'active' && session.member.role === 'subadminLocal';
 
       hooks.setSession(session);
       subscribeMembers();
+      subscribeLocalStructures();
+      subscribeLocalAdminProposals();
 
       subscribeNews();
 
@@ -649,6 +731,8 @@ function onUser(user){
 
 
   subscribeMembers();
+  subscribeLocalStructures();
+  subscribeLocalAdminProposals();
 
 
   subscribeNews();
@@ -1165,7 +1249,8 @@ async function submitAdhesion(application,signature){
    SIGNATURE ÉLECTRONIQUE DU RESPONSABLE
    L'administrateur (ou le sous-admin de la province) signe la
    demande dans l'application : la signature VALIDE l'adhésion
-   (statut 'accepted'). Le dossier signé par l'adhérent n'est
+   (statut 'accepted') et active le membre dans LA MÊME
+   transaction Firestore. Le dossier signé par l'adhérent n'est
    jamais réécrit (cf. firestore.rules).
    ========================================================= */
 async function signAdhesion(uid,signature,note){
@@ -1174,52 +1259,226 @@ async function signAdhesion(uid,signature,note){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature du responsable est manquante.');
   if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-await updateDoc(doc(db,'adhesionRequests',String(uid)),{
-     status:'accepted',
-     adminSignature:sig,
-     signedBy:u.uid,
-     signedAt:serverTimestamp(),
-     adminNote:String(note||'').slice(0,1000),
-     updatedAt:serverTimestamp()
-   });
-   await activateMemberFromRequest(uid);
-   try {
-      var reqForNotif = await getDoc(doc(db,'adhesionRequests',String(uid)));
-      var provForNotif = (reqForNotif.exists() && reqForNotif.data() && reqForNotif.data().province) ? String(reqForNotif.data().province) : '';
-      if (!provForNotif) {
-        var memberSnap = await getDoc(doc(db,'members',String(uid)));
-        if (memberSnap.exists() && memberSnap.data() && memberSnap.data().prov) {
-          provForNotif = String(memberSnap.data().prov);
+
+  var reqRef = doc(db,'adhesionRequests',String(uid));
+  var memberRef = doc(db,'members',String(uid));
+  var seqRef = doc(db,'counters','memberNumbers');
+
+  return runTransaction(db, async function(tx){
+    var reqSnap = await tx.get(reqRef);
+    if (!reqSnap.exists()) throw new Error('Dossier d\'adhésion introuvable');
+    var req = reqSnap.data();
+    if (req.status !== 'pending' && req.status !== 'needs_completion') {
+      throw new Error('Le dossier n\'est pas en attente (déjà traité ou refusé).');
+    }
+    var app = req.application || {};
+    if (!app.nom || !app.prenom || !app.cin || !app.dob) {
+      throw new Error('Application d\'adhésion incomplète');
+    }
+
+    // 1. Valider la demande (signature électronique du responsable)
+    tx.update(reqRef, {
+      status: 'accepted',
+      adminSignature: sig,
+      signedBy: u.uid,
+      signedAt: serverTimestamp(),
+      adminNote: String(note || '').slice(0,1000),
+      updatedAt: serverTimestamp()
+    });
+
+    // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
+    var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
+    name = name.trim();
+
+    var seqSnap = await tx.get(seqRef);
+    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
+    if (!Number.isFinite(next) || next < 1) next = 1;
+    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
+    var memberData = {
+      name: name,
+      email: req.email || '',
+      photo: '',
+      etab: String(app.establishment||'').trim(),
+      prov: String(app.province||'').trim(),
+      phone: String(app.phone||'').trim(),
+      status: 'active',
+      memberNo: no,
+      role: 'member',
+      adminProvince: String(app.province||'').trim(),
+      createdAt: serverTimestamp(),
+      activatedAt: serverTimestamp()
+    };
+
+    tx.set(seqRef, {
+      next: Math.floor(next) + 1,
+      lastMemberNo: no,
+      memberUid: String(uid),
+      updatedAt: serverTimestamp()
+    });
+    tx.set(memberRef, memberData);
+
+    return no;
+  }).then(function(no){
+    // Notification après transaction réussie (best-effort, ne fait pas échouer l'appelant)
+    try {
+      getDoc(doc(db,'adhesionRequests',String(uid))).then(function(reqSnap){
+        var x = reqSnap.exists() ? reqSnap.data() : {};
+        var provForNotif = String(x.province || '');
+        if (!provForNotif) {
+          return getDoc(doc(db,'members',String(uid))).then(function(mSnap){
+            var m = mSnap.exists() ? mSnap.data() : {};
+            return String(m.prov || '');
+          });
         }
-      }
-      if (!provForNotif) {
-        throw new Error('Province manquante pour la notification d\'adhésion uid=' + String(uid));
-      }
-      await addDoc(collection(db,'notifications',String(uid),'items'), {
-        title:'Adhésion acceptée',
-        body:'Votre adhésion a été validée.',
-        type:'adhesion',
-        read:false,
-        authorUid:u.uid,
-        createdAt:serverTimestamp(),
-        targetScreen:'me',
-        targetId:String(uid),
-        province:provForNotif
-      });
-      // Push via backend (best-effort).
-      getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
-        var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-        window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
-      }).catch(function(){});
+        return provForNotif;
+      }).then(function(provForNotif){
+        if (!provForNotif) {
+          console.warn('notif: province manquante pour uid=' + String(uid));
+          return;
+        }
+        return addDoc(collection(db,'notifications',String(uid),'items'), {
+          title:'Adhésion acceptée',
+          body:'Votre adhésion a été validée.',
+          type:'adhesion',
+          read:false,
+          authorUid:u.uid,
+          createdAt:serverTimestamp(),
+          targetScreen:'me',
+          targetId:String(uid),
+          province:provForNotif
+        }).then(function(){
+          getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+            var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
+            window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+          }).catch(function(){});
+        }).catch(function(e){ console.warn('notif create', e); });
+      }).catch(function(e){ console.warn('notif province', e); });
     } catch(e){ console.warn('notif create', e); }
-   return sig;
- }
- 
- /* =========================================================
-    ACTIVATION D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
-    Transforme une demande d'adhésion acceptée en membre actif
-    avec un numéro d'adhérent SM-XXXX depuis le compteur global.
-    ========================================================= */
+    return sig;
+  });
+}
+
+/* =========================================================
+   VALIDATION PAR LE SOUS-ADMIN LOCAL
+   Le sous-admin local valide une adhésion de SA structure
+   (traces validatedBy/validatedAt/validatedByRole) et active
+   le membre dans LA MÊME transaction.
+   ========================================================= */
+async function validateAdhesionLocal(uid,note){
+  var u=auth.currentUser;
+  if(!u) throw new Error('Non connecté');
+
+  var reqRef = doc(db,'adhesionRequests',String(uid));
+  var memberRef = doc(db,'members',String(uid));
+  var seqRef = doc(db,'counters','memberNumbers');
+
+  return runTransaction(db, async function(tx){
+    var reqSnap = await tx.get(reqRef);
+    if (!reqSnap.exists()) throw new Error('Dossier d\'adhésion introuvable');
+    var req = reqSnap.data();
+    if (req.status !== 'pending' && req.status !== 'needs_completion') {
+      throw new Error('Le dossier n\'est pas en attente (déjà traité ou refusé).');
+    }
+    var app = req.application || {};
+    if (!app.nom || !app.prenom || !app.cin || !app.dob) {
+      throw new Error('Application d\'adhésion incomplète');
+    }
+    var structureId = String(req.structureId || '');
+    if (!structureId) throw new Error('Le dossier ne porte aucune structureId.');
+
+    // 1. Valider la demande (traces du sous-admin local)
+    tx.update(reqRef, {
+      status: 'accepted',
+      validatedBy: u.uid,
+      validatedAt: serverTimestamp(),
+      validatedByRole: 'subadminLocal',
+      adminNote: String(note || '').slice(0,1000),
+      updatedAt: serverTimestamp()
+    });
+
+    // 2. Activer le membre dans LA MÊME transaction
+    var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
+    name = name.trim();
+
+    var seqSnap = await tx.get(seqRef);
+    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
+    if (!Number.isFinite(next) || next < 1) next = 1;
+    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
+    var memberData = {
+      name: name,
+      email: req.email || '',
+      photo: '',
+      etab: String(app.establishment||'').trim(),
+      prov: String(app.province||'').trim(),
+      phone: String(app.phone||'').trim(),
+      status: 'active',
+      memberNo: no,
+      role: 'member',
+      adminProvince: String(app.province||'').trim(),
+      adminStructure: structureId,
+      createdAt: serverTimestamp(),
+      activatedAt: serverTimestamp()
+    };
+
+    tx.set(seqRef, {
+      next: Math.floor(next) + 1,
+      lastMemberNo: no,
+      memberUid: String(uid),
+      updatedAt: serverTimestamp()
+    });
+    tx.set(memberRef, memberData);
+
+    return no;
+  }).then(function(no){
+    // Notification après transaction réussie (best-effort)
+    try {
+      getDoc(doc(db,'adhesionRequests',String(uid))).then(function(reqSnap){
+        var x = reqSnap.exists() ? reqSnap.data() : {};
+        var provForNotif = String(x.province || '');
+        if (!provForNotif) {
+          return getDoc(doc(db,'members',String(uid))).then(function(mSnap){
+            var m = mSnap.exists() ? mSnap.data() : {};
+            return String(m.prov || '');
+          });
+        }
+        return provForNotif;
+      }).then(function(provForNotif){
+        if (!provForNotif) {
+          console.warn('notif: province manquante pour uid=' + String(uid));
+          return;
+        }
+        return addDoc(collection(db,'notifications',String(uid),'items'), {
+          title:'Adhésion acceptée',
+          body:'Votre adhésion a été validée.',
+          type:'adhesion',
+          read:false,
+          authorUid:u.uid,
+          createdAt:serverTimestamp(),
+          targetScreen:'me',
+          targetId:String(uid),
+          province:provForNotif
+        }).then(function(){
+          getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+            var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
+            window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+          }).catch(function(){});
+        }).catch(function(e){ console.warn('notif create', e); });
+      }).catch(function(e){ console.warn('notif province', e); });
+    } catch(e){ console.warn('notif create', e); }
+    return no;
+  });
+}
+
+/* =========================================================
+   ACTIVATION D'UN MEMBRE À PARTIR D'UNE DEMANDE D'ADHESION
+   Exige que le dossier soit accepté ET validé (signature ou
+   traces validatedBy). Utilisée en interne ; l'activation
+   se fait maintenant dans la transaction de signAdhesion /
+   validateAdhesionLocal. Cette fonction reste disponible pour
+   les cas de réactivation cohérents.
+   ========================================================= */
 async function activateMemberFromRequest(uid){
   var ref = doc(db, 'members', uid);
   var snap = await getDoc(ref);
@@ -1232,6 +1491,10 @@ async function activateMemberFromRequest(uid){
   var req = reqSnap.data();
   if (req.status !== 'accepted') {
     throw new Error('Le dossier n’est pas encore accepté');
+  }
+  // Exiger une trace de validation (signature électronique ou sous-admin local)
+  if (!req.signedBy && !req.validatedBy) {
+    throw new Error('Le dossier n’a pas été validé par un responsable habilité.');
   }
   var app = req.application || {};
   if (!app.nom || !app.prenom || !app.cin || !app.dob) {
@@ -1253,11 +1516,13 @@ async function activateMemberFromRequest(uid){
     createdAt: serverTimestamp(),
     activatedAt: serverTimestamp()
   };
+  if (req.structureId) data.adminStructure = String(req.structureId);
   var no = '';
   if (member && member.status === 'active') {
     no = member.memberNo || '';
     var upd = { updatedAt: serverTimestamp() };
     if (app.province) { upd.prov = String(app.province||'').trim(); upd.adminProvince = String(app.province||'').trim(); }
+    if (req.structureId) upd.adminStructure = String(req.structureId);
     await updateDoc(ref, upd);
   } else {
     if (app.province) data.prov = String(app.province||'').trim();
@@ -1265,29 +1530,28 @@ async function activateMemberFromRequest(uid){
     if (app.establishment) data.etab = String(app.establishment||'').trim();
     if (app.phone) data.phone = String(app.phone||'').trim();
     var seqRef = doc(db, 'counters', 'memberNumbers');
+    // Pas de seed=1 : si le compteur est absent, la transaction l'initialise
+    // à partir du prochain numéro. Le fallback global des membres est supprimé
+    // car il est refusé par les règles Firestore pour les non-admins.
     var seed = 1;
     var seq0 = await getDoc(seqRef);
     if (!seq0.exists()) {
-      var maxNo = 0;
-      var allMembers = await getDocs(collection(db, 'members'));
-      allMembers.forEach(function(d){
-        var m = /(\d+)\s*$/.exec(String((d.data() || {}).memberNo || ''));
-        if (m) maxNo = Math.max(maxNo, +m[1]);
-      });
-      if (maxNo > 0) seed = maxNo + 1;
+      seed = 1;
     }
     no = 'SM-' + String(Math.floor(seed)).padStart(4, '0');
     await runTransaction(db, async function(tx){
       var seqSnap = await tx.get(seqRef);
       var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : seed;
       if (!Number.isFinite(next) || next < 1) next = 1;
+      var computedNo = 'SM-' + String(Math.floor(next)).padStart(4, '0');
       tx.set(seqRef, {
         next: Math.floor(next) + 1,
-        lastMemberNo: no,
+        lastMemberNo: computedNo,
         memberUid: uid,
         updatedAt: serverTimestamp()
       });
-      tx.set(ref, {...data, memberNo: no});
+      tx.set(ref, {...data, memberNo: computedNo});
+      no = computedNo;
     });
   }
   await updateDoc(reqRef, {signedAt: serverTimestamp(), updatedAt: serverTimestamp()});
@@ -1663,44 +1927,39 @@ var admin = {
 
       var prior = snap.data();
 
+      /* Avant toute activation, exiger une adhésion validée */
+      if (status === 'active' && prior.status !== 'active'){
+        var reqRef = doc(db, 'adhesionRequests', String(uid));
+        var reqSnap = await getDoc(reqRef);
+        if (!reqSnap.exists()) {
+          throw new Error('Impossible d\'activer : aucun dossier d\'adhésion pour ce membre.');
+        }
+        var req = reqSnap.data();
+        if (req.status !== 'accepted') {
+          throw new Error('Impossible d\'activer : le dossier d\'adhésion n\'est pas accepté.');
+        }
+        if (!req.signedBy && !req.validatedBy) {
+          throw new Error('Impossible d\'activer : le dossier n\'a pas été validé par un responsable habilité.');
+        }
+      }
+
       /* Attribution automatique du numéro d'adhérent */
       if (status === 'active' && !prior.memberNo){
         var sequenceRef = doc(db, 'counters', 'memberNumbers');
 
-        /* Initialisation du compteur s'il n'existe pas encore : on repart
-           du plus grand numéro déjà attribué + 1 pour ne jamais réattribuer
-           un numéro existant. Une requête ne passe pas dans une transaction
-           Web : la lecture a lieu AVANT, et la transaction re-lit le
-           compteur — si un autre l'a créé entre-temps, sa valeur gagne :
-           l'atomicité reste donc garantie. Un sous-admin ne voit que sa
-           province (la requête globale est refusée) : retombée sur 1 — la
-           migration fiable se fait en faisant initialiser le compteur par
-           l'administrateur principal (cf. firestore.rules/counters). */
+        /* Le compteur doit exister (initialisé par l'admin général).
+           Un sous-admin ne peut pas l'initialiser à partir de 1 :
+           pas de fallback seed=1, pas de lecture globale des membres. */
         var seed = 1;
-        var seq0 = await getDoc(sequenceRef);
-        if (!seq0.exists()){
-          try {
-            var maxNo = 0;
-            var allMembers = await getDocs(collection(db, 'members'));
-            allMembers.forEach(function(d){
-              var m = /(\d+)\s*$/.exec(String((d.data() || {}).memberNo || ''));
-              if (m) maxNo = Math.max(maxNo, +m[1]);
-            });
-            if (maxNo > 0) seed = maxNo + 1;
-          } catch (e) {
-            /* Lecture globale refusée (sous-admin) : retombée sur 1. */
-          }
-        }
 
         return runTransaction(db, async function(tx){
           var seqSnap = await tx.get(sequenceRef);
+          if (!seqSnap.exists()) {
+            throw new Error('Compteur d\'adhérents non initialisé. Contactez l\'administrateur général.');
+          }
 
-          var next = seqSnap.exists()
-            ? Number(seqSnap.data().next || 1)
-            : seed;
-
-          if (!Number.isFinite(next) || next < 1)
-            next = 1;
+          var next = Number(seqSnap.data().next || 1);
+          if (!Number.isFinite(next) || next < 1) next = 1;
 
           var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
@@ -1726,6 +1985,10 @@ var admin = {
       if (status !== 'active' && prior.role === 'subadmin'){
         data.role = 'member';
         data.adminProvince = '';
+      }
+      if (status !== 'active' && prior.role === 'subadminLocal'){
+        data.role = 'member';
+        data.adminStructure = '';
       }
 
       return updateDoc(ref, data).then(function(){
@@ -2105,7 +2368,178 @@ var admin = {
       .then(function(){
         return deleteDoc(doc(db, 'adhesionRequests', key));
       });
-  }
+  },
+
+  /* ----------------------------------------------------
+     STRUCTURES LOCALES — gestion par l'admin général
+     ---------------------------------------------------- */
+  getLocalStructures:
+    function(){
+      return getDocs(collection(db, 'localStructures')).then(function(snap){
+        return snap.docs.map(function(d){
+          var x = d.data();
+          return {
+            id: d.id,
+            structureId: d.id,
+            name: x.name || '',
+            etab: x.etab || '',
+            province: x.province || '',
+            createdBy: x.createdBy || '',
+            createdAt: ms(x.createdAt),
+            updatedAt: ms(x.updatedAt),
+            archived: !!x.archived,
+            archivedAt: ms(x.archivedAt)
+          };
+        });
+      });
+    },
+
+  createLocalStructure:
+    function(data){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var structureId = String(data && data.structureId || '').trim();
+      if (!structureId) return Promise.reject(new Error('structureId requis.'));
+      if (structureId.length > 40) return Promise.reject(new Error('structureId trop long (40 max).'));
+      var name = String(data && data.name || '').trim();
+      if (!name) return Promise.reject(new Error('Nom de structure requis.'));
+      return setDoc(doc(db, 'localStructures', structureId), {
+        name: name,
+        etab: String(data && data.etab || '').trim().slice(0,160),
+        province: String(data && data.province || '').trim().slice(0,40),
+        structureId: structureId,
+        createdBy: session.user && session.user.uid || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        archived: false
+      }).then(function(){
+        return {structureId: structureId, name: name};
+      });
+    },
+
+  archiveLocalStructure:
+    function(structureId){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var sid = String(structureId || '');
+      if (!sid) return Promise.reject(new Error('structureId requis.'));
+      return updateDoc(doc(db, 'localStructures', sid), {
+        archived: true,
+        archivedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    },
+
+  /* ----------------------------------------------------
+     PROPOSITIONS DE SOUS-ADMIN LOCAL
+     ---------------------------------------------------- */
+  getLocalAdminProposals:
+    function(){
+      return getDocs(collection(db, 'localAdminProposals')).then(function(snap){
+        return snap.docs.map(function(d){
+          var x = d.data();
+          return {
+            id: d.id,
+            uid: x.uid || '',
+            structureId: x.structureId || '',
+            province: x.province || '',
+            proposedBy: x.proposedBy || '',
+            proposedAt: ms(x.proposedAt),
+            status: x.status || 'pending',
+            approvedBy: x.approvedBy || '',
+            approvedAt: ms(x.approvedAt)
+          };
+        });
+      });
+    },
+
+  proposeSubAdminLocal:
+    function(uid, structureId){
+      if (!session.isSubAdmin) return Promise.reject(new Error('Réservé au sous-admin de province.'));
+      var u = String(uid || '');
+      var sid = String(structureId || '');
+      if (!u || !sid) return Promise.reject(new Error('UID et structureId requis.'));
+      var memberRef = doc(db, 'members', u);
+      return getDoc(memberRef).then(function(memberSnap){
+        if (!memberSnap.exists()) throw new Error('Membre introuvable');
+        var member = memberSnap.data();
+        if (member.status !== 'active') throw new Error('Le membre doit être actif.');
+        var prov = String(member.prov || member.adminProvince || '');
+        var myProv = String((session.member && session.member.adminProvince) || '');
+        if (prov !== myProv) throw new Error('Le membre doit appartenir à votre province.');
+        // Vérifier que la structure existe et est dans la province
+        return getDoc(doc(db, 'localStructures', sid)).then(function(strucSnap){
+          if (!strucSnap.exists()) throw new Error('Structure introuvable');
+          var struc = strucSnap.data();
+          if (struc.archived) throw new Error('Structure archivée.');
+          if (String(struc.province || '') !== prov) throw new Error('La structure n\'appartient pas à votre province.');
+          return setDoc(doc(db, 'localAdminProposals', sid + '_' + u), {
+            uid: u,
+            structureId: sid,
+            province: prov,
+            proposedBy: session.user && session.user.uid || '',
+            proposedAt: serverTimestamp(),
+            status: 'pending'
+          }).then(function(){
+            return {uid: u, structureId: sid, status: 'pending'};
+          });
+        });
+      });
+    },
+
+  setSubAdminLocal:
+    function(uid, structureId){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var u = String(uid || '');
+      var sid = String(structureId || '');
+      if (!u || !sid) return Promise.reject(new Error('UID et structureId requis.'));
+      return runTransaction(db, async function(tx){
+        var memberRef = doc(db, 'members', u);
+        var memberSnap = await tx.get(memberRef);
+        if (!memberSnap.exists()) throw new Error('Membre introuvable');
+        var member = memberSnap.data();
+        if (member.status !== 'active') throw new Error('Le membre doit être actif.');
+        if (!String(member.phone || '').trim()) throw new Error('Le membre doit avoir un téléphone renseigné.');
+        var strucRef = doc(db, 'localStructures', sid);
+        var strucSnap = await tx.get(strucRef);
+        if (!strucSnap.exists()) throw new Error('Structure introuvable');
+        if (strucSnap.data().archived) throw new Error('Structure archivée.');
+        var old = member.adminStructure || '';
+        if (old && old !== sid) {
+          throw new Error('Le membre est déjà rattaché à une autre structure. Révoquez d\'abord.');
+        }
+        tx.update(memberRef, {role: 'subadminLocal', adminStructure: sid});
+        // Marquer la proposition comme approuvée si elle existe
+        var propRef = doc(db, 'localAdminProposals', sid + '_' + u);
+        var propSnap = await tx.get(propRef);
+        if (propSnap.exists()) {
+          tx.update(propRef, {
+            status: 'approved',
+            approvedBy: session.user && session.user.uid || '',
+            approvedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        }
+        return {uid: u, structureId: sid, name: member.name};
+      });
+    },
+
+  revokeSubAdminLocal:
+    function(uid){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var u = String(uid || '');
+      if (!u) return Promise.reject(new Error('UID requis.'));
+      return getDoc(doc(db, 'members', u)).then(function(memberSnap){
+        if (!memberSnap.exists()) throw new Error('Membre introuvable');
+        var member = memberSnap.data();
+        if (member.role !== 'subadminLocal') throw new Error('Ce membre n\'est pas sous-admin local.');
+        var sid = member.adminStructure || '';
+        return updateDoc(doc(db, 'members', u), {role: 'member', adminStructure: ''}).then(function(){
+          if (sid) {
+            var propRef = doc(db, 'localAdminProposals', sid + '_' + u);
+            return updateDoc(propRef, {status: 'revoked', updatedAt: serverTimestamp()}).catch(function(){});
+          }
+        });
+      });
+    }
 
 };
 

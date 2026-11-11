@@ -639,6 +639,14 @@ main{
   line-height:1.45
 }
 
+.tt-icon{
+  display:inline-block;
+  margin-inline-end:4px;
+  font-style:normal;
+  unicode-bidi:isolate;
+  direction:ltr;
+}
+
 .tag{
   font-size:12px;
   font-weight:600;
@@ -3394,7 +3402,7 @@ window.markNotificationRead=markNotificationRead;
 <h2 id="nextEventTitle" data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
-<h2 data-i18n="recentT"></h2>
+📷<h2 data-i18n="recentT"></h2>
 <button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
 </div><ul class="list" id="recentList"></ul></section><!-- Adhésion numérique -->
 <section class="screen digital-adhesion" id="s-adhesion" hidden>
@@ -3588,7 +3596,7 @@ window.markNotificationRead=markNotificationRead;
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false" data-i18n-aria="admTabNews"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 3.5h12l4 4V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M16 3.5V8h4M7.5 11h9M7.5 14.5h9M7.5 18h5"/></svg><span class="admin-tab-label" data-i18n="admTabNews"></span></button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n-aria="admTabEvents"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/></svg><span class="admin-tab-label" data-i18n="admTabEvents"></span></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n-aria="rAdminTab"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h14l-3 4 3 4H5"/></svg><span class="admin-tab-label" data-i18n="rAdminTab"></span></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n-aria="admTabAdhesions"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10a2 2 0 0 1 2 2V21H5V5.5a2 2 0 0 1 2-2z"/><path d="M9 3v4h6V3M8.5 13h7M8.5 16h4M14.5 18l1.5 1.5 3-3"/></svg><span class="admin-tab-label" data-i18n="admTabAdhesions"></span></button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n-aria="admTabEvents"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/></svg><span class="admin-tab-label" data-i18n="admTabEvents"></span></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n-aria="rAdminTab"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h14l-3 4 3 4H5"/></svg><span class="admin-tab-label" data-i18n="rAdminTab"></span></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n-aria="admTabAdhesions"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10a2 2 0 0 1 2 2V21H5V5.5a2 2 0 0 1 2-2z"/><path d="M9 3v4h6V3M8.5 13h7M8.5 16h4M14.5 18l1.5 1.5 3-3"/></svg><span class="admin-tab-label" data-i18n="admTabAdhesions"></span></button><button type="button" class="fbtn" data-adm="localstructures" aria-pressed="false" data-i18n-aria="admTabLocalStructures" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 13h18v-8H3v8zm4-6h6v6H7v-6zm8 4h2v-6h-2v6zm-4-4h2V7h-2v6z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalStructures">Structures</span></button><button type="button" class="fbtn" data-adm="localproposals" aria-pressed="false" data-i18n-aria="admTabLocalProposals" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 18h2v-6h-2v6zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 13 2zm-1 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalProposals">Propositions</span></button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -3749,6 +3757,7 @@ user:null,
 member:null,
 isAdmin:false,
 isSubAdmin:false,
+isSubAdminLocal:false,
 members:[],
 memFilter:'pending',
  memSearch:'',
@@ -3756,6 +3765,8 @@ reports:[],
 adhesions:[],
 provinceContacts:[],
 adminEmails:[],
+localStructures:[],
+localAdminProposals:[],
 admTab:'members',
 editNewsId:null,
 editEventId:null,
@@ -6345,7 +6356,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+(c.hasImage?' 📷':'')+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'"><span class="tt-icon" aria-hidden="true">📷</span> '+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
@@ -8059,11 +8070,13 @@ function showAdmTab(name){
 
 if(!S.isAdmin&&!S.isSubAdmin)name='members';
 
-if(!S.isAdmin&&(name==='news'||name==='events'))name='members';
+if(!S.isAdmin&&(name==='news'||name==='events'||name==='localstructures'||name==='localproposals'))name='members';
+
+if(S.isSubAdmin&&!S.isAdmin&&(name==='localproposals'))name='members';
 
 S.admTab=name;
 
-['dashboard','members','news','events','reports','adhesions'].forEach(function(n){
+['dashboard','members','news','events','reports','adhesions','localstructures','localproposals'].forEach(function(n){
 
 var el=$('adm-'+n);
 
@@ -8082,6 +8095,8 @@ String(b.getAttribute('data-adm')===name)
 
 if(name==='dashboard')renderAdminDashboard();
 if(name==='adhesions')renderAdminAdhesions();
+if(name==='localstructures')renderAdminLocalStructures();
+if(name==='localproposals')renderAdminLocalProposals();
 
 }
 
@@ -9575,10 +9590,15 @@ shareAdhesionPdf(id);
 }
 
 else if(a==='delAdhesion'&&S.isAdmin){
-var adh=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
-if(adh&&window.confirm(String(t.admConfirmDeleteAdhesion).replace('%1',((adh.nom||'')+' '+(adh.prenom||'')).trim()||id))){
-c.admin.deleteAdhesion(id).then(function(){toast(t.admToastAdhesionDeleted);}).catch(showError);
-}
+    var adh=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+    if(!adh){ toast('Demande introuvable'); return; }
+    if(adh.status==='pending'||adh.status==='needs_completion'){
+        toast('Une demande d\'adhésion en cours ne peut pas être supprimée.');
+        return;
+    }
+    if(adh&&window.confirm(String(t.admConfirmDeleteAdhesion).replace('%1',((adh.nom||'')+' '+(adh.prenom||'')).trim()||id))){
+    c.admin.deleteAdhesion(id).then(function(){toast(t.admToastAdhesionDeleted);}).catch(showError);
+    }
 }
 
 else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
@@ -10015,12 +10035,26 @@ S.responsables=list||[];
 renderResponsables();
 renderAdminMembers();
 },
-
 setAdminEmails:function(list){
+
 S.adminEmails=Array.isArray(list)?list.slice():[];
 if(S.isAdmin&&S.admTab==='dashboard')renderAdminAdmins();
+
 },
 
+setLocalStructures:function(list){
+
+S.localStructures=list||[];
+renderAdminLocalStructures();
+
+},
+
+setLocalAdminProposals:function(list){
+
+S.localAdminProposals=list||[];
+renderAdminLocalProposals();
+
+},
 setSession:function(s){
 
 var wasManager=S.isAdmin||S.isSubAdmin;
@@ -10029,6 +10063,7 @@ S.user = (s && s.user) ? s.user : null;
 S.member = (s && s.member) ? s.member : null;
 S.isAdmin=!!(s && s.isAdmin);
 S.isSubAdmin=!!(s && s.isSubAdmin);
+S.isSubAdminLocal=!!(s && s.isSubAdminLocal);
 if(window.CLOUD&&typeof window.CLOUD.pushDeviceState==='function'&&typeof window.refreshPushStatus==='function'){
   try{window.refreshPushStatus();}catch(e){}
 }
