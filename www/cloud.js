@@ -94,6 +94,7 @@ function normalizeMember(d, uid){
     memberNo: d.memberNo || '',
     role: d.role || 'member',
     adminProvince: d.adminProvince || d.province || '',
+    adminStructure: d.adminStructure || '',
     createdAt: ms(d.createdAt),
     activatedAt: ms(d.activatedAt)
   };
@@ -2539,7 +2540,68 @@ var admin = {
           }
         });
       });
-    }
+
+    },
+
+  /* Approuver une proposition de sous-admin local (admin général seulement). */
+  setSubAdminLocalFromProposal:
+    function(propId){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var pid = String(propId || '');
+      if (!pid) return Promise.reject(new Error('Proposition introuvable.'));
+      return getDoc(doc(db, 'localAdminProposals', pid)).then(function(propSnap){
+        if (!propSnap.exists()) throw new Error('Proposition introuvable');
+        var prop = propSnap.data();
+        if (prop.status !== 'pending') throw new Error('Proposition déjà traitée.');
+        return c.admin.setSubAdminLocal(prop.uid, prop.structureId).then(function(){
+          return updateDoc(doc(db, 'localAdminProposals', pid), {
+            status: 'approved',
+            approvedBy: session.user && session.user.uid || '',
+            approvedAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        });
+      });
+    },
+
+  /* Rejeter une proposition (admin général seulement). */
+  rejectLocalProposal:
+    function(propId){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
+      var pid = String(propId || '');
+      if (!pid) return Promise.reject(new Error('Proposition introuvable.'));
+      return getDoc(doc(db, 'localAdminProposals', pid)).then(function(propSnap){
+        if (!propSnap.exists()) throw new Error('Proposition introuvable');
+        var prop = propSnap.data();
+        if (prop.status !== 'pending') throw new Error('Proposition déjà traitée.');
+        return updateDoc(doc(db, 'localAdminProposals', pid), {
+          status: 'rejected',
+          approvedBy: session.user && session.user.uid || '',
+          approvedAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+      });
+    },
+
+  /* Annuler sa propre proposition (sous-admin provincial, pending seulement). */
+  cancelLocalProposal:
+    function(propId){
+      if (!session.isSubAdmin) return Promise.reject(new Error('Réservé au sous-admin de province.'));
+      var pid = String(propId || '');
+      if (!pid) return Promise.reject(new Error('Proposition introuvable.'));
+      return getDoc(doc(db, 'localAdminProposals', pid)).then(function(propSnap){
+        if (!propSnap.exists()) throw new Error('Proposition introuvable');
+        var prop = propSnap.data();
+        if (prop.status !== 'pending') throw new Error('Proposition déjà traitée.');
+        if (prop.proposedBy !== (session.user && session.user.uid || '')) throw new Error('Vous ne pouvez annuler que vos propres propositions.');
+        return updateDoc(doc(db, 'localAdminProposals', pid), {
+          status: 'cancelled',
+          updatedAt: serverTimestamp()
+        });
+      });
+    },
+
+  validateAdhesionLocal: validateAdhesionLocal
 
 };
 

@@ -3695,7 +3695,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -4108,6 +4108,40 @@ deleted:`Données supprimées`,
   admTabNews:`Publications`,
   admTabEvents:`Agenda syndical`,
   admTabAdhesions:`Adhésions`,
+  admTabLocalStructures:`Structures locales`,
+  admTabLocalProposals:`Propositions`,
+  admLocalStructuresTitle:`Structures locales`,
+  admLocalProposalsTitle:`Propositions sous-admin local`,
+  admLocalNewStructure:`Nouvelle structure`,
+  admLocalStructName:`Nom`,
+  admLocalStructEtab:`Établissement`,
+  admLocalStructProvince:`Province`,
+  admLocalStructId:`structureId`,
+  admLocalCreate:`Créer`,
+  admLocalDenied:`Accès réservé à l’administrateur général.`,
+  admLocalNoStructures:`Aucune structure locale.`,
+  admLocalNoProposals:`Aucune proposition.`,
+  admLocalArchived:`Archivée`,
+  admLocalArchive:`Archiver`,
+  admLocalStructReq:`Nom et structureId requis.`,
+  admLocalStructCreated:`Structure créée.`,
+  admLocalProposalsTitle:`Propositions sous-admin local`,
+  admLocalApprove:`Approuver`,
+  admLocalReject:`Rejeter`,
+  admLocalCancel:`Annuler`,
+  admLocalStructLabel:`Structure`,
+  admLocalProvLabel:`Province`,
+  admLocalProposedBy:`Proposé par`,
+  admLocalValidate:`Valider (local)`,
+  admConfirmSetSubAdminLocal:`Nommer ce membre sous-admin local de cette structure ?`,
+  admConfirmRevokeSubAdminLocal:`Révoquer le rôle de sous-admin local de %1 ?`,
+  admConfirmArchiveStructure:`Archiver cette structure ?`,
+  admToastSubAdminLocalNamed:`Sous-admin local nommé.`,
+  admToastSubAdminLocalRemoved:`Rôle de sous-admin local retiré.`,
+  admToastStructureArchived:`Structure archivée.`,
+  admToastProposalApproved:`Proposition approuvée.`,
+  admToastProposalRejected:`Proposition rejetée.`,
+  admToastProposalCancelled:`Proposition annulée.`,
   admDashTitle:`Tableau de bord`,
   admDashSubtitle:`Vue d'ensemble de la gestion de la Fédération nationale de la Santé`,
   admDashRepartition:`Répartition des adhérents`,
@@ -4727,6 +4761,39 @@ deleted:`تم حذف البيانات`,
   admTabNews:`المنشورات`,
   admTabEvents:`الأجندة النقابية`,
   admTabAdhesions:`الانخراطات`,
+  admTabLocalStructures:`الهياكل المحلية`,
+  admTabLocalProposals:`اقتراحات`,
+  admLocalStructuresTitle:`الهياكل المحلية`,
+  admLocalProposalsTitle:`اقتراحات المسؤول المحلي`,
+  admLocalNewStructure:`هيكل جديد`,
+  admLocalStructName:`الاسم`,
+  admLocalStructEtab:`المؤسسة`,
+  admLocalStructProvince:`المقاطعة`,
+  admLocalStructId:`معرف الهيكل`,
+  admLocalCreate:`إنشاء`,
+  admLocalDenied:`الوصول مقتصر على المسؤول العام.`,
+  admLocalNoStructures:`لا توجد هياكل محلية.`,
+  admLocalNoProposals:`لا توجد اقتراحات.`,
+  admLocalArchived:`مؤرشف`,
+  admLocalArchive:`أرشفة`,
+  admLocalStructReq:`الاسم ومعرف الهيكل مطلوبان.`,
+  admLocalStructCreated:`تم إنشاء الهيكل.`,
+  admLocalApprove:`موافقة`,
+  admLocalReject:`رفض`,
+  admLocalCancel:`إلغاء`,
+  admLocalStructLabel:`الهيكل`,
+  admLocalProvLabel:`المقاطعة`,
+  admLocalProposedBy:`مقترح من`,
+  admLocalValidate:`مصادقة (محلي)`,
+  admConfirmSetSubAdminLocal:`تعيين هذا العضو مسؤولاً محلياً فرعياً لهذا الهيكل؟`,
+  admConfirmRevokeSubAdminLocal:`سحب دور المسؤول المحلي الفرعي من %1؟`,
+  admConfirmArchiveStructure:`أرشف هذا الهيكل؟`,
+  admToastSubAdminLocalNamed:`تم تعيين المسؤول المحلي الفرعي.`,
+  admToastSubAdminLocalRemoved:`سحب دور المسؤول المحلي الفرعي.`,
+  admToastStructureArchived:`تم أرشفة الهيكل.`,
+  admToastProposalApproved:`تمت الموافقة على الاقتراح.`,
+  admToastProposalRejected:`تم رفض الاقتراح.`,
+  admToastProposalCancelled:`تم إلغاء الاقتراح.`,
   admDashTitle:`لوحة القيادة`,
   admDashSubtitle:`نظرة عامة على تسيير الجامعة الوطنية للصحة`,
   admDashRepartition:`توزيع المنخرطين`,
@@ -7550,7 +7617,7 @@ function renderAdminAdhesions(){
   var list=S.adhesions||[];
   var el=$("admAdhesionList");
   if(!el)return;
-  if(!S.isAdmin&&!S.isSubAdmin){el.innerHTML='<li class="empty">'+t.admAdhesionsDenied+'</li>';return;}
+  if(!S.isAdmin&&!S.isSubAdmin&&!S.isSubAdminLocal){el.innerHTML='<li class="empty">'+t.admAdhesionsDenied+'</li>';return;}
   function label(s){
     return s==='needs_completion'?t.admStatusCompletion:
     s==='accepted'?t.admStatusValidated:
@@ -7559,9 +7626,12 @@ function renderAdminAdhesions(){
 el.innerHTML=list.length?list.map(function(a){
      var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
      if(a.status==='pending'||a.status==='needs_completion'){
-       actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
-       actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
-       actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
+        actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+        if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin){
+          actions+='<button type="button" class="btn primary small" data-adm-act="validateAdhesionLocal" data-id="'+esc(a.id)+'">'+esc(t.admLocalValidate)+'</button>';
+        }
+        actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
+        actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
      }
       /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
       if(a.status==='accepted'&&a.signed){
@@ -7596,10 +7666,85 @@ el.innerHTML=list.length?list.map(function(a){
  }
 
 /* =========================
+   STRUCTURES LOCALES — RENDU ADMIN GÉNÉRAL
+   ========================= */
+function renderAdminLocalStructures(){
+  var t=T();
+  var toolbar=$('admLocalStructToolbar');
+  var list=$('admLocalStructList');
+  if(!list)return;
+  if(!S.isAdmin){list.innerHTML='<li class="empty">'+t.admLocalDenied+'</li>';return;}
+  var html='';
+  if(toolbar){
+    html+='<div class="admin-struct-form" id="admLocalStructForm" style="margin-bottom:12px;padding:10px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--panel,#fafafa);">'+
+      '<label style="display:block;margin-bottom:6px;font-weight:700">'+t.admLocalNewStructure+'</label>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">'+
+      '<input id="admStructName" type="text" placeholder="'+t.admLocalStructName+'" maxlength="120">'+
+      '<input id="admStructEtab" type="text" placeholder="'+t.admLocalStructEtab+'" maxlength="160">'+
+      '<input id="admStructProvince" type="text" placeholder="'+t.admLocalStructProvince+'" maxlength="40">'+
+      '<input id="admStructId" type="text" placeholder="'+t.admLocalStructId+'" maxlength="40">'+
+      '<button type="button" class="btn primary small" id="admBtnCreateStruct">'+t.admLocalCreate+'</button>'+
+      '</div>'+
+      '</div>';
+  }
+  var listItems=S.localStructures||[];
+  html+='<ul class="list">';
+  if(listItems.length===0) html+='<li class="empty">'+t.admLocalNoStructures+'</li>';
+  html+=listItems.map(function(s){
+    var arch=s.archived?' <span class="tag">'+t.admLocalArchived+'</span>':'';
+    var btn=s.archived?'<button type="button" class="btn ghost small danger" data-adm-act="archiveLocalStructure" data-struct="'+esc(s.id)+'">'+t.admLocalArchive+'</button>':'-';
+    return '<li class="mrow"><div class="mi"><strong>'+esc(s.name)+'</strong><span>'+esc(s.etab)+'</span><span>'+esc(s.province)+arch+'</span></div><div class="mact">'+btn+'</div></li>';
+  }).join('');
+  html+='</ul>';
+  list.innerHTML=html;
+
+  var btnCreate=$('admBtnCreateStruct');
+  if(btnCreate){
+    btnCreate.onclick=function(){
+      var name=$('admStructName').value.trim();
+      var etab=$('admStructEtab').value.trim();
+      var province=$('admStructProvince').value.trim();
+      var sid=$('admStructId').value.trim();
+      if(!name||!sid){toast(t.admLocalStructReq);return;}
+      CLOUD.admin.createLocalStructure({name:name,etab:etab,province:province,structureId:sid}).then(function(){
+        $('admStructName').value='';$('admStructEtab').value='';$('admStructProvince').value='';$('admStructId').value='';
+        toast(t.admLocalStructCreated);
+      }).catch(showError);
+    };
+  }
+}
+
+/* =========================
+   PROPOSITIONS DE SOUS-ADMIN LOCAL — RENDU
+   ========================= */
+function renderAdminLocalProposals(){
+  var t=T();
+  var list=$('admLocalProposalList');
+  if(!list)return;
+  if(!(S.isAdmin||S.isSubAdmin)){list.innerHTML='<li class="empty">'+t.admLocalDenied+'</li>';return;}
+  var items=S.localAdminProposals||[];
+  var html='<ul class="list">';
+  if(items.length===0) html+='<li class="empty">'+t.admLocalNoProposals+'</li>';
+  html+=items.map(function(p){
+    var canDecide = S.isAdmin;
+    var canCancel = S.isSubAdmin && p.status==='pending' && p.proposedBy===((S.user||{}).uid||'');
+    var actions='';
+    if(p.status==='pending'&&canDecide){
+      actions+='<button type="button" class="btn primary small" data-adm-act="approveLocalProposal" data-prop="'+esc(p.id)+'">'+t.admLocalApprove+'</button>';
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="rejectLocalProposal" data-prop="'+esc(p.id)+'">'+t.admLocalReject+'</button>';
+    }
+    if(p.status==='pending'&&canCancel){
+      actions+='<button type="button" class="btn ghost small danger" data-adm-act="cancelLocalProposal" data-prop="'+esc(p.id)+'">'+t.admLocalCancel+'</button>';
+    }
+    if(p.status!=='pending') actions+='<span class="tag">'+p.status+'</span>';
+    return '<li class="mrow"><div class="mi"><strong>'+esc(p.uid)+'</strong><span>'+t.admLocalStructLabel+': '+esc(p.structureId)+'</span><span>'+t.admLocalProvLabel+': '+esc(p.province)+'</span><span>'+t.admLocalProposedBy+': '+esc(p.proposedBy)+'</span></div><div class="mact">'+actions+'</div></li>';
+  }).join('');
+  html+='</ul>';
+  list.innerHTML=html;
+}
+
+/* =========================
    SIGNATURE ÉLECTRONIQUE ET PDF DES ADHÉSIONS
-   Espace responsable. La signature du responsable VALIDE la demande ;
-   le PDF officiel est généré puis enregistré à la demande, et
-   uniquement pour une demande validée.
    ========================= */
 
 var signModalId='';
@@ -9469,6 +9614,52 @@ toast(t.admToastSubAdminRemoved);
 
 }
 
+else if(a==='setSubAdminLocal'&&S.isAdmin){
+var sid=el.getAttribute('data-struct');
+if(!window.confirm(String(t.admConfirmSetSubAdminLocal).replace('%1',uid))){return;}
+c.admin.setSubAdminLocal(uid,sid)
+.then(function(){toast(t.admToastSubAdminLocalNamed);})
+.catch(showError);
+}
+
+else if(a==='revokeSubAdminLocal'&&m&&S.isAdmin){
+if(window.confirm(String(t.admConfirmRevokeSubAdminLocal).replace('%1',m.name||m.email))){
+c.admin.revokeSubAdminLocal(uid)
+.then(function(){toast(t.admToastSubAdminLocalRemoved);})
+.catch(showError);
+}
+}
+
+else if(a==='archiveLocalStructure'&&S.isAdmin){
+var sid=el.getAttribute('data-struct');
+if(window.confirm(String(t.admConfirmArchiveStructure).replace('%1',sid))){
+c.admin.archiveLocalStructure(sid)
+.then(function(){toast(t.admToastStructureArchived);})
+.catch(showError);
+}
+}
+
+else if(a==='approveLocalProposal'&&S.isAdmin){
+var propId=el.getAttribute('data-prop');
+c.admin.setSubAdminLocalFromProposal(propId)
+.then(function(){toast(t.admToastProposalApproved);})
+.catch(showError);
+}
+
+else if(a==='rejectLocalProposal'&&S.isAdmin){
+var propId=el.getAttribute('data-prop');
+c.admin.rejectLocalProposal(propId)
+.then(function(){toast(t.admToastProposalRejected);})
+.catch(showError);
+}
+
+else if(a==='cancelLocalProposal'&&S.isSubAdmin){
+var propId=el.getAttribute('data-prop');
+c.admin.cancelLocalProposal(propId)
+.then(function(){toast(t.admToastProposalCancelled);})
+.catch(showError);
+}
+
 else if(a==='setResp'&&S.isAdmin&&m){
 
 var respTitle=window.prompt(
@@ -9577,7 +9768,15 @@ else if(a==='signAdhesion'&&(S.isAdmin||S.isSubAdmin)){
 openAdhesionDossier(id,true);
 }
 
-else if(a==='viewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
+else if(a==='validateAdhesionLocal'&&S.isSubAdminLocal){
+var note=window.prompt(t.admSignNote,'');
+if(note===null)return;
+c.admin.validateAdhesionLocal(id,note)
+.then(function(){toast(t.admToastStatusUpdated);})
+.catch(showError);
+}
+
+else if(a==='viewAdhesion'&&(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){
 openAdhesionDossier(id,false);
 }
 
@@ -10077,9 +10276,18 @@ if(csv)csv.hidden=!S.isAdmin;
 var reports=document.querySelector('#admTabs button[data-adm="reports"]');
 if(reports)reports.hidden=!(S.isAdmin||S.isSubAdmin);
 var adhesionsTab=document.querySelector('#admTabs button[data-adm="adhesions"]');
-if(adhesionsTab)adhesionsTab.hidden=!(S.isAdmin||S.isSubAdmin);
+if(adhesionsTab)adhesionsTab.hidden=!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);
+
+var lsTab=document.querySelector('#admTabs button[data-adm="localstructures"]');
+if(lsTab)lsTab.hidden=!S.isAdmin;
+var lpTab=document.querySelector('#admTabs button[data-adm="localproposals"]');
+if(lpTab)lpTab.hidden=!(S.isAdmin||S.isSubAdmin);
 
 if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'){
+showAdmTab('members');
+}
+
+if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin&&S.admTab!=='members'&&S.admTab!=='adhesions'){
 showAdmTab('members');
 }
 
