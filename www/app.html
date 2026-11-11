@@ -5214,6 +5214,34 @@ var nom=String(a.nom||'').trim(), prenom=String(a.prenom||'').trim();
 return (prenom?prenom+' ':'')+nom;
 }
 
+/* Vérifie si une chaîne ressemble à un nom de lieu (province, ville,
+   code) plutôt qu’à un nom de personne. Retourne true si c’est le cas,
+   afin de ne pas l’afficher comme nom de responsable provincial. */
+function isPlaceName(nom){
+if(!nom)return false;
+var n=String(nom).trim().toLowerCase();
+if(!n)return false;
+/* Codes et libellés des provinces de la région */
+var placeValues=[];
+PROVS.forEach(function(p){
+placeValues.push(String(p.v||'').toLowerCase());
+placeValues.push(String(p.fr||'').toLowerCase());
+placeValues.push(String(p.ar||'').toLowerCase());
+});
+/* Villes connues de la région Souss-Massa (données erronées fréquentes) */
+var knownPlaces=[
+'agadir','inezgane','ait melloul','chtiouka','chtouka','ait baha','taroudant',
+'tiznit','tata','ouidad inzgane','oudad inzgane','ouad inzgane','inchaden',
+'csr1','groupe santé','hôpital','centre de santé','école','lycée','collège'
+];
+if(placeValues.indexOf(n)!==-1)return true;
+if(knownPlaces.indexOf(n)!==-1)return true;
+/* Si le nom contient uniquement des mots de lieu (ex: 'souss massa') */
+var words=n.split(/\s+/).filter(function(w){return w.length>2;});
+if(words.length&&words.every(function(w){return knownPlaces.indexOf(w)!==-1||placeValues.indexOf(w)!==-1;}))return true;
+return false;
+}
+
 function renderProvinceContacts(){
 var box=$('provinceLeaders');
 if(!box)return;
@@ -5225,8 +5253,8 @@ contacts.forEach(function(c){
   var phone=String(c.phone||'').trim();
   var provinceName=provName(c.province,lang);
   var contactName=String(c.name||'').trim();
-  // Ne pas afficher le nom de la province comme nom du responsable (donnée erronée)
-  var showName = contactName && contactName.toLowerCase()!==provinceName.toLowerCase() && contactName!==c.province;
+  // Ne pas afficher un nom de lieu (ville/province) comme nom du responsable
+  var showName = contactName && !isPlaceName(contactName);
   var waUrl=waHref(phone);
   html+="<li class=\"mrow province-contact\"><div class=\"mi\"><strong>"+esc(provinceName)+"</strong>"+(showName?' <span>'+esc(contactName)+'</span>':' <span style="color:var(--muted)">Responsable à préciser</span>')+(phone&&waUrl?"<a dir=\"ltr\" href=\""+esc(waUrl)+"\" target=\"_blank\" rel=\"noopener\" class=\"phone\"><span class=\"phone-num\">"+esc(phone)+"</span></a>":"")+"</div></li>";
 });
