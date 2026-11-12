@@ -1844,16 +1844,18 @@ var admin = {
         var assigned = String(province || '').slice(0,40);
         var old = member.adminProvince || '';
 
+        // Toutes les lectures avant toutes les écritures
         var contactRef = doc(db, 'provinceContacts', assigned);
         var contactSnap = await tx.get(contactRef);
         if (contactSnap.exists() && contactSnap.data().uid !== uid)
           throw new Error('Un sous-admin est déjà affecté à ce secteur. Retirez son rôle avant de le remplacer.');
 
+        var oldRef = doc(db, 'provinceContacts', old);
+        var oldSnap = await tx.get(oldRef);
+
         tx.update(doc(db, 'members', uid), {role: 'subadmin', adminProvince: assigned});
 
         if (old && old !== assigned){
-          var oldRef = doc(db, 'provinceContacts', old);
-          var oldSnap = await tx.get(oldRef);
           if (oldSnap.exists() && oldSnap.data().uid === uid) {
             tx.delete(doc(db, 'provinceContacts', old));
             tx.delete(doc(db, 'publicProvinceContacts', old));
@@ -2517,10 +2519,11 @@ var admin = {
         if (old && old !== sid) {
           throw new Error('Le membre est déjà rattaché à une autre structure. Révoquez d\'abord.');
         }
-        tx.update(memberRef, {role: 'subadminLocal', adminStructure: sid});
-        // Marquer la proposition comme approuvée si elle existe
+        // Lecture de la proposition avant toute écriture
         var propRef = doc(db, 'localAdminProposals', sid + '_' + u);
         var propSnap = await tx.get(propRef);
+
+        tx.update(memberRef, {role: 'subadminLocal', adminStructure: sid});
         if (propSnap.exists()) {
           tx.update(propRef, {
             status: 'approved',
