@@ -9692,7 +9692,12 @@ else if(a==='deleteLocalStructure'&&S.isAdmin){
 var sid=el.getAttribute('data-struct');
 if(window.confirm(String(t.admConfirmDeleteStructure).replace('%1',sid))){
 c.admin.deleteLocalStructure(sid)
-.then(function(){toast(t.admToastStructureDeleted);})
+.then(function(){
+S.localStructures=S.localStructures||[];
+S.localStructures=S.localStructures.filter(function(s){return s.id!==sid;});
+renderAdminLocalStructures();
+toast(t.admToastStructureDeleted);
+})
 .catch(showError);
 }
 }
