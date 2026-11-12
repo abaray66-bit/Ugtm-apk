@@ -2076,12 +2076,35 @@ button.danger:hover{
 }
 
 .admin-panel h3::before{
- content:"";
- width:8px;
- height:8px;
- border-radius:50%;
- background:var(--primary);
- box-shadow:0 0 8px rgba(184,50,104,.35);
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--primary);
+  box-shadow:0 0 8px rgba(184,50,104,.35);
+}
+
+.admin-struct-form{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.admin-struct-form > div{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr auto;
+  gap:8px;
+  align-items:end;
+}
+.admin-struct-form input{
+  min-width:0;
+}
+@media (max-width:640px){
+  .admin-struct-form > div{
+    grid-template-columns:1fr;
+  }
+  .admin-struct-form > div > button{
+    grid-column:1;
+  }
 }
 
 .admin-prov{
@@ -4123,7 +4146,8 @@ deleted:`Données supprimées`,
   admLocalNoProposals:`Aucune proposition.`,
   admLocalArchived:`Archivée`,
   admLocalArchive:`Archiver`,
-  admLocalStructReq:`Nom et structureId requis.`,
+  admLocalDelete:`Supprimer`,
+  admLocalStructReq:`Nom requis.`,
   admLocalStructCreated:`Structure créée.`,
   admLocalProposalsTitle:`Propositions sous-admin local`,
   admLocalApprove:`Approuver`,
@@ -4136,9 +4160,11 @@ deleted:`Données supprimées`,
   admConfirmSetSubAdminLocal:`Nommer ce membre sous-admin local de cette structure ?`,
   admConfirmRevokeSubAdminLocal:`Révoquer le rôle de sous-admin local de %1 ?`,
   admConfirmArchiveStructure:`Archiver cette structure ?`,
+  admConfirmDeleteStructure:`Supprimer définitivement cette structure ?`,
   admToastSubAdminLocalNamed:`Sous-admin local nommé.`,
   admToastSubAdminLocalRemoved:`Rôle de sous-admin local retiré.`,
   admToastStructureArchived:`Structure archivée.`,
+  admToastStructureDeleted:`Structure supprimée.`,
   admToastProposalApproved:`Proposition approuvée.`,
   admToastProposalRejected:`Proposition rejetée.`,
   admToastProposalCancelled:`Proposition annulée.`,
@@ -4776,7 +4802,8 @@ deleted:`تم حذف البيانات`,
   admLocalNoProposals:`لا توجد اقتراحات.`,
   admLocalArchived:`مؤرشف`,
   admLocalArchive:`أرشفة`,
-  admLocalStructReq:`الاسم ومعرف الهيكل مطلوبان.`,
+  admLocalDelete:`حذف`,
+  admLocalStructReq:`الاسم مطلوب.`,
   admLocalStructCreated:`تم إنشاء الهيكل.`,
   admLocalApprove:`موافقة`,
   admLocalReject:`رفض`,
@@ -4788,9 +4815,11 @@ deleted:`تم حذف البيانات`,
   admConfirmSetSubAdminLocal:`تعيين هذا العضو مسؤولاً محلياً فرعياً لهذا الهيكل؟`,
   admConfirmRevokeSubAdminLocal:`سحب دور المسؤول المحلي الفرعي من %1؟`,
   admConfirmArchiveStructure:`أرشف هذا الهيكل؟`,
+  admConfirmDeleteStructure:`احذف هذه البنية نهائياً؟`,
   admToastSubAdminLocalNamed:`تم تعيين المسؤول المحلي الفرعي.`,
   admToastSubAdminLocalRemoved:`سحب دور المسؤول المحلي الفرعي.`,
   admToastStructureArchived:`تم أرشفة الهيكل.`,
+  admToastStructureDeleted:`تم حذف البنية.`,
   admToastProposalApproved:`تمت الموافقة على الاقتراح.`,
   admToastProposalRejected:`تم رفض الاقتراح.`,
   admToastProposalCancelled:`تم إلغاء الاقتراح.`,
@@ -7678,13 +7707,13 @@ function renderAdminLocalStructures(){
   if(toolbar){
     html+='<div class="admin-struct-form" id="admLocalStructForm" style="margin-bottom:12px;padding:10px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--panel,#fafafa);">'+
       '<label style="display:block;margin-bottom:6px;font-weight:700">'+t.admLocalNewStructure+'</label>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">'+
       '<input id="admStructName" type="text" placeholder="'+t.admLocalStructName+'" maxlength="120">'+
       '<input id="admStructEtab" type="text" placeholder="'+t.admLocalStructEtab+'" maxlength="160">'+
       '<input id="admStructProvince" type="text" placeholder="'+t.admLocalStructProvince+'" maxlength="40">'+
-      '<input id="admStructId" type="text" placeholder="'+t.admLocalStructId+'" maxlength="40">'+
       '<button type="button" class="btn primary small" id="admBtnCreateStruct">'+t.admLocalCreate+'</button>'+
       '</div>'+
+      '<div id="admStructResult" style="margin-top:8px;padding:8px;border:1px solid var(--border,#ccc);border-radius:6px;background:var(--panel,#fafafa);color:var(--text,#111);font-family:monospace;font-size:0.9em;display:none;"></div>'+
       '</div>';
   }
   var listItems=S.localStructures||[];
@@ -7692,8 +7721,8 @@ function renderAdminLocalStructures(){
   if(listItems.length===0) html+='<li class="empty">'+t.admLocalNoStructures+'</li>';
   html+=listItems.map(function(s){
     var arch=s.archived?' <span class="tag">'+t.admLocalArchived+'</span>':'';
-    var btn=s.archived?'<button type="button" class="btn ghost small danger" data-adm-act="archiveLocalStructure" data-struct="'+esc(s.id)+'">'+t.admLocalArchive+'</button>':'-';
-    return '<li class="mrow"><div class="mi"><strong>'+esc(s.name)+'</strong><span>'+esc(s.etab)+'</span><span>'+esc(s.province)+arch+'</span></div><div class="mact">'+btn+'</div></li>';
+    var btn='<button type="button" class="btn ghost small danger" data-adm-act="deleteLocalStructure" data-struct="'+esc(s.id)+'">'+t.admLocalDelete+'</button>';
+    return '<li class="mrow"><div class="mi"><strong>'+esc(s.name)+'</strong><span>'+t.admLocalStructId+': '+esc(s.id)+'</span><span>'+esc(s.etab)+'</span><span>'+esc(s.province)+arch+'</span></div><div class="mact">'+btn+'</div></li>';
   }).join('');
   html+='</ul>';
   list.innerHTML=html;
@@ -7704,10 +7733,30 @@ function renderAdminLocalStructures(){
       var name=$('admStructName').value.trim();
       var etab=$('admStructEtab').value.trim();
       var province=$('admStructProvince').value.trim();
-      var sid=$('admStructId').value.trim();
-      if(!name||!sid){toast(t.admLocalStructReq);return;}
-      CLOUD.admin.createLocalStructure({name:name,etab:etab,province:province,structureId:sid}).then(function(){
-        $('admStructName').value='';$('admStructEtab').value='';$('admStructProvince').value='';$('admStructId').value='';
+      if(!name){toast(t.admLocalStructReq);return;}
+      // Générer un structureId stable à partir du nom
+      var baseId = String(name).toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '')
+        .slice(0, 40);
+      // Fallback si le nom ne produit pas d'identifiant utilisable
+      if (!baseId || baseId === '-') {
+        baseId = 'struct-' + String(Date.now()).slice(-6);
+      }
+      // Vérifier l'absence de doublon
+      var candidate = baseId;
+      var i = 1;
+      while (S.localStructures && S.localStructures.some(function(s){ return s.id === candidate; })) {
+        candidate = baseId + '-' + i;
+        i++;
+      }
+      CLOUD.admin.createLocalStructure({name:name,etab:etab,province:province,structureId:candidate}).then(function(){
+        var result=$('admStructResult');
+        if(result){
+          result.style.display='block';
+          result.innerHTML='<strong>'+t.admLocalStructCreated+'</strong> · '+t.admLocalStructId+': '+esc(candidate);
+        }
+        $('admStructName').value='';$('admStructEtab').value='';$('admStructProvince').value='';
         toast(t.admLocalStructCreated);
       }).catch(showError);
     };
@@ -9635,6 +9684,15 @@ var sid=el.getAttribute('data-struct');
 if(window.confirm(String(t.admConfirmArchiveStructure).replace('%1',sid))){
 c.admin.archiveLocalStructure(sid)
 .then(function(){toast(t.admToastStructureArchived);})
+.catch(showError);
+}
+}
+
+else if(a==='deleteLocalStructure'&&S.isAdmin){
+var sid=el.getAttribute('data-struct');
+if(window.confirm(String(t.admConfirmDeleteStructure).replace('%1',sid))){
+c.admin.deleteLocalStructure(sid)
+.then(function(){toast(t.admToastStructureDeleted);})
 .catch(showError);
 }
 }

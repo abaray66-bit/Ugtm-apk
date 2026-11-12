@@ -354,7 +354,7 @@ service cloud.firestore {
         && okText(request.resource.data.get('province', ''), 40)
         && request.resource.data.updatedAt == request.time;
 
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
 
     // ==========================================================
