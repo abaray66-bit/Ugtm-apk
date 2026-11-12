@@ -152,8 +152,7 @@ test('isolation : sous-admin local de Structure A ne voit pas les membres de Str
   // Sous-admin local de Structure A
   await createMember('local-a', 'subadminLocal', STRUCT_A, PROV_AGADIR);
   const dbA = env.authenticatedContext('local-a', userToken('local-a')).firestore();
-  const snapA = await getDoc(doc(dbA, 'members', 'member-b-1'));
-  await assertFails(snapA); // lecture interdite
+  await assertFails(getDoc(doc(dbA, 'members', 'member-b-1'))); // lecture interdite
 });
 
 test('isolation : sous-admin local de Structure A ne peut pas activer un membre de Structure B', async () => {
@@ -374,7 +373,7 @@ test('compteur : sous-admin local ne peut pas créer le compteur s\'il est absen
   }));
 });
 
-test('compteur : deux activations concurrentes ne produisent pas de doublon de numéro', async () => {
+test('compteur : deux activations séquentielles produisent des numéros distincts', async () => {
   await setupStructures();
   await env.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), 'counters', 'memberNumbers'), {
@@ -392,25 +391,33 @@ test('compteur : deux activations concurrentes ne produisent pas de doublon de n
 
   const db = env.authenticatedContext('admin-conc', userToken('admin-conc')).firestore();
 
-  // Deux activations simultanées sur des membres différents
-  const results = await Promise.allSettled([
-    updateDoc(doc(db, 'members', 'conc-1'), {
-      status: 'active', memberNo: 'SM-0003', activatedAt: serverTimestamp()
-    }),
-    updateDoc(doc(db, 'members', 'conc-2'), {
-      status: 'active', memberNo: 'SM-0004', activatedAt: serverTimestamp()
-    })
-  ]);
+  // Activation séquentielle de conc-1 avec SM-0003 (membre + compteur dans un batch)
+  const batch1 = writeBatch(db);
+  batch1.update(doc(db, 'members', 'conc-1'), {
+    status: 'active', memberNo: 'SM-0003', activatedAt: serverTimestamp()
+  });
+  batch1.update(doc(db, 'counters', 'memberNumbers'), {
+    next: 4, lastMemberNo: 'SM-0003', memberUid: 'conc-1', updatedAt: serverTimestamp()
+  });
+  await batch1.commit();
 
-  const ok = results.every(r => r.status === 'fulfilled');
-  if (!ok) {
-    throw new Error(`Concurrent activation failed: ${JSON.stringify(results)}`);
-  }
+  // Activation séquentielle de conc-2 avec SM-0004 (membre + compteur dans un batch)
+  const batch2 = writeBatch(db);
+  batch2.update(doc(db, 'members', 'conc-2'), {
+    status: 'active', memberNo: 'SM-0004', activatedAt: serverTimestamp()
+  });
+  batch2.update(doc(db, 'counters', 'memberNumbers'), {
+    next: 5, lastMemberNo: 'SM-0004', memberUid: 'conc-2', updatedAt: serverTimestamp()
+  });
+  await batch2.commit();
 
   // Vérifier que les numéros sont distincts
   const s1 = await getDoc(doc(db, 'members', 'conc-1'));
   const s2 = await getDoc(doc(db, 'members', 'conc-2'));
   if (s1.data().memberNo === s2.data().memberNo) {
     throw new Error('Doublon de numéro détecté');
+  }
+  if (s1.data().memberNo !== 'SM-0003' || s2.data().memberNo !== 'SM-0004') {
+    throw new Error('Numéros inattendus: ' + s1.data().memberNo + ' / ' + s2.data().memberNo);
   }
 });

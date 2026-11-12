@@ -159,7 +159,14 @@ service cloud.firestore {
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo);
 
-      allow update: if isAdmin()
+      allow update: if (
+          isAdmin()
+            && (request.resource.data.role != 'subadminLocal'
+              || (okText(request.resource.data.adminStructure, 40)
+                  && request.resource.data.adminStructure.size() > 0
+                  && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
+                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false))
+        )
         // Activation d'un adhérent en attente par son
         // sous-admin de province : la fiche complète du
         // dossier signé (coordonnées) peut être enregistrée
@@ -398,7 +405,7 @@ service cloud.firestore {
             .hasOnly(['status', 'updatedAt'])
           && request.resource.data.status == 'cancelled'
           && request.resource.data.proposedBy == request.auth.uid
-          && request.resource.data.updatedAt == request.time);
+          && request.resource.data.updatedAt == request.time));
 
       allow delete: if isAdmin();
     }
@@ -838,7 +845,7 @@ service cloud.firestore {
               && request.resource.data.adminSignature.size() <= 20000
               && request.resource.data.signedBy == request.auth.uid
               && request.resource.data.signedAt == request.time
-            )
+              && request.resource.data.get('validatedBy', '') == '')
             || (
               // Validation par le sous-admin local de la structure du dossier
               // (traces de validation : validatedBy/validatedAt/validatedByRole).
@@ -850,7 +857,7 @@ service cloud.firestore {
               && request.resource.data.validatedAt == request.time
               && okText(request.resource.data.validatedByRole, 60)
               && request.resource.data.validatedByRole == 'subadminLocal'
-            )
+              && request.resource.data.get('adminSignature', '') == '')
           )
         )
         || (
