@@ -1277,6 +1277,12 @@ async function signAdhesion(uid,signature,note){
       throw new Error('Application d\'adhésion incomplète');
     }
 
+    // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
+    var seqSnap = await tx.get(seqRef);
+    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
+    if (!Number.isFinite(next) || next < 1) next = 1;
+    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
     // 1. Valider la demande (signature électronique du responsable)
     tx.update(reqRef, {
       status: 'accepted',
@@ -1290,11 +1296,6 @@ async function signAdhesion(uid,signature,note){
     // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
     var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
     name = name.trim();
-
-    var seqSnap = await tx.get(seqRef);
-    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
-    if (!Number.isFinite(next) || next < 1) next = 1;
-    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     var memberData = {
       name: name,
@@ -1388,6 +1389,12 @@ async function validateAdhesionLocal(uid,note){
     var structureId = String(req.structureId || '');
     if (!structureId) throw new Error('Le dossier ne porte aucune structureId.');
 
+    // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
+    var seqSnap = await tx.get(seqRef);
+    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
+    if (!Number.isFinite(next) || next < 1) next = 1;
+    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
+
     // 1. Valider la demande (traces du sous-admin local)
     tx.update(reqRef, {
       status: 'accepted',
@@ -1401,11 +1408,6 @@ async function validateAdhesionLocal(uid,note){
     // 2. Activer le membre dans LA MÊME transaction
     var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
     name = name.trim();
-
-    var seqSnap = await tx.get(seqRef);
-    var next = seqSnap.exists() ? Number(seqSnap.data().next || 1) : 1;
-    if (!Number.isFinite(next) || next < 1) next = 1;
-    var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     var memberData = {
       name: name,
