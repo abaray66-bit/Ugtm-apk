@@ -4167,6 +4167,7 @@ deleted:`Données supprimées`,
   admToastStructureDeleted:`Structure supprimée.`,
   admMemProposeSubAdminLocal:`Proposer comme sous-admin local`,
   admProposeLocalMissingStruct:`structureId requis.`,
+  admLocalProposeBtn:`Proposer`,
   admToastProposalSent:`Proposition envoyée.`,
   admToastProposalApproved:`Proposition approuvée.`,
   admToastProposalRejected:`Proposition rejetée.`,
@@ -4825,6 +4826,7 @@ deleted:`تم حذف البيانات`,
   admToastStructureDeleted:`تم حذف البنية.`,
   admMemProposeSubAdminLocal:`اقتراح كمسؤول محلي فرعي`,
   admProposeLocalMissingStruct:`معرف الهيكل مطلوب.`,
+  admLocalProposeBtn:`اقتراح`,
   admToastProposalSent:`تم إرسال الاقتراح.`,
   admToastProposalApproved:`تمت الموافقة على الاقتراح.`,
   admToastProposalRejected:`تم رفض الاقتراح.`,
@@ -9635,13 +9637,32 @@ toast(String(t.admToastSubAdminNamed).replace('%1',provName(assigned,lang)||assi
 }
 
 else if(a==='proposeSubAdminLocal'&&S.isSubAdmin&&m){
-var sid=window.prompt(t.admLocalStructId+' (structureId de la structure cible)','');
-if(sid===null)return;
-sid=sid.trim();
-if(!sid){toast(t.admProposeLocalMissingStruct);return;}
-c.admin.proposeSubAdminLocal(uid,sid)
-.then(function(){toast(t.admToastProposalSent);})
+var prov = m.prov || '';
+var structs = (S.localStructures||[]).filter(function(s){ return s.province === prov && !s.archived; });
+if(structs.length===0){
+toast('Aucune structure locale active dans votre province.');
+return;
+}
+var sel = document.createElement('select');
+sel.style.padding = '6px';
+sel.style.marginRight = '6px';
+structs.forEach(function(s){
+var o = document.createElement('option');
+o.value = s.id;
+o.textContent = s.name + ' (' + s.id + ')';
+sel.appendChild(o);
+});
+var btn = document.createElement('button');
+btn.textContent = t.admLocalProposeBtn;
+btn.className = 'btn primary small';
+btn.onclick = function(){
+var sid = sel.value;
+c.admin.proposeSubAdminLocal(uid, sid)
+.then(function(){ toast(t.admToastProposalSent); sel.remove(); btn.remove(); })
 .catch(showError);
+};
+el.parentNode.insertBefore(sel, el.nextSibling);
+el.parentNode.insertBefore(btn, sel.nextSibling);
 }
 
 else if(a==='addAdminEmail'&&S.isAdmin){
