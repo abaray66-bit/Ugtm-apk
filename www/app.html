@@ -4165,6 +4165,9 @@ deleted:`Données supprimées`,
   admToastSubAdminLocalRemoved:`Rôle de sous-admin local retiré.`,
   admToastStructureArchived:`Structure archivée.`,
   admToastStructureDeleted:`Structure supprimée.`,
+  admMemProposeSubAdminLocal:`Proposer comme sous-admin local`,
+  admProposeLocalMissingStruct:`structureId requis.`,
+  admToastProposalSent:`Proposition envoyée.`,
   admToastProposalApproved:`Proposition approuvée.`,
   admToastProposalRejected:`Proposition rejetée.`,
   admToastProposalCancelled:`Proposition annulée.`,
@@ -4820,6 +4823,9 @@ deleted:`تم حذف البيانات`,
   admToastSubAdminLocalRemoved:`سحب دور المسؤول المحلي الفرعي.`,
   admToastStructureArchived:`تم أرشفة الهيكل.`,
   admToastStructureDeleted:`تم حذف البنية.`,
+  admMemProposeSubAdminLocal:`اقتراح كمسؤول محلي فرعي`,
+  admProposeLocalMissingStruct:`معرف الهيكل مطلوب.`,
+  admToastProposalSent:`تم إرسال الاقتراح.`,
   admToastProposalApproved:`تمت الموافقة على الاقتراح.`,
   admToastProposalRejected:`تم رفض الاقتراح.`,
   admToastProposalCancelled:`تم إلغاء الاقتراح.`,
@@ -7171,6 +7177,12 @@ return '<option value="'+esc(pr.v)+'" '+(pr.v===selected?'selected':'')+'>'+esc(
 '" data-uid="'+uid+'">'+
 esc(m.role==='subadmin'?t.admMemRemoveRole:t.admMemSetSubAdmin)+
 '</button></div>';
+}
+
+/* Le sous-admin provincial peut proposer un membre actif de SA
+   province comme sous-admin local de l'une de ses structures. */
+if(S.isSubAdmin&&!S.isAdmin&&m.status==='active'&&m.prov&&m.prov===((S.member&&S.member.adminProvince)||'')){
+acts+='<button type="button" class="btn ghost small" data-adm-act="proposeSubAdminLocal" data-uid="'+uid+'">'+esc(t.admMemProposeSubAdminLocal)+'</button>';
 }
 
 if(S.isAdmin&&m.status==='active'){
@@ -9620,6 +9632,16 @@ toast(String(t.admToastSubAdminNamed).replace('%1',provName(assigned,lang)||assi
 })
 .catch(showError);
 
+}
+
+else if(a==='proposeSubAdminLocal'&&S.isSubAdmin&&m){
+var sid=window.prompt(t.admLocalStructId+' (structureId de la structure cible)','');
+if(sid===null)return;
+sid=sid.trim();
+if(!sid){toast(t.admProposeLocalMissingStruct);return;}
+c.admin.proposeSubAdminLocal(uid,sid)
+.then(function(){toast(t.admToastProposalSent);})
+.catch(showError);
 }
 
 else if(a==='addAdminEmail'&&S.isAdmin){
