@@ -41,7 +41,7 @@ window.APP_DATA = {
       title: "Groupe de communication régional",
       description: "Rejoignez le groupe WhatsApp de communication de la Fédération nationale de la Santé.",
       icon: "💬",
-      url: "https://chat.whatsapp.com/HohMZIZCxylJFk3ugYUsfM?s=cl&p=a&ilr=4&iam=0",
+      url: "https://chat.whatsapp.com/CiCEV8NVZ7Z6btRGy6FINt?s=cl&p=a&iam=2",
       action: "openUrl"
     },
     {
