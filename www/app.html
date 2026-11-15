@@ -6282,6 +6282,104 @@ lines.push(t.shareReportAttach+' '+String(report.attachmentName));
 return lines.join('\n');
 }
 
+/* Génère un PDF du signalement (texte + réponse admin + photos jointes)
+   et le partage directement via WhatsApp / partage natif. */
+function shareReportPdf(report){
+  var t=T();
+  if(!report||!window.jspdf||!window.jspdf.jsPDF)return;
+  var jsPDF=window.jspdf.jsPDF;
+  var pdf=new jsPDF({unit:'mm',format:'a4'});
+  var pageW=210, margin=15, y=15;
+
+  pdf.setFontSize(16);
+  pdf.text(t.shareReportHeader||'Signalement UGTM', margin, y); y+=8;
+  pdf.setFontSize(11);
+  pdf.text((t.shareReportRef||'Ref')+': '+(report.id||''), margin, y); y+=6;
+  pdf.text((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||''), margin, y); y+=6;
+  if(report.etab){ pdf.text((t.shareReportEtab||'Etab')+': '+String(report.etab), margin, y); y+=6; }
+  pdf.text((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||''), margin, y); y+=6;
+  if(report.date){ pdf.text((t.shareReportDate||'Date')+': '+String(report.date), margin, y); y+=6; }
+  pdf.text((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||''), margin, y); y+=8;
+
+  if(report.description){
+    pdf.setFontSize(12);
+    pdf.text((t.shareReportSummary||'Résumé')+':', margin, y); y+=6;
+    var desc=String(report.description||'');
+    var lines=pdf.splitTextToSize(desc, pageW-margin*2);
+    pdf.setFontSize(11);
+    pdf.text(lines, margin, y); y+=lines.length*5+6;
+  }
+
+  if(report.response){
+    pdf.setFontSize(12);
+    pdf.text('Réponse de l\'administration:', margin, y); y+=6;
+    var resp=String(report.response||'');
+    var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
+    pdf.setFontSize(11);
+    pdf.text(rlines, margin, y); y+=rlines.length*5+8;
+  }
+
+  /* Photos jointes */
+  if(window.CLOUD&&window.CLOUD.getReportAttachment){
+    try{
+      window.CLOUD.getReportAttachment(report.id).then(function(arr){
+        attachImages(pdf, arr, t, pageW, margin, y);
+        finalizeAndShare(pdf, report, t);
+      }).catch(function(){ finalizeAndShare(pdf, report, t); });
+      return;
+    }catch(e){}
+  }
+  finalizeAndShare(pdf, report, t);
+}
+
+function attachImages(pdf, arr, t, pageW, margin, y){
+  if(!Array.isArray(arr)||arr.length===0)return;
+  var imgY=y;
+  pdf.setFontSize(12);
+  pdf.text('Pièces jointes:', margin, imgY); imgY+=6;
+  arr.forEach(function(a,i){
+    if(!a||!(a.data||a.uri))return;
+    var data=a.data||a.uri;
+    var mime='image/jpeg';
+    if(typeof data==='string'&&data.indexOf('data:')===0){ mime=data.substring(5,data.indexOf(';')); data=data.slice(data.indexOf(',')+1); }
+    try{
+      pdf.addImage(data, mime, margin, imgY, pageW-margin*2, 40);
+      imgY+=46;
+    }catch(e){}
+  });
+  return imgY;
+}
+
+function finalizeAndShare(pdf, report, t){
+  var dataUri=pdf.output('datauristring');
+  var b64=dataUri.split(',')[1];
+  var mime=dataUri.match(/:(.*?);/)[1];
+  var bytes=atob(b64);
+  var buf=new Uint8Array(bytes.length);
+  for(var i=0;i<bytes.length;i++)buf[i]=bytes.charCodeAt(i);
+  var blob=new Blob([buf],{type:mime});
+  var file=new File([blob], 'signalement-'+(report.id||'report')+'.pdf',{type:mime});
+
+  var text=buildReportShareText(report);
+  var title=t.shareReportTitle||'Signalement UGTM';
+  var isNative=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+  var plugins=window.Capacitor&&window.Capacitor.Plugins;
+  var capShare=isNative&&plugins?plugins.Share:null;
+
+  function tryShare(){
+    if(capShare&&typeof capShare.share==='function'){
+      return capShare.share({title:title,text:text,files:[file]}).catch(function(){});
+    }
+    if(navigator.share){
+      return navigator.share({title:title,text:text,files:[file]}).catch(function(){
+        shareTextFallback(text);
+      });
+    }
+    shareTextFallback(text);
+  }
+  tryShare();
+}
+
 /* Envoi de pièces au secrétaire RÉGIONAL ou PROVINCIAL : le même
    récapitulatif est pré-rempli pour le destinataire choisi.
    Le numéro provincial vient de la source officielle existante
@@ -9954,21 +10052,9 @@ c.admin.updateReport(id,'closed',response).catch(showError);
 else if(a==='shareReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
-/* Même récapitulatif que l'adhérent : référence, motif, résumé,
-   date, statut et rappel de la pièce jointe à joindre à la main. */
-var text=buildReportShareText(report);
-
-if(navigator.share){
-navigator.share({
-title:t.shareReportTitle,
-text:text
-}).catch(function(){});
-}else{
-window.open(
-'https://wa.me/?text='+encodeURIComponent(text),
-'_blank'
-);
-}
+/* Partage direct du PDF du signalement : texte + réponse admin +
+   photos jointes, via le partage natif ou WhatsApp. */
+shareReportPdf(report);
 }
 }
 
