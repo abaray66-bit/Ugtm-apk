@@ -4168,6 +4168,7 @@ deleted:`Données supprimées`,
   admMemProposeSubAdminLocal:`Proposer comme sous-admin local`,
   admProposeLocalMissingStruct:`structureId requis.`,
   admLocalProposeBtn:`Proposer`,
+  admLocalSelectStructure:`Structure locale`,
   admToastProposalSent:`Proposition envoyée.`,
   admToastProposalApproved:`Proposition approuvée.`,
   admToastProposalRejected:`Proposition rejetée.`,
@@ -4220,6 +4221,7 @@ deleted:`Données supprimées`,
   admMemSuspend:`Suspendre`,
   admMemReactivate:`Réactiver`,
   admMemSetSubAdmin:`Nommer sous-admin`,
+  admMemSetSubAdminLocal:`Nommer sous-admin local`,
   admMemRemoveRole:`Retirer le rôle`,
   admMemSetResp:`Désigner responsable`,
   admMemRemoveResp:`Retirer responsable`,
@@ -4827,6 +4829,7 @@ deleted:`تم حذف البيانات`,
   admMemProposeSubAdminLocal:`اقتراح كمسؤول محلي فرعي`,
   admProposeLocalMissingStruct:`معرف الهيكل مطلوب.`,
   admLocalProposeBtn:`اقتراح`,
+  admLocalSelectStructure:`الهيكل المحلي`,
   admToastProposalSent:`تم إرسال الاقتراح.`,
   admToastProposalApproved:`تمت الموافقة على الاقتراح.`,
   admToastProposalRejected:`تم رفض الاقتراح.`,
@@ -4879,6 +4882,7 @@ deleted:`تم حذف البيانات`,
   admMemSuspend:`تجميد`,
   admMemReactivate:`إعادة التنشيط`,
   admMemSetSubAdmin:`تعيين مسؤول فرعي`,
+  admMemSetSubAdminLocal:`تعيين مسؤول محلي`,
   admMemRemoveRole:`سحب الدور`,
   admMemSetResp:`تعيين مسؤول`,
   admMemRemoveResp:`سحب صفة المسؤول`,
@@ -7312,6 +7316,16 @@ acts+='<button type="button" class="btn ghost small" data-adm-act="'+
 '" data-uid="'+uid+'">'+
 esc(isResp?t.admMemRemoveResp:t.admMemSetResp)+
 '</button>';
+
+/* Nomination / révocation d’un sous-admin local (admin général uniquement).
+   Le sélecteur de structure apparaît dans un modal avec défilement. */
+if(S.isAdmin&&m.status==='active'){
+if(m.role==='subadminLocal'){
+acts+='<button type="button" class="btn ghost small" data-adm-act="revokeSubAdminLocal" data-uid="'+uid+'">'+esc(t.admMemRemoveRole)+'</button>';
+} else {
+acts+='<button type="button" class="btn ghost small" data-adm-act="setSubAdminLocal" data-uid="'+uid+'">'+esc(t.admMemSetSubAdminLocal)+'</button>';
+}
+}
 }
 
 if(S.isAdmin)
@@ -9737,6 +9751,47 @@ id=el.getAttribute('data-id');
 
 m=uid?findMember(uid):null;
 
+/* Ouvre un modal avec un sélecteur déroulant (scroll) des structures locales actives
+   pour nommer un membre sous-admin local. */
+function openSetSubAdminLocalModal(uid){
+var structs=(S.localStructures||[]).filter(function(s){return s&&!s.archived;});
+if(structs.length===0){toast('Aucune structure locale active.');return;}
+var dlg=document.createElement('div');
+dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel,#fff);border:1px solid var(--border,#ccc);border-radius:8px;padding:16px;z-index:10000;box-shadow:0 4px 16px rgba(0,0,0,.25);min-width:320px;';
+var lab=document.createElement('div');
+lab.textContent=t.admLocalSelectStructure||'Structure locale';
+lab.style.fontWeight='700';lab.style.marginBottom='8px';lab.style.display='block';
+var sel=document.createElement('select');
+sel.id='admLocalSetSel';
+sel.size=Math.min(6,structs.length);
+sel.style.width='100%';sel.style.marginBottom='12px';
+structs.forEach(function(s){
+var o=document.createElement('option');
+o.value=s.id||s.structureId||'';
+o.textContent=(s.name||s.etab||'')+' ('+(s.id||s.structureId||'')+')';
+sel.appendChild(o);
+});
+var btns=document.createElement('div');
+btns.style.display='flex';btns.style.gap='8px';btns.style.justifyContent='flex-end';
+var btnOk=document.createElement('button');
+btnOk.type='button';btnOk.className='btn primary small';btnOk.textContent=t.admLocalProposeBtn||'Confirmer';
+var btnCancel=document.createElement('button');
+btnCancel.type='button';btnCancel.className='btn ghost small';btnCancel.textContent='Annuler';
+btnCancel.onclick=function(){dlg.remove();};
+btnOk.onclick=function(){
+var sid=sel.value;
+if(!sid){toast('Sélectionnez une structure.');return;}
+dlg.remove();
+if(!window.confirm(String(t.admConfirmSetSubAdminLocal||'Nommer ce membre sous-admin local de cette structure ?').replace('%1',uid))){return;}
+c.admin.setSubAdminLocal(uid,sid)
+.then(function(){toast(t.admToastSubAdminLocalNamed||'Sous-admin local nommé.');})
+.catch(showError);
+};
+btns.appendChild(btnOk);btns.appendChild(btnCancel);
+dlg.appendChild(lab);dlg.appendChild(sel);dlg.appendChild(btns);
+document.body.appendChild(dlg);
+}
+
 if(a==='setSubAdmin'&&m&&S.isAdmin){
 
 var selector=document.querySelector('[data-subprov="'+CSS.escape(uid)+'"]');
@@ -9836,11 +9891,7 @@ toast(t.admToastSubAdminRemoved);
 }
 
 else if(a==='setSubAdminLocal'&&S.isAdmin){
-var sid=el.getAttribute('data-struct');
-if(!window.confirm(String(t.admConfirmSetSubAdminLocal).replace('%1',uid))){return;}
-c.admin.setSubAdminLocal(uid,sid)
-.then(function(){toast(t.admToastSubAdminLocalNamed);})
-.catch(showError);
+openSetSubAdminLocalModal(uid);
 }
 
 else if(a==='revokeSubAdminLocal'&&m&&S.isAdmin){
