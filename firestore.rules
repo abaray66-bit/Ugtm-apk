@@ -161,7 +161,7 @@ service cloud.firestore {
 
       allow update: if (
           isAdmin()
-            && (request.resource.data.role != 'subadminLocal'
+            && (request.resource.data.get('role', '') != 'subadminLocal'
               || (okText(request.resource.data.adminStructure, 40)
                   && request.resource.data.adminStructure.size() > 0
                   && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
@@ -833,8 +833,15 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time
           && (
             // Décision simple : complément demandé, refus, remise en attente.
-            request.resource.data.diff(resource.data).affectedKeys()
-              .hasOnly(['status', 'adminNote', 'updatedAt'])
+            // Seuls status, adminNote et updatedAt peuvent changer ; les
+            // autres champs doivent rester à leur valeur par défaut.
+            request.resource.data.get('adminSignature', '') == ''
+            && request.resource.data.get('signedBy', '') == ''
+            && request.resource.data.get('signedAt', '') == ''
+            && request.resource.data.get('structureId', '') == ''
+            && request.resource.data.get('validatedBy', '') == ''
+            && request.resource.data.get('validatedAt', '') == ''
+            && request.resource.data.get('validatedByRole', '') == ''
             || (
               // Validation par l'administrateur général ou le sous-admin de province
               // (signature électronique = validation de l'adhésion).
@@ -875,7 +882,6 @@ service cloud.firestore {
           signedIn() && request.auth.uid == uid
           && resource.data.uid == uid
           && resource.data.status in ['needs_completion', 'accepted']
-          && request.resource.data.keys().hasAll(adhesionTopKeys())
           && request.resource.data.keys().hasOnly(adhesionTopKeys())
           && (resource.data.status == 'needs_completion'
             || request.resource.data.application.type == 'renewal')
