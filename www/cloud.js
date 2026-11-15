@@ -2417,7 +2417,12 @@ var admin = {
         updatedAt: serverTimestamp(),
         archived: false
       }).then(function(){
-        return {structureId: structureId, name: name};
+        /* Re-sync immédiat de la liste locale pour que la structure
+           créée apparaisse sans rechargement de la page. */
+        return window.CLOUD.admin.getLocalStructures().then(function(list){
+          hooks.setLocalStructures && hooks.setLocalStructures(list);
+          return {structureId: structureId, name: name};
+        });
       });
     },
 
