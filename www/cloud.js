@@ -1834,6 +1834,7 @@ var admin = {
 
   setSubAdmin:
     function(uid, province){
+      if (!String(province || '').trim()) return Promise.reject(new Error('Province requise pour nommer un sous-admin de province.'));
       return runTransaction(db, async function(tx){
         var memberRef = doc(db, 'members', uid);
         var memberSnap = await tx.get(memberRef);

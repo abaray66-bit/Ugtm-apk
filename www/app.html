@@ -9741,7 +9741,8 @@ if(a==='setSubAdmin'&&m&&S.isAdmin){
 
 var selector=document.querySelector('[data-subprov="'+CSS.escape(uid)+'"]');
 var assigned=selector?selector.value:(m.prov||'');
-
+if(!assigned) assigned=findAdhesionProvince(uid)||'';
+if(!assigned){showError('Province introuvable pour ce membre.');return;}
 c.admin.setSubAdmin(uid,assigned)
 .then(function(){
 toast(String(t.admToastSubAdminNamed).replace('%1',provName(assigned,lang)||assigned));
