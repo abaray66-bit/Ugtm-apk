@@ -496,6 +496,11 @@ try {
   const Base = jspdfLib.jsPDF || jspdfLib.default?.jsPDF;
   if (!Base) throw new Error('jsPDF introuvable dans www/jspdf.umd.min.js');
 
+  /* Enregistrer les polices Amiri dans le VFS de chaque instance jsPDF (arabe + latin). */
+  const fs = require('fs');
+  const amiriRegularB64 = fs.readFileSync(path.join(root, 'www', 'Amiri-Regular.ttf')).toString('latin1');
+  const amiriBoldB64 = fs.readFileSync(path.join(root, 'www', 'Amiri-Bold.ttf')).toString('latin1');
+
   const JPEG1x1 = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==';
 
   let calls = [];
@@ -503,6 +508,10 @@ try {
   /* jsPDF attache ses méthodes d'une façon qui échappe à un surclassement :   on enveloppe l'INSTANCE produite (le constructeur retourne l'objet   enveloppé, ce que `new` accepte) pour enregistrer texte et images. */
   function RecordingJsPDF(...args) {
     const inst = new Base(...args);
+    /* Peupler le VFS de l'instance avec les polices Amiri. */
+    inst.internal.vFS = inst.internal.vFS || {};
+    inst.internal.vFS['Amiri-Regular.ttf'] = amiriRegularB64;
+    inst.internal.vFS['Amiri-Bold.ttf'] = amiriBoldB64;
     /* Les pieds de page se répètent à l'identique sur chaque page :
        chaque appel est donc rattaché au numéro de page courant. */
     let page = 1;
@@ -551,7 +560,10 @@ try {
     window: { jspdf: { jsPDF: RecordingJsPDF } },
     document: documentStub,
     Image: ImageStub,
-    provName: (v) => (v === 'agadir' ? 'Agadir Ida-Outanane' : (v || ''))
+    provName: (v) => (v === 'agadir' ? 'Agadir Ida-Outanane' : (v || '')),
+    T: () => ({}),
+    FUNCTION_FR: {},
+    SPECIALITE_FR: {}
   });
 
   const scenarios = [
@@ -612,6 +624,25 @@ try {
           establishment: ('Établissement extrêmement détaillé avec plusieurs antennes, pôles et unités de soins. ').repeat(10),
           service: 'Service', 'function': 'Fonction', specialty: 'Spécialité', ppr: '1',
           type: 'renewal', reason: 'Motif de renouvellement. ', date: '2026-10-21'
+        }
+      }
+    },
+    {
+      file: 'test-arabe.pdf',
+      label: 'noms et adresse en arabe',
+      request: {
+        id: 'testarab777',
+        adminSignature: 'data:image/jpeg;base64,' + JPEG1x1,
+        signature: 'data:image/jpeg;base64,' + JPEG1x1,
+        signerName: 'مسؤول',
+        signedAt: Date.UTC(2026, 9, 21),
+        application: {
+          nom: 'البخاري', prenom: 'محمد', cin: 'BE123456', dob: '1985-06-15',
+          phone: '0661234567', province: 'agadir',
+          address: 'الرباط، حي Hasan، رقم 12',
+          establishment: 'المستشفى الجامعي ابن سينا', service: 'طب الأطفال',
+          'function': 'طبيب', specialty: 'طب الأطفال', ppr: '654321',
+          type: 'first', date: '2026-10-21'
         }
       }
     }

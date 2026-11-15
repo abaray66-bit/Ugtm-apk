@@ -10600,6 +10600,7 @@ window.UGTM.failed(err);
 
 
 <script src="jspdf.umd.min.js"></script>
+<script src="amiri-font.js"></script>
 <script id="digital-adhesion-js">
 (function(){
     function todayStr(){
@@ -10616,7 +10617,26 @@ window.UGTM.failed(err);
         if(!jsPDF){console.error('[Debug PDF] jsPDF constructor not available');reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
+        try{
+          /* Police Amiri (arabe + latin) : intégrée via amiri-font.js (VFS).
+             En cas d'absence (tests, chargement échoué), repli par défaut. */
+          if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']){
+            pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
+            pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
+            pdf.setFont('Amiri');
+          }
+        }catch(e){}
         var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
+
+        /* Renverse une chaîne contenant des caractères arabes pour l'affichage
+           RTL dans jsPDF (qui ne gère pas le bidirectionnel nativement). */
+        function toRTL(s){
+          var str=String(s||'');
+          if(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
+            return str.split('').reverse().join('');
+          }
+          return str;
+        }
 
         function loadLogo(){
           return new Promise(function(resolve){
@@ -10681,7 +10701,7 @@ window.UGTM.failed(err);
           w=w||colW;
           var lbl=String(label||'')+' : ';
           var lblSize=8.6,valSize=9.2,gap=0.8;
-          var val=(value===undefined||value===null)?'':String(value);
+          var val=(value===undefined||value===null)?'':toRTL(String(value));
           /* Le libellé est mesuré ET dessiné à la MÊME taille : l'ancienne
              version mesurait en 8,6 pt puis redessinait en 9,2 pt (taille
              laissée par la mesure de la valeur), ce qui faisait
