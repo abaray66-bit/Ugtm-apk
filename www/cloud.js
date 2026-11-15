@@ -1187,6 +1187,7 @@ async function submitAdhesion(application,signature){
     if (clean.province) {
       try {
         await updateDoc(doc(db,'members',uid), {
+          name: String((clean.prenom||'')+' '+(clean.nom||'')).trim(),
           prov: String(clean.province||'').trim(),
           adminProvince: String(clean.province||'').trim(),
           updatedAt: serverTimestamp()
