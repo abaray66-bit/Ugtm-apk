@@ -1956,10 +1956,11 @@ var admin = {
 
       var prior = snap.data();
 
-      /* Avant toute activation, exiger une adhésion validée (sauf admin général pour migration) */
+      /* Avant toute activation, exiger une adhésion validée (sauf admin général, sous-admin provincial ou sous-admin local pour création directe) */
       if (status === 'active' && prior.status !== 'active'){
-        var isAdminGeneral = prior.role === 'admin' || false;
-        if (!isAdminGeneral) {
+        var callerRole = (session.member && session.member.role) || '';
+        var isAdmin = callerRole === 'admin' || callerRole === 'subadmin' || callerRole === 'subadminLocal';
+        if (!isAdmin) {
           var reqRef = doc(db, 'adhesionRequests', String(uid));
           var reqSnap = await getDoc(reqRef);
           if (!reqSnap.exists()) {
