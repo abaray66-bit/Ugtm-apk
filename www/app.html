@@ -10822,15 +10822,52 @@ window.UGTM.failed(err);
         if(!jsPDF){console.error('[Debug PDF] jsPDF constructor not available');reject(new Error('PDF indisponible'));return;}
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
-        try{
-/* Police Amiri (arabe + latin) : intégrée via amiri-font.js (VFS).
-             En cas d'absence (tests, chargement échoué), repli par défaut. */
-           if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']){
-             pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
-             pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
-             pdf.setFont('Amiri');
-           }
-         }catch(e){}
+        /* Police Amiri (arabe + latin) : intégrée via amiri-font.js.
+           jsPDF 4.2.1 ne rend pas les fichiers ajoutés via jsPDF.API
+           disponibles dans l'instance ; on les charge donc dans la VFS de
+           l'instance avant addFont/setFont. Sans fallback silencieux. */
+        (function registerAmiriFont(pdf,jsPDF){
+          function ensureInInstance(name){
+            if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS[name])return;
+            var data=null;
+            /* 1) Données éventuellement accessibles via la VFS globale/API. */
+            try{
+              if(!data && jsPDF && jsPDF.API && typeof jsPDF.API.getFileFromVFS==='function'){
+                data=jsPDF.API.getFileFromVFS.call({internal:{vFS:(jsPDF.API.internal&&jsPDF.API.internal.vFS)||{}}},name);
+              }
+            }catch(e){}
+            try{ if(!data && jsPDF && jsPDF.API && jsPDF.API.internal && jsPDF.API.internal.vFS) data=jsPDF.API.internal.vFS[name]||null; }catch(e){}
+            /* 2) Extraction depuis la source amiri-font.js (même origine). */
+            if(!data){
+              try{
+                var xhr=new XMLHttpRequest();
+                xhr.open('GET','amiri-font.js',false);
+                xhr.send(null);
+                if(xhr.status>=200 && xhr.status<300 && xhr.responseText){
+                  var re=new RegExp("addFileToVFS\\(['\\"]"+name+"['\\"]\\s*,\\s*\\\"([^\\"]+)\\\"\\)");
+                  var m=xhr.responseText.match(re);
+                  if(m&&m[1]) data=m[1];
+                }
+              }catch(e){}
+            }
+            if(!data || typeof pdf.addFileToVFS!=='function'){
+              throw new Error('Police Amiri indisponible pour la génération PDF ('+name+')');
+            }
+            pdf.addFileToVFS(name,data);
+          }
+          ensureInInstance('Amiri-Regular.ttf');
+          ensureInInstance('Amiri-Bold.ttf');
+          pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
+          pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
+          pdf.setFont('Amiri');
+          var fl=(typeof pdf.getFontList==='function')?pdf.getFontList():{};
+          var cur=(typeof pdf.getFont==='function')?pdf.getFont():{};
+          var hasVfs=!!(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']);
+          var hasFont=!!(fl&&(fl.Amiri||fl.amiri));
+          if(!hasVfs || !hasFont || !cur || cur.fontName!=='Amiri'){
+            throw new Error('Police Amiri non activée pour la génération PDF');
+          }
+        })(pdf,jsPDF);
          var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
 
          /* Transforme le texte arabe pour jsPDF : shaping (formes contextuelles)
