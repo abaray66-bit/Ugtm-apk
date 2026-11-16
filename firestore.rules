@@ -27,6 +27,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return signedIn()
+        && request.auth.token.email_verified == true
         && (request.auth.token.email in bootstrapAdminEmails()
             || request.auth.token.email in storedAdminEmails());
     }
@@ -266,7 +267,26 @@ service cloud.firestore {
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
             .memberNo == request.resource.data.lastMemberNo
           && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
-            .prov == assignedProvince());
+            .prov == assignedProvince())
+        || (isSubAdminLocal()
+          && counterId == 'memberNumbers'
+          && request.resource.data.keys().hasAll(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.keys().hasOnly(
+            ['next', 'lastMemberNo', 'memberUid', 'updatedAt'])
+          && request.resource.data.next is int
+          && request.resource.data.next >= 2
+          && request.resource.data.lastMemberNo is string
+          && request.resource.data.lastMemberNo.matches('SM-[0-9]{4,}')
+          && request.resource.data.memberUid is string
+          && request.resource.data.updatedAt == request.time
+          && (!exists(/databases/$(database)/documents/members/$(request.resource.data.memberUid)) || get(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data.status == 'pending')
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .status == 'active'
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .memberNo == request.resource.data.lastMemberNo
+          && getAfter(/databases/$(database)/documents/members/$(request.resource.data.memberUid)).data
+            .adminStructure == assignedLocalStructure());
 
       allow update: if isAdmin()
         || (isSubAdmin()
@@ -317,8 +337,8 @@ service cloud.firestore {
     // ==========================================================
     match /localStructures/{structureId} {
       allow read: if isAdmin()
-        || isSubAdmin()
-        || isSubAdminLocal();
+        || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
+        || (isSubAdminLocal() && structureId == assignedLocalStructure());
 
       allow create: if isAdmin()
         && request.resource.data.keys().hasOnly([
@@ -363,8 +383,8 @@ service cloud.firestore {
     // ==========================================================
     match /localAdminProposals/{proposalId} {
       allow read: if isAdmin()
-        || isSubAdmin()
-        || isSubAdminLocal();
+        || (isSubAdmin() && resource.data.province == assignedProvince())
+        || (isSubAdminLocal() && resource.data.structureId == assignedLocalStructure());
 
       allow create: if isSubAdmin()
         && request.resource.data.keys().hasOnly([
@@ -512,6 +532,7 @@ service cloud.firestore {
     match /reports/{id} {
       allow read: if isAdmin()
         || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
+        || (isSubAdminLocal() && resource.data.province == assignedProvinceLabel())
         || (
           signedIn()
           && resource.data.anonymous == false
@@ -611,6 +632,7 @@ service cloud.firestore {
     match /reportAttachments/{id} {
       allow read: if isAdmin()
         || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
+        || (isSubAdminLocal() && resource.data.province == assignedProvinceLabel())
         || (
           signedIn()
           && resource.data.anonymous == false
@@ -835,7 +857,10 @@ service cloud.firestore {
             // Décision simple : complément demandé, refus, remise en attente.
             // Seuls status, adminNote et updatedAt peuvent changer ; les
             // autres champs doivent rester à leur valeur par défaut.
-            request.resource.data.get('adminSignature', '') == ''
+            // 'accepted' N'EST PAS autorisé ici : il faut passer par les branches
+            // de validation avec signature (admin) ou validatedBy (subadminLocal).
+            request.resource.data.status != 'accepted'
+            && request.resource.data.get('adminSignature', '') == ''
             && request.resource.data.get('signedBy', '') == ''
             && request.resource.data.get('signedAt', '') == ''
             && request.resource.data.get('structureId', '') == ''
