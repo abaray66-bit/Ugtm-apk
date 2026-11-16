@@ -72,7 +72,7 @@ function isValidFcmToken(t) {
 function buildNotificationTarget(type, targetId) {
   const url = new URL('https://ugtm-fns-souss-massa.web.app/app.html');
   const id = String(targetId || '');
-  if ((type === 'news' || type === 'event' || type === 'adhesion') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
+  if ((type === 'news' || type === 'event' || type === 'adhesion' || type === 'adhesion_request' || type === 'adhesion_renewal') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
     url.searchParams.set('notificationType', type);
     url.searchParams.set('notificationId', id);
   }

@@ -51,6 +51,15 @@ module.exports = async function handler(req, res) {
 
   const query = String(req.url || '');
   const deep = /[?&]deep=1(&|$)/.test(query);
+  
+  // Restrict deep=1 to authenticated admins only
+  if (deep) {
+    const authHeader = req.headers.authorization || '';
+    const expectedToken = process.env.HEALTH_DEEP_TOKEN;
+    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return res.status(401).json({ error: 'Unauthorized: deep check requires valid token' });
+    }
+  }
 
   const checks = {
     serviceAccount: false, // FCM_SERVICE_ACCOUNT présent, JSON et complet

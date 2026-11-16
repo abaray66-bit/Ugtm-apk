@@ -3449,11 +3449,12 @@ window.markNotificationRead=markNotificationRead;
       </div>
     </div>
 
-    <div class="adh-step">
+<div class="adh-step">
       <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
       <div class="adh-grid">
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
-<div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" required></div>
+        <div class="field"><label for="adhStructure" data-i18n="adhStructure"></label><select id="adhStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" required></div>
 <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService" type="text" maxlength="120"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
         <div class="field adh-full" id="adhFunctionDetailWrap" style="display:none">
@@ -3823,7 +3824,7 @@ heroShare:`Partager l'application`,
 adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
-adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture d'affectation`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`(Responsabilité) Fonction`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture d'affectation`, adhStructure:`Structure locale / délégation`, adhStructureChoose:`Sélectionner une structure locale`, adhStructureNone:`Aucune structure locale disponible pour cette province`, adhStructureError:`Erreur de chargement des structures`, adhStructureLoading:`Chargement des structures…`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`(Responsabilité) Fonction`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`,
 adhFunctionChoose:`Choisir une fonction`,
 adhFunctionToSpecify:`Fonction à préciser`,
 adhFunctionNone:`Sans fonction`,
@@ -4320,6 +4321,7 @@ deleted:`Données supprimées`,
   admDocDate:`Date`,
   admDocSignMember:`Signature de l’adhérent`,
   admDocSignAdmin:`Signature du responsable`,
+  admDocSignLocal:`Validation par le sous-admin local`,
   admCsvName:`Nom`,
   admCsvEmail:`E-mail`,
   admCsvEtab:`Établissement`,
@@ -4431,7 +4433,7 @@ heroShare:`شاركوا التطبيق`,
 adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
-adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhStructure:`الهيكل المحلي / التفويض`, adhStructureChoose:`اختر هيكلًا محليًا`, adhStructureNone:`لا توجد هياكل محلية متاحة لهذا الإقليم`, adhStructureError:`خطأ في تحميل الهياكل`, adhStructureLoading:`جاري تحميل الهياكل…`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`,
 adhFunctionChoose:`اختر وظيفة`,
 adhFunctionToSpecify:`وظيفة لتحديد`,
 adhFunctionNone:`بدون وظيفة`,
@@ -4981,6 +4983,7 @@ deleted:`تم حذف البيانات`,
   admDocDate:`التاريخ`,
   admDocSignMember:`توقيع المنخرط`,
   admDocSignAdmin:`توقيع المسؤول`,
+  admDocSignLocal:`مصادقة من طرف نائب محلي`,
   admCsvName:`الاسم`,
   admCsvEmail:`البريد الإلكتروني`,
   admCsvEtab:`المؤسسة`,
@@ -5133,7 +5136,7 @@ try{
 var notificationQuery=new URLSearchParams(window.location.search||'');
 var notificationType=notificationQuery.get('notificationType');
 var notificationId=notificationQuery.get('notificationId');
-if((notificationType==='news'||notificationType==='event')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
+if((notificationType==='news'||notificationType==='event'||notificationType==='adhesion'||notificationType==='adhesion_request'||notificationType==='adhesion_renewal')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
 }catch(notificationQueryError){}
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
@@ -6796,8 +6799,8 @@ function openNotificationTarget(type,id){
     setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
     return true;
   }
-  if(targetType==='adhesion'){
-    if(!S.isAdmin&&!S.isSubAdmin)return false;
+  if(targetType==='adhesion'||targetType==='adhesion_request'||targetType==='adhesion_renewal'){
+    if(!S.isAdmin&&!S.isSubAdmin&&!S.isSubAdminLocal)return false;
     go('me');
     openAdhesionDossier(targetId,false);
     return true;
@@ -7588,6 +7591,18 @@ MONTHS.fr[+p[1]-1]+
 p[0];
 }
 
+function fmtDateTimeFr(ts){
+  if(!ts)return '';
+  var d=ts.toDate?ts.toDate():new Date(ts);
+  if(isNaN(d.getTime()))return '';
+  var day=d.getDate();
+  var month=MONTHS.fr[d.getMonth()];
+  var year=d.getFullYear();
+  var hours=d.getHours().toString().padStart(2,'0');
+  var minutes=d.getMinutes().toString().padStart(2,'0');
+  return day+' '+month+' '+year+' à '+hours+':'+minutes;
+}
+
 function renderAdminAll(){
 
 renderAdminDashboard();
@@ -7984,7 +7999,7 @@ function signModalState(){
    signature de l'adhérent. Si canSign, le pavé de signature du
    responsable est affiché en plus (signature = validation). */
 function openAdhesionDossier(id,canSign){
-  if(!S.isAdmin&&!S.isSubAdmin)return;
+  if(!S.isAdmin&&!S.isSubAdmin&&!S.isSubAdminLocal)return;
   signModalId=id||'';
   signModalCanSign=!!canSign;
   var modal=$('admSignModal');
@@ -8052,6 +8067,10 @@ function renderAdhesionDossierInfo(doc){
        l'ancienne signature — deux cases au total, pas trois. */
     (doc.status==='accepted'&&doc.adminSignature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignAdmin)+'</span><img src="'+esc(doc.adminSignature)+'" alt="'+esc(t.admDocSignAdmin)+'"></div>'
+      :'')+
+    /* Validation locale : afficher les traces validatedBy/validatedAt/validatedByRole */
+    (doc.status==='accepted'&&doc.validatedByRole==='subadminLocal'&&doc.validatedBy
+      ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignLocal)+': '+esc(doc.validatedBy)+' ('+fmtDateTimeFr(doc.validatedAt)+')</span></div>'
       :'');
 }
 
@@ -8214,17 +8233,22 @@ function generateAdhesionPdfForAdmin(id){
   .then(function(doc){
     if(!doc)throw new Error(t.admPdfErr);
     /* Seul un dossier VALIDÉ (statut 'accepted' ET signature du
-       responsable) donne droit à un PDF officiel. */
-    if(doc.status!=='accepted'||!doc.adminSignature)
+       responsable OU validation locale) donne droit à un PDF officiel. */
+    var isLocalValidation = doc.status==='accepted' && doc.validatedByRole==='subadminLocal' && doc.validatedBy;
+    var isProvincialValidation = doc.status==='accepted' && doc.adminSignature;
+    if(!isLocalValidation && !isProvincialValidation)
     throw new Error(t.admPdfOnlyValidated);
     var fileName=adhesionPdfFileName(doc);
     return c.getSavedAdhesionPdf(id)
     .then(function(saved){
       if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
-      /* Identité lisible du signataire : son profil s'il est connu de
+/* Identité lisible du signataire : son profil s'il est connu de
          l'administrateur connecté, sinon son identifiant Firebase. */
-      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
-      doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+       var isLocalValidation = doc.validatedByRole==='subadminLocal' && doc.validatedBy;
+       var signer = isLocalValidation
+         ? (S.members||[]).filter(function(m){return m&&m.uid===doc.validatedBy;})[0]
+         : (S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+       doc.signerRoleLabel = isLocalValidation ? 'Sous-admin local' : ((S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur');
       if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
@@ -8266,14 +8290,20 @@ function shareAdhesionPdf(id){
   c.getAdhesionDoc(id)
   .then(function(doc){
     if(!doc)throw new Error(t.admPdfErr);
-    if(doc.status!=='accepted'||!doc.adminSignature)
+    var isLocalValidation = doc.status==='accepted' && doc.validatedByRole==='subadminLocal' && doc.validatedBy;
+    var isProvincialValidation = doc.status==='accepted' && doc.adminSignature;
+    if(!isLocalValidation && !isProvincialValidation)
     throw new Error(t.admPdfOnlyValidated);
     var fileName=adhesionPdfFileName(doc);
     return c.getSavedAdhesionPdf(id)
     .then(function(saved){
       if(isAdhesionPdfFresh(saved,doc))return{stored:saved.data,fileName:fileName};
-      var signer=(S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
-      doc.signerRoleLabel=(S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur';
+      /* Identité lisible du signataire : son profil s'il est connu de
+         l'administrateur connecté, sinon son identifiant Firebase. */
+      var signer = isLocalValidation
+        ? (S.members||[]).filter(function(m){return m&&m.uid===doc.validatedBy;})[0]
+        : (S.members||[]).filter(function(m){return m&&m.uid===doc.signedBy;})[0];
+      doc.signerRoleLabel = isLocalValidation ? 'Sous-admin local' : ((S.isSubAdmin&&!S.isAdmin)?'Responsable provincial':'Administrateur');
       if(window.DEBUG) console.log('[Debug PDF Admin] doc=', doc, 'doc.application=', doc.application, 'window.generateAdhesionPdf=', typeof window.generateAdhesionPdf);
       if(typeof window.generateAdhesionPdf!=='function')
       throw new Error('PDF indisponible');
@@ -10066,11 +10096,11 @@ else if(a==='viewAdhesion'&&(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){
 openAdhesionDossier(id,false);
 }
 
-else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+else if(a==='generateAdhesionPdf'&&(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){
 generateAdhesionPdfForAdmin(id);
 }
 
-else if(a==='shareAdhesionPdf'&&(S.isAdmin||S.isSubAdmin)){
+else if(a==='shareAdhesionPdf'&&(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){
 shareAdhesionPdf(id);
 }
 
@@ -11413,6 +11443,54 @@ window.UGTM.failed(err);
       radio.addEventListener('change',syncRenewalReason);
     });
     syncRenewalReason();
+
+    /* Charger les structures locales selon la province sélectionnée */
+    function loadLocalStructures(province){
+      var structSelect=document.getElementById('adhStructure');
+      if(!structSelect)return;
+      var currentValue=structSelect.value;
+      structSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
+      structSelect.disabled=true;
+      if(!province)return;
+      if(typeof window.CLOUD!=='undefined' && window.CLOUD.admin && window.CLOUD.admin.getLocalStructures){
+        window.CLOUD.admin.getLocalStructures().then(function(list){
+          var filtered=list.filter(function(s){
+            return s.province===province && !s.archived;
+          });
+          if(filtered.length===0){
+            structSelect.innerHTML='<option value="" data-i18n="adhStructureNone"></option>';
+            structSelect.disabled=true;
+            return;
+          }
+          filtered.forEach(function(s){
+            var opt=document.createElement('option');
+            opt.value=s.structureId;
+            opt.textContent=s.name+' ('+s.etab+')';
+            structSelect.appendChild(opt);
+          });
+          structSelect.disabled=false;
+          if(currentValue && Array.from(structSelect.options).some(function(o){return o.value===currentValue;})){
+            structSelect.value=currentValue;
+          }
+        }).catch(function(err){
+          console.warn('loadLocalStructures:', err);
+          structSelect.innerHTML='<option value="" data-i18n="adhStructureError"></option>';
+          structSelect.disabled=true;
+        });
+      }else{
+        structSelect.innerHTML='<option value="" data-i18n="adhStructureLoading"></option>';
+        structSelect.disabled=true;
+      }
+    }
+    var provinceSelect=document.getElementById('adhProvince');
+    if(provinceSelect){
+      provinceSelect.addEventListener('change',function(){
+        loadLocalStructures(this.value);
+      });
+    }
+    if(provinceSelect && provinceSelect.value){
+      loadLocalStructures(provinceSelect.value);
+    }
 
     /* Verrou renouvellement : un adhérent déjà accepté n'accède au
        formulaire que pour un renouvellement avec motif obligatoire

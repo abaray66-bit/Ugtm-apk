@@ -158,6 +158,29 @@ service cloud.firestore {
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+              .lastMemberNo == request.resource.data.memberNo)
+        // Sous-admin local : activation adhésion de SA structure
+        // (mêmes champs que subadmin provincial + adminStructure)
+        || (isSubAdminLocal()
+            && request.resource.data.status == 'active'
+            && request.resource.data.role == 'member'
+            && request.resource.data.keys().hasOnly([
+              'name', 'email', 'photo', 'etab', 'prov',
+              'phone', 'status', 'memberNo', 'activatedAt', 'createdAt',
+              'role', 'adminProvince', 'adminStructure'
+            ])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && request.resource.data.adminProvince == request.resource.data.prov
+            && request.resource.data.adminStructure == assignedLocalStructure()
+            && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo);
 
       allow update: if (
@@ -810,7 +833,8 @@ service cloud.firestore {
     match /adhesionRequests/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
-        || adhesionIsSubAdminOf(resource.data.get('province', ''));
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
 
       // hasAll exige la présence de toutes les clés attendues : les
       // accès aux champs qui suivent ne peuvent donc jamais lever
@@ -943,18 +967,19 @@ service cloud.firestore {
     match /adhesionDocuments/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
-        || adhesionIsSubAdminOf(resource.data.get('province', ''));
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('province', ''));
 
       // Le PDF officiel n'est JAMAIS écrit par l'adhérent : il est généré
-      // par un responsable habilité (administrateur général ou sous-admin
-      // de la province du dossier), sur action explicite, et uniquement
-      // pour une demande déjà SIGNÉE et VALIDÉE : statut 'accepted',
-      // signataire et signature du responsable enregistrés, province
-      // identique. La régénération est permise (createdAt reprend
-      // l'horodatage de la génération) : le PDF reste toujours aligné sur
-      // l'état validé.
+      // par un responsable habilité (administrateur général, sous-admin
+      // de province, ou sous-admin local), sur action explicite, et uniquement
+      // pour une demande déjà VALIDÉE : statut 'accepted', avec soit :
+      // - signature du responsable (signedBy + adminSignature) pour validation provinciale
+      // - validation locale (validatedBy + validatedAt + validatedByRole='subadminLocal')
+      // La régénération est permise : le PDF reste toujours aligné sur l'état validé.
       allow create, update: if (isAdmin()
-          || adhesionIsSubAdminOf(request.resource.data.get('province', '')))
+          || adhesionIsSubAdminOf(request.resource.data.get('province', ''))
+          || adhesionIsSubAdminLocalOf(request.resource.data.get('province', '')))
         && request.resource.data.keys().hasOnly([
           'uid', 'province', 'fileName', 'mimeType', 'data',
           'createdAt', 'updatedAt'
@@ -974,12 +999,23 @@ service cloud.firestore {
           == request.resource.data.province
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status
           == 'accepted'
-        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .get('signedBy', '') is string
-        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .get('signedBy', '').size() > 0
-        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
-          .get('adminSignature', '').size() > 0;
+        && (
+          // Validation provinciale : signature du responsable
+          (get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('signedBy', '') is string
+          && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('signedBy', '').size() > 0
+          && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('adminSignature', '').size() > 0)
+          ||
+          // Validation locale : traces validatedBy
+          (get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('validatedBy', '') is string
+          && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('validatedBy', '').size() > 0
+          && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data
+            .get('validatedByRole', '') == 'subadminLocal')
+        );
 
       allow delete: if isAdmin();
     }
@@ -995,7 +1031,7 @@ service cloud.firestore {
       && request.resource.data.authorUid == request.auth.uid
       && request.resource.data.title is string && request.resource.data.title.size() <= 120
       && request.resource.data.body is string && request.resource.data.body.size() <= 500
-      && request.resource.data.type in ['info','adhesion','event','news','report']
+      && request.resource.data.type in ['info','adhesion','event','news','report','adhesion_request','adhesion_renewal']
       && request.resource.data.createdAt == request.time
       && request.resource.data.keys().hasOnly(['title','body','createdAt','read','type','targetScreen','targetId','authorUid','province','targetType']);
     allow update: if signedIn() && request.auth.uid == uid
