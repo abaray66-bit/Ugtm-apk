@@ -191,6 +191,24 @@ service cloud.firestore {
                   && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
                   && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false))
         )
+        // Administrateur général : activation sans dossier d'adhésion
+        // (migration, cas exceptionnels). Exige numéro depuis le compteur.
+        || (isAdmin()
+            && resource.data.status != 'active'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'memberNo', 'activatedAt', 'updatedAt',
+                'role', 'adminProvince', 'adminStructure'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+                 .lastMemberNo == request.resource.data.memberNo)
         // Activation d'un adhérent en attente par son
         // sous-admin de province : la fiche complète du
         // dossier signé (coordonnées) peut être enregistrée

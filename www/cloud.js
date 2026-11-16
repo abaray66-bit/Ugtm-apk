@@ -1935,19 +1935,22 @@ var admin = {
 
       var prior = snap.data();
 
-      /* Avant toute activation, exiger une adhésion validée */
+      /* Avant toute activation, exiger une adhésion validée (sauf admin général pour migration) */
       if (status === 'active' && prior.status !== 'active'){
-        var reqRef = doc(db, 'adhesionRequests', String(uid));
-        var reqSnap = await getDoc(reqRef);
-        if (!reqSnap.exists()) {
-          throw new Error('Impossible d\'activer : aucun dossier d\'adhésion pour ce membre.');
-        }
-        var req = reqSnap.data();
-        if (req.status !== 'accepted') {
-          throw new Error('Impossible d\'activer : le dossier d\'adhésion n\'est pas accepté.');
-        }
-        if (!req.signedBy && !req.validatedBy) {
-          throw new Error('Impossible d\'activer : le dossier n\'a pas été validé par un responsable habilité.');
+        var isAdminGeneral = prior.role === 'admin' || false;
+        if (!isAdminGeneral) {
+          var reqRef = doc(db, 'adhesionRequests', String(uid));
+          var reqSnap = await getDoc(reqRef);
+          if (!reqSnap.exists()) {
+            throw new Error('Impossible d\'activer : aucun dossier d\'adhésion pour ce membre.');
+          }
+          var req = reqSnap.data();
+          if (req.status !== 'accepted') {
+            throw new Error('Impossible d\'activer : le dossier d\'adhésion n\'est pas accepté.');
+          }
+          if (!req.signedBy && !req.validatedBy) {
+            throw new Error('Impossible d\'activer : le dossier n\'a pas été validé par un responsable habilité.');
+          }
         }
       }
 
