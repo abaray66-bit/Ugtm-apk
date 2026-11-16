@@ -1140,8 +1140,7 @@ async function submitAdhesion(application,signature){
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
     service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
     specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
-    type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10),
-    structureId:String(application.structureId||'').trim().slice(0,40)
+    type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
   };
   if(!clean.nom||!clean.prenom||!clean.cin||!clean.dob||!clean.phone||!clean.address||!clean.province||!clean.establishment||!clean.function||!clean.commitment||!application.signature)
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
@@ -1169,9 +1168,9 @@ async function submitAdhesion(application,signature){
          la signature du responsable de la soumission précédente est
          effacée. Le dossier repart avec UNE seule signature — celle de
          l'adhérent — et la case du responsable à valider. */
-      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:clean.structureId,updatedAt:serverTimestamp()});
+      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),updatedAt:serverTimestamp()});
     }else{
-      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:clean.structureId,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){

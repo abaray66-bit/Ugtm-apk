@@ -232,6 +232,68 @@ service cloud.firestore {
             && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
                  .lastMemberNo == request.resource.data.memberNo)
+        // Validation d'une adhésion par sous-admin provincial / admin général :
+        // active le membre en attente avec numéro, rôle, province admin et dates.
+        // La transaction inclut aussi l'écriture du compteur (getAfter).
+        || (isSubAdmin() && resource.data.prov == assignedProvince()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'memberNo', 'activatedAt', 'updatedAt',
+                'role', 'adminProvince', 'createdAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && request.resource.data.role == 'member'
+            && request.resource.data.adminProvince == request.resource.data.prov
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+                 .lastMemberNo == request.resource.data.memberNo)
+        || (isAdmin() && resource.data.status == 'pending'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'memberNo', 'activatedAt', 'updatedAt',
+                'role', 'adminProvince', 'createdAt', 'adminStructure'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && request.resource.data.role == 'member'
+            && request.resource.data.adminProvince == request.resource.data.prov
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+                 .lastMemberNo == request.resource.data.memberNo)
+        // Validation d'une adhésion par sous-admin local :
+        // active le membre en attente avec numéro, rôle, province admin,
+        // structure admin et dates. La transaction inclut l'écriture du compteur.
+        || (isSubAdminLocal() && resource.data.adminStructure == assignedLocalStructure()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'active'
+            && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['name', 'email', 'photo', 'etab', 'prov',
+                'phone', 'status', 'memberNo', 'activatedAt', 'updatedAt',
+                'role', 'adminProvince', 'adminStructure', 'createdAt'])
+            && okText(request.resource.data.name, 120)
+            && okText(request.resource.data.email, 254)
+            && okText(request.resource.data.etab, 160)
+            && okText(request.resource.data.prov, 40)
+            && okText(request.resource.data.phone, 30)
+            && okText(request.resource.data.memberNo, 30)
+            && request.resource.data.memberNo.matches('SM-[0-9]{4,}')
+            && request.resource.data.role == 'member'
+            && request.resource.data.adminProvince == request.resource.data.prov
+            && request.resource.data.adminStructure == assignedLocalStructure()
+            && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
+                 .lastMemberNo == request.resource.data.memberNo)
         // Rafraîchissement des coordonnées d'un adhérent
         // actif de la province (renouvellement signé).
         || (isSubAdmin() && resource.data.prov == assignedProvince()
