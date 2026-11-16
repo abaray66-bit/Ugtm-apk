@@ -6305,29 +6305,48 @@ function shareReportPdf(report){
   }catch(e){}
   var pageW=210, margin=15, y=15;
 
-  /* Inverse une chaîne arabe pour affichage RTL dans jsPDF (pas de bidi natif). */
-  function toRTL(s){
+  /* Transforme le texte arabe pour jsPDF : shaping (formes contextuelles)
+     + algorithme BiDi (ordre visuel pour mixte RTL/LTR).
+     Utilise ArabicReshaper + bidi-js (chargés via scripts). */
+  function prepareArabicText(s){
     var str=String(s||'');
-    if(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
-      return str.split('').reverse().join('');
+    if(!/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
+      return str;
     }
-    return str;
+    try{
+      var reshaped='';
+      if(typeof ArabicReshaper!=='undefined' && ArabicReshaper.reshape){
+        reshaped=ArabicReshaper.reshape(str);
+      }else{
+        reshaped=str;
+      }
+      if(typeof bidi_js!=='undefined'){
+        var bidi=bidi_js();
+        var reordered=bidi.getReorderedString(reshaped);
+        if(typeof reordered==='string' && reordered.length>0){
+          return reordered;
+        }
+      }
+      return reshaped;
+    }catch(e){
+      return str;
+    }
   }
 
   pdf.setFontSize(16);
-  pdf.text(toRTL(t.shareReportHeader||'Signalement UGTM'), margin, y); y+=8;
+  pdf.text(prepareArabicText(t.shareReportHeader||'Signalement UGTM'), margin, y); y+=8;
   pdf.setFontSize(11);
-  pdf.text(toRTL((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y); y+=6;
-  pdf.text(toRTL((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
-  if(report.etab){ pdf.text(toRTL((t.shareReportEtab||'Etab')+': '+String(report.etab)), margin, y); y+=6; }
-  pdf.text(toRTL((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), margin, y); y+=6;
-  if(report.date){ pdf.text(toRTL((t.shareReportDate||'Date')+': '+String(report.date)), margin, y); y+=6; }
-  pdf.text(toRTL((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), margin, y); y+=8;
+  pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y); y+=6;
+  pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
+  if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), margin, y); y+=6; }
+  pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), margin, y); y+=6;
+  if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), margin, y); y+=6; }
+  pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), margin, y); y+=8;
 
   if(report.description){
     pdf.setFontSize(12);
-    pdf.text(toRTL((t.shareReportSummary||'Résumé')+':'), margin, y); y+=6;
-    var desc=toRTL(String(report.description||''));
+    pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), margin, y); y+=6;
+    var desc=prepareArabicText(String(report.description||''));
     var lines=pdf.splitTextToSize(desc, pageW-margin*2);
     pdf.setFontSize(11);
     pdf.text(lines, margin, y); y+=lines.length*5+6;
@@ -6335,8 +6354,8 @@ function shareReportPdf(report){
 
   if(report.response){
     pdf.setFontSize(12);
-    pdf.text(toRTL('Réponse de l\'administration:'), margin, y); y+=6;
-    var resp=toRTL(String(report.response||''));
+    pdf.text(prepareArabicText('Réponse de l\'administration:'), margin, y); y+=6;
+    var resp=prepareArabicText(String(report.response||''));
     var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
     pdf.setFontSize(11);
     pdf.text(rlines, margin, y); y+=rlines.length*5+8;
@@ -10783,6 +10802,8 @@ window.UGTM.failed(err);
 </script>
 
 
+<script src="arabic-reshaper.js"></script>
+<script src="bidi.min.js"></script>
 <script src="jspdf.umd.min.js"></script>
 <script src="amiri-font.js"></script>
 <script id="digital-adhesion-js">
@@ -10802,25 +10823,43 @@ window.UGTM.failed(err);
 
         var pdf=new jsPDF({unit:'mm',format:'a4'});
         try{
-          /* Police Amiri (arabe + latin) : intégrée via amiri-font.js (VFS).
+/* Police Amiri (arabe + latin) : intégrée via amiri-font.js (VFS).
              En cas d'absence (tests, chargement échoué), repli par défaut. */
-          if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']){
-            pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
-            pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
-            pdf.setFont('Amiri');
-          }
-        }catch(e){}
-        var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
+           if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']){
+             pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
+             pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
+             pdf.setFont('Amiri');
+           }
+         }catch(e){}
+         var pageW=210,margin=15,col2=margin+90,colW=87,fullW=pageW-margin*2,y=0;
 
-        /* Renverse une chaîne contenant des caractères arabes pour l'affichage
-           RTL dans jsPDF (qui ne gère pas le bidirectionnel nativement). */
-        function toRTL(s){
-          var str=String(s||'');
-          if(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
-            return str.split('').reverse().join('');
-          }
-          return str;
-        }
+         /* Transforme le texte arabe pour jsPDF : shaping (formes contextuelles)
+            + algorithme BiDi (ordre visuel pour mixte RTL/LTR).
+            Utilise ArabicReshaper + bidi-js (chargés via scripts). */
+         function prepareArabicText(s){
+           var str=String(s||'');
+           if(!/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
+             return str;
+           }
+           try{
+             var reshaped='';
+             if(typeof ArabicReshaper!=='undefined' && ArabicReshaper.reshape){
+               reshaped=ArabicReshaper.reshape(str);
+             }else{
+               reshaped=str;
+             }
+             if(typeof bidi_js!=='undefined'){
+               var bidi=bidi_js();
+               var reordered=bidi.getReorderedString(reshaped);
+               if(typeof reordered==='string' && reordered.length>0){
+                 return reordered;
+               }
+             }
+             return reshaped;
+           }catch(e){
+             return str;
+           }
+         }
 
         function loadLogo(){
           return new Promise(function(resolve){
@@ -10885,7 +10924,7 @@ window.UGTM.failed(err);
           w=w||colW;
           var lbl=String(label||'')+' : ';
           var lblSize=8.6,valSize=9.2,gap=0.8;
-          var val=(value===undefined||value===null)?'':toRTL(String(value));
+          var val=(value===undefined||value===null)?'':prepareArabicText(String(value));
           /* Le libellé est mesuré ET dessiné à la MÊME taille : l'ancienne
              version mesurait en 8,6 pt puis redessinait en 9,2 pt (taille
              laissée par la mesure de la valeur), ce qui faisait
