@@ -86,6 +86,7 @@ function requestPayload(uid, province, over = {}) {
     uid,
     email: uid + '@example.com',
     province,
+    structureId: 'struct-' + province + '-1',
     application: applicationPayload(province, over.application || {}),
     signature: 'data:image/png;base64,U0dPUFJJUw==',
     status: 'pending',
@@ -100,10 +101,12 @@ function pdfPayload(uid, province) {
   return {
     uid,
     province,
+    structureId: 'struct-' + province + '-1',
     fileName: 'demande-adhesion-' + uid + '.pdf',
     mimeType: 'application/pdf',
     data: 'JVBERi0xLjQK', // en-tête d'un vrai PDF
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
   };
 }
 
@@ -116,6 +119,17 @@ before(async () => {
     await setDoc(doc(db, 'adhesionRequests', DAVE), requestPayload(DAVE, 'tata'));
     // Sara dépose une demande pour Tiznit.
     await setDoc(doc(db, 'adhesionRequests', SARA), requestPayload(SARA, 'tiznit'));
+    // Structure locale pour tests PDF.
+    await setDoc(doc(db, 'localStructures', 'struct-agadir-1'), {
+      name: 'Structure Test Agadir',
+      etab: 'Lycée Test',
+      province: 'agadir',
+      structureId: 'struct-agadir-1',
+      createdBy: 'admin-uid',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      archived: false
+    });
     // Profils des sous-admins.
     await setDoc(doc(db, 'members', SUB_AGADIR), {
       status: 'active',
@@ -224,6 +238,13 @@ test('un adhérent ne peut pas lire le PDF d’un autre', async () => {
    ========================================================== */
 
 test('renvoi après complément : le dossier signé repasse en attente', async () => {
+  // Crée d'abord le dossier pour ALICE (via rules-disabled car le test
+  // ne teste pas la création mais le renvoi).
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore();
+    await setDoc(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir'));
+  });
+
   // 1) Le responsable marque le dossier d'Alice en complément.
   const adminDb = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
   await assertSucceeds(updateDoc(doc(adminDb, 'adhesionRequests', ALICE), {
@@ -263,6 +284,7 @@ test('renvoi après complément : le dossier signé repasse en attente', async (
     uid: before.uid,
     email: before.email,
     province: before.province,
+    structureId: before.structureId,
     application: applicationPayload('agadir', { phone: '0611111111' }),
     signature: 'data:image/png;base64,UmVzb21pbg==',
     status: 'pending',
@@ -505,17 +527,9 @@ test('une signature attribuée à un autre signataire est refusée', async () =>
    PDF OFFICIEL — enregistrement par un responsable habilité
    ========================================================== */
 
-test('le PDF officiel est enregistrable sur une demande signée et validée', async () => {
+test('le PDF officiel est enregistrable sur une demande sign\xE9e et valid\xE9e', async () => {
   const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
-  await assertSucceeds(setDoc(doc(db, 'adhesionDocuments', ALICE), {
-    uid: ALICE,
-    province: 'agadir',
-    fileName: 'demande-adhesion-' + ALICE + '.pdf',
-    mimeType: 'application/pdf',
-    data: 'JVBERi0xLjQK',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
-  }));
+  await assertSucceeds(setDoc(doc(db, 'adhesionDocuments', ALICE), pdfPayload(ALICE, 'agadir')));
 });
 
 test('le PDF officiel est refusé sur une demande non validée', async () => {

@@ -440,7 +440,7 @@ service cloud.firestore {
     // ==========================================================
     match /localStructures/{structureId} {
       allow read: if isAdmin()
-        || (isSubAdmin() && resource.data.province == assignedProvinceLabel())
+        || (isSubAdmin() && resource.data.province == assignedProvince())
         || (isSubAdminLocal() && structureId == assignedLocalStructure());
 
       allow create: if isAdmin()
@@ -948,6 +948,7 @@ service cloud.firestore {
       // Une signature ne peut être posée qu'avec le statut 'accepted'
       // (signer = valider l'adhésion), par le responsable qui la produit,
       // et horodatée au moment de l'écriture.
+      // Réservé aux administrateurs, sous-admins provinciaux et locaux.
       allow update: if (
           (isAdmin() || adhesionIsSubAdminOf(resource.data.get('province', ''))
               || adhesionIsSubAdminLocalOf(resource.data.get('structureId', '')))
@@ -963,11 +964,11 @@ service cloud.firestore {
             // autres champs doivent rester à leur valeur par défaut.
             // 'accepted' N'EST PAS autorisé ici : il faut passer par les branches
             // de validation avec signature (admin) ou validatedBy (subadminLocal).
+            // structureId est autorisé à rester inchangé (non vide).
             request.resource.data.status != 'accepted'
             && request.resource.data.get('adminSignature', '') == ''
             && request.resource.data.get('signedBy', '') == ''
             && request.resource.data.get('signedAt', '') == ''
-            && request.resource.data.get('structureId', '') == ''
             && request.resource.data.get('validatedBy', '') == ''
             && request.resource.data.get('validatedAt', '') == ''
             && request.resource.data.get('validatedByRole', '') == ''
@@ -995,19 +996,21 @@ service cloud.firestore {
               && request.resource.data.validatedByRole == 'subadminLocal'
               && request.resource.data.get('adminSignature', '') == '')
           )
-        )
-        || (
-          // Renvoi par l'adhérent : complément demandé (needs_completion)
-          // OU renouvellement après acceptation (accepted + type renewal,
-          // motif exigé par adhesionAppOk). Le dossier repasse en pending
-          // avec application, signature et PDF ré-validés intégralement
-          // (mêmes exigences qu'à la création via adhesionAppOk).
-          // Province, e-mail et date de création restent figés ; la note
-          // du responsable est effacée.
-          // La signature du responsable de la soumission précédente est
-          // elle aussi effacée : un renouvellement repart avec UNE seule
-          // signature (celle de l'adhérent), la case du responsable à
-          // valider. Elle ne peut qu'être VIDÉE, jamais posée.
+        );
+
+      // Renvoi par l'adhérent : complément demandé (needs_completion)
+      // OU renouvellement après acceptation (accepted + type renewal,
+      // motif exigé par adhesionAppOk). Le dossier repasse en pending
+      // avec application, signature et PDF ré-validés intégralement
+      // (mêmes exigences qu'à la création via adhesionAppOk).
+      // Province, e-mail et date de création restent figés ; la note
+      // du responsable est effacée.
+      // La signature du responsable de la soumission précédente est
+      // elle aussi effacée : un renouvellement repart avec UNE seule
+      // signature (celle de l'adhérent), la case du responsable à
+      // valider. Elle ne peut qu'être VIDÉE, jamais posée.
+      // Réservé à l'adhérent propriétaire du dossier.
+      allow update: if (
           signedIn() && request.auth.uid == uid
           && resource.data.uid == uid
           && resource.data.status in ['needs_completion', 'accepted']
@@ -1048,7 +1051,7 @@ service cloud.firestore {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
-        || adhesionIsSubAdminLocalOf(resource.data.get('province', ''));
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
 
       // Le PDF officiel n'est JAMAIS écrit par l'adhérent : il est généré
       // par un responsable habilité (administrateur général, sous-admin
@@ -1059,13 +1062,17 @@ service cloud.firestore {
       // La régénération est permise : le PDF reste toujours aligné sur l'état validé.
       allow create, update: if (isAdmin()
           || adhesionIsSubAdminOf(request.resource.data.get('province', ''))
-          || adhesionIsSubAdminLocalOf(request.resource.data.get('province', '')))
+          || adhesionIsSubAdminLocalOf(request.resource.data.get('structureId', '')))
         && request.resource.data.keys().hasOnly([
-          'uid', 'province', 'fileName', 'mimeType', 'data',
+          'uid', 'province', 'structureId', 'fileName', 'mimeType', 'data',
           'createdAt', 'updatedAt'
         ])
         && request.resource.data.uid == uid
         && request.resource.data.province in adhesionProvinces()
+        && okText(request.resource.data.structureId, 40)
+        && request.resource.data.structureId.size() > 0
+        && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
+        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
         && okText(request.resource.data.fileName, 120)
         && request.resource.data.mimeType == 'application/pdf'
         && request.resource.data.data is string
@@ -1077,6 +1084,8 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.uid == uid
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.province
           == request.resource.data.province
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.structureId
+          == request.resource.data.structureId
         && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status
           == 'accepted'
         && (

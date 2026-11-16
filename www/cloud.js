@@ -352,7 +352,17 @@ function subscribeLocalStructures(){
     hooks.setLocalStructures && hooks.setLocalStructures([]);
     return;
   }
-  unsubs.localStructures = onSnapshot(collection(db, 'localStructures'), function(snap){
+  var q;
+  if (session.isAdmin) {
+    q = collection(db, 'localStructures');
+  } else if (session.isSubAdmin) {
+    q = query(collection(db, 'localStructures'), where('province', '==', String(session.member && session.member.adminProvince || '')));
+  } else {
+    var adminStructure = String((session.member && session.member.adminStructure) || '');
+    if (!adminStructure) { hooks.setLocalStructures && hooks.setLocalStructures([]); return; }
+    q = query(collection(db, 'localStructures'), where('structureId', '==', adminStructure));
+  }
+  unsubs.localStructures = onSnapshot(q, function(snap){
     hooks.setLocalStructures && hooks.setLocalStructures(snap.docs.map(function(d){
       var x = d.data();
       return {
@@ -375,7 +385,17 @@ function subscribeLocalAdminProposals(){
     hooks.setLocalAdminProposals && hooks.setLocalAdminProposals([]);
     return;
   }
-  unsubs.localAdminProposals = onSnapshot(collection(db, 'localAdminProposals'), function(snap){
+  var q;
+  if (session.isAdmin) {
+    q = collection(db, 'localAdminProposals');
+  } else if (session.isSubAdmin) {
+    q = query(collection(db, 'localAdminProposals'), where('province', '==', String(session.member && session.member.adminProvince || '')));
+  } else {
+    var adminStructure = String((session.member && session.member.adminStructure) || '');
+    if (!adminStructure) { hooks.setLocalAdminProposals && hooks.setLocalAdminProposals([]); return; }
+    q = query(collection(db, 'localAdminProposals'), where('structureId', '==', adminStructure));
+  }
+  unsubs.localAdminProposals = onSnapshot(q, function(snap){
     hooks.setLocalAdminProposals && hooks.setLocalAdminProposals(snap.docs.map(function(d){
       var x = d.data();
       return {
@@ -1195,14 +1215,15 @@ async function submitAdhesion(application,signature){
       } catch(e){ console.warn('syncMemberProvince:', e); }
     }
 
-    return syncMemberPhone(u, clean.phone).then(function(){
+return syncMemberPhone(u, clean.phone).then(function(){
       if (!result.completed) {
         var applicantName = (clean.prenom + ' ' + clean.nom).trim();
         var isRenewal = clean.type === 'renewal';
         window.cloudSendPush(
           isRenewal ? 'adhesion_renewal' : 'adhesion_request',
-          isRenewal ? 'Renouvellement d’adhésion : ' + applicantName : 'Nouvelle demande d’adhésion : ' + applicantName,
+          isRenewal ? 'Renouvellement d\xe9sion : ' + applicantName : 'Nouvelle demande d\xe9sion : ' + applicantName,
           'Province : ' + clean.province,
+          uid,
           uid
         );
         /* Notification aux administrateurs (écriture Firestore pour affichage
@@ -1634,6 +1655,7 @@ async function saveAdhesionPdf(uid,pdfBase64,fileName){
   return setDoc(doc(db,'adhesionDocuments',uidStr),{
     uid:uidStr,
     province:province,
+    structureId:request.structureId||'',
     fileName:name,
     mimeType:'application/pdf',
     data:b64,
@@ -1704,13 +1726,13 @@ async function deleteAccount(){
   var memberSnap = await getDoc(memberRef);
   var member = memberSnap.exists() ? memberSnap.data() : {};
 
-  // Un administrateur de province (sous-admin) ne peut pas supprimer son
+  // Un administrateur de province (sous-admin) ou local (subadminLocal) ne peut pas supprimer son
   // compte : son mandat est révocable par l'administrateur principal seul.
   // On bloque AVANT la réauthentification et toute suppression de données,
   // et les règles Firestore refusent également la suppression du profil.
-  if (member.role === 'subadmin'){
+  if (member.role === 'subadmin' || member.role === 'subadminLocal'){
     throw new Error(
-      "Le compte administrateur de province ne peut pas être supprimé. Contactez l'administrateur principal."
+      "Le compte administrateur ne peut pas être supprimé. Contactez l'administrateur principal."
     );
   }
 
@@ -2955,7 +2977,17 @@ async function refreshPushTokenQuietly(user){
     var registration=await navigator.serviceWorker.ready;
     var token=await getToken(messaging,{vapidKey:vapidKey,serviceWorkerRegistration:registration});
     if(!token) return;
-    await setDoc(doc(db,'fcmTokens',user.uid),{token:token,updatedAt:serverTimestamp()},{merge:true});
+    var ref = doc(db,'fcmTokens',user.uid);
+    var snap = await getDoc(ref);
+    var data = snap.exists() ? snap.data() : {};
+    var list = Array.isArray(data.tokens) ? data.tokens.slice() : (data.token ? [data.token] : []);
+    // Remove duplicates
+    list = list.filter(function(t){ return t !== token; });
+    // Add new token at the front
+    list.unshift(token);
+    // Keep max 5 tokens
+    if(list.length > 5) list = list.slice(0, 5);
+    await setDoc(ref,{token:token,tokens:list,updatedAt:serverTimestamp()},{merge:true});
   }catch(e){ /* silencieux : jamais bloquant pour l'application */ }
 }
 

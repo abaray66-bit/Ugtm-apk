@@ -258,8 +258,11 @@ async function notifyAdhesionManagers(requestUid, province, structureId, title, 
 
     const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
     if (tokenSnap.exists) {
-      const token = tokenSnap.data() && tokenSnap.data().token;
-      if (isValidFcmToken(token)) entries.push({ uid: uid, token: token });
+      const data = tokenSnap.data() || {};
+      const list = Array.isArray(data.tokens) ? data.tokens : (data.token ? [data.token] : []);
+      for (const token of list) {
+        if (isValidFcmToken(token)) entries.push({ uid: uid, token: token });
+      }
     }
   }
   if (managerUids.size) await batch.commit();
@@ -482,9 +485,19 @@ async function purgeDeadTokens(pairs) {
     try {
       const ref = db.collection('fcmTokens').doc(String(pair.uid));
       const snap = await ref.get();
-      if (snap.exists && String((snap.data() && snap.data().token) || '') === pair.token) {
-        await ref.delete();
-        deleted++;
+      if (snap.exists) {
+        const data = snap.data() || {};
+        const list = Array.isArray(data.tokens) ? data.tokens : (data.token ? [data.token] : []);
+        if (list.includes(pair.token)) {
+          // Remove only the dead token, keep other tokens
+          const updatedList = list.filter(t => t !== pair.token);
+          if (updatedList.length === 0) {
+            await ref.delete();
+          } else {
+            await ref.update({ tokens: updatedList, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+          }
+          deleted++;
+        }
       }
     } catch (e) {
       // Une purge ratee ne doit jamais faire echouer l'envoi deja effectue.
@@ -608,7 +621,7 @@ module.exports = async function handler(req, res) {
     body = body || {};
 
     const { type, title: requestedTitle, body: requestedBody, targetUid, targetId } = body;
-    const validTypes = ['news', 'event', 'adhesion', 'adhesion_request'];
+    const validTypes = ['news', 'event', 'adhesion', 'adhesion_request', 'adhesion_renewal'];
     if (!type || !validTypes.includes(type)) {
       return res.status(400).json({ error: 'Invalid request' });
     }
