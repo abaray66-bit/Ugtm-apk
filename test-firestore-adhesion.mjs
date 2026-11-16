@@ -196,9 +196,9 @@ test('adhérent ne peut pas modifier le statut ni le dossier signé', async () =
   }));
 });
 
-test('administrateur provincial peut modifier le statut sans modifier le dossier signé', async () => {
+test('administrateur provincial NE PEUT PAS accepter sans signature', async () => {
   const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
-  await assertSucceeds(updateDoc(doc(db, 'adhesionRequests', ALICE), {
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', ALICE), {
     status: 'accepted',
     adminNote: 'Dossier complet.',
     updatedAt: serverTimestamp()

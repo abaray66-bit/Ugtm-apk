@@ -203,7 +203,7 @@ async function getActiveMemberEntries() {
   return entries;
 }
 
-async function notifyAdhesionManagers(requestUid, province, title, messageBody) {
+async function notifyAdhesionManagers(requestUid, province, structureId, title, messageBody) {
   const db = getDb();
   const managerUids = new Set();
   const auth = getFirebaseApp().auth();
@@ -218,13 +218,25 @@ async function notifyAdhesionManagers(requestUid, province, title, messageBody) 
     }
   }
 
-  // Sous-administrateurs actifs de la province du dossier.
+  // Sous-administrateurs provinciaux actifs de la province du dossier.
   const subadmins = await db.collection('members').where('role', '==', 'subadmin').get();
   for (const doc of subadmins.docs) {
     const member = doc.data() || {};
     const assignedProvince = String(member.adminProvince || member.prov || '');
     if (doc.id !== requestUid && member.status === 'active' && assignedProvince === String(province || '')) {
       managerUids.add(doc.id);
+    }
+  }
+
+  // Sous-administrateurs locaux de la structure du dossier.
+  if (structureId) {
+    const localAdmins = await db.collection('members').where('role', '==', 'subadminLocal').get();
+    for (const doc of localAdmins.docs) {
+      const member = doc.data() || {};
+      const assignedStructure = String(member.adminStructure || '');
+      if (doc.id !== requestUid && member.status === 'active' && assignedStructure === structureId) {
+        managerUids.add(doc.id);
+      }
     }
   }
 
@@ -653,7 +665,7 @@ module.exports = async function handler(req, res) {
       }
       const toks = await getMemberTokens(targetUid);
       entries = toks.map(function (t) { return { uid: String(targetUid), token: t }; });
-    } else if (type === 'adhesion_request') {
+} else if (type === 'adhesion_request') {
       const db = getDb();
       const requestSnap = await db.collection('adhesionRequests').doc(decodedToken.uid).get();
       if (!requestSnap.exists) return res.status(403).json({ error: 'Forbidden' });
@@ -665,9 +677,10 @@ module.exports = async function handler(req, res) {
       const applicantName = (String(application.prenom || '').trim() + ' ' + String(application.nom || '').trim()).trim();
       if (!applicantName) return res.status(400).json({ error: 'Incomplete application' });
       const province = String(request.province || application.province || '');
-      title = ('Nouvelle demande d’adhésion : ' + applicantName).slice(0, 120);
+      const structureId = String(request.structureId || '');
+      title = ('Nouvelle demande d\u00e9sion : ' + applicantName).slice(0, 120);
       msgBody = ('Province : ' + province).slice(0, 500);
-      entries = await notifyAdhesionManagers(decodedToken.uid, province, title, msgBody);
+      entries = await notifyAdhesionManagers(decodedToken.uid, province, structureId, title, msgBody);
     }
 
     // Un même appareil peut être enregistré sous plusieurs comptes (le jeton
