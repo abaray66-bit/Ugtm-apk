@@ -10907,34 +10907,43 @@ window.UGTM.failed(err);
                d'APK), on continue SANS logo plutôt que de bloquer la
                génération en silence. */
             var timer=setTimeout(function(){finish('');},4000);
-            var img=new Image();
-            img.onload=function(){
-              clearTimeout(timer);
-              try{
-                /* Le logo UGTM est carré (512x512) : on conserve SON
-                   rapport largeur/hauteur. L'ancienne version l'écrasait
-                   dans un canevas 420x140 — d'où le logo comprimé
-                   verticalement dans le PDF. */
-                var iw=Number(img.naturalWidth||img.width||0);
-                var ih=Number(img.naturalHeight||img.height||0);
-                /* Repli (WebView qui ne mesure pas le SVG) : format carré
-                   réel du logo du dépôt, jamais de déformation imposée. */
-                if(!(iw>0)||!(ih>0)){iw=512;ih=512;}
-                var s=Math.min(512/iw,512/ih);
-                var c=document.createElement('canvas');
-                c.width=Math.max(1,Math.round(iw*s));
-                c.height=Math.max(1,Math.round(ih*s));
-                var cx=c.getContext('2d');
-                /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut,
-                   un JPEG équivalent pèse quelques Ko. */
-                cx.fillStyle='#ffffff';
-                cx.fillRect(0,0,c.width,c.height);
-                cx.drawImage(img,0,0,c.width,c.height);
-                finish({data:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height});
-              }catch(e){finish('');}
-            };
-            img.onerror=function(){clearTimeout(timer);finish('');};
-            img.src='icons/ugtm-logo.svg';
+            function tryLoad(src,isFallback){
+              var img=new Image();
+              img.onload=function(){
+                try{
+                  /* Le logo UGTM est carré (512x512) : on conserve SON
+                     rapport largeur/hauteur. L'ancienne version l'écrasait
+                     dans un canevas 420x140 — d'où le logo comprimé
+                     verticalement dans le PDF. */
+                  var iw=Number(img.naturalWidth||img.width||0);
+                  var ih=Number(img.naturalHeight||img.height||0);
+                  /* Repli (WebView qui ne mesure pas le SVG) : format carré
+                     réel du logo du dépôt, jamais de déformation imposée. */
+                  if(!(iw>0)||!(ih>0)){iw=512;ih=512;}
+                  var s=Math.min(512/iw,512/ih);
+                  var c=document.createElement('canvas');
+                  c.width=Math.max(1,Math.round(iw*s));
+                  c.height=Math.max(1,Math.round(ih*s));
+                  var cx=c.getContext('2d');
+                  /* Fond blanc + JPEG : jsPDF intègre les PNG en RGB brut,
+                     un JPEG équivalent pèse quelques Ko. */
+                  cx.fillStyle='#ffffff';
+                  cx.fillRect(0,0,c.width,c.height);
+                  cx.drawImage(img,0,0,c.width,c.height);
+                  clearTimeout(timer);
+                  finish({data:c.toDataURL('image/jpeg',0.85),w:c.width,h:c.height});
+                }catch(e){
+                  if(!isFallback){ tryLoad('icons/icon-192.png',true); }
+                  else { clearTimeout(timer); finish(''); }
+                }
+              };
+              img.onerror=function(){
+                if(!isFallback){ tryLoad('icons/icon-192.png',true); }
+                else { clearTimeout(timer); finish(''); }
+              };
+              img.src=src;
+            }
+            tryLoad('icons/ugtm-logo.svg',false);
           });
         }
 
