@@ -10844,7 +10844,7 @@ window.UGTM.failed(err);
                 xhr.open('GET','amiri-font.js',false);
                 xhr.send(null);
                 if(xhr.status>=200 && xhr.status<300 && xhr.responseText){
-                  var re=new RegExp("addFileToVFS\\(['\\"]"+name+"['\\"]\\s*,\\s*\\\"([^\\"]+)\\\"\\)");
+                  var re=new RegExp("addFileToVFS\\(['\"]"+name+"['\"]\\s*,\\s*\"([^\"]+)\"\\)");
                   var m=xhr.responseText.match(re);
                   if(m&&m[1]) data=m[1];
                 }
