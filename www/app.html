@@ -692,6 +692,40 @@ main{
   font-weight:700;
 }
 
+/* Fenêtre de choix de connexion (navigateurs intégrés) */
+.signin-choice-overlay{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:flex-end;justify-content:center;
+  padding:12px;background:rgba(36,25,31,.45);backdrop-filter:blur(2px);
+}
+.signin-choice-overlay[hidden]{display:none}
+.signin-choice-sheet{
+  width:100%;max-width:480px;background:var(--surface,#fff);border-radius:20px 20px 16px 16px;
+  padding:18px 16px 16px;box-shadow:0 -8px 30px rgba(36,25,31,.18);border:1px solid var(--border-accent,#EAD9E0);
+}
+.signin-choice-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px}
+.signin-choice-head h2{margin:0;font-family:var(--font-head,Cairo,sans-serif);font-size:18px;line-height:1.3;color:var(--ink,#24191F)}
+.signin-choice-close{border:0;background:var(--soft,#FCECF3);color:var(--primary,#B83268);width:32px;height:32px;border-radius:999px;font-size:20px;line-height:1;cursor:pointer;flex-shrink:0}
+.signin-choice-sub{margin:0 0 14px;color:var(--muted,#75656C);font-size:13.5px;line-height:1.45}
+.signin-choice-actions{display:flex;flex-direction:column;gap:10px}
+.signin-choice-btn{
+  width:100%;text-align:start;border:1.5px solid var(--line,#EAD9E0);background:var(--surface,#fff);
+  border-radius:14px;padding:13px 14px;cursor:pointer;font:inherit;min-height:52px;transition:border-color .15s,box-shadow .15s;
+}
+.signin-choice-btn:active{transform:scale(.99)}
+.signin-choice-btn strong{display:block;font-size:15px;color:var(--ink,#24191F);margin-bottom:2px}
+.signin-choice-btn span{display:block;font-size:12.5px;color:var(--muted,#75656C);line-height:1.35}
+.signin-choice-btn.primary{
+  border-color:var(--primary,#B83268);background:linear-gradient(180deg,#fff 0%,var(--soft,#FCECF3) 100%);
+  box-shadow:0 4px 14px rgba(184,50,104,.12);
+}
+.signin-choice-btn.primary strong{color:var(--primary,#B83268)}
+.signin-choice-badge{
+  display:inline-block;margin-inline-start:6px;vertical-align:middle;background:var(--primary,#B83268);color:#fff;
+  font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.02em;
+}
+.signin-choice-btn.ghost{background:#fff}
+@media (min-width:520px){.signin-choice-overlay{align-items:center}.signin-choice-sheet{border-radius:20px}}
+
 /* Modale de signature du responsable (espace administration) */
 .signmodal{
   position:fixed;
@@ -5504,6 +5538,45 @@ el.classList.remove('show');
 },ms||2400);
 }
 
+var _signinUiPending=false;
+function isNativeApp(){
+  try{ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }catch(e){ return false; }
+}
+function openSignInChoiceModal(){
+  var m=$('signinChoiceModal');
+  if(m) m.hidden=false;
+}
+function closeSignInChoiceModal(){
+  var m=$('signinChoiceModal');
+  if(m) m.hidden=true;
+}
+function requestSignIn(){
+  if(_signinUiPending) return;
+  var c=window.CLOUD;
+  if(!c || typeof c.signIn!=='function'){
+    if(typeof toast==='function') toast(S.cloud==='error'
+      ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
+      : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
+    return;
+  }
+  // Navigateurs intégrés (web) : proposer le choix (navigateur externe recommandé / app / rester).
+  if(!isNativeApp() && typeof c.isInAppBrowser==='function' && c.isInAppBrowser()){
+    openSignInChoiceModal();
+    return;
+  }
+  try{ _signinUiPending=true; Promise.resolve(c.signIn()).catch(showError).finally(function(){ _signinUiPending=false; }); }
+  catch(e){ _signinUiPending=false; showError(e); }
+}
+function runSignInChoice(mode){
+  if(_signinUiPending) return;
+  var c=window.CLOUD;
+  if(!c || typeof c.signIn!=='function'){ closeSignInChoiceModal(); return; }
+  closeSignInChoiceModal();
+  _signinUiPending=true;
+  try{ Promise.resolve(c.signIn({mode:mode})).catch(showError).finally(function(){ _signinUiPending=false; }); }
+  catch(e){ _signinUiPending=false; showError(e); }
+}
+
 var galleryState={items:[],idx:0,ctx:null,zoom:1,tx:0,ty:0,pinchDist:0,pinchScale:1};
 
 function openGallery(items,startIdx,opts){
@@ -5655,15 +5728,25 @@ renderGallery();
     var session=(typeof window.ugtmSession==='function')?window.ugtmSession():null;
     var connected=!!(session&&session.user&&session.user.uid);
     if(!connected){
-      if(window.CLOUD && typeof window.CLOUD.signIn==='function') window.CLOUD.signIn();
-      else if(typeof toast==='function') toast(S.cloud==='error'
-        ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
-        : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
+      requestSignIn();
       return;
     }
     var am=document.getElementById('authMenu');
     if(am) am.hidden=!am.hidden;
   });
+
+  (function(){
+    var m=$('signinChoiceModal');
+    if(!m) return;
+    var closeBtn=$('signinChoiceClose');
+    if(closeBtn) closeBtn.addEventListener('click', closeSignInChoiceModal);
+    m.addEventListener('click', function(e){ if(e.target===m) closeSignInChoiceModal(); });
+    var bExt=$('signinChoiceExternal'); if(bExt) bExt.addEventListener('click', function(){ runSignInChoice('external'); });
+    var bApp=$('signinChoiceApp'); if(bApp) bApp.addEventListener('click', function(){ runSignInChoice('app'); });
+    var bCur=$('signinChoiceCurrent'); if(bCur) bCur.addEventListener('click', function(){ runSignInChoice('current'); });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && m && !m.hidden) closeSignInChoiceModal(); });
+  })();
+
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
       window.Capacitor.Plugins.App.addListener('backButton', function(e){
@@ -7486,10 +7569,7 @@ btn.onclick=function(e){
   if(!connected){
     e.preventDefault();
     e.stopPropagation();
-    if(window.CLOUD && typeof window.CLOUD.signIn==='function'){ try{ window.CLOUD.signIn(); }catch(ex){} }
-    else if(typeof toast==='function') toast(S.cloud==='error'
-      ? 'Service de connexion indisponible. Vérifiez votre connexion Internet, puis relancez l’application.'
-      : 'Le service de connexion se charge encore. Réessayez dans quelques secondes.',5000);
+    requestSignIn();
     return false;
   }
   var am=document.getElementById('authMenu');
@@ -12544,6 +12624,31 @@ window.UGTM.failed(err);
 <p style="margin:8px 0;color:#555;font-size:14px;"><strong>Lieu :</strong> <span id="eventDetailPlace"></span></p>
 <p style="margin:12px 0 0;color:#333;font-size:16px;line-height:1.5;" id="eventDetailDesc"></p>
 </div>
+</div>
+
+
+<div class="signin-choice-overlay" id="signinChoiceModal" hidden role="dialog" aria-modal="true" aria-labelledby="signinChoiceTitle">
+  <div class="signin-choice-sheet">
+    <div class="signin-choice-head">
+      <h2 id="signinChoiceTitle">Se connecter</h2>
+      <button type="button" class="signin-choice-close" id="signinChoiceClose" aria-label="Fermer">×</button>
+    </div>
+    <p class="signin-choice-sub">Choisissez comment ouvrir la connexion Google depuis ce navigateur.</p>
+    <div class="signin-choice-actions">
+      <button type="button" class="signin-choice-btn primary" id="signinChoiceExternal">
+        <strong>Continuer dans le navigateur externe <span class="signin-choice-badge">Recommandé</span></strong>
+        <span>Ouvre le navigateur par défaut de votre téléphone pour une connexion Google fiable, puis l’application UGTM s’ouvrira avec votre session.</span>
+      </button>
+      <button type="button" class="signin-choice-btn" id="signinChoiceApp">
+        <strong>Ouvrir l’application UGTM</strong>
+        <span>Ouvre l’application UGTM si elle est installée ; sinon, le navigateur externe sera utilisé.</span>
+      </button>
+      <button type="button" class="signin-choice-btn ghost" id="signinChoiceCurrent">
+        <strong>Rester sur cette page</strong>
+        <span>Tente la connexion dans ce navigateur. Des erreurs de compatibilité peuvent s’afficher.</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 </body>

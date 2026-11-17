@@ -779,14 +779,16 @@ function isInAppBrowser(){
   return false;
 }
 
-function openExternalBrowserForAuth(){
+var AUTH_EXTERNAL_URL='https://ugtm-fns-souss-massa.web.app/app.html?auth=external';
+
+function openExternalBrowserForAuth(targetUrl){
   try{
     if (typeof window==='undefined') return false;
     // Ne pas modifier les APK/natifs (la branche native est gérée avant)
     if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) return false;
-    var target='https://ugtm-fns-souss-massa.web.app/app.html?auth=external';
+    var target=String(targetUrl||AUTH_EXTERNAL_URL);
     var ua=String((typeof navigator!=='undefined'&&navigator.userAgent)||'');
-    // Fallback Android : intent générique VIEW (ouvre le navigateur externe par défaut, sans imposer Chrome)
+    // Android : intent générique VIEW (ouvre le navigateur externe par défaut, sans imposer Chrome)
     // browser_fallback_url assure une issue si aucun handler n'est résolu.
     if (/Android/i.test(ua)){
       try{
@@ -800,6 +802,26 @@ function openExternalBrowserForAuth(){
     try{ var w2=window.open(target,'_blank','noopener'); if(w2) return true; }catch(e){}
     try{ window.top.location.href=target; return true; }catch(e){}
     try{ window.location.href=target; return true; }catch(e){}
+  }catch(e){}
+  return false;
+}
+
+function openUgtmAppForAuth(){
+  try{
+    if (typeof window==='undefined') return false;
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) return false;
+    var target=AUTH_EXTERNAL_URL;
+    var ua=String((typeof navigator!=='undefined'&&navigator.userAgent)||'');
+    // Tente d'ouvrir l'APK UGTM (si installé) via intent ciblé par paquet ; repli navigateur externe par défaut.
+    if (/Android/i.test(ua)){
+      try{
+        var intentUrl='intent://ugtm-fns-souss-massa.web.app/app.html?auth=external#Intent;scheme=https;package=ma.ugtm.souss.massa;action=android.intent.action.VIEW;S.browser_fallback_url='+encodeURIComponent(target)+';end';
+        window.location.href=intentUrl;
+        return true;
+      }catch(e){}
+    }
+    // Repli approprié : navigateur externe pour compléter l'authentification.
+    return openExternalBrowserForAuth(target);
   }catch(e){}
   return false;
 }
@@ -851,7 +873,30 @@ function withTimeout(promise, ms, message){
 }
 
 
-async function signIn(){
+var _signInPending = false;
+
+async function signInCurrentBrowser(){
+  var provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    // Fermeture volontaire : ne rien faire.
+    if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
+    // Popup bloquée ou environnement incompatible : bascule en redirection (meilleur effort).
+    var code = String((e && e.code) || '');
+    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/unauthorized-domain' || code === 'auth/web-storage-unsupported') {
+      try { await signInWithRedirect(auth, provider); return; } catch(e2){ throw e2; }
+    }
+    throw e;
+  }
+}
+
+async function signIn(opts){
+  opts = opts || {};
+  if (_signInPending) return;
+  _signInPending = true;
 
   try {
 
@@ -933,45 +978,35 @@ async function signIn(){
 
     }
 
-
-    var provider =
-      new GoogleAuthProvider();
-
-
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
-
-    // Navigateurs intégrés (Facebook, Facebook Lite, Instagram, etc.) :
-    // ouvrir automatiquement le navigateur externe par défaut pour l'auth Google
-    // (la WebView intégrée et son stockage isolé ne garantissent pas une session récupérable).
-    // L'authentification s'effectue dans le navigateur externe où la session Firebase est établie.
-    // Repli : redirection dans la WebView si l'ouverture externe échoue (meilleur effort).
+    // Navigateurs intégrés (Facebook, Facebook Lite, Instagram, etc.) : le choix est
+    // présenté par l'interface (navigateur externe recommandé / application / rester ici).
+    // Sans mode explicite, ne pas déclencher d'authentification automatique.
     if (isInAppBrowser()){
-      if (!openExternalBrowserForAuth()){
-        try { await signInWithRedirect(auth, provider); } catch(eR){
-          if (hooks && typeof hooks.error==='function') hooks.error(eR);
+      var mode = String(opts.mode || '');
+      if (mode === 'external'){
+        var opened = openExternalBrowserForAuth();
+        if (!opened){
+          // Repli meilleur effort si l'ouverture externe échoue.
+          try { await signInCurrentBrowser(); } catch(eR){ if (hooks && typeof hooks.error==='function') hooks.error(eR); }
         }
+        return;
       }
+      if (mode === 'app'){
+        var openedApp = openUgtmAppForAuth();
+        if (!openedApp){
+          try { await signInCurrentBrowser(); } catch(eR){ if (hooks && typeof hooks.error==='function') hooks.error(eR); }
+        }
+        return;
+      }
+      if (mode === 'current'){
+        await signInCurrentBrowser();
+        return;
+      }
+      // mode non spécifié en navigateur intégré : la fenêtre de choix UI gère l'action.
       return;
     }
 
-
-    try {
-      await signInWithPopup(
-        auth,
-        provider
-      );
-    } catch (e) {
-      // Fermeture volontaire : ne rien faire.
-      if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
-      // Popup bloquée ou environnement incompatible : bascule en redirection.
-      var code = String((e && e.code) || '');
-      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/unauthorized-domain' || code === 'auth/web-storage-unsupported') {
-        try { await signInWithRedirect(auth, provider); return; } catch(e2){ throw e2; }
-      }
-      throw e;
-    }
+    await signInCurrentBrowser();
 
   }
 
@@ -1000,6 +1035,9 @@ async function signIn(){
     hooks.error(e);
     return;
 
+  }
+  finally {
+    _signInPending = false;
   }
 
 }
@@ -3232,6 +3270,9 @@ async function cloudMarkNotificationRead(id){
   window.CLOUD = {
 
     signIn: signIn,
+    isInAppBrowser: isInAppBrowser,
+    openExternalBrowserForAuth: openExternalBrowserForAuth,
+    openUgtmAppForAuth: openUgtmAppForAuth,
 
     signOut: signOut,
 
