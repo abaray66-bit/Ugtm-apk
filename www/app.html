@@ -1667,19 +1667,28 @@ main{
 
 .acctbtn{
   flex:none;
-  width:40px;
+  width:auto;
+  min-width:40px;
   height:40px;
-  border-radius:50%;
+  border-radius:999px;
   border:1px solid var(--line);
   background:var(--bg);
-  display:grid;
-  place-items:center;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
   cursor:pointer;
   overflow:visible;
-  padding:0;
-  color:var(--ink)
+  padding:0 12px;
+  color:var(--ink);
+  font-size:12px;
+  font-weight:600;
+  line-height:1.1;
+  white-space:nowrap
 }
+.acctbtn .accttext{display:inline-block}
+.acctbtn--connected{background:rgba(23,107,69,.10);border-color:rgba(23,107,69,.35);color:#176b45}
 .auth-blink{
+  border-radius:999px;
   animation: authBlink .7s ease-in-out infinite;
   box-shadow: 0 0 0 3px rgba(228,60,60,.85);
 }
@@ -2576,8 +2585,8 @@ body {
   50% { opacity: 0.5; }
 }
 
-.avatar-u--guide { animation: avatarUGuide .6s ease-in-out infinite; border-radius: 50%; box-shadow: 0 0 0 3px rgba(228,60,60,.6); }
-.avatar-u{position:relative;}
+.avatar-u--guide { animation: avatarUGuide .6s ease-in-out infinite; border-radius: 50%; aspect-ratio:1/1; box-shadow: 0 0 0 3px rgba(228,60,60,.6); }
+.avatar-u{position:relative;display:inline-grid;place-items:center;border-radius:50%;aspect-ratio:1/1;}
 .adhesion-btn-guide { animation: avatarUGuide 1.2s ease-in-out infinite; }
 
 @keyframes avatarUGuide {
@@ -7474,12 +7483,20 @@ btn.onclick=function(e){
   try{ e.preventDefault(); e.stopPropagation(); if(typeof go==='function') go('me'); return false; }catch(ex){}
 };
 
-
-btn.innerHTML=
-((S.user&&S.user.photo)
-?'<img src="'+esc(S.user.photo)+'" alt="" referrerpolicy="no-referrer">'
-:PERSON)
-+'<span id="notifBadge" class="notif-badge" hidden></span>';
+var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter';
+var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connecté';
+if(S.user){
+  var name=esc(S.user.name||'');
+  btn.innerHTML='<span class="accttext">'+esc(connectedLabel)+'</span><span id="notifBadge" class="notif-badge" hidden></span>';
+  btn.title=name || connectedLabel;
+  btn.setAttribute('aria-label', name || connectedLabel);
+  btn.classList.add('acctbtn--connected');
+} else {
+  btn.innerHTML='<span class="accttext">'+esc(signLabel)+'</span><span id="notifBadge" class="notif-badge" hidden></span>';
+  btn.title=signLabel;
+  btn.setAttribute('aria-label', signLabel);
+  btn.classList.remove('acctbtn--connected');
+}
 
 if(S.user){
   var hb=document.getElementById('homeNotifBadge');
