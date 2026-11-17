@@ -772,8 +772,36 @@ function onUser(user){
 function isInAppBrowser(){
   try{
     var ua=String((typeof navigator!=='undefined'&&navigator.userAgent)||'');
-    return /FBAN|FBAV|FB_IAB|FB4A|FBIOS|Instagram|Messenger|Line\/|; wv\)|\bwv\b/i.test(ua);
-  }catch(e){ return false; }
+    if (/FBAN|FBAV|FB_IAB|FB4A|FBIOS|Instagram|Messenger|Line\/|; wv\)|\bwv\b/i.test(ua)) return true;
+    // Android WebView générique : indique "wv" ou une version Chrome sans "Chrome" en navigateur principal
+    if (/Android/i.test(ua) && (/; wv/i.test(ua) || (/Version\/[\d.]+/i.test(ua) && !/Chrome\/[\d.]+ Mobile/i.test(ua)))) return true;
+  }catch(e){}
+  return false;
+}
+
+function openExternalBrowserForAuth(){
+  try{
+    if (typeof window==='undefined') return false;
+    // Ne pas modifier les APK/natifs (la branche native est gérée avant)
+    if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) return false;
+    var target='https://ugtm-fns-souss-massa.web.app/app.html?auth=external';
+    var ua=String((typeof navigator!=='undefined'&&navigator.userAgent)||'');
+    // Fallback Android : intent générique VIEW (ouvre le navigateur externe par défaut, sans imposer Chrome)
+    // browser_fallback_url assure une issue si aucun handler n'est résolu.
+    if (/Android/i.test(ua)){
+      try{
+        var intentUrl='intent://ugtm-fns-souss-massa.web.app/app.html?auth=external#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url='+encodeURIComponent(target)+';end';
+        window.location.href=intentUrl;
+        return true;
+      }catch(e){}
+    }
+    // Tentative via fenêtre/onglet système puis navigation de secours.
+    try{ var w=window.open(target,'_system','noopener'); if(w) return true; }catch(e){}
+    try{ var w2=window.open(target,'_blank','noopener'); if(w2) return true; }catch(e){}
+    try{ window.top.location.href=target; return true; }catch(e){}
+    try{ window.location.href=target; return true; }catch(e){}
+  }catch(e){}
+  return false;
 }
 
 
@@ -914,11 +942,17 @@ async function signIn(){
       prompt: 'select_account'
     });
 
-    // Navigateurs intégrés (Facebook, Facebook Lite, Instagram, etc.) : la popup
-    // et/ou Google échouent souvent. La redirection dans la même fenêtre est
-    // fiable ; le résultat est traité au retour via getRedirectResult().
+    // Navigateurs intégrés (Facebook, Facebook Lite, Instagram, etc.) :
+    // ouvrir automatiquement le navigateur externe par défaut pour l'auth Google
+    // (la WebView intégrée et son stockage isolé ne garantissent pas une session récupérable).
+    // L'authentification s'effectue dans le navigateur externe où la session Firebase est établie.
+    // Repli : redirection dans la WebView si l'ouverture externe échoue (meilleur effort).
     if (isInAppBrowser()){
-      await signInWithRedirect(auth, provider);
+      if (!openExternalBrowserForAuth()){
+        try { await signInWithRedirect(auth, provider); } catch(eR){
+          if (hooks && typeof hooks.error==='function') hooks.error(eR);
+        }
+      }
       return;
     }
 
@@ -3480,14 +3514,33 @@ async function cloudMarkNotificationRead(id){
 
   hooks.ready();
 
-  // Résultat de connexion par redirection (navigateurs intégrés : Facebook,
-  // Facebook Lite, Instagram...). L'erreur éventuelle est affichée à l'utilisateur.
+  // Résultat de connexion par redirection (navigateurs standards / repli WebView).
+  // L'erreur éventuelle est affichée à l'utilisateur.
   try {
     getRedirectResult(auth).catch(function(e){
       if (!e) return;
       if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
       if (hooks && typeof hooks.error === 'function') hooks.error(e);
     });
+  } catch(e) {}
+
+  // Ouverture depuis un navigateur intégré -> complétion de l'auth dans le navigateur
+  // externe (navigateur par défaut) où la session Firebase peut être établie de façon fiable.
+  // Déclenchement automatique (sans action manuelle) si l'utilisateur n'est pas connecté.
+  try {
+    var _extAuth=false;
+    try{
+      var _sp=new URLSearchParams((typeof window!=='undefined'&&window.location&&window.location.search)||'');
+      _extAuth=(_sp.get('auth')==='external');
+    }catch(e){}
+    if (_extAuth && !(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) && !isInAppBrowser()){
+      if (!(auth && auth.currentUser)){
+        try{ if(typeof sessionStorage!=='undefined' && sessionStorage.getItem('ugtm_ext_auth')) _extAuth=false; else if(typeof sessionStorage!=='undefined') sessionStorage.setItem('ugtm_ext_auth','1'); }catch(e){}
+        if (_extAuth) { setTimeout(function(){ try{ signIn().catch(function(){}); }catch(e){} }, 50); }
+      } else {
+        try{ if(typeof sessionStorage!=='undefined') sessionStorage.removeItem('ugtm_ext_auth'); }catch(e){}
+      }
+    }
   } catch(e) {}
 
   // Fréquentation : comptage visite/session (sans double sur actualisation) + présence.
