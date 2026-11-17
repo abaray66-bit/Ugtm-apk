@@ -69,10 +69,38 @@ function isValidFcmToken(t) {
   return typeof t === 'string' && t.length >= 40 && t.length <= 512 && /^[A-Za-z0-9_:.-]+$/.test(t);
 }
 
+async function getDialogueEligibleEntries() {
+  const db = getDb();
+  const membersSnap = await db.collection('members').where('status', '==', 'active').get();
+  const entries = [];
+  for (const doc of membersSnap.docs) {
+    const uid = doc.id;
+    let eligible = false;
+    try {
+      const reqSnap = await db.collection('adhesionRequests').doc(uid).get();
+      if (reqSnap.exists) {
+        const req = reqSnap.data() || {};
+        eligible = req.status === 'accepted' && !!req.signedAt;
+      }
+    } catch (e) {
+      eligible = false;
+    }
+    if (!eligible) continue;
+    const tokenSnap = await db.collection('fcmTokens').doc(uid).get();
+    if (!tokenSnap.exists) continue;
+    const data = tokenSnap.data() || {};
+    const tokenList = Array.isArray(data.tokens) ? data.tokens : (data.token ? [data.token] : []);
+    for (const token of tokenList) {
+      if (isValidFcmToken(token)) entries.push({ uid: uid, token: token });
+    }
+  }
+  return entries;
+}
+
 function buildNotificationTarget(type, targetId) {
   const url = new URL('https://ugtm-fns-souss-massa.web.app/app.html');
   const id = String(targetId || '');
-  if ((type === 'news' || type === 'event' || type === 'adhesion' || type === 'adhesion_request' || type === 'adhesion_renewal') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
+  if ((type === 'news' || type === 'event' || type === 'adhesion' || type === 'adhesion_request' || type === 'adhesion_renewal' || type === 'dialogue') && /^[A-Za-z0-9_-]{1,150}$/.test(id)) {
     url.searchParams.set('notificationType', type);
     url.searchParams.set('notificationId', id);
   }
@@ -621,7 +649,7 @@ module.exports = async function handler(req, res) {
     body = body || {};
 
     const { type, title: requestedTitle, body: requestedBody, targetUid, targetId } = body;
-    const validTypes = ['news', 'event', 'adhesion', 'adhesion_request', 'adhesion_renewal'];
+    const validTypes = ['news', 'event', 'adhesion', 'adhesion_request', 'adhesion_renewal', 'dialogue'];
     if (!type || !validTypes.includes(type)) {
       return res.status(400).json({ error: 'Invalid request' });
     }
@@ -670,7 +698,7 @@ module.exports = async function handler(req, res) {
 
     // Déterminer les destinataires depuis Firestore
     let entries = [];
-    if (type === 'news' || type === 'event') {
+    if (type === 'news' || type === 'event' || type === 'dialogue') {
       entries = await getActiveMemberEntries();
     } else if (type === 'adhesion') {
       if (!targetUid) {
@@ -747,7 +775,7 @@ module.exports = async function handler(req, res) {
 
   const pushTarget = buildNotificationTarget(type, targetId);
   const pushData = { targetUrl: pushTarget.toString() };
-  if ((type === 'news' || type === 'event' || type === 'adhesion') && /^[A-Za-z0-9_-]{1,150}$/.test(String(targetId || ''))) {
+  if ((type === 'news' || type === 'event' || type === 'adhesion' || type === 'dialogue') && /^[A-Za-z0-9_-]{1,150}$/.test(String(targetId || ''))) {
     pushData.notificationType = type;
     pushData.notificationId = String(targetId);
   }

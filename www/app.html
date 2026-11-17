@@ -438,7 +438,7 @@ main{
 }
 
 .adh .hint{
-  margin:8px 0 0;
+  margin:6px 0 0;
   font-size:11.5px;
   line-height:1.45
 }
@@ -2637,7 +2637,7 @@ body {
   color:var(--ink)
 }
 #s-home .adh > p:not(.hint){
-  margin:6px 0 8px;
+  margin:6px 0 6px;
   font-size:12.5px;
   line-height:1.4
 }
@@ -3367,7 +3367,10 @@ function renderNotifications(list){
     p.appendChild(titleEl);
     if(bodyEl.textContent) p.appendChild(bodyEl);
     p.onclick=function(){
-      if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
+      if(n.targetType==='dialogue'){
+        if(typeof window.openDialogueViewer==='function'){ if(typeof go==='function') go('home'); window.openDialogueViewer(n.targetId||''); }
+      }
+      else if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
       else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
         if(!S.isAdmin&&!S.isSubAdmin){ go('me'); }
         else { go('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
@@ -3414,8 +3417,8 @@ window.markNotificationRead=markNotificationRead;
 </div>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
-<button class="btn ghost block" type="button" id="homeDialogueSocialBtn" hidden>Dialogue social</button>
 <div class="adhbtns">
+<button class="btn ghost block" type="button" id="homeDialogueSocialBtn">Dialogue social</button>
 <button class="btn primary" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
@@ -3719,7 +3722,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo">Aucun document.</p><div class="field"><label for="admDialogueFile">Document PDF</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Téléverser / Remplacer</button><button class="btn ghost small danger" type="button" id="admDialogueDelete">Supprimer</button></div><p class="hint" style="margin-top:8px">Réservé aux adhérents connectés, validés et ayant signé le formulaire d'adhésion. Consultation seule.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;background:var(--soft);border-radius:12px;display:flex;justify-content:center;align-items:flex-start;padding:8px;-webkit-user-select:none;user-select:none"><canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo"></p><ul class="list" id="admDialogueList" style="margin:8px 0"></ul><div class="field"><label for="admDialogueFile">Document PDF (nom libre, multi-PDF)</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Publier / Notifier</button></div><p class="hint" style="margin-top:8px">Sélectionnez un PDF depuis votre appareil : il est téléversé (stocké dans Firestore, sans forfait payant/Storage) et les adhérents éligibles (connectés, actifs, adhésion acceptée et signée) sont notifiés. Consultation seule dans l’app. Taille max 8 Mo par PDF.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;background:var(--soft);border-radius:12px;display:flex;justify-content:center;align-items:flex-start;padding:8px;-webkit-user-select:none;user-select:none"><canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -5137,7 +5140,7 @@ try{
 var notificationQuery=new URLSearchParams(window.location.search||'');
 var notificationType=notificationQuery.get('notificationType');
 var notificationId=notificationQuery.get('notificationId');
-if((notificationType==='news'||notificationType==='event'||notificationType==='adhesion'||notificationType==='adhesion_request'||notificationType==='adhesion_renewal')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
+if((notificationType==='news'||notificationType==='event'||notificationType==='adhesion'||notificationType==='adhesion_request'||notificationType==='adhesion_renewal'||notificationType==='dialogue')&&notificationId) pendingNotificationTarget={type:notificationType,id:notificationId};
 }catch(notificationQueryError){}
 var agendaCursor=new Date();
 agendaCursor.setDate(1);
@@ -6825,6 +6828,11 @@ function openNotificationTarget(type,id){
     openAdhesionDossier(targetId,false);
     return true;
   }
+  if(targetType==='dialogue'){
+    go('home');
+    if(typeof window.openDialogueViewer==='function') window.openDialogueViewer(targetId||'');
+    return true;
+  }
   return false;
 }
 window.openNotificationTarget=openNotificationTarget;
@@ -6963,14 +6971,20 @@ var myAdhesionStatusUid='';
 var myAdhesionStatusCache=null;
 var myAdhesionStatusPromise=null;
   function renderAdminDialogue(){
-    var info=$('admDialogueInfo'); if(!info) return;
-    if(!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){ info.textContent='Accès refusé.'; return; }
-    info.textContent='Chargement...';
-    if(!window.CLOUD||!window.CLOUD.admin||typeof window.CLOUD.admin.getDialogueSocial!=='function'){ info.textContent='Indisponible.'; return; }
-    window.CLOUD.admin.getDialogueSocial().then(function(doc){
-      if(!doc||doc.active===false){ info.textContent='Aucun document.'; }
-      else { var dt=doc.updatedAt?new Date(doc.updatedAt).toLocaleString('fr-FR'):''; info.textContent=(doc.fileName||'Document')+(dt?(' — '+dt):''); }
-    }).catch(function(e){ info.textContent='Erreur: '+String(e&&e.message||e); });
+    var info=$('admDialogueInfo'); var list=$('admDialogueList');
+    if(info) info.textContent='';
+    if(!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){ if(info) info.textContent='Accès refusé.'; if(list) list.innerHTML=''; return; }
+    if(info) info.textContent='Chargement...';
+    if(!window.CLOUD||!window.CLOUD.admin||typeof window.CLOUD.admin.getDialogueSocial!=='function'){ if(info) info.textContent='Indisponible.'; return; }
+    window.CLOUD.admin.getDialogueSocial().then(function(docs){
+      if(info) info.textContent='';
+      if(!Array.isArray(docs)||!docs.length){ if(info) info.textContent='Aucun document.'; if(list) list.innerHTML=''; return; }
+      if(!list) return;
+      list.innerHTML = docs.map(function(d){
+        var dt=d.createdAt?new Date(d.createdAt).toLocaleString('fr-FR'):'';
+        return '<li class="card" style="padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="min-width:0"><strong style="display:block;word-break:break-word">'+esc(d.fileName||'Document')+'</strong><span class="hint" style="margin:0">'+esc(dt)+'</span></div><button class="btn ghost small danger" type="button" data-deldialogue="'+esc(d.id)+'">Supprimer</button></li>';
+      }).join('');
+    }).catch(function(e){ if(info) info.textContent='Erreur: '+String(e&&e.message||e); if(list) list.innerHTML=''; });
   }
   window.renderAdminDialogue=renderAdminDialogue;
 
@@ -6990,44 +7004,116 @@ var myAdhesionStatusPromise=null;
       return page.render({canvasContext:ctx, viewport:viewport}).promise;
     }).then(function(){ if(info) info.textContent=dialoguePdfPage+' / '+dialoguePdfDoc.numPages; }).catch(function(){});
   }
-  function openDialogueViewer(){
+  function openDialogueViewer(id){
     var modal=$('dialogueViewer'); if(!modal) return;
-    if(!window.CLOUD||typeof window.CLOUD.getDialogueSocialPdf!=='function'){ if(typeof toast==='function') toast('Indisponible'); return; }
-    var info=$('dialoguePageInfo'); if(info) info.textContent='Chargement...';
-    modal.hidden=false;
-    window.CLOUD.getDialogueSocialPdf().then(function(bytes){
+    var docId = (typeof id==='string') ? id : (id && id.id ? String(id.id) : '');
+    if(!docId && typeof id==='string') docId=id;
+    // if called without id (click passes event in some cases), ignore object events
+    if(id && typeof id==='object' && id.preventDefault && !id.id){ docId=''; }
+    function showPdf(bytes){
       if(!window.pdfjsLib) throw new Error('Visionneuse indisponible.');
       try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.min.js'; }catch(e){}
       var data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
       return window.pdfjsLib.getDocument({data:data}).promise;
-    }).then(function(pdf){ dialoguePdfDoc=pdf; dialoguePdfPage=1; renderDialoguePage(); })
-    .catch(function(e){ if(info) info.textContent=''; modal.hidden=true; if(typeof toast==='function') toast(String(e&&e.message||e||'Document indisponible')); });
+    }
+    if(!window.CLOUD||typeof window.CLOUD.getDialogueSocialPdf!=='function' || typeof window.CLOUD.getDialogueSocial!=='function'){ if(typeof toast==='function') toast('Indisponible'); return; }
+    var info=$('dialoguePageInfo'); if(info) info.textContent='Chargement...';
+    modal.hidden=false;
+    var p;
+    if(docId){
+      p = window.CLOUD.getDialogueSocialPdf(docId);
+    } else {
+      p = window.CLOUD.getDialogueSocial().then(function(list){
+        if(!Array.isArray(list)||!list.length) throw new Error('Aucun document disponible.');
+        if(list.length===1) return window.CLOUD.getDialogueSocialPdf(list[0].id);
+        // multiple: show picker inside viewer
+        var wrap=$('dialogueCanvasWrap'); var infoEl=$('dialoguePageInfo');
+        dialoguePdfDoc=null;
+        if(infoEl) infoEl.textContent='';
+        if(wrap){
+          wrap.innerHTML='<div style="width:100%;padding:8px"><p class="hint" style="margin:0 0 8px">Choisissez un document :</p><ul class="list" style="margin:0">'+list.map(function(d){
+            var dt=d.createdAt?new Date(d.createdAt).toLocaleDateString('fr-FR'):'';
+            return '<li><button type="button" class="card" style="width:100%;text-align:left;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer" data-opendialogue="'+esc(d.id)+'"><strong style="display:block">'+esc(d.fileName||'Document')+'</strong><span class="hint" style="margin:0">'+esc(dt)+'</span></button></li>';
+          }).join('')+'</ul></div>';
+        }
+        return null;
+      });
+    }
+    p.then(function(bytes){
+      if(bytes===null) return;
+      return showPdf(bytes).then(function(pdf){ dialoguePdfDoc=pdf; dialoguePdfPage=1; var wrap=$('dialogueCanvasWrap'); if(wrap){ var c=document.createElement('canvas'); c.id='dialogueCanvas'; c.style.maxWidth='100%'; c.style.height='auto'; wrap.innerHTML=''; wrap.appendChild(c); } renderDialoguePage(); });
+    }).catch(function(e){ if(info) info.textContent=''; modal.hidden=true; if(typeof toast==='function') toast(String(e&&e.message||e||'Document indisponible')); });
   }
-  function closeDialogueViewer(){ var m=$('dialogueViewer'); if(m) m.hidden=true; dialoguePdfDoc=null; }
+  function closeDialogueViewer(){ var m=$('dialogueViewer'); if(m) m.hidden=true; dialoguePdfDoc=null; var wrap=$('dialogueCanvasWrap'); if(wrap) wrap.innerHTML='<canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas>'; }
   window.openDialogueViewer=openDialogueViewer;
+
+  (function wireDialogueUi(){
+    var hbtn=document.getElementById('homeDialogueSocialBtn');
+    if(hbtn) hbtn.addEventListener('click', function(){
+      var connected=!!(typeof S!=='undefined'&&S.user&&S.user.uid);
+      var req=(typeof myAdhesionStatusCache!=='undefined')?myAdhesionStatusCache:null;
+      var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+      var signedForm=!!(req && req.status==='accepted' && req.signedAt);
+      if(!(connected && memberActive && signedForm)){
+        if(typeof toast==='function') toast('Réservé aux adhérents');
+        return;
+      }
+      openDialogueViewer();
+    });
+    var closeBtn=document.getElementById('dialogueViewerClose');
+    if(closeBtn) closeBtn.addEventListener('click', closeDialogueViewer);
+    var prev=document.getElementById('dialoguePrev');
+    if(prev) prev.addEventListener('click', function(){ if(!dialoguePdfDoc) return; if(dialoguePdfPage>1){ dialoguePdfPage--; renderDialoguePage(); } });
+    var next=document.getElementById('dialogueNext');
+    if(next) next.addEventListener('click', function(){ if(!dialoguePdfDoc) return; if(dialoguePdfPage<dialoguePdfDoc.numPages){ dialoguePdfPage++; renderDialoguePage(); } });
+    var up=document.getElementById('admDialogueUpload');
+    if(up) up.addEventListener('click', function(){
+      var input=document.getElementById('admDialogueFile');
+      var file=input && input.files && input.files[0];
+      if(!file){ if(typeof toast==='function') toast('Sélectionnez un fichier PDF.'); return; }
+      if(!window.CLOUD||!window.CLOUD.admin||typeof window.CLOUD.admin.uploadDialogueSocial!=='function'){ if(typeof toast==='function') toast('Indisponible.'); return; }
+      var info=document.getElementById('admDialogueInfo'); if(info) info.textContent='Publication...';
+      window.CLOUD.admin.uploadDialogueSocial(file).then(function(res){
+        if(input) input.value='';
+        if(typeof renderAdminDialogue==='function') renderAdminDialogue();
+        if(typeof toast==='function') toast('Publié : notifications envoyées aux adhérents éligibles.');
+      }).catch(function(e){ if(typeof toast==='function') toast(String(e&&e.message||e||'Erreur')); if(typeof renderAdminDialogue==='function') renderAdminDialogue(); });
+    });
+    var list=$('admDialogueList');
+    if(list) list.addEventListener('click', function(e){
+      var btn=e.target && e.target.closest ? e.target.closest('[data-deldialogue]') : null;
+      if(!btn) return;
+      var id=btn.getAttribute('data-deldialogue');
+      if(!id) return;
+      if(!window.CLOUD||!window.CLOUD.admin||typeof window.CLOUD.admin.deleteDialogueSocial!=='function'){ if(typeof toast==='function') toast('Indisponible.'); return; }
+      var info=document.getElementById('admDialogueInfo'); if(info) info.textContent='Suppression...';
+      window.CLOUD.admin.deleteDialogueSocial(id).then(function(){
+        if(typeof renderAdminDialogue==='function') renderAdminDialogue();
+        if(typeof toast==='function') toast('Document supprimé.');
+      }).catch(function(err){ if(typeof toast==='function') toast(String(err&&err.message||err||'Erreur')); if(typeof renderAdminDialogue==='function') renderAdminDialogue(); });
+    });
+    var wrap=$('dialogueCanvasWrap');
+    if(wrap) wrap.addEventListener('click', function(e){
+      var btn=e.target && e.target.closest ? e.target.closest('[data-opendialogue]') : null;
+      if(!btn) return;
+      var id=btn.getAttribute('data-opendialogue');
+      if(id) openDialogueViewer(id);
+    });
+  })();
 
   /* Visibilité du lien "Dialogue social" (accueil) : adhérent connecté,
      adhésion acceptée/validée et formulaire d'adhésion signé. */
   function updateHomeDialogueSocial(request){
     var btn=$('homeDialogueSocialBtn');
     if(!btn)return;
-    var uid=(typeof S!=='undefined'&&S.user&&S.user.uid)?String(S.user.uid):'';
-    var st=request?String(request.status||'none'):'none';
-    var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
-    var hasSignature=!!(request&&(request.signature||(request.application&&request.application.signature)));
-    var show=!!(uid&&memberActive&&(st==='accepted')&&hasSignature);
-    btn.hidden=!show;
+    btn.hidden=false;
   }
   window.updateHomeDialogueSocial=updateHomeDialogueSocial;
 
 function updateDialogueSocialButton(request){
   var btn=document.getElementById('homeDialogueSocialBtn');
   if(!btn)return;
-  var connected=!!(typeof S!=='undefined'&&S.user&&S.user.uid);
-  var req=request||(typeof myAdhesionStatusCache!=='undefined'?myAdhesionStatusCache:null);
-  var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
-  var signedForm=!!(req && req.status==='accepted' && req.signedAt);
-  btn.hidden=!(connected && memberActive && req && req.status==='accepted' && signedForm);
+  btn.hidden=false;
 }
 window.updateDialogueSocialButton=updateDialogueSocialButton;
 

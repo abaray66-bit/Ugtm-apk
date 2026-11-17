@@ -15,9 +15,8 @@ import {
   writeBatch, arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
-import { getStorage, ref as storageRef, uploadBytes, getBytes } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
-var auth, db, hooks, firebaseApp, messaging, storage, fcmMessageBound = false;
+var auth, db, hooks, firebaseApp, messaging, fcmMessageBound = false;
 var nativeAuth = null;
 var capBrowser = null;
 var APP_NOTIFICATION_ROOT = 'https://ugtm-fns-souss-massa.web.app/app.html';
@@ -2651,34 +2650,76 @@ var admin = {
   validateAdhesionLocal: validateAdhesionLocal,
 
   getDialogueSocial: function(){
-    return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
-      if(!s.exists()) return null;
-      var d=s.data()||{};
-      return {fileName:String(d.fileName||''), storagePath:String(d.storagePath||''), updatedAt:ms(d.updatedAt), updatedBy:String(d.updatedBy||''), active:d.active!==false};
-    }).catch(function(){ return null; });
+    return getDocs(query(collection(db,'dialogueSocialDocs'), orderBy('createdAt','desc'))).then(function(snap){
+      return snap.docs.map(function(d){
+        var x=d.data()||{};
+        return {id:d.id,fileName:String(x.fileName||'Document'),chunkCount:Number(x.chunkCount||0),createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),updatedBy:String(x.updatedBy||''),active:x.active!==false};
+      }).filter(function(x){ return x.active!==false; });
+    }).catch(function(){ return []; });
   },
 
   uploadDialogueSocial: function(file){
     if(!(session.isAdmin||session.isSubAdmin||session.isSubAdminLocal)) return Promise.reject(new Error('Réservé aux administrateurs.'));
-    if(!storage) return Promise.reject(new Error('Stockage indisponible.'));
-    if(!file) return Promise.reject(new Error('Aucun fichier sélectionné.'));
+    if(!file) return Promise.reject(new Error('Sélectionnez un fichier PDF.'));
     if(file.type && file.type!=='application/pdf') return Promise.reject(new Error('Le document doit être un PDF.'));
-    var path='dialogue-social/current.pdf';
-    var name=String(file.name||'dialogue-social.pdf').slice(0,120);
-    return uploadBytes(storageRef(storage,path), file, {contentType:'application/pdf'}).then(function(){
-      return setDoc(doc(db,'config','dialogueSocial'), {
-        fileName:name,
-        storagePath:path,
-        active:true,
-        updatedAt:serverTimestamp(),
-        updatedBy:(session.user&&session.user.uid)||''
-      }, {merge:true});
-    }).then(function(){ return {fileName:name, storagePath:path}; });
+    if(file.size && file.size > 8*1024*1024) return Promise.reject(new Error('PDF trop volumineux (max 8 Mo).'));
+    var name=String(file.name||'document.pdf').replace(/^.*[\\\/]/,'').slice(0,120);
+    function readAsBase64(f){
+      return new Promise(function(resolve,reject){
+        try{
+          var reader=new FileReader();
+          reader.onload=function(){ var r=String(reader.result||''); var i=r.indexOf(','); resolve(i>=0?r.slice(i+1):r); };
+          reader.onerror=function(){ reject(new Error('Lecture du fichier impossible.')); };
+          reader.readAsDataURL(f);
+        }catch(e){ reject(e); }
+      });
+    }
+    return readAsBase64(file).then(function(b64){
+      if(!b64) throw new Error('PDF vide.');
+      var chunkSize=700000; // base64 chars per chunk (< ~1MB doc)
+      var chunks=[]; for(var i=0;i<b64.length;i+=chunkSize) chunks.push(b64.slice(i,i+chunkSize));
+      if(!chunks.length) throw new Error('PDF vide.');
+      var ref=doc(collection(db,'dialogueSocialDocs'));
+      var jobs=[setDoc(ref,{fileName:name,chunkCount:chunks.length,active:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp(),updatedBy:(session.user&&session.user.uid)||''})];
+      chunks.forEach(function(data,idx){
+        jobs.push(setDoc(doc(db,'dialogueSocialChunks', ref.id+'_'+idx), {docId:ref.id, index:idx, data:String(data), updatedAt:serverTimestamp()}));
+      });
+      return Promise.all(jobs).then(function(){ return {id:ref.id,fileName:name,chunkCount:chunks.length}; });
+    }).then(function(meta){
+      // Notification interne (fire-and-forget) aux adhérents actifs (même cible que les autres publications).
+      var pushTitle='Dialogue social';
+      var pushBody=(name||'Document')+' — nouveau document disponible';
+      try{ if(typeof window!=='undefined' && window.cloudSendPush) window.cloudSendPush('dialogue', pushTitle, pushBody, null, meta.id).catch(function(){}); }catch(e){}
+      return getDocs(collection(db,'members')).then(function(snap){
+        var docs=snap.docs||[];
+        return Promise.all(docs.map(function(d){
+          var m=d.data()||{};
+          if(m.status!=='active' || !m.uid) return Promise.resolve();
+          return addDoc(collection(db,'notifications', d.id, 'items'), {
+            title:String(pushTitle).slice(0,120),
+            body:String(pushBody).slice(0,500),
+            type:'dialogue',
+            targetType:'dialogue',
+            targetId:String(meta.id),
+            read:false,
+            authorUid:(session.user&&session.user.uid)||'',
+            createdAt:serverTimestamp()
+          }).catch(function(){});
+        }));
+      }).catch(function(){}).then(function(){ return meta; });
+    });
   },
 
-  deleteDialogueSocial: function(){
+  deleteDialogueSocial: function(id){
     if(!(session.isAdmin||session.isSubAdmin||session.isSubAdminLocal)) return Promise.reject(new Error('Réservé aux administrateurs.'));
-    return deleteDoc(doc(db,'config','dialogueSocial')).catch(function(){});
+    var docId=String(id||'');
+    if(!docId) return Promise.reject(new Error('Document introuvable.'));
+    return getDoc(doc(db,'dialogueSocialDocs',docId)).then(function(s){
+      var count = s.exists() ? Number((s.data()||{}).chunkCount||0) : 0;
+      var jobs=[deleteDoc(doc(db,'dialogueSocialDocs',docId)).catch(function(){})];
+      for(var i=0;i<count;i++) jobs.push(deleteDoc(doc(db,'dialogueSocialChunks', docId+'_'+i)).catch(function(){}));
+      return Promise.all(jobs);
+    });
   }
 
 };
@@ -2914,8 +2955,6 @@ export async function init(config, h){
 
 
   window.db = db;
-
-  try { storage = getStorage(firebaseApp); } catch(e) { storage = null; }
 
 
 /* Envoi push via le backend Vercel.
@@ -3233,20 +3272,33 @@ async function cloudMarkNotificationRead(id){
     },
 
     getDialogueSocial: function(){
-      return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
-        if(!s.exists()) return null;
-        var d=s.data()||{};
-        return {fileName:String(d.fileName||''), storagePath:String(d.storagePath||''), updatedAt:ms(d.updatedAt), updatedBy:String(d.updatedBy||''), active:d.active!==false};
-      }).catch(function(){ return null; });
+      return getDocs(query(collection(db,'dialogueSocialDocs'), orderBy('createdAt','desc'))).then(function(snap){
+        return snap.docs.map(function(d){
+          var x=d.data()||{};
+          return {id:d.id,fileName:String(x.fileName||'Document'),chunkCount:Number(x.chunkCount||0),createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),active:x.active!==false};
+        }).filter(function(x){ return x.active!==false; });
+      }).catch(function(){ return []; });
     },
 
-    getDialogueSocialPdf: function(){
-      if(!storage) return Promise.reject(new Error('Stockage indisponible.'));
-      return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
-        if(!s.exists()) throw new Error('Aucun document disponible.');
+    getDialogueSocialPdf: function(id){
+      var docId=String(id||'');
+      if(!docId) return Promise.reject(new Error('Document introuvable.'));
+      return getDoc(doc(db,'dialogueSocialDocs',docId)).then(function(s){
+        if(!s.exists()) throw new Error('Document indisponible.');
         var d=s.data()||{};
-        var path=String(d.storagePath||'dialogue-social/current.pdf');
-        return getBytes(storageRef(storage,path));
+        if(d.active===false) throw new Error('Document indisponible.');
+        var count=Number(d.chunkCount||0);
+        if(!count) throw new Error('Document indisponible.');
+        var jobs=[]; for(var i=0;i<count;i++) jobs.push(getDoc(doc(db,'dialogueSocialChunks', docId+'_'+i)).catch(function(){return null;}));
+        return Promise.all(jobs).then(function(snaps){
+          var b64='';
+          for(var j=0;j<snaps.length;j++){ var cs=snaps[j]; if(!cs||!cs.exists()) throw new Error('Document indisponible.'); b64 += String((cs.data()||{}).data||''); }
+          if(!b64) throw new Error('Document indisponible.');
+          var binary=atob(b64);
+          var bytes=new Uint8Array(binary.length);
+          for(var k=0;k<binary.length;k++) bytes[k]=binary.charCodeAt(k);
+          return bytes;
+        });
       });
     },
 

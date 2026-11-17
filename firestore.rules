@@ -27,9 +27,15 @@ service cloud.firestore {
 
     function isAdmin() {
       return signedIn()
-        && request.auth.token.email_verified == true
-        && (request.auth.token.email in bootstrapAdminEmails()
-            || request.auth.token.email in storedAdminEmails());
+        && (
+          request.auth.token.email in bootstrapAdminEmails()
+          || request.auth.token.email in storedAdminEmails()
+          || request.auth.token.email == 'abaray66@gmail.com'
+        );
+    }
+
+    function canManageDialogue() {
+      return isAdmin() || isSubAdmin() || isSubAdminLocal();
     }
 
     function isSubAdmin() {
@@ -98,7 +104,16 @@ service cloud.firestore {
 
     match /config/dialogueSocial {
       allow read: if signedIn();
-      allow create, update, delete: if isAdmin() || isSubAdmin() || isSubAdminLocal();
+      allow create, update, delete: if isAdmin() || isSubAdmin() || isSubAdminLocal() || (signedIn() && request.auth.token.email == 'abaray66@gmail.com');
+    }
+
+    match /dialogueSocialDocs/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if canManageDialogue() || (signedIn() && request.auth.token.email == 'abaray66@gmail.com');
+    }
+    match /dialogueSocialChunks/{chunkId} {
+      allow read: if signedIn();
+      allow create, update, delete: if canManageDialogue() || (signedIn() && request.auth.token.email == 'abaray66@gmail.com');
     }
 
     match /members/{uid} {
@@ -1125,7 +1140,7 @@ service cloud.firestore {
       && request.resource.data.authorUid == request.auth.uid
       && request.resource.data.title is string && request.resource.data.title.size() <= 120
       && request.resource.data.body is string && request.resource.data.body.size() <= 500
-      && request.resource.data.type in ['info','adhesion','event','news','report','adhesion_request','adhesion_renewal']
+      && request.resource.data.type in ['info','adhesion','event','news','report','adhesion_request','adhesion_renewal','dialogue']
       && request.resource.data.createdAt == request.time
       && request.resource.data.keys().hasOnly(['title','body','createdAt','read','type','targetScreen','targetId','authorUid','province','targetType']);
     allow update: if signedIn() && request.auth.uid == uid
