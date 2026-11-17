@@ -5,7 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signInWithCredential,
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential,
   reauthenticateWithPopup, reauthenticateWithCredential, onAuthStateChanged, signOut as fbSignOut, deleteUser
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
@@ -769,6 +769,15 @@ function onUser(user){
    GOOGLE LOGIN
    ========================================================= */
 
+function isInAppBrowser(){
+  try{
+    var ua=String((typeof navigator!=='undefined'&&navigator.userAgent)||'');
+    return /FBAN|FBAV|FB_IAB|FB4A|FBIOS|Instagram|Messenger|Line\/|; wv\)|\bwv\b/i.test(ua);
+  }catch(e){ return false; }
+}
+
+
+
 /* Un appel natif peut ne jamais se terminer (selecteur de comptes
    silencieux, Google Play Services en retard) : sans delai maximum le
    bouton reste bloque sans le moindre message. */
@@ -905,6 +914,14 @@ async function signIn(){
       prompt: 'select_account'
     });
 
+    // Navigateurs intégrés (Facebook, Facebook Lite, Instagram, etc.) : la popup
+    // et/ou Google échouent souvent. La redirection dans la même fenêtre est
+    // fiable ; le résultat est traité au retour via getRedirectResult().
+    if (isInAppBrowser()){
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+
 
     try {
       await signInWithPopup(
@@ -912,11 +929,12 @@ async function signIn(){
         provider
       );
     } catch (e) {
-      // Ne relancer que si le navigateur a bloqué la fenêtre : relancer après
-      // une fermeture volontaire rouvrait une popup que l'utilisateur venait
-      // de fermer, ce qui donne l'impression que la connexion est cassée.
-      if (e && e.code === 'auth/popup-blocked') {
-        try { await signInWithPopup(auth, provider); return; } catch(e2){ throw e2; }
+      // Fermeture volontaire : ne rien faire.
+      if (e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request')) return;
+      // Popup bloquée ou environnement incompatible : bascule en redirection.
+      var code = String((e && e.code) || '');
+      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment' || code === 'auth/unauthorized-domain' || code === 'auth/web-storage-unsupported') {
+        try { await signInWithRedirect(auth, provider); return; } catch(e2){ throw e2; }
       }
       throw e;
     }
@@ -3461,6 +3479,16 @@ async function cloudMarkNotificationRead(id){
 
 
   hooks.ready();
+
+  // Résultat de connexion par redirection (navigateurs intégrés : Facebook,
+  // Facebook Lite, Instagram...). L'erreur éventuelle est affichée à l'utilisateur.
+  try {
+    getRedirectResult(auth).catch(function(e){
+      if (!e) return;
+      if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+      if (hooks && typeof hooks.error === 'function') hooks.error(e);
+    });
+  } catch(e) {}
 
   // Fréquentation : comptage visite/session (sans double sur actualisation) + présence.
   try {
