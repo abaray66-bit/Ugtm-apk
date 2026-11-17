@@ -96,6 +96,11 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /config/dialogueSocial {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin() || isSubAdmin() || isSubAdminLocal();
+    }
+
     match /members/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)

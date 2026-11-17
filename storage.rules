@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email_verified == true
+        && (request.auth.token.email in ['abaray66@gmail.com']
+            || (firestore.exists(/databases/(default)/documents/config/admins)
+                && request.auth.token.email in firestore.get(/databases/(default)/documents/config/admins).data.emails));
+    }
+    function member() {
+      return firestore.exists(/databases/(default)/documents/members/$(request.auth.uid))
+        ? firestore.get(/databases/(default)/documents/members/$(request.auth.uid)).data : null;
+    }
+    function isManager() {
+      return signedIn() && member() != null && member().status == 'active'
+        && (member().role == 'admin' || member().role == 'subadmin' || member().role == 'subadminLocal' || isAdmin());
+    }
+    function canConsult() {
+      let m = member();
+      let req = firestore.exists(/databases/(default)/documents/adhesionRequests/$(request.auth.uid))
+        ? firestore.get(/databases/(default)/documents/adhesionRequests/$(request.auth.uid)).data : null;
+      return signedIn() && m != null && m.status == 'active'
+        && req != null && req.status == 'accepted' && req.signedAt != null;
+    }
+    match /dialogue-social/{fileName} {
+      allow read: if isManager() || canConsult();
+      allow write: if isManager();
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

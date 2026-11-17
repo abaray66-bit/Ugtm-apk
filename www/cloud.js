@@ -15,8 +15,9 @@ import {
   writeBatch, arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
+import { getStorage, ref as storageRef, uploadBytes, getBytes } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
-var auth, db, hooks, firebaseApp, messaging, fcmMessageBound = false;
+var auth, db, hooks, firebaseApp, messaging, storage, fcmMessageBound = false;
 var nativeAuth = null;
 var capBrowser = null;
 var APP_NOTIFICATION_ROOT = 'https://ugtm-fns-souss-massa.web.app/app.html';
@@ -2647,7 +2648,38 @@ var admin = {
       });
     },
 
-  validateAdhesionLocal: validateAdhesionLocal
+  validateAdhesionLocal: validateAdhesionLocal,
+
+  getDialogueSocial: function(){
+    return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
+      if(!s.exists()) return null;
+      var d=s.data()||{};
+      return {fileName:String(d.fileName||''), storagePath:String(d.storagePath||''), updatedAt:ms(d.updatedAt), updatedBy:String(d.updatedBy||''), active:d.active!==false};
+    }).catch(function(){ return null; });
+  },
+
+  uploadDialogueSocial: function(file){
+    if(!(session.isAdmin||session.isSubAdmin||session.isSubAdminLocal)) return Promise.reject(new Error('Réservé aux administrateurs.'));
+    if(!storage) return Promise.reject(new Error('Stockage indisponible.'));
+    if(!file) return Promise.reject(new Error('Aucun fichier sélectionné.'));
+    if(file.type && file.type!=='application/pdf') return Promise.reject(new Error('Le document doit être un PDF.'));
+    var path='dialogue-social/current.pdf';
+    var name=String(file.name||'dialogue-social.pdf').slice(0,120);
+    return uploadBytes(storageRef(storage,path), file, {contentType:'application/pdf'}).then(function(){
+      return setDoc(doc(db,'config','dialogueSocial'), {
+        fileName:name,
+        storagePath:path,
+        active:true,
+        updatedAt:serverTimestamp(),
+        updatedBy:(session.user&&session.user.uid)||''
+      }, {merge:true});
+    }).then(function(){ return {fileName:name, storagePath:path}; });
+  },
+
+  deleteDialogueSocial: function(){
+    if(!(session.isAdmin||session.isSubAdmin||session.isSubAdminLocal)) return Promise.reject(new Error('Réservé aux administrateurs.'));
+    return deleteDoc(doc(db,'config','dialogueSocial')).catch(function(){});
+  }
 
 };
 
@@ -2882,6 +2914,8 @@ export async function init(config, h){
 
 
   window.db = db;
+
+  try { storage = getStorage(firebaseApp); } catch(e) { storage = null; }
 
 
 /* Envoi push via le backend Vercel.
@@ -3195,6 +3229,24 @@ async function cloudMarkNotificationRead(id){
         return getDoc(doc(db, 'reportAttachments', id))
           .then(function(s){ return s.exists() ? [{data:String(s.data().data||''),name:s.data().name||'',type:s.data().type||''}] : []; })
           .catch(function(){ return []; });
+      });
+    },
+
+    getDialogueSocial: function(){
+      return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
+        if(!s.exists()) return null;
+        var d=s.data()||{};
+        return {fileName:String(d.fileName||''), storagePath:String(d.storagePath||''), updatedAt:ms(d.updatedAt), updatedBy:String(d.updatedBy||''), active:d.active!==false};
+      }).catch(function(){ return null; });
+    },
+
+    getDialogueSocialPdf: function(){
+      if(!storage) return Promise.reject(new Error('Stockage indisponible.'));
+      return getDoc(doc(db,'config','dialogueSocial')).then(function(s){
+        if(!s.exists()) throw new Error('Aucun document disponible.');
+        var d=s.data()||{};
+        var path=String(d.storagePath||'dialogue-social/current.pdf');
+        return getBytes(storageRef(storage,path));
       });
     },
 

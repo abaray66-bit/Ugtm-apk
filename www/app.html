@@ -3414,7 +3414,7 @@ window.markNotificationRead=markNotificationRead;
 </div>
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
-<p data-i18n="adhP"></p>
+<button class="btn ghost block" type="button" id="homeDialogueSocialBtn" hidden>Dialogue social</button>
 <div class="adhbtns">
 <button class="btn primary" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
 </div>
@@ -3620,7 +3620,7 @@ window.markNotificationRead=markNotificationRead;
 
 <button type="button" class="fbtn" data-adm="news" aria-pressed="false" data-i18n-aria="admTabNews"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 3.5h12l4 4V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/><path d="M16 3.5V8h4M7.5 11h9M7.5 14.5h9M7.5 18h5"/></svg><span class="admin-tab-label" data-i18n="admTabNews"></span></button>
 
-<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n-aria="admTabEvents"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/></svg><span class="admin-tab-label" data-i18n="admTabEvents"></span></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n-aria="rAdminTab"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h14l-3 4 3 4H5"/></svg><span class="admin-tab-label" data-i18n="rAdminTab"></span></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n-aria="admTabAdhesions"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10a2 2 0 0 1 2 2V21H5V5.5a2 2 0 0 1 2-2z"/><path d="M9 3v4h6V3M8.5 13h7M8.5 16h4M14.5 18l1.5 1.5 3-3"/></svg><span class="admin-tab-label" data-i18n="admTabAdhesions"></span></button><button type="button" class="fbtn" data-adm="localstructures" aria-pressed="false" data-i18n-aria="admTabLocalStructures" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 13h18v-8H3v8zm4-6h6v6H7v-6zm8 4h2v-6h-2v6zm-4-4h2V7h-2v6z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalStructures">Structures</span></button><button type="button" class="fbtn" data-adm="localproposals" aria-pressed="false" data-i18n-aria="admTabLocalProposals" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 18h2v-6h-2v6zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 13 2zm-1 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalProposals">Propositions</span></button>
+<button type="button" class="fbtn" data-adm="events" aria-pressed="false" data-i18n-aria="admTabEvents"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/></svg><span class="admin-tab-label" data-i18n="admTabEvents"></span></button><button type="button" class="fbtn" data-adm="reports" aria-pressed="false" data-i18n-aria="rAdminTab"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 21V4M5 4h14l-3 4 3 4H5"/></svg><span class="admin-tab-label" data-i18n="rAdminTab"></span></button><button type="button" class="fbtn" data-adm="adhesions" aria-pressed="false" data-i18n-aria="admTabAdhesions"><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3.5h10a2 2 0 0 1 2 2V21H5V5.5a2 2 0 0 1 2-2z"/><path d="M9 3v4h6V3M8.5 13h7M8.5 16h4M14.5 18l1.5 1.5 3-3"/></svg><span class="admin-tab-label" data-i18n="admTabAdhesions"></span></button><button type="button" class="fbtn" data-adm="localstructures" aria-pressed="false" data-i18n-aria="admTabLocalStructures" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 13h18v-8H3v8zm4-6h6v6H7v-6zm8 4h2v-6h-2v6zm-4-4h2V7h-2v6z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalStructures">Structures</span></button><button type="button" class="fbtn" data-adm="localproposals" aria-pressed="false" data-i18n-aria="admTabLocalProposals" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 18h2v-6h-2v6zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 13 2zm-1 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg><span class="admin-tab-label" data-i18n="admTabLocalProposals">Propositions</span></button><button type="button" class="fbtn" data-adm="dialogue" aria-pressed="false" hidden><svg class="admin-tab-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span class="admin-tab-label">Dialogue social</span></button>
 
 </div><div id="adm-dashboard" hidden>
 <div class="admin-dashboard-head">
@@ -3719,7 +3719,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo">Aucun document.</p><div class="field"><label for="admDialogueFile">Document PDF</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Téléverser / Remplacer</button><button class="btn ghost small danger" type="button" id="admDialogueDelete">Supprimer</button></div><p class="hint" style="margin-top:8px">Réservé aux adhérents connectés, validés et ayant signé le formulaire d'adhésion. Consultation seule.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;background:var(--soft);border-radius:12px;display:flex;justify-content:center;align-items:flex-start;padding:8px;-webkit-user-select:none;user-select:none"><canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -3756,7 +3756,8 @@ window.markNotificationRead=markNotificationRead;
   <div class="gallery-track" id="galleryTrack"></div>
   <div class="gallery-counter" id="galleryCounter">1 / 1</div>
 </div>
-<div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="data.js"></script><script>
+<div class="attachmodal" id="attachModal" hidden role="dialog" aria-modal="true" aria-labelledby="attachTitle"><div class="attachmodal-box"><div class="attachmodal-head"><strong id="attachTitle">Pièce jointe</strong><button class="acctbtn" id="attachClose" type="button" data-i18n-aria="attachClose" aria-label="Fermer">✕</button></div><p class="attachmodal-note" id="attachNote" hidden data-i18n="attachPdfNote"></p><div class="attachmodal-body" id="attachBody"></div><div class="attachmodal-actions"><button class="btn ghost" id="attachDownload" type="button" data-i18n="attachDownload"></button></div></div></div><script src="pdf.min.js"></script>
+<script src="data.js"></script><script>
 /*
 ==========================================================
 UGTM SOUSS-MASSA
@@ -3830,19 +3831,19 @@ adhFunctionToSpecify:`Fonction à préciser`,
 adhFunctionNone:`Sans fonction`,
 adhFunctionDetail:`Préciser votre fonction`,
 adhSpecialtyChoose:`Sélectionner une catégorie professionnelle`,
-adhSpecialtyMedecinsPharmaciensDentistes:`Médecins, pharmaciens, chirurgiens-dentistes`,
-adhSpecialtyIngenieursArchitectes:`Ingénieurs et architectes`,
-adhSpecialtyAdministrateurs:`Administrateurs`,
-adhSpecialtyInfirmiersTechniciensSante:`Infirmiers et techniciens de santé`,
-adhSpecialtyInfirmiersAssistants:`Cadre infirmiers assistants`,
-adhSpecialtyAssistantsSantePrepa:`Cadre assistants santé (é preparatoire)`,
-adhSpecialtyAssistantsSanteEtat:`Cadre assistants santé (d'État)`,
-adhSpecialtyAttachesScientifiques:`Attachés scientifiques`,
-adhSpecialtyRedacteurs:`Rédacteurs`,
-adhSpecialtyTechniciens:`Techniciens`,
-adhSpecialtyAssistantsAdministratifs:`Assistants administratifs`,
-adhSpecialtyAssistantsTechniques:`Assistants techniques`,
-adhSpecialtyAssistantsSante:`Assistants de santé`,
+adhSpecialtyMedecinsPharmaciensDentistes:`Corps des médecins, pharmaciens et chirurgiens-dentistes`,
+adhSpecialtyIngenieursArchitectes:`Corps des ingénieurs et architectes`,
+adhSpecialtyAdministrateurs:`Corps des administrateurs`,
+adhSpecialtyInfirmiersTechniciensSante:`Corps des infirmiers et techniciens de santé`,
+adhSpecialtyInfirmiersAssistants:`Cadre des infirmiers auxiliaires`,
+adhSpecialtyAssistantsSantePrepa:`Cadre des adjoints de santé brevetés`,
+adhSpecialtyAssistantsSanteEtat:`Cadre des adjoints de santé diplômés d’État`,
+adhSpecialtyAttachesScientifiques:`Corps des attachés scientifiques`,
+adhSpecialtyRedacteurs:`Corps des rédacteurs`,
+adhSpecialtyTechniciens:`Corps des techniciens`,
+adhSpecialtyAssistantsAdministratifs:`Corps des adjoints administratifs`,
+adhSpecialtyAssistantsTechniques:`Corps des adjoints techniques`,
+adhSpecialtyAssistantsSante:`Corps des auxiliaires de santé`,
 adhSpecialtyOtherCat:`Autre catégorie professionnelle`,
 adhSpecialtyOtherCat:`Autre catégorie professionnelle`,
 adhSpecialtyOther:`Précisez votre catégorie :`,
@@ -4444,8 +4445,8 @@ adhSpecialtyIngenieursArchitectes:`هيئة المهندسين والمهندس�
 adhSpecialtyAdministrateurs:`هيئة المتصرفين`,
 adhSpecialtyInfirmiersTechniciensSante:`هيئة الممرضين وتقنيي الصحة`,
 adhSpecialtyInfirmiersAssistants:`إطار الممرضين المساعدين`,
-adhSpecialtyAssistantsSantePrepa:`إطار مساعدي الصحة حاملو الإعدادية`,
-adhSpecialtyAssistantsSanteEtat:`إطار مساعدي الصحة المجازون من الدولة`,
+adhSpecialtyAssistantsSantePrepa:`إطار مساعدي الصحة حاملي الإعدادية`,
+adhSpecialtyAssistantsSanteEtat:`إطار مساعدي الصحة المجازين من الدولة`,
 adhSpecialtyAttachesScientifiques:`هيئة الملحقين العلميين`,
 adhSpecialtyRedacteurs:`هيئة المحررين`,
 adhSpecialtyTechniciens:`هيئة التقنيين`,
@@ -5238,19 +5239,19 @@ var FUNCTION_FR={
  autre:'Autre', other:'Autre'
 };
 var SPECIALITE_FR={
- medecins_pharmaciens_dentistes:'Médecins, pharmaciens, chirurgiens-dentistes',
- ingenieurs_architectes:'Ingénieurs et architectes',
- administrateurs:'Administrateurs',
- infirmiers_techniciens_sante:'Infirmiers et techniciens de santé',
- infirmiers_assistants:'Cadre infirmiers assistants',
- assistants_sante_prepa:'Cadre assistants santé (é preparatoire)',
- assistants_sante_etat:'Cadre assistants santé (d\'État)',
- attaches_scientifiques:'Attachés scientifiques',
- redacteurs:'Rédacteurs',
- techniciens:'Techniciens',
- assistants_administratifs:'Assistants administratifs',
- assistants_techniques:'Assistants techniques',
- assistants_sante:'Assistants de santé',
+ medecins_pharmaciens_dentistes:'Corps des médecins, pharmaciens et chirurgiens-dentistes',
+ ingenieurs_architectes:'Corps des ingénieurs et architectes',
+ administrateurs:'Corps des administrateurs',
+ infirmiers_techniciens_sante:'Corps des infirmiers et techniciens de santé',
+ infirmiers_assistants:'Cadre des infirmiers auxiliaires',
+ assistants_sante_prepa:'Cadre des adjoints de santé brevetés',
+ assistants_sante_etat:'Cadre des adjoints de santé diplômés d’État',
+ attaches_scientifiques:'Corps des attachés scientifiques',
+ redacteurs:'Corps des rédacteurs',
+ techniciens:'Corps des techniciens',
+ assistants_administratifs:'Corps des adjoints administratifs',
+ assistants_techniques:'Corps des adjoints techniques',
+ assistants_sante:'Corps des auxiliaires de santé',
  autre:'Autre', other:'Autre',
  general_nurse:'Infirmier général'
 };
@@ -6961,12 +6962,82 @@ return '<div class="mcard">'+
 var myAdhesionStatusUid='';
 var myAdhesionStatusCache=null;
 var myAdhesionStatusPromise=null;
+  function renderAdminDialogue(){
+    var info=$('admDialogueInfo'); if(!info) return;
+    if(!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal)){ info.textContent='Accès refusé.'; return; }
+    info.textContent='Chargement...';
+    if(!window.CLOUD||!window.CLOUD.admin||typeof window.CLOUD.admin.getDialogueSocial!=='function'){ info.textContent='Indisponible.'; return; }
+    window.CLOUD.admin.getDialogueSocial().then(function(doc){
+      if(!doc||doc.active===false){ info.textContent='Aucun document.'; }
+      else { var dt=doc.updatedAt?new Date(doc.updatedAt).toLocaleString('fr-FR'):''; info.textContent=(doc.fileName||'Document')+(dt?(' — '+dt):''); }
+    }).catch(function(e){ info.textContent='Erreur: '+String(e&&e.message||e); });
+  }
+  window.renderAdminDialogue=renderAdminDialogue;
+
+  var dialoguePdfDoc=null, dialoguePdfPage=1;
+  function renderDialoguePage(){
+    if(!dialoguePdfDoc) return;
+    var canvas=$('dialogueCanvas'); if(!canvas) return;
+    var info=$('dialoguePageInfo');
+    dialoguePdfDoc.getPage(dialoguePdfPage).then(function(page){
+      var wrap=$('dialogueCanvasWrap');
+      var base=page.getViewport({scale:1});
+      var w=(wrap&&wrap.clientWidth)?Math.max(200,wrap.clientWidth-24):base.width;
+      var scale=w/base.width;
+      var viewport=page.getViewport({scale:scale});
+      var ctx=canvas.getContext('2d');
+      canvas.width=viewport.width; canvas.height=viewport.height;
+      return page.render({canvasContext:ctx, viewport:viewport}).promise;
+    }).then(function(){ if(info) info.textContent=dialoguePdfPage+' / '+dialoguePdfDoc.numPages; }).catch(function(){});
+  }
+  function openDialogueViewer(){
+    var modal=$('dialogueViewer'); if(!modal) return;
+    if(!window.CLOUD||typeof window.CLOUD.getDialogueSocialPdf!=='function'){ if(typeof toast==='function') toast('Indisponible'); return; }
+    var info=$('dialoguePageInfo'); if(info) info.textContent='Chargement...';
+    modal.hidden=false;
+    window.CLOUD.getDialogueSocialPdf().then(function(bytes){
+      if(!window.pdfjsLib) throw new Error('Visionneuse indisponible.');
+      try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.min.js'; }catch(e){}
+      var data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+      return window.pdfjsLib.getDocument({data:data}).promise;
+    }).then(function(pdf){ dialoguePdfDoc=pdf; dialoguePdfPage=1; renderDialoguePage(); })
+    .catch(function(e){ if(info) info.textContent=''; modal.hidden=true; if(typeof toast==='function') toast(String(e&&e.message||e||'Document indisponible')); });
+  }
+  function closeDialogueViewer(){ var m=$('dialogueViewer'); if(m) m.hidden=true; dialoguePdfDoc=null; }
+  window.openDialogueViewer=openDialogueViewer;
+
+  /* Visibilité du lien "Dialogue social" (accueil) : adhérent connecté,
+     adhésion acceptée/validée et formulaire d'adhésion signé. */
+  function updateHomeDialogueSocial(request){
+    var btn=$('homeDialogueSocialBtn');
+    if(!btn)return;
+    var uid=(typeof S!=='undefined'&&S.user&&S.user.uid)?String(S.user.uid):'';
+    var st=request?String(request.status||'none'):'none';
+    var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+    var hasSignature=!!(request&&(request.signature||(request.application&&request.application.signature)));
+    var show=!!(uid&&memberActive&&(st==='accepted')&&hasSignature);
+    btn.hidden=!show;
+  }
+  window.updateHomeDialogueSocial=updateHomeDialogueSocial;
+
+function updateDialogueSocialButton(request){
+  var btn=document.getElementById('homeDialogueSocialBtn');
+  if(!btn)return;
+  var connected=!!(typeof S!=='undefined'&&S.user&&S.user.uid);
+  var req=request||(typeof myAdhesionStatusCache!=='undefined'?myAdhesionStatusCache:null);
+  var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
+  var signedForm=!!(req && req.status==='accepted' && req.signedAt);
+  btn.hidden=!(connected && memberActive && req && req.status==='accepted' && signedForm);
+}
+window.updateDialogueSocialButton=updateDialogueSocialButton;
+
 function showMyAdhesionStatus(request){
   var box=$('meAdhesionStatus');if(!box)return;
   var fillBtn=$('meAdhesionButton');
   var t=T();
   /* La ligne de statut du compte dépend de la demande connue : on la   recalcule à chaque état affiché. */
   renderMyMemberStatus();
+  updateDialogueSocialButton(request);
   var st=request?String(request.status||'none'):'none';
   /* Accès au formulaire conditionné au statut du dossier ET au
      profil : un adhérent déjà actif (carte validée, SM-XXXX) ne
@@ -7040,15 +7111,15 @@ if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
 function refreshMyAdhesionStatus(force){
   var box=$('meAdhesionStatus'),uid=(S.user&&S.user.uid)?String(S.user.uid):'';
   if(!box)return Promise.resolve(null);
-  if(!uid){box.hidden=true;box.textContent='';var fb0=$('meAdhesionButton');if(fb0){fb0.hidden=false;fb0.setAttribute('data-i18n','fillAdhesion');fb0.textContent=T().fillAdhesion;}window.ADH_RENEWAL_ONLY=false;if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;return Promise.resolve(null);}
-  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;return Promise.resolve(null);}
+  if(!uid){box.hidden=true;box.textContent='';var fb0=$('meAdhesionButton');if(fb0){fb0.hidden=false;fb0.setAttribute('data-i18n','fillAdhesion');fb0.textContent=T().fillAdhesion;}window.ADH_RENEWAL_ONLY=false;if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();myAdhesionStatusUid='';myAdhesionStatusCache=null;myAdhesionStatusPromise=null;updateDialogueSocialButton(null);return Promise.resolve(null);}
+  if(!window.CLOUD||typeof window.CLOUD.getMyAdhesionRequest!=='function'){box.hidden=true;updateDialogueSocialButton(null);return Promise.resolve(null);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusCache){showMyAdhesionStatus(myAdhesionStatusCache);return Promise.resolve(myAdhesionStatusCache);}
   if(!force&&uid===myAdhesionStatusUid&&myAdhesionStatusPromise)return myAdhesionStatusPromise;
   myAdhesionStatusUid=uid;box.hidden=false;box.textContent=T().adhStatusChecking;
   myAdhesionStatusPromise=window.CLOUD.getMyAdhesionRequest().then(function(request){
     if(!(S.user&&String(S.user.uid)===uid))return null;
     myAdhesionStatusCache=request||{status:'none'};showMyAdhesionStatus(myAdhesionStatusCache);return request;
-  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent=T().adhStatusUnavailable;}return null;}).finally(function(){myAdhesionStatusPromise=null;});
+  }).catch(function(err){console.warn('Statut adhésion indisponible:',err);if(S.user&&String(S.user.uid)===uid){box.hidden=false;box.textContent=T().adhStatusUnavailable;updateDialogueSocialButton(null);}return null;}).finally(function(){myAdhesionStatusPromise=null;});
   return myAdhesionStatusPromise;
 }
 window.refreshMyAdhesionStatus=refreshMyAdhesionStatus;
@@ -8453,15 +8524,15 @@ if(admMemSearchEl){
 
 function showAdmTab(name){
 
-if(!S.isAdmin&&!S.isSubAdmin)name='members';
-
+var manager=!!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);
+if(!manager)name='members';
 if(!S.isAdmin&&(name==='news'||name==='events'||name==='localstructures'||name==='localproposals'))name='members';
-
 if(S.isSubAdmin&&!S.isAdmin&&(name==='localproposals'))name='members';
+if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin&&name!=='members'&&name!=='adhesions'&&name!=='dialogue')name='members';
 
 S.admTab=name;
 
-['dashboard','members','news','events','reports','adhesions','localstructures','localproposals'].forEach(function(n){
+['dashboard','members','news','events','reports','adhesions','localstructures','localproposals','dialogue'].forEach(function(n){
 
 var el=$('adm-'+n);
 
@@ -8482,6 +8553,7 @@ if(name==='dashboard')renderAdminDashboard();
 if(name==='adhesions')renderAdminAdhesions();
 if(name==='localstructures')renderAdminLocalStructures();
 if(name==='localproposals')renderAdminLocalProposals();
+if(name==='dialogue')renderAdminDialogue();
 
 }
 
@@ -10605,12 +10677,14 @@ var lsTab=document.querySelector('#admTabs button[data-adm="localstructures"]');
 if(lsTab)lsTab.hidden=!S.isAdmin;
 var lpTab=document.querySelector('#admTabs button[data-adm="localproposals"]');
 if(lpTab)lpTab.hidden=!(S.isAdmin||S.isSubAdmin);
+var dlgTab=document.querySelector('#admTabs button[data-adm="dialogue"]');
+if(dlgTab)dlgTab.hidden=!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);
 
-if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'){
+if(S.isSubAdmin&&!S.isAdmin&&S.admTab!=='reports'&&S.admTab!=='members'&&S.admTab!=='adhesions'&&S.admTab!=='dialogue'){
 showAdmTab('members');
 }
 
-if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin&&S.admTab!=='members'&&S.admTab!=='adhesions'){
+if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin&&S.admTab!=='members'&&S.admTab!=='adhesions'&&S.admTab!=='dialogue'){
 showAdmTab('members');
 }
 
