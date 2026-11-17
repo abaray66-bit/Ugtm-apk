@@ -431,10 +431,15 @@ main{
 
 .adhbtns .btn{
   flex:1 1 140px;
-  min-height:40px;
-  padding:0 8px;
+  min-height:44px;
+  padding:8px 10px;
   font-size:13px;
-  border-radius:var(--radius-s)
+  border-radius:var(--radius-s);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  line-height:1.3
 }
 
 .adh .hint{
@@ -492,9 +497,13 @@ main{
     width:100%;
     min-width:0;
     max-width:100%;
-    padding-inline:10px;
+    padding:8px 10px;
     text-align:center;
-    white-space:normal
+    white-space:normal;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1.3
     }
 
     .home-actions .adhbtns .btn{
@@ -2652,7 +2661,13 @@ body {
 }
 #s-home .hero .btn,
 #s-home .adhbtns .btn{
-  min-height:36px
+  min-height:44px;
+  padding:8px 10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  line-height:1.3
 }
 
 /* Accueil : « Dernier rendez-vous publié » compact */
@@ -3427,8 +3442,8 @@ window.markNotificationRead=markNotificationRead;
 </div><div class="adh">
 <div class="adhhead"><span class="adhtag" data-i18n="adhLabel"></span><h2 data-i18n="adhT"></h2></div>
 <div class="adhbtns">
-<button class="btn ghost block" type="button" id="homeDialogueSocialBtn">Dialogue social</button>
-<button class="btn primary" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
+<button class="btn ghost block" type="button" id="homeDialogueSocialBtn" data-i18n="homeDialogueSocial">Dialogue social</button>
+<button class="btn primary block" type="button" data-go="adhesion" data-i18n="adhDigitalBtn"></button>
 </div>
 <p class="hint" data-i18n="adhHint"></p>
 </div>
@@ -3875,6 +3890,7 @@ adhP:`Remplissez la demande d'adhésion, signez-la puis renvoyez-la depuis votre
 adhDownload:`Télécharger la demande`,
 adhSend:`Envoyer la demande`,
 adhDigitalBtn:`Adhésion numérique`,
+homeDialogueSocial:`Dialogue social`,
 adhHint:``,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
@@ -4078,7 +4094,7 @@ noEvent:`Aucun rendez-vous prévu.`,
 
 meT:`Mon espace`,
 meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux publications réservées aux adhérents.`,
-meBtnIn:`Se connecter avec Google`,
+meBtnIn:`Se connecter تسجيل الدخول`,
 mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
 editProfile:`Modifier mon profil`,
@@ -4220,7 +4236,7 @@ deleted:`Données supprimées`,
   admStatsUnique:`Visiteurs uniques`,
   admStatsToday:`Visites aujourd’hui`,
   admStatsActive:`Visiteurs actifs (5 min)`,
-  admStatsConnected:`Connectés`,
+  admStatsConnected:`Connecté`,
   admStatsNotConnected:`Non connectés`,
   admStatsDaily:`Statistiques journalières`,
   admStatsWeekly:`Statistiques hebdomadaires`,
@@ -4502,6 +4518,7 @@ adhP:`حمّلوا استمارة الانخراط، املؤواها ووقّع
 adhDownload:`تحميل الاستمارة`,
 adhSend:`إرسال الاستمارة`,
 adhDigitalBtn:`الانخراط الرقمي`,
+homeDialogueSocial:`الحوار الاجتماعي`,
 adhHint:``,
 
 /* Parcours d'adhésion numérique : statuts et retours du formulaire */
@@ -4761,7 +4778,7 @@ noEvent:`لا توجد مواعيد مبرمجة.`,
 
 meT:`فضائي`,
 meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والمنشورات المخصصة للمنخرطين.`,
-meBtnIn:`الدخول بحساب Google`,
+meBtnIn:`Se connecter تسجيل الدخول`,
 mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
 editProfile:`تعديل معلوماتي`,
@@ -4901,7 +4918,7 @@ deleted:`تم حذف البيانات`,
   admStatsUnique:`الزوار الفريدون`,
   admStatsToday:`زيارات اليوم`,
   admStatsActive:`الزوار النشطون (5 دقائق)`,
-  admStatsConnected:`متصلون`,
+  admStatsConnected:`متصل`,
   admStatsNotConnected:`غير متصلون`,
   admStatsDaily:`إحصائيات يومية`,
   admStatsWeekly:`إحصائيات أسبوعية`,
@@ -7483,8 +7500,8 @@ btn.onclick=function(e){
   try{ e.preventDefault(); e.stopPropagation(); if(typeof go==='function') go('me'); return false; }catch(ex){}
 };
 
-var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter';
-var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connectés';
+var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter تسجيل الدخول';
+var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connecté';
 if(S.user){
   var name=esc(S.user.name||'');
   btn.innerHTML='<span class="accttext">'+esc(connectedLabel)+'</span><span id="notifBadge" class="notif-badge" hidden></span>';
