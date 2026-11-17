@@ -6676,7 +6676,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+((c.hasImage||(c.images&&c.images.length))?'<span aria-hidden="true">📷 </span>':'')+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
@@ -6756,7 +6756,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+((c.hasImage||(c.images&&c.images.length))?'<span aria-hidden="true">📷 </span>':'')+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
