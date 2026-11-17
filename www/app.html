@@ -3428,7 +3428,7 @@ window.markNotificationRead=markNotificationRead;
 <h2 id="nextEventTitle" data-i18n="nextT"></h2>
 <button class="link" type="button" data-go="agenda" data-i18n="seeAgenda"></button>
 </div><div class="nextcard" id="nextEvent"></div><div class="sechead">
-📷<h2 data-i18n="recentT"></h2>
+<h2 data-i18n="recentT"></h2>
 <button class="link" type="button" data-go="news" data-i18n="seeAll"></button>
 </div><ul class="list" id="recentList"></ul></section><!-- Adhésion numérique -->
 <section class="screen digital-adhesion" id="s-adhesion" hidden>
@@ -3722,7 +3722,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo"></p><ul class="list" id="admDialogueList" style="margin:8px 0"></ul><div class="field"><label for="admDialogueFile">Document PDF (nom libre, multi-PDF)</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Publier / Notifier</button></div><p class="hint" style="margin-top:8px">Sélectionnez un PDF depuis votre appareil : il est téléversé (stocké dans Firestore, sans forfait payant/Storage) et les adhérents éligibles (connectés, actifs, adhésion acceptée et signée) sont notifiés. Consultation seule dans l’app. Taille max 8 Mo par PDF.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;background:var(--soft);border-radius:12px;display:flex;justify-content:center;align-items:flex-start;padding:8px;-webkit-user-select:none;user-select:none"><canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo"></p><ul class="list" id="admDialogueList" style="margin:8px 0"></ul><div class="field"><label for="admDialogueFile">Document PDF (nom libre, multi-PDF)</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Publier / Notifier</button></div><p class="hint" style="margin-top:8px">Sélectionnez un PDF depuis votre appareil : il est téléversé (stocké dans Firestore, sans forfait payant/Storage) et les adhérents éligibles (connectés, actifs, adhésion acceptée et signée) sont notifiés. Consultation seule dans l’app. Taille max 8 Mo par PDF.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialogueZoomOut" aria-label="Zoom -">−</button><button class="btn ghost small" type="button" id="dialogueZoomFit">Ajuster</button><button class="btn ghost small" type="button" id="dialogueZoomIn" aria-label="Zoom +">+</button><span style="width:8px"></span><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--soft);border-radius:12px;display:block;text-align:center;padding:8px;-webkit-user-select:none;user-select:none;touch-action:pan-x pan-y pinch-zoom"><canvas id="dialogueCanvas" style="max-width:100%;height:auto;display:inline-block"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -6604,7 +6604,7 @@ audTag(c)+
 '<time>'+fmtNewsDate(c,false)+'</time>'+
 '</span>'+
 
-'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'"><span class="tt-icon" aria-hidden="true">📷</span> '+esc(titleFor(c))+'</span>'+
+'<span class="tt'+(isArabicText(titleFor(c))?' rtl':'')+'">'+esc(titleFor(c))+'</span>'+
 
 '</span>'+
 
@@ -6830,8 +6830,15 @@ function openNotificationTarget(type,id){
   }
   if(targetType==='dialogue'){
     go('home');
-    if(typeof window.openDialogueViewer==='function') window.openDialogueViewer(targetId||'');
-    return true;
+    if(window.CLOUD && typeof window.CLOUD.getDialogueSocialPdf==='function' && typeof window.openDialogueViewer==='function'){
+      window.openDialogueViewer(targetId||'');
+      return true;
+    }
+    // APIs pas encore prêtes (ouverture à froid via push) : réessayer sans consommer la cible.
+    if(typeof window.openDialogueViewer==='function'){
+      setTimeout(processPendingNotificationTarget, 400);
+    }
+    return false;
   }
   return false;
 }
@@ -6988,7 +6995,7 @@ var myAdhesionStatusPromise=null;
   }
   window.renderAdminDialogue=renderAdminDialogue;
 
-  var dialoguePdfDoc=null, dialoguePdfPage=1;
+  var dialoguePdfDoc=null, dialoguePdfPage=1, dialogueZoom=1, dialogueZoomMode='fit';
   function renderDialoguePage(){
     if(!dialoguePdfDoc) return;
     var canvas=$('dialogueCanvas'); if(!canvas) return;
@@ -6997,12 +7004,22 @@ var myAdhesionStatusPromise=null;
       var wrap=$('dialogueCanvasWrap');
       var base=page.getViewport({scale:1});
       var w=(wrap&&wrap.clientWidth)?Math.max(200,wrap.clientWidth-24):base.width;
-      var scale=w/base.width;
+      var fitScale=w/base.width;
+      var scale=fitScale * (dialogueZoom||1);
+      var dpr=window.devicePixelRatio||1;
       var viewport=page.getViewport({scale:scale});
       var ctx=canvas.getContext('2d');
-      canvas.width=viewport.width; canvas.height=viewport.height;
-      return page.render({canvasContext:ctx, viewport:viewport}).promise;
-    }).then(function(){ if(info) info.textContent=dialoguePdfPage+' / '+dialoguePdfDoc.numPages; }).catch(function(){});
+      canvas.width=Math.floor(viewport.width*dpr);
+      canvas.height=Math.floor(viewport.height*dpr);
+      canvas.style.width=Math.floor(viewport.width)+'px';
+      canvas.style.height=Math.floor(viewport.height)+'px';
+      canvas.style.maxWidth = (dialogueZoomMode==='fit' && (dialogueZoom||1)<=1) ? '100%' : 'none';
+      var renderCtx={canvasContext:ctx, viewport:viewport};
+      if(dpr!==1) renderCtx.transform=[dpr,0,0,dpr,0,0];
+      return page.render(renderCtx).promise;
+    }).then(function(){
+      if(info) info.textContent=dialoguePdfPage+' / '+dialoguePdfDoc.numPages+' — '+Math.round((dialogueZoom||1)*100)+'%';
+    }).catch(function(){});
   }
   function openDialogueViewer(id){
     var modal=$('dialogueViewer'); if(!modal) return;
@@ -7016,13 +7033,14 @@ var myAdhesionStatusPromise=null;
       var data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
       return window.pdfjsLib.getDocument({data:data}).promise;
     }
-    if(!window.CLOUD||typeof window.CLOUD.getDialogueSocialPdf!=='function' || typeof window.CLOUD.getDialogueSocial!=='function'){ if(typeof toast==='function') toast('Indisponible'); return; }
+    if(!window.CLOUD||typeof window.CLOUD.getDialogueSocialPdf!=='function'){ if(typeof toast==='function') toast('Indisponible'); return; }
     var info=$('dialoguePageInfo'); if(info) info.textContent='Chargement...';
     modal.hidden=false;
     var p;
     if(docId){
       p = window.CLOUD.getDialogueSocialPdf(docId);
     } else {
+      if(typeof window.CLOUD.getDialogueSocial!=='function'){ if(typeof toast==='function') toast('Indisponible'); modal.hidden=true; return; }
       p = window.CLOUD.getDialogueSocial().then(function(list){
         if(!Array.isArray(list)||!list.length) throw new Error('Aucun document disponible.');
         if(list.length===1) return window.CLOUD.getDialogueSocialPdf(list[0].id);
@@ -7041,10 +7059,10 @@ var myAdhesionStatusPromise=null;
     }
     p.then(function(bytes){
       if(bytes===null) return;
-      return showPdf(bytes).then(function(pdf){ dialoguePdfDoc=pdf; dialoguePdfPage=1; var wrap=$('dialogueCanvasWrap'); if(wrap){ var c=document.createElement('canvas'); c.id='dialogueCanvas'; c.style.maxWidth='100%'; c.style.height='auto'; wrap.innerHTML=''; wrap.appendChild(c); } renderDialoguePage(); });
+      return showPdf(bytes).then(function(pdf){ dialoguePdfDoc=pdf; dialoguePdfPage=1; dialogueZoom=1; dialogueZoomMode='fit'; var wrap=$('dialogueCanvasWrap'); if(wrap){ var c=document.createElement('canvas'); c.id='dialogueCanvas'; c.style.maxWidth='100%'; c.style.height='auto'; wrap.innerHTML=''; wrap.appendChild(c); } renderDialoguePage(); });
     }).catch(function(e){ if(info) info.textContent=''; modal.hidden=true; if(typeof toast==='function') toast(String(e&&e.message||e||'Document indisponible')); });
   }
-  function closeDialogueViewer(){ var m=$('dialogueViewer'); if(m) m.hidden=true; dialoguePdfDoc=null; var wrap=$('dialogueCanvasWrap'); if(wrap) wrap.innerHTML='<canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas>'; }
+  function closeDialogueViewer(){ var m=$('dialogueViewer'); if(m) m.hidden=true; dialoguePdfDoc=null; dialogueZoom=1; dialogueZoomMode='fit'; var wrap=$('dialogueCanvasWrap'); if(wrap) wrap.innerHTML='<canvas id="dialogueCanvas" style="max-width:100%;height:auto"></canvas>'; }
   window.openDialogueViewer=openDialogueViewer;
 
   (function wireDialogueUi(){
@@ -7066,6 +7084,12 @@ var myAdhesionStatusPromise=null;
     if(prev) prev.addEventListener('click', function(){ if(!dialoguePdfDoc) return; if(dialoguePdfPage>1){ dialoguePdfPage--; renderDialoguePage(); } });
     var next=document.getElementById('dialogueNext');
     if(next) next.addEventListener('click', function(){ if(!dialoguePdfDoc) return; if(dialoguePdfPage<dialoguePdfDoc.numPages){ dialoguePdfPage++; renderDialoguePage(); } });
+    var zin=document.getElementById('dialogueZoomIn');
+    if(zin) zin.addEventListener('click', function(){ if(!dialoguePdfDoc) return; dialogueZoomMode='manual'; dialogueZoom=Math.min(4, (dialogueZoom||1)+0.25); renderDialoguePage(); });
+    var zout=document.getElementById('dialogueZoomOut');
+    if(zout) zout.addEventListener('click', function(){ if(!dialoguePdfDoc) return; dialogueZoomMode='manual'; dialogueZoom=Math.max(0.5, (dialogueZoom||1)-0.25); renderDialoguePage(); });
+    var zfit=document.getElementById('dialogueZoomFit');
+    if(zfit) zfit.addEventListener('click', function(){ if(!dialoguePdfDoc) return; dialogueZoom=1; dialogueZoomMode='fit'; renderDialoguePage(); });
     var up=document.getElementById('admDialogueUpload');
     if(up) up.addEventListener('click', function(){
       var input=document.getElementById('admDialogueFile');
@@ -7076,7 +7100,10 @@ var myAdhesionStatusPromise=null;
       window.CLOUD.admin.uploadDialogueSocial(file).then(function(res){
         if(input) input.value='';
         if(typeof renderAdminDialogue==='function') renderAdminDialogue();
-        if(typeof toast==='function') toast('Publié : notifications envoyées aux adhérents éligibles.');
+        var nf = res && res.notifications;
+        if(nf && nf.failed === -1){ if(typeof toast==='function') toast('Publié, mais notifications internes en échec ('+(nf.sampleError||'erreur')+').'); }
+        else if(nf && nf.failed > 0){ if(typeof toast==='function') toast('Publié. Notifications internes: '+nf.sent+'/'+nf.total+' envoyées ('+nf.failed+' échec(s)).'); }
+        else { if(typeof toast==='function') toast('Publié : notifications internes envoyées ('+((nf&&nf.sent)||0)+').'); }
       }).catch(function(e){ if(typeof toast==='function') toast(String(e&&e.message||e||'Erreur')); if(typeof renderAdminDialogue==='function') renderAdminDialogue(); });
     });
     var list=$('admDialogueList');

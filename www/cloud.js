@@ -2151,6 +2151,9 @@ var admin = {
           return deleteDoc(
             doc(db, 'news', id)
           );
+        })
+        .then(function(){
+          return deleteNotificationsForTarget(id).catch(function(){});
         });
 
       },
@@ -2285,12 +2288,16 @@ var admin = {
 
   deleteNotificationsForTarget:
     function(targetId){
-      if(!auth || !auth.currentUser) return Promise.resolve();
-      return getDocs(
-        query(collection(db, 'notifications', auth.currentUser.uid, 'items'), where('targetId', '==', targetId))
-      ).then(function(snap){
-        var writes = snap.docs.map(function(d){ return deleteDoc(d.ref); });
-        return Promise.all(writes);
+      var tid = String(targetId || '');
+      if(!tid) return Promise.resolve();
+      return getDocs(collection(db, 'members')).then(function(snap){
+        var members = (snap && snap.docs) ? snap.docs : [];
+        return Promise.all(members.map(function(m){
+          return getDocs(query(collection(db, 'notifications', m.id, 'items'), where('targetId', '==', tid))).then(function(ns){
+            var docs = (ns && ns.docs) ? ns.docs : [];
+            return Promise.all(docs.map(function(n){ return deleteDoc(n.ref).catch(function(){}); }));
+          }).catch(function(){});
+        }));
       }).catch(function(){ return Promise.resolve(); });
     },
 
@@ -2686,15 +2693,13 @@ var admin = {
       });
       return Promise.all(jobs).then(function(){ return {id:ref.id,fileName:name,chunkCount:chunks.length}; });
     }).then(function(meta){
-      // Notification interne (fire-and-forget) aux adhérents actifs (même cible que les autres publications).
+      // Notification interne (best-effort) aux membres (même diffusion que les autres publications).
       var pushTitle='Dialogue social';
       var pushBody=(name||'Document')+' — nouveau document disponible';
       try{ if(typeof window!=='undefined' && window.cloudSendPush) window.cloudSendPush('dialogue', pushTitle, pushBody, null, meta.id).catch(function(){}); }catch(e){}
       return getDocs(collection(db,'members')).then(function(snap){
         var docs=snap.docs||[];
-        return Promise.all(docs.map(function(d){
-          var m=d.data()||{};
-          if(m.status!=='active' || !m.uid) return Promise.resolve();
+        var jobs = docs.map(function(d){
           return addDoc(collection(db,'notifications', d.id, 'items'), {
             title:String(pushTitle).slice(0,120),
             body:String(pushBody).slice(0,500),
@@ -2704,9 +2709,15 @@ var admin = {
             read:false,
             authorUid:(session.user&&session.user.uid)||'',
             createdAt:serverTimestamp()
-          }).catch(function(){});
-        }));
-      }).catch(function(){}).then(function(){ return meta; });
+          }).catch(function(err){ console.warn('notif dialogue: échec', d.id, err); return {__failed:true, id:d.id, code:(err&&err.code)||String(err||'')}; });
+        });
+        return Promise.all(jobs).then(function(results){
+          var failed = results.filter(function(r){ return r && r.__failed; });
+          meta.notifications = { total: docs.length, sent: docs.length - failed.length, failed: failed.length, sampleError: failed.length ? failed[0].code : '' };
+          if(failed.length) console.warn('notif dialogue: échecs', failed.length, '/', docs.length, failed[0]);
+          return meta;
+        });
+      }).catch(function(err){ console.error('notif dialogue: impossible de diffuser', err); meta.notifications = { total:0, sent:0, failed:-1, sampleError:(err&&err.code)||String(err||'') }; return meta; }).then(function(){ return meta; });
     });
   },
 
@@ -2719,6 +2730,8 @@ var admin = {
       var jobs=[deleteDoc(doc(db,'dialogueSocialDocs',docId)).catch(function(){})];
       for(var i=0;i<count;i++) jobs.push(deleteDoc(doc(db,'dialogueSocialChunks', docId+'_'+i)).catch(function(){}));
       return Promise.all(jobs);
+    }).then(function(){
+      return deleteNotificationsForTarget(docId).catch(function(){});
     });
   }
 
