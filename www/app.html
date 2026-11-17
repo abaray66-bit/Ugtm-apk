@@ -3659,6 +3659,12 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" style="margin-top:8px" data-i18n="admAdminsHint"></p>
 </div>
 
+<div class="admin-panel" id="admStatsPanel" hidden style="margin-top:16px">
+<h3 data-i18n="admStatsTitle"></h3>
+<p class="hint" data-i18n="admStatsHint"></p>
+<div id="admStatsContent"><p class="hint" data-i18n="admStatsLoading"></p></div>
+</div>
+
 </div><div id="adm-members" class="admin-section"><div class="admin-section-head"><span class="adhtag">👥</span><h2 class="h2" data-i18n="admMembersTitle">Membres</h2></div><div class="field" style="margin-bottom:14px"><label for="admMemSearch" data-i18n="admMemSearch" style="display:block;font-weight:600;font-size:13.5px;margin-bottom:6px;color:var(--ink)"></label><input id="admMemSearch" type="search" data-i18n-ph="admMemSearchPh" aria-label="Rechercher un adhérent" data-i18n-aria="admMemSearchAria" aria-describedby="admMemSearchHint" style="width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-s);background:var(--surface);font-size:16px"><p id="admMemSearchHint" class="hint" data-i18n="admMemSearchHint" style="margin-top:6px"></p><div id="admMemFiltersStatus" class="filter-status" aria-live="polite"></div></div><div class="filters" id="admMemFilters" role="group"></div><ul class="list" id="admMemList"></ul><p style="margin-top:16px">
 <button class="btn ghost small" type="button" data-adm-act="csv" data-i18n="admMemExportCsv">Exporter la liste (CSV)</button>
 </p></div><div id="adm-news" class="admin-section" hidden><div class="admin-section-head"><span class="adhtag">✉</span><h2 class="h2" data-i18n="admNewsNew">Nouvelle publication</h2></div><div class="field">
@@ -4199,6 +4205,25 @@ deleted:`Données supprimées`,
   admTodoProcess:`Traiter`,
   admTodoOpen:`Ouvrir`,
   admTodoEmpty:`Aucun élément urgent à traiter.`,
+  admStatsTitle:`Fréquentation`,
+  admStatsHint:`Statistiques visibles uniquement par l’administrateur général.`,
+  admStatsTotalVisits:`Visites totales`,
+  admStatsUnique:`Visiteurs uniques`,
+  admStatsToday:`Visites aujourd’hui`,
+  admStatsActive:`Visiteurs actifs (5 min)`,
+  admStatsConnected:`Connectés`,
+  admStatsNotConnected:`Non connectés`,
+  admStatsDaily:`Statistiques journalières`,
+  admStatsWeekly:`Statistiques hebdomadaires`,
+  admStatsMonthly:`Statistiques mensuelles`,
+  admStatsPeriod:`Période`,
+  admStatsVisits:`Visites`,
+  admStatsUniques:`Uniques`,
+  admStatsAuth:`Conn.`,
+  admStatsAnon:`Non conn.`,
+  admStatsLoading:`Chargement…`,
+  admStatsUnavailable:`Statistiques indisponibles.`,
+  admStatsNoData:`Aucune donnée.`,
   admMemSearchPh:`Nom, e-mail ou province…`,
   admMemSearchAria:`Rechercher un adhérent`,
   admMemEmpty:`Aucun membre dans cette catégorie.`,
@@ -4861,6 +4886,25 @@ deleted:`تم حذف البيانات`,
   admTodoProcess:`معالجة`,
   admTodoOpen:`فتح`,
   admTodoEmpty:`لا يوجد أي عنصر عاجل للمعالجة.`,
+  admStatsTitle:`إحصائيات الزيارات`,
+  admStatsHint:`إحصائيات مرئية للمسؤول العام فقط.`,
+  admStatsTotalVisits:`إجمالي الزيارات`,
+  admStatsUnique:`الزوار الفريدون`,
+  admStatsToday:`زيارات اليوم`,
+  admStatsActive:`الزوار النشطون (5 دقائق)`,
+  admStatsConnected:`متصلون`,
+  admStatsNotConnected:`غير متصلون`,
+  admStatsDaily:`إحصائيات يومية`,
+  admStatsWeekly:`إحصائيات أسبوعية`,
+  admStatsMonthly:`إحصائيات شهرية`,
+  admStatsPeriod:`الفترة`,
+  admStatsVisits:`الزيارات`,
+  admStatsUniques:`فريدون`,
+  admStatsAuth:`متصل`,
+  admStatsAnon:`غير متصل`,
+  admStatsLoading:`جار التحميل…`,
+  admStatsUnavailable:`الإحصائيات غير متاحة.`,
+  admStatsNoData:`لا توجد بيانات.`,
   admMemSearchPh:`الاسم أو البريد الإلكتروني أو الإقليم…`,
   admMemSearchAria:`البحث عن منخرط`,
   admMemEmpty:`لا يوجد أي عضو في هذه الفئة.`,
@@ -8001,6 +8045,136 @@ $('admDashTodo').innerHTML=todo.join('');
 
 }
 
+var _admStatsLoading=false;
+function renderStatsTable(title, rows){
+  var t=T();
+  var h='<div style="margin-top:12px"><strong>'+esc(title)+'</strong>';
+  if(!rows||!rows.length){ h+='<p class="hint" style="margin-top:6px">'+esc(t.admStatsNoData)+'</p></div>'; return h; }
+  h+='<div style="overflow:auto;margin-top:6px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>'+
+    '<th style="text-align:start;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsPeriod)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsVisits)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsUniques)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsAuth)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsAnon)+'</th>'+
+  '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    var label=r.id||''; label=label.replace(/^daily-/,'').replace(/^weekly-/,'').replace(/^monthly-/,'');
+    h+='<tr>'+
+      '<td style="padding:6px;border-bottom:1px solid var(--line)">'+esc(label)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.totalVisits)||0)+' <span class="hint" style="margin:0">('+(Number(r.totalVisitsAuth)||0)+' / '+(Number(r.totalVisitsAnon)||0)+')</span></td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueVisitors)||0)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueAuth)||0)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueAnon)||0)+'</td>'+
+    '</tr>';
+  });
+  h+='</tbody></table></div></div>';
+  return h;
+}
+function renderAdminStats(data){
+  var panel=$('admStatsPanel'); var box=$('admStatsContent');
+  if(!panel||!box) return;
+  if(!S.isAdmin){ panel.hidden=true; return; }
+  panel.hidden=false;
+  var t=T();
+  if(!data){ box.innerHTML='<p class="hint">'+esc(t.admStatsUnavailable)+'</p>'; return; }
+  var sum=data.summary||{}; var active=data.active||{}; var keys=data.keys||{};
+  var today=null; (data.daily||[]).forEach(function(d){ if(d && d.id===('daily-'+keys.dayKey)) today=d; });
+  var tv=Number(sum.totalVisits)||0, tva=Number(sum.totalVisitsAuth)||0, tvn=Number(sum.totalVisitsAnon)||0;
+  var uv=Number(sum.uniqueVisitors)||0, uva=Number(sum.uniqueAuth)||0, uvn=Number(sum.uniqueAnon)||0;
+  var dv=Number(today&&today.totalVisits)||0, dva=Number(today&&today.totalVisitsAuth)||0, dvn=Number(today&&today.totalVisitsAnon)||0;
+  function kpi(label,val,sub){
+    return '<div class="admin-kpi"><span>'+esc(label)+'</span><strong>'+esc(String(val))+'</strong>'+(sub?'<span class="hint" style="margin:2px 0 0;font-size:12px">'+sub+'</span>':'')+'</div>';
+  }
+  var html='<div class="admin-kpis" style="margin-top:8px">'+
+    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+' · '+esc(t.admStatsNotConnected)+': '+tvn)+
+    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+' · '+esc(t.admStatsNotConnected)+': '+uvn)+
+    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+' · '+esc(t.admStatsNotConnected)+': '+dvn)+
+    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+' · '+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
+    '</div>';
+  html+=renderStatsTable(t.admStatsDaily,(data.daily||[]).slice(0,14));
+  html+=renderStatsTable(t.admStatsWeekly,(data.weekly||[]).slice(0,8));
+  html+=renderStatsTable(t.admStatsMonthly,(data.monthly||[]).slice(0,6));
+  box.innerHTML=html;
+}
+function loadAdminStats(force){
+  if(!S.isAdmin) return;
+  var panel=$('admStatsPanel'); var box=$('admStatsContent');
+  if(panel) panel.hidden=false;
+  if(_admStatsLoading && !force) return;
+  var c=cloud();
+  if(!c||typeof c.getAnalyticsStats!=='function'){ if(box) box.innerHTML='<p class="hint">'+esc(T().admStatsUnavailable)+'</p>'; return; }
+  _admStatsLoading=true;
+  if(box) box.innerHTML='<p class="hint">'+esc(T().admStatsLoading)+'</p>';
+  c.getAnalyticsStats().then(function(data){ _admStatsLoading=false; renderAdminStats(data); })
+   .catch(function(){ _admStatsLoading=false; if($('admStatsContent')) $('admStatsContent').innerHTML='<p class="hint">'+esc(T().admStatsUnavailable)+'</p>'; });
+}
+
+var _admStatsLoading=false;
+function renderStatsTable(title, rows){
+  var t=T();
+  var h='<div style="margin-top:12px"><strong>'+esc(title)+'</strong>';
+  if(!rows||!rows.length){ h+='<p class="hint" style="margin-top:6px">'+esc(t.admStatsNoData)+'</p></div>'; return h; }
+  h+='<div style="overflow:auto;margin-top:6px"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr>'+
+    '<th style="text-align:start;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsPeriod)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsVisits)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsUniques)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsAuth)+'</th>'+
+    '<th style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+esc(t.admStatsAnon)+'</th>'+
+  '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    var label=r.id||''; label=label.replace(/^daily-/,'').replace(/^weekly-/,'').replace(/^monthly-/,'');
+    h+='<tr>'+
+      '<td style="padding:6px;border-bottom:1px solid var(--line)">'+esc(label)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.totalVisits)||0)+' <span class="hint" style="margin:0">('+(Number(r.totalVisitsAuth)||0)+' / '+(Number(r.totalVisitsAnon)||0)+')</span></td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueVisitors)||0)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueAuth)||0)+'</td>'+
+      '<td style="text-align:end;padding:6px;border-bottom:1px solid var(--line)">'+(Number(r.uniqueAnon)||0)+'</td>'+
+    '</tr>';
+  });
+  h+='</tbody></table></div></div>';
+  return h;
+}
+function renderAdminStats(data){
+  var panel=$('admStatsPanel'); var box=$('admStatsContent');
+  if(!panel||!box) return;
+  if(!S.isAdmin){ panel.hidden=true; return; }
+  panel.hidden=false;
+  var t=T();
+  if(!data){ box.innerHTML='<p class="hint">'+esc(t.admStatsUnavailable)+'</p>'; return; }
+  var sum=data.summary||{}; var active=data.active||{}; var keys=data.keys||{};
+  var today=null; (data.daily||[]).forEach(function(d){ if(d && d.id===('daily-'+keys.dayKey)) today=d; });
+  var tv=Number(sum.totalVisits)||0, tva=Number(sum.totalVisitsAuth)||0, tvn=Number(sum.totalVisitsAnon)||0;
+  var uv=Number(sum.uniqueVisitors)||0, uva=Number(sum.uniqueAuth)||0, uvn=Number(sum.uniqueAnon)||0;
+  var dv=Number(today&&today.totalVisits)||0, dva=Number(today&&today.totalVisitsAuth)||0, dvn=Number(today&&today.totalVisitsAnon)||0;
+  function kpi(label,val,sub){
+    return '<div class="admin-kpi"><span>'+esc(label)+'</span><strong>'+esc(String(val))+'</strong>'+(sub?'<span class="hint" style="margin:2px 0 0;font-size:12px">'+sub+'</span>':'')+'</div>';
+  }
+  var html='<div class="admin-kpis" style="margin-top:8px">'+
+    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+' · '+esc(t.admStatsNotConnected)+': '+tvn)+
+    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+' · '+esc(t.admStatsNotConnected)+': '+uvn)+
+    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+' · '+esc(t.admStatsNotConnected)+': '+dvn)+
+    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+' · '+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
+    '</div>';
+  html+=renderStatsTable(t.admStatsDaily,(data.daily||[]).slice(0,14));
+  html+=renderStatsTable(t.admStatsWeekly,(data.weekly||[]).slice(0,8));
+  html+=renderStatsTable(t.admStatsMonthly,(data.monthly||[]).slice(0,6));
+  box.innerHTML=html;
+}
+function loadAdminStats(force){
+  if(!S.isAdmin) return;
+  var panel=$('admStatsPanel'); var box=$('admStatsContent');
+  if(panel) panel.hidden=false;
+  if(_admStatsLoading && !force) return;
+  var c=cloud();
+  if(!c||typeof c.getAnalyticsStats!=='function'){ if(box) box.innerHTML='<p class="hint">'+esc(T().admStatsUnavailable)+'</p>'; return; }
+  _admStatsLoading=true;
+  if(box) box.innerHTML='<p class="hint">'+esc(T().admStatsLoading)+'</p>';
+  c.getAnalyticsStats().then(function(data){ _admStatsLoading=false; renderAdminStats(data); })
+   .catch(function(){ _admStatsLoading=false; if($('admStatsContent')) $('admStatsContent').innerHTML='<p class="hint">'+esc(T().admStatsUnavailable)+'</p>'; });
+}
+
+
+
 function renderAdminAdhesions(){
   var t=T();
   var list=S.adhesions||[];
@@ -8662,7 +8836,7 @@ String(b.getAttribute('data-adm')===name)
 
 });
 
-if(name==='dashboard')renderAdminDashboard();
+if(name==='dashboard'){ renderAdminDashboard(); if(typeof loadAdminStats==='function') loadAdminStats(); }
 if(name==='adhesions')renderAdminAdhesions();
 if(name==='localstructures')renderAdminLocalStructures();
 if(name==='localproposals')renderAdminLocalProposals();

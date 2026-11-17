@@ -10,7 +10,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
-  collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, increment,
   onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
   writeBatch, arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
@@ -3359,6 +3359,89 @@ async function cloudMarkNotificationRead(id){
         console.error('Error opening URL:', e);
         if (typeof toast === 'function') toast('Erreur lors de l\'ouverture du fichier', 3500);
       });
+    },
+
+    trackAnalyticsVisit: function(){
+      try{
+        if(!db) return Promise.resolve();
+        var now=new Date();
+        function pad2(n){return (n<10?'0':'')+n;}
+        var dayKey=now.getFullYear()+'-'+pad2(now.getMonth()+1)+'-'+pad2(now.getDate());
+        var monthKey=now.getFullYear()+'-'+pad2(now.getMonth()+1);
+        function isoWeek(d){
+          var dt=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+          var dayNum=dt.getUTCDay()||7; dt.setUTCDate(dt.getUTCDate()+4-dayNum);
+          var yearStart=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+          var weekNo=Math.ceil((((dt-yearStart)/86400000)+1)/7);
+          return dt.getUTCFullYear()+'-W'+pad2(weekNo);
+        }
+        var weekKey=isoWeek(now);
+        var isAuth=!!(auth && auth.currentUser);
+        var vidKey='ugtm_vid';
+        var vid=null;
+        try{ vid=localStorage.getItem(vidKey); }catch(e){}
+        if(!vid){
+          vid='v_'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+          try{ localStorage.setItem(vidKey,vid); }catch(e){}
+        }
+        var jobs=[];
+        // Visite (session) : 1 comptage par session navigateur (pas de double sur actualisation)
+        var visitFlag='ugtm_visit_session';
+        var visitCounted=false;
+        try{ visitCounted=!!sessionStorage.getItem(visitFlag); }catch(e){}
+        if(!visitCounted){
+          try{ sessionStorage.setItem(visitFlag,'1'); }catch(e){}
+          var incVisit=isAuth?{totalVisits:increment(1),totalVisitsAuth:increment(1)}:{totalVisits:increment(1),totalVisitsAnon:increment(1)};
+          jobs.push(setDoc(doc(db,'analyticsStats','summary'), Object.assign({},incVisit,{updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
+          jobs.push(setDoc(doc(db,'analyticsStats','daily-'+dayKey), Object.assign({},incVisit,{date:dayKey,updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
+          jobs.push(setDoc(doc(db,'analyticsStats','weekly-'+weekKey), Object.assign({},incVisit,{week:weekKey,updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
+          jobs.push(setDoc(doc(db,'analyticsStats','monthly-'+monthKey), Object.assign({},incVisit,{month:monthKey,updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
+        }
+        // Visiteurs uniques (global + périodes), séparés connecté/non connecté
+        function countUnique(scopeKey, scopeIds, authFlag){
+          var uk='ugtm_u_'+(authFlag?'a':'n')+'_'+scopeKey;
+          var done=false; try{ done=!!localStorage.getItem(uk); }catch(e){}
+          if(done) return;
+          try{ localStorage.setItem(uk,'1'); }catch(e){}
+          var incU=authFlag?{uniqueVisitors:increment(1),uniqueAuth:increment(1)}:{uniqueVisitors:increment(1),uniqueAnon:increment(1)};
+          scopeIds.forEach(function(sid){ jobs.push(setDoc(doc(db,'analyticsStats',sid), Object.assign({},incU,{updatedAt:serverTimestamp()}), {merge:true}).catch(function(){})); });
+        }
+        countUnique('global',['summary'], isAuth);
+        countUnique('d_'+dayKey,['daily-'+dayKey], isAuth);
+        countUnique('w_'+weekKey,['weekly-'+weekKey], isAuth);
+        countUnique('m_'+monthKey,['monthly-'+monthKey], isAuth);
+        // Présence (visiteurs actifs récents)
+        jobs.push(setDoc(doc(db,'analyticsPresence',vid), {lastSeen:serverTimestamp(), auth:isAuth}, {merge:true}).catch(function(){}));
+        return Promise.all(jobs).catch(function(){});
+      }catch(e){ return Promise.resolve(); }
+    },
+
+    getAnalyticsStats: function(){
+      if(!(session && session.isAdmin)) return Promise.reject(new Error('Accès refusé.'));
+      var now=new Date();
+      function pad2(n){return (n<10?'0':'')+n;}
+      var dayKey=now.getFullYear()+'-'+pad2(now.getMonth()+1)+'-'+pad2(now.getDate());
+      var monthKey=now.getFullYear()+'-'+pad2(now.getMonth()+1);
+      function isoWeek(d){
+        var dt=new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        var dayNum=dt.getUTCDay()||7; dt.setUTCDate(dt.getUTCDate()+4-dayNum);
+        var yearStart=new Date(Date.UTC(dt.getUTCFullYear(),0,1));
+        var weekNo=Math.ceil((((dt-yearStart)/86400000)+1)/7);
+        return dt.getUTCFullYear()+'-W'+pad2(weekNo);
+      }
+      var weekKey=isoWeek(now);
+      var cutoff=new Date(Date.now()-5*60*1000);
+      var presenceQ=query(collection(db,'analyticsPresence'), where('lastSeen','>=', cutoff));
+      var dailyIds=[]; for(var i=0;i<14;i++){ var d=new Date(now); d.setDate(d.getDate()-i); dailyIds.push('daily-'+d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())); }
+      var weeklyIds=[]; for(var j=0;j<8;j++){ var w=new Date(now); w.setDate(w.getDate()-j*7); weeklyIds.push('weekly-'+isoWeek(w)); }
+      var monthlyIds=[]; for(var k=0;k<6;k++){ var m=new Date(now.getFullYear(), now.getMonth()-k, 1); monthlyIds.push('monthly-'+m.getFullYear()+'-'+pad2(m.getMonth()+1)); }
+      function getStats(ids){ return Promise.all(ids.map(function(id){ return getDoc(doc(db,'analyticsStats',id)).then(function(s){ if(!s.exists()) return {id:id}; var x=s.data()||{}; x.id=id; return x; }).catch(function(){ return {id:id}; }); })); }
+      return Promise.all([
+        getDoc(doc(db,'analyticsStats','summary')).then(function(s){ return s.exists()?s.data():{}; }).catch(function(){ return {}; }),
+        getStats(dailyIds), getStats(weeklyIds), getStats(monthlyIds),
+        getDocs(presenceQ).then(function(snap){ var a=0,n=0; snap.docs.forEach(function(d){ var x=d.data()||{}; if(x.auth) a++; else n++; }); return {activeAuth:a, activeAnon:n, activeTotal:a+n}; }).catch(function(){ return {activeAuth:0,activeAnon:0,activeTotal:0}; }),
+        Promise.resolve({dayKey:dayKey, weekKey:weekKey, monthKey:monthKey})
+      ]).then(function(r){ return {summary:r[0]||{}, daily:r[1]||[], weekly:r[2]||[], monthly:r[3]||[], active:r[4]||{activeAuth:0,activeAnon:0,activeTotal:0}, keys:r[5]}; });
     }
 
   };
@@ -3378,5 +3461,15 @@ async function cloudMarkNotificationRead(id){
 
 
   hooks.ready();
+
+  // Fréquentation : comptage visite/session (sans double sur actualisation) + présence.
+  try {
+    var _lastTrackUid = null;
+    function _trackVisit(){ if(window.CLOUD && typeof window.CLOUD.trackAnalyticsVisit==='function') window.CLOUD.trackAnalyticsVisit().catch(function(){}); }
+    _trackVisit();
+    onAuthStateChanged(auth, function(u){ var uid=u?u.uid:''; if(uid!==_lastTrackUid){ _lastTrackUid=uid; _trackVisit(); } });
+    setInterval(_trackVisit, 120000);
+    document.addEventListener('visibilitychange', function(){ if(!document.hidden) _trackVisit(); });
+  } catch(e){}
 
 }
