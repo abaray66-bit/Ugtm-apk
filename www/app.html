@@ -4094,8 +4094,8 @@ noEvent:`Aucun rendez-vous prévu.`,
 
 meT:`Mon espace`,
 meIntro:`Connectez-vous avec Google pour accéder à votre carte d'adhérent et aux publications réservées aux adhérents.`,
-meBtnIn:`Se connecter تسجيل الدخول`,
-signIn:`Se connecter تسجيل الدخول`,
+meBtnIn:`Se connecter`,
+signIn:`Se connecter`,
 mePrivacy:`Nous conservons votre nom, votre e-mail, votre établissement et votre téléphone. Vous pouvez tout supprimer à tout moment depuis cette page.`,
 meReady:`Votre espace adhérent est prêt. Vous pouvez modifier vos informations à tout moment.`,
 editProfile:`Modifier mon profil`,
@@ -4779,8 +4779,8 @@ noEvent:`لا توجد مواعيد مبرمجة.`,
 
 meT:`فضائي`,
 meIntro:`سجلوا الدخول بحساب Google للاطلاع على بطاقة المنخرط والمنشورات المخصصة للمنخرطين.`,
-meBtnIn:`Se connecter تسجيل الدخول`,
-signIn:`Se connecter تسجيل الدخول`,
+meBtnIn:`تسجيل الدخول`,
+signIn:`تسجيل الدخول`,
 mePrivacy:`نحتفظ باسمكم وبريدكم الإلكتروني ومؤسستكم ورقم هاتفكم. يمكنكم حذف كل شيء في أي وقت من هذه الصفحة.`,
 meReady:`فضاؤكم النقابي جاهز. يمكنكم تعديل معلوماتكم في أي وقت.`,
 editProfile:`تعديل معلوماتي`,
@@ -7502,7 +7502,7 @@ btn.onclick=function(e){
   try{ e.preventDefault(); e.stopPropagation(); if(typeof go==='function') go('me'); return false; }catch(ex){}
 };
 
-var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter تسجيل الدخول';
+var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter';
 var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connecté';
 if(S.user){
   var name=esc(S.user.name||'');
