@@ -7484,7 +7484,7 @@ btn.onclick=function(e){
 };
 
 var signLabel = (typeof T==='function' && T().signIn) ? T().signIn : 'Se connecter';
-var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connecté';
+var connectedLabel = (typeof T==='function' && T().admStatsConnected) ? T().admStatsConnected : 'Connectés';
 if(S.user){
   var name=esc(S.user.name||'');
   btn.innerHTML='<span class="accttext">'+esc(connectedLabel)+'</span><span id="notifBadge" class="notif-badge" hidden></span>';
