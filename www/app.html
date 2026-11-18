@@ -5545,6 +5545,7 @@ function isNativeApp(){
   try{ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }catch(e){ return false; }
 }
 function openSignInChoiceModal(){
+  try{ if(typeof window._wireSignInChoice==='function') window._wireSignInChoice(); }catch(e){}
   var m=$('signinChoiceModal');
   if(m) m.hidden=false;
 }
@@ -5738,15 +5739,23 @@ renderGallery();
   });
 
   (function(){
-    var m=$('signinChoiceModal');
-    if(!m) return;
-    var closeBtn=$('signinChoiceClose');
-    if(closeBtn) closeBtn.addEventListener('click', closeSignInChoiceModal);
-    m.addEventListener('click', function(e){ if(e.target===m) closeSignInChoiceModal(); });
-    var bExt=$('signinChoiceExternal'); if(bExt) bExt.addEventListener('click', function(){ runSignInChoice('external'); });
-    var bApp=$('signinChoiceApp'); if(bApp) bApp.addEventListener('click', function(){ runSignInChoice('app'); });
-    var bCur=$('signinChoiceCurrent'); if(bCur) bCur.addEventListener('click', function(){ runSignInChoice('current'); });
-    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && m && !m.hidden) closeSignInChoiceModal(); });
+    var wired=false;
+    function wireSignInChoice(){
+      if(wired) return;
+      var m=$('signinChoiceModal');
+      if(!m) return;
+      wired=true;
+      var closeBtn=$('signinChoiceClose');
+      if(closeBtn) closeBtn.addEventListener('click', function(e){ if(e&&e.preventDefault)e.preventDefault(); closeSignInChoiceModal(); });
+      m.addEventListener('click', function(e){ if(e.target===m) closeSignInChoiceModal(); });
+      var bExt=$('signinChoiceExternal'); if(bExt) bExt.addEventListener('click', function(e){ if(e&&e.preventDefault)e.preventDefault(); runSignInChoice('external'); });
+      var bApp=$('signinChoiceApp'); if(bApp) bApp.addEventListener('click', function(e){ if(e&&e.preventDefault)e.preventDefault(); runSignInChoice('app'); });
+      var bCur=$('signinChoiceCurrent'); if(bCur) bCur.addEventListener('click', function(e){ if(e&&e.preventDefault)e.preventDefault(); runSignInChoice('current'); });
+      document.addEventListener('keydown', function(e){ if(e.key==='Escape' && m && !m.hidden) closeSignInChoiceModal(); });
+    }
+    // Expose so openSignInChoiceModal can ensure wiring after modal exists in DOM
+    window._wireSignInChoice=wireSignInChoice;
+    wireSignInChoice();
   })();
 
   try{
