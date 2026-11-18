@@ -12,6 +12,7 @@
     "singleProjectMode": true
   },
   "hosting": {
+    "target": "ugtm-fns-souss-massa",
     "public": "www",
     "ignore": [
       "firebase.json",
