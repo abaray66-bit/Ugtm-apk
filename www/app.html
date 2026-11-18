@@ -2151,6 +2151,11 @@ button.danger:hover{
 }
 .admin-struct-form input{
   min-width:0;
+  background:var(--surface);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 8px;
 }
 @media (max-width:640px){
   .admin-struct-form > div{
@@ -8367,15 +8372,15 @@ function renderAdminLocalStructures(){
   if(!S.isAdmin){list.innerHTML='<li class="empty">'+t.admLocalDenied+'</li>';return;}
   var html='';
   if(toolbar){
-    html+='<div class="admin-struct-form" id="admLocalStructForm" style="margin-bottom:12px;padding:10px;border:1px solid var(--border,#ccc);border-radius:8px;background:var(--panel,#fafafa);">'+
-      '<label style="display:block;margin-bottom:6px;font-weight:700">'+t.admLocalNewStructure+'</label>'+
-      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">'+
-      '<input id="admStructName" type="text" placeholder="'+t.admLocalStructName+'" maxlength="120">'+
-      '<input id="admStructEtab" type="text" placeholder="'+t.admLocalStructEtab+'" maxlength="160">'+
-      '<input id="admStructProvince" type="text" placeholder="'+t.admLocalStructProvince+'" maxlength="40">'+
+    html+=      '<div class="admin-struct-form" id="admLocalStructForm" style="margin-bottom:12px;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);">'+
+      '<label style="display:block;margin-bottom:6px;font-weight:700;color:var(--text)">'+t.admLocalNewStructure+'</label>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">'+
+      '<input id="admStructName" type="text" placeholder="'+t.admLocalStructName+'" maxlength="120" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">'+
+      '<input id="admStructEtab" type="text" placeholder="'+t.admLocalStructEtab+'" maxlength="160" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">'+
+      '<input id="admStructProvince" type="text" placeholder="'+t.admLocalStructProvince+'" maxlength="40" style="background:var(--surface);color:var(--text);border:1px solid var(--border);">'+
       '<button type="button" class="btn primary small" id="admBtnCreateStruct">'+t.admLocalCreate+'</button>'+
       '</div>'+
-      '<div id="admStructResult" style="margin-top:8px;padding:8px;border:1px solid var(--border,#ccc);border-radius:6px;background:var(--panel,#fafafa);color:var(--text,#111);font-family:monospace;font-size:0.9em;display:none;"></div>'+
+      '<div id="admStructResult" style="margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--panel);color:var(--text);font-family:monospace;font-size:0.9em;display:none;"></div>'+
       '</div>';
   }
   var listItems=S.localStructures||[];
