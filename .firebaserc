@@ -2,6 +2,14 @@
   "projects": {
     "default": "ugtm-fns-souss-massa"
   },
-  "targets": {},
+  "targets": {
+    "ugtm-fns-souss-massa": {
+      "hosting": {
+        "ugtm-fns-souss-massa": [
+          "ugtm-fns-souss-massa"
+        ]
+      }
+    }
+  },
   "etags": {}
 }
