@@ -5611,8 +5611,9 @@ var it=galleryState.items[i];
 var img=document.createElement('img');
 img.src=it.src;
 img.alt=it.name||('image'+(i+1));
-img.className='active';
 img.style.transform='translate('+galleryState.tx+'px,'+galleryState.ty+'px) scale('+galleryState.zoom+')';
+img.onload=function(){ img.className='active'; };
+img.onerror=function(){ img.className='active'; };
 track.appendChild(img);
 counter.textContent=(i+1)+' / '+galleryState.items.length;
 }
