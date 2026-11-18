@@ -18,8 +18,11 @@
   --bg:#FFF7FA;
   --surface:#FFFFFF;
   --ink:#24191F;
+  --text:#24191F;
   --muted:#75656C;
   --line:#EAD9E0;
+  --border:#EAD9E0;
+  --panel:#FFFFFF;
 
   --primary:#B83268;
   --on-primary:#FFFFFF;
@@ -54,8 +57,11 @@
     --bg:#1A0D13;
     --surface:#24121A;
     --ink:#FFF0F5;
+    --text:#FFF0F5;
     --muted:#C7AEB8;
     --line:#432532;
+    --border:#432532;
+    --panel:#24121A;
 
     --primary:#A92F60;
     --on-primary:#FFFFFF;
@@ -79,8 +85,11 @@
   --bg:#1A0D13;
   --surface:#24121A;
   --ink:#FFF0F5;
+  --text:#FFF0F5;
   --muted:#C7AEB8;
   --line:#432532;
+  --border:#432532;
+  --panel:#24121A;
 
   --primary:#A92F60;
   --on-primary:#FFFFFF;
@@ -10298,14 +10307,14 @@ function openSetSubAdminLocalModal(uid){
 var structs=(S.localStructures||[]).filter(function(s){return s&&!s.archived;});
 if(structs.length===0){toast('Aucune structure locale active.');return;}
 var dlg=document.createElement('div');
-dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel,#fff);border:1px solid var(--border,#ccc);border-radius:8px;padding:16px;z-index:10000;box-shadow:0 4px 16px rgba(0,0,0,.25);min-width:320px;';
+dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px;color:var(--text);z-index:10000;box-shadow:0 4px 16px rgba(0,0,0,.35);min-width:320px;';
 var lab=document.createElement('div');
 lab.textContent=t.admLocalSelectStructure||'Structure locale';
-lab.style.fontWeight='700';lab.style.marginBottom='8px';lab.style.display='block';
+lab.style.fontWeight='700';lab.style.marginBottom='8px';lab.style.display='block';lab.style.color='var(--text)';
 var sel=document.createElement('select');
 sel.id='admLocalSetSel';
 sel.size=Math.min(6,structs.length);
-sel.style.width='100%';sel.style.marginBottom='12px';
+sel.style.width='100%';sel.style.marginBottom='12px';sel.style.background='var(--surface)';sel.style.color='var(--text)';sel.style.border='1px solid var(--border)';sel.style.borderRadius='6px';sel.style.padding='6px 8px';
 structs.forEach(function(s){
 var o=document.createElement('option');
 o.value=s.id||s.structureId||'';
@@ -10356,17 +10365,19 @@ return;
 }
 var sel = document.createElement('select');
 sel.id = 'admLocalProposeSelect';
+sel.style.background='var(--surface)';sel.style.color='var(--text)';sel.style.border='1px solid var(--border)';sel.style.borderRadius='6px';sel.style.padding='6px 8px';sel.style.width='100%';sel.style.marginBottom='8px';
 structs.forEach(function(s){
 var o = document.createElement('option');
 o.value = s.id;
 o.textContent = s.name + ' (' + s.id + ')';
+o.style.background='var(--surface)';o.style.color='var(--text)';
 sel.appendChild(o);
 });
 var dlg = document.createElement('div');
-dlg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel,#fff);padding:16px;border:1px solid var(--border,#ccc);border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,.2);';
+dlg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--panel);padding:16px;border:1px solid var(--border);border-radius:8px;color:var(--text);z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,.35);';
 var lab = document.createElement('div');
 lab.textContent = t.admLocalProposeBtn||'Proposer';
-lab.style.fontWeight='700';lab.style.marginBottom='8px';
+lab.style.fontWeight='700';lab.style.marginBottom='8px';lab.style.color='var(--text)';
 var btnOk = document.createElement('button');
 btnOk.textContent = t.admLocalCreate||'Créer';
 btnOk.className='btn primary small';
