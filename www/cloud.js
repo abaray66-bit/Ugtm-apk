@@ -3490,10 +3490,15 @@ async function cloudMarkNotificationRead(id){
           jobs.push(setDoc(doc(db,'analyticsStats','weekly-'+weekKey), Object.assign({},incVisit,{week:weekKey,updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
           jobs.push(setDoc(doc(db,'analyticsStats','monthly-'+monthKey), Object.assign({},incVisit,{month:monthKey,updatedAt:serverTimestamp()}), {merge:true}).catch(function(){}));
         }
-        // Visiteurs uniques (global + périodes), séparés connecté/non connecté
+        // Visiteurs uniques (global + périodes), séparés connecté/non connecté.
+        // Un même visiteur (vid stable en localStorage) n'est compté qu'une seule fois
+        // par scope et par état d'authentification : s'il a déjà été compté comme anonyme,
+        // il n'est pas recompte comme connecté (et inversement), évitant le double
+        // comptage lors d'une connexion en cours de session.
         function countUnique(scopeKey, scopeIds, authFlag){
           var uk='ugtm_u_'+(authFlag?'a':'n')+'_'+scopeKey;
-          var done=false; try{ done=!!localStorage.getItem(uk); }catch(e){}
+          var otherUk='ugtm_u_'+(authFlag?'n':'a')+'_'+scopeKey;
+          var done=false; try{ done=!!localStorage.getItem(uk) || !!localStorage.getItem(otherUk); }catch(e){}
           if(done) return;
           try{ localStorage.setItem(uk,'1'); }catch(e){}
           var incU=authFlag?{uniqueVisitors:increment(1),uniqueAuth:increment(1)}:{uniqueVisitors:increment(1),uniqueAnon:increment(1)};
