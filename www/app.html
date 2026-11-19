@@ -8228,10 +8228,10 @@ function renderAdminStats(data){
     return '<div class="admin-kpi"><span>'+esc(label)+'</span><strong>'+esc(String(val))+'</strong>'+(sub?'<span class="hint" style="margin:2px 0 0;font-size:12px">'+sub+'</span>':'')+'</div>';
   }
   var html='<div class="admin-kpis" style="margin-top:8px">'+
-    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+' · '+esc(t.admStatsNotConnected)+': '+tvn)+
-    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+' · '+esc(t.admStatsNotConnected)+': '+uvn)+
-    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+' · '+esc(t.admStatsNotConnected)+': '+dvn)+
-    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+' · '+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
+    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+'<br>'+esc(t.admStatsNotConnected)+': '+tvn)+
+    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+'<br>'+esc(t.admStatsNotConnected)+': '+uvn)+
+    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+'<br>'+esc(t.admStatsNotConnected)+': '+dvn)+
+    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+'<br>'+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
     '</div>';
   html+=renderStatsTable(t.admStatsDaily,(data.daily||[]).slice(0,14));
   html+=renderStatsTable(t.admStatsWeekly,(data.weekly||[]).slice(0,8));
@@ -8292,10 +8292,10 @@ function renderAdminStats(data){
     return '<div class="admin-kpi"><span>'+esc(label)+'</span><strong>'+esc(String(val))+'</strong>'+(sub?'<span class="hint" style="margin:2px 0 0;font-size:12px">'+sub+'</span>':'')+'</div>';
   }
   var html='<div class="admin-kpis" style="margin-top:8px">'+
-    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+' · '+esc(t.admStatsNotConnected)+': '+tvn)+
-    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+' · '+esc(t.admStatsNotConnected)+': '+uvn)+
-    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+' · '+esc(t.admStatsNotConnected)+': '+dvn)+
-    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+' · '+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
+    kpi(t.admStatsTotalVisits,tv, esc(t.admStatsConnected)+': '+tva+'<br>'+esc(t.admStatsNotConnected)+': '+tvn)+
+    kpi(t.admStatsUnique,uv, esc(t.admStatsConnected)+': '+uva+'<br>'+esc(t.admStatsNotConnected)+': '+uvn)+
+    kpi(t.admStatsToday,dv, esc(t.admStatsConnected)+': '+dva+'<br>'+esc(t.admStatsNotConnected)+': '+dvn)+
+    kpi(t.admStatsActive, Number(active.activeTotal)||0, esc(t.admStatsConnected)+': '+(Number(active.activeAuth)||0)+'<br>'+esc(t.admStatsNotConnected)+': '+(Number(active.activeAnon)||0))+
     '</div>';
   html+=renderStatsTable(t.admStatsDaily,(data.daily||[]).slice(0,14));
   html+=renderStatsTable(t.admStatsWeekly,(data.weekly||[]).slice(0,8));
