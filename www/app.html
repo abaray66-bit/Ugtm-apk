@@ -4182,6 +4182,8 @@ meAdhesionFallback:`Adhérent`,
 rStNew:`Nouveau`,
 rStProgress:`En cours`,
 rStClosed:`Clos`,
+rStPending:`En attente de réponse`,
+rStReopened:`Réouvert`,
 
 cardNo:`N° d'adhérent`,
 cardSince:`Adhérent depuis`,
@@ -4371,6 +4373,13 @@ deleted:`Données supprimées`,
   admDelete:`Supprimer`,
   admReportStart:`En cours`,
   admReportClose:`Clore / répondre`,
+admReportReopen:`Réouvrir`,
+admReportTransfer:`Transférer`,
+admPromptReopenReason:`Motif de réouverture :`,
+admToastReopenReasonInvalid:`Motif invalide (3 à 500 caractères).`,
+admPromptTransferTo:`UID du destinataire :`,
+admPromptTransferReason:`Motif du transfert :`,
+admToastTransferReasonInvalid:`Motif invalide (3 à 500 caractères).`,
   admReportEtab:`Établissement :`,
   admReportPpr:`PPR :`,
   admReportSpecialty:`Spécialité :`,
@@ -4868,6 +4877,8 @@ meAdhesionFallback:`منخرط`,
 rStNew:`جديد`,
 rStProgress:`قيد المعالجة`,
 rStClosed:`مغلق`,
+rStPending:`في انتظار الرد`,
+rStReopened:`أعيد فتحه`,
 
 cardNo:`رقم المنخرط`,
 cardSince:`منخرط منذ`,
@@ -5054,6 +5065,13 @@ deleted:`تم حذف البيانات`,
   admDelete:`حذف`,
   admReportStart:`قيد المعالجة`,
   admReportClose:`إغلاق / الرد`,
+admReportReopen:`إعادة فتح`,
+admReportTransfer:`تحويل`,
+admPromptReopenReason:`سبب إعادة الفتح :`,
+admToastReopenReasonInvalid:`سبب غير صالح (3 إلى 500 حرف).`,
+admPromptTransferTo:`معرف المستلم :`,
+admPromptTransferReason:`سبب التحويل :`,
+admToastTransferReasonInvalid:`سبب غير صالح (3 إلى 500 حرف).`,
   admReportEtab:`المؤسسة:`,
   admReportPpr:`PPR:`,
   admReportSpecialty:`التخصص:`,
@@ -7421,7 +7439,9 @@ window.refreshMyAdhesionStatus=refreshMyAdhesionStatus;
 function reportStatusLabelI18n(status){
 var t=T();
 if(status==='in_progress')return t.rStProgress||'En cours';
+if(status==='pending_response')return t.rStPending||'En attente de réponse';
 if(status==='closed')return t.rStClosed||'Clos';
+if(status==='reopened')return t.rStReopened||'Réouvert';
 return t.rStNew||'Nouveau';
 }
 
@@ -7944,9 +7964,15 @@ $('admReportList').innerHTML=list.length?list.map(function(r){
 var status=reportStatusLabelI18n(r.status);
 var actions='';
 
-if(r.status!=='closed'){
+if(r.status!=='closed'&&r.status!=='reopened'){
 actions+='<button type="button" class="btn ghost small" data-adm-act="startReport" data-id="'+esc(r.id)+'">'+esc(t.admReportStart)+'</button>';
 actions+='<button type="button" class="btn ghost small" data-adm-act="closeReport" data-id="'+esc(r.id)+'">'+esc(t.admReportClose)+'</button>';
+}
+if(r.status==='closed'){
+actions+='<button type="button" class="btn ghost small" data-adm-act="reopenReport" data-id="'+esc(r.id)+'">'+esc(t.admReportReopen||'Réouvrir')+'</button>';
+}
+if(r.status!=='closed'){
+actions+='<button type="button" class="btn ghost small" data-adm-act="transferReport" data-id="'+esc(r.id)+'">'+esc(t.admReportTransfer||'Transférer')+'</button>';
 }
 
 actions+='<button type="button" class="btn ghost small" data-adm-act="shareReport" data-id="'+esc(r.id)+'">WhatsApp</button>';
@@ -10666,6 +10692,33 @@ response=response.slice(0,3000);
 toast(t.admToastResponseLimit,4500);
 }
 c.admin.updateReport(id,'closed',response).catch(showError);
+}
+}
+
+else if(a==='reopenReport'){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report){
+var reason=window.prompt(t.admPromptReopenReason||'Motif de réouverture :',report.reopenReason||'');
+if(reason===null)return;
+if(reason.length<3||reason.length>500){
+toast(t.admToastReopenReasonInvalid||'Motif invalide (3 à 500 caractères).',4500);
+return;
+}
+c.admin.reopenReport(id,reason).catch(showError);
+}
+}
+
+else if(a==='transferReport'){
+var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
+if(report){
+var toUid=window.prompt(t.admPromptTransferTo||'UID du destinataire :','');
+if(toUid===null||!toUid.trim())return;
+var reason=window.prompt(t.admPromptTransferReason||'Motif du transfert :','');
+if(reason===null||reason.trim().length<3||reason.trim().length>500){
+toast(t.admToastTransferReasonInvalid||'Motif invalide (3 à 500 caractères).',4500);
+return;
+}
+c.admin.transferReport(id,toUid.trim(),reason.trim()).catch(showError);
 }
 }
 
