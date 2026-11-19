@@ -3400,10 +3400,6 @@ async function cloudMarkNotificationRead(id){
     adhesionPdfFileName: adhesionPdfFileName,
 
     addReport: addReport,
-    addIntervention: addIntervention,
-    transferReport: transferReport,
-    reopenReport: reopenReport,
-    getReportInterventions: getReportInterventions,
     admin: admin,
 
     enablePushNotifications: async function(){
