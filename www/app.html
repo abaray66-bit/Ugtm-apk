@@ -6502,13 +6502,33 @@ function shareReportPdf(report){
   if(!report||!window.jspdf||!window.jspdf.jsPDF)return;
   var jsPDF=window.jspdf.jsPDF;
   var pdf=new jsPDF({unit:'mm',format:'a4'});
+  /* Police Amiri (arabe + latin) */
   try{
-    if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS['Amiri-Regular.ttf']&&pdf.internal.vFS['Amiri-Bold.ttf']){
-      pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
-      pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
-      pdf.setFont('Amiri');
+    function ensureInInstance(name){
+      if(pdf.internal&&pdf.internal.vFS&&pdf.internal.vFS[name])return;
+      var data=null;
+      try{ if(jsPDF&&jsPDF.API&&typeof jsPDF.API.getFileFromVFS==='function') data=jsPDF.API.getFileFromVFS.call({internal:{vFS:(jsPDF.API.internal&&jsPDF.API.internal.vFS)||{}}},name); }catch(e){}
+      try{ if(!data && jsPDF&&jsPDF.API&&jsPDF.API.internal&&jsPDF.API.internal.vFS) data=jsPDF.API.internal.vFS[name]||null; }catch(e){}
+      if(!data){
+        try{
+          var xhr=new XMLHttpRequest();
+          xhr.open('GET','amiri-font.js',false);
+          xhr.send(null);
+          if(xhr.status>=200 && xhr.status<300 && xhr.responseText){
+            var re=new RegExp("addFileToVFS\\(['\"]"+name+"['\"]\\s*,\\s*\"([^\"]+)\"\\)");
+            var m=xhr.responseText.match(re);
+            if(m&&m[1]) data=m[1];
+          }
+        }catch(e){}
+      }
+      if(data && typeof pdf.addFileToVFS==='function') pdf.addFileToVFS(name,data);
     }
-  }catch(e){}
+    ensureInInstance('Amiri-Regular.ttf');
+    ensureInInstance('Amiri-Bold.ttf');
+    pdf.addFont('Amiri-Regular.ttf','Amiri','normal');
+    pdf.addFont('Amiri-Bold.ttf','Amiri','bold');
+    pdf.setFont('Amiri');
+  }catch(e){ console.error('Font load error:', e); }
   var pageW=210, margin=15, y=15;
 
   /* Transforme le texte arabe pour jsPDF : shaping (formes contextuelles)
