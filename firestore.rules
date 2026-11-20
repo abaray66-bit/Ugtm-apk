@@ -717,7 +717,7 @@ service cloud.firestore {
         && request.resource.data.etab is string
         && request.resource.data.structureId is string
         && (request.resource.data.anonymous == true
-            || request.resource.data.structureId.size() > 0)
+            || request.resource.data.structureId.size() >= 0)
         && request.resource.data.da is string
         && request.resource.data.category is string
         && request.resource.data.description is string

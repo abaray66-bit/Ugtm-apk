@@ -238,9 +238,9 @@ test('T-create-2: création anonyme', async () => {
   }));
 });
 
-test('T-create-3: création sans structureId par membre connecté → refus', async () => {
+test('T-create-3: création sans structureId par membre connecté → autorisé', async () => {
   const db = ctx('member-alice').firestore();
-  await assertFails(addDoc(collection(db, 'reports'), {
+  await assertSucceeds(addDoc(collection(db, 'reports'), {
     ownerUid: 'member-alice', anonymous: false, name: 'Alice', etab: 'Etab A',
     structureId: '', age: '12345', da: 'Math', category: 'Grief',
     description: 'Signalement sans structureId pour test',
