@@ -6577,7 +6577,8 @@ if(report.description){
   var desc=prepareArabicText(String(report.description||''));
   var lines=pdf.splitTextToSize(desc, pageW-margin*2);
   pdf.setFontSize(11);
-  pdf.text(lines, margin, y, {align:'left'}); y+=lines.length*5+6;
+  var isArabic=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.description||''));
+  pdf.text(lines, isArabic?pageW-margin:margin, y, {align:isArabic?'right':'left'}); y+=lines.length*5+6;
 }
 
 if(report.response){
@@ -6586,7 +6587,8 @@ if(report.response){
   var resp=prepareArabicText(String(report.response||''));
   var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
   pdf.setFontSize(11);
-  pdf.text(rlines, margin, y, {align:'left'}); y+=rlines.length*5+8;
+  var isArabicResp=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.response||''));
+  pdf.text(rlines, isArabicResp?pageW-margin:margin, y, {align:isArabicResp?'right':'left'}); y+=rlines.length*5+8;
 }
 
   /* Photos jointes */
