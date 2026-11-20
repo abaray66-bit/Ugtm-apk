@@ -6560,33 +6560,33 @@ function shareReportPdf(report){
   }
 
   pdf.setFontSize(16);
-  pdf.text(prepareArabicText(t.shareReportHeader||'Signalement UGTM'), margin, y); y+=8;
+   pdf.text(prepareArabicText((t.shareReportHeader||'Signalement UGTM')+(report.name&&!report.anonymous?' - '+report.name:'')), pageW-margin, y, {align:'right'}); y+=8;
   pdf.setFontSize(11);
-pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y); y+=6;
+pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'right'}); y+=6;
 if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), margin, y); y+=6; }
 pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
-  if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), margin, y); y+=6; }
-  pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), margin, y); y+=6;
-  if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), margin, y); y+=6; }
-  pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), margin, y); y+=8;
+if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), pageW-margin, y, {align:'right'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), pageW-margin, y, {align:'right'}); y+=6;
+if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), pageW-margin, y, {align:'right'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), pageW-margin, y, {align:'right'}); y+=8;
 
-  if(report.description){
-    pdf.setFontSize(12);
-    pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), margin, y); y+=6;
-    var desc=prepareArabicText(String(report.description||''));
-    var lines=pdf.splitTextToSize(desc, pageW-margin*2);
-    pdf.setFontSize(11);
-    pdf.text(lines, margin, y); y+=lines.length*5+6;
-  }
+if(report.description){
+  pdf.setFontSize(12);
+  pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), pageW-margin, y, {align:'right'}); y+=6;
+  var desc=prepareArabicText(String(report.description||''));
+  var lines=pdf.splitTextToSize(desc, pageW-margin*2);
+  pdf.setFontSize(11);
+  pdf.text(lines, pageW-margin, y, {align:'right'}); y+=lines.length*5+6;
+}
 
-  if(report.response){
-    pdf.setFontSize(12);
-    pdf.text(prepareArabicText('Réponse de l\'administration:'), margin, y); y+=6;
-    var resp=prepareArabicText(String(report.response||''));
-    var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
-    pdf.setFontSize(11);
-    pdf.text(rlines, margin, y); y+=rlines.length*5+8;
-  }
+if(report.response){
+  pdf.setFontSize(12);
+  pdf.text(prepareArabicText('Réponse de l\'administration:'), pageW-margin, y, {align:'right'}); y+=6;
+  var resp=prepareArabicText(String(report.response||''));
+  var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
+  pdf.setFontSize(11);
+  pdf.text(rlines, pageW-margin, y, {align:'right'}); y+=rlines.length*5+8;
+}
 
   /* Photos jointes */
   if(window.CLOUD&&window.CLOUD.getReportAttachment){
@@ -6617,7 +6617,7 @@ function attachImages(pdf, arr, t, pageW, margin, y){
     try{
       pdf.addPage();
       pdf.setFontSize(12);
-      pdf.text('Pièce jointe '+(i+1)+'/'+arr.length, margin, 15);
+      pdf.text('Pièce jointe '+(i+1)+'/'+arr.length, pageW-margin, 15, {align:'right'});
       // Photo centrée, hauteur max 180mm, largeur auto
       pdf.addImage('data:'+mime+';base64,'+data, mime, margin, 25, pageW-margin*2, 240);
     }catch(e){
