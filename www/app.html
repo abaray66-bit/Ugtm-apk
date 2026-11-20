@@ -6554,10 +6554,12 @@ function shareReportPdf(report){
 
   pdf.setFontSize(16);
    pdf.text(prepareArabicText((t.shareReportHeader||'Signalement UGTM')+(report.name&&!report.anonymous?' - '+report.name:'')), pageW-margin, y, {align:'right'}); y+=8;
+   pdf.setLineWidth(0.5);
+   pdf.line(margin, y, pageW-margin, y); y+=6;
   pdf.setFontSize(11);
 pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'right'}); y+=6;
-if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), margin, y); y+=6; }
-pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
+if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), pageW-margin, y, {align:'right'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), pageW-margin, y, {align:'right'}); y+=6;
 if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), pageW-margin, y, {align:'right'}); y+=6; }
 pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), pageW-margin, y, {align:'right'}); y+=6;
 if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), pageW-margin, y, {align:'right'}); y+=6; }
