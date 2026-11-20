@@ -6539,24 +6539,17 @@ function shareReportPdf(report){
     if(!/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str)){
       return str;
     }
-    try{
-      var reshaped='';
-      if(typeof ArabicReshaper!=='undefined' && ArabicReshaper.reshape){
-        reshaped=ArabicReshaper.reshape(str);
-      }else{
-        reshaped=str;
-      }
-      if(typeof bidi_js!=='undefined'){
-        var bidi=bidi_js();
-        var reordered=bidi.getReorderedString(reshaped);
-        if(typeof reordered==='string' && reordered.length>0){
-          return reordered;
-        }
-      }
-      return reshaped;
-    }catch(e){
-      return str;
-    }
+     try{
+       var reshaped='';
+       if(typeof ArabicReshaper!=='undefined' && ArabicReshaper.reshape){
+         reshaped=ArabicReshaper.reshape(str);
+       }else{
+         reshaped=str;
+       }
+       return reshaped;
+     }catch(e){
+       return str;
+     }
   }
 
   pdf.setFontSize(16);
