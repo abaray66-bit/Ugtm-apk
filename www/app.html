@@ -4462,6 +4462,7 @@ admToastTransferReasonInvalid:`Motif invalide (3 à 500 caractères).`,
   shareReportStatus:`Statut :`,
   shareReportSummary:`Résumé :`,
   shareReportRef:`Référence :`,
+shareReportMember:`Adhérent :`,
   shareReportAttach:`Pièce jointe à ajouter manuellement dans WhatsApp :`,
   sendDocsProvince:`Envoyer des pièces au secrétaire de ma province`,
   sendProvMissing:`Aucun numéro de secrétaire provincial n'est configuré pour votre province : utilisez l'envoi au secrétaire régional.`,
@@ -5154,6 +5155,7 @@ admToastTransferReasonInvalid:`سبب غير صالح (3 إلى 500 حرف).`,
   shareReportStatus:`الحالة:`,
   shareReportSummary:`ملخص:`,
   shareReportRef:`المرجع:`,
+shareReportMember:`المنخرط:`,
   shareReportAttach:`مرفق يُضاف يدويًا عبر واتساب:`,
   sendDocsProvince:`إرسال الوثائق نحو كاتب إقامتي`,
   sendProvMissing:`لا يوجد رقم مسجّل لكاتب إقامتكم: استخدموا مراسلة الكاتب الجهوي.`,
@@ -6479,6 +6481,7 @@ if(!report)return '';
 var lines=[
 t.shareReportHeader,
 report.id?(t.shareReportRef+' '+String(report.id)):'',
+(!report.anonymous&&report.name?(t.shareReportMember||'Adhérent')+' '+String(report.name):''),
 t.shareReportCategory+' '+reportCategoryLabelI18n(report.category),
 (report.etab?t.shareReportEtab+' '+String(report.etab):''),
 t.shareReportProvince+' '+(provName(report.province,lang)||report.province||''),
@@ -6539,8 +6542,9 @@ function shareReportPdf(report){
   pdf.setFontSize(16);
   pdf.text(prepareArabicText(t.shareReportHeader||'Signalement UGTM'), margin, y); y+=8;
   pdf.setFontSize(11);
-  pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y); y+=6;
-  pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
+pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y); y+=6;
+if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), margin, y); y+=6; }
+pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y); y+=6;
   if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), margin, y); y+=6; }
   pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), margin, y); y+=6;
   if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), margin, y); y+=6; }
