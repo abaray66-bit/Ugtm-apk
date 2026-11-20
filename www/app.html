@@ -6573,11 +6573,11 @@ pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLab
 
 if(report.description){
   pdf.setFontSize(12);
-  pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), pageW-margin, y, {align:'right'}); y+=6;
+  pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), margin, y, {align:'left'}); y+=6;
   var desc=prepareArabicText(String(report.description||''));
   var lines=pdf.splitTextToSize(desc, pageW-margin*2);
   pdf.setFontSize(11);
-  pdf.text(lines, pageW-margin, y, {align:'right'}); y+=lines.length*5+6;
+  pdf.text(lines, margin, y, {align:'left'}); y+=lines.length*5+6;
 }
 
 if(report.response){
@@ -6586,7 +6586,7 @@ if(report.response){
   var resp=prepareArabicText(String(report.response||''));
   var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
   pdf.setFontSize(11);
-  pdf.text(rlines, pageW-margin, y, {align:'right'}); y+=rlines.length*5+8;
+  pdf.text(rlines, margin, y, {align:'left'}); y+=rlines.length*5+8;
 }
 
   /* Photos jointes */
