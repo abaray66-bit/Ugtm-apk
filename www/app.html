@@ -6586,10 +6586,16 @@ if(report.description){
   pdf.setFontSize(14);
   pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), margin, y, {align:'left'}); y+=6;
   var desc=prepareArabicText(String(report.description||''));
-  var lines=pdf.splitTextToSize(desc, pageW-margin*2);
+  var descWidth = pageW - margin * 2;
+  var lines=pdf.splitTextToSize(desc, descWidth);
   pdf.setFontSize(13);
   var isArabic=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.description||''));
-  pdf.text(lines, isArabic?pageW-margin:margin, y, {align:isArabic?'right':'left'}); y+=lines.length*5+6;
+  if(isArabic){
+    pdf.text(lines, pageW - margin, y, {align:'right'});
+  } else {
+    pdf.text(lines, margin, y, {align:'left'});
+  }
+  y+=lines.length*5+6;
 }
 
 if(report.response){
