@@ -1891,6 +1891,7 @@ function syncPublicProvinceContacts(){
   }).catch(function(e){hooks.error(e, true);});
 }
 
+
 async function reportAction(action, reportId, params){
   params = params || {};
   var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';

@@ -678,9 +678,9 @@ service cloud.firestore {
 
     match /reportInterventions/{id} {
       allow read: if isAdmin()
-        || (isSubAdmin() && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel()))
-        || (isSubAdminLocal() && resource.data.get('structureId', '') != '' && resource.data.structureId == assignedLocalStructure())
-        || (signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid);
+        || (isSubAdmin() && (get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.province == assignedProvince() || get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.province == assignedProvinceLabel()))
+        || (isSubAdminLocal() && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.get('structureId', '') != '' && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.structureId == assignedLocalStructure())
+        || (signedIn() && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.anonymous == false && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.ownerUid == request.auth.uid);
 
       allow create: if false;  // Seul le backend peut créer
 

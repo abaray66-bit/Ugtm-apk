@@ -164,7 +164,23 @@ module.exports = async function handler(req, res) {
   const member = memberSnap.data();
   if (member.status !== 'active') return res.status(403).json({ error: 'Forbidden', code: 'inactive' });
 
-  const isAdmin = member.role === 'admin';
+  // Vérifier si l'utilisateur est admin par email (comme le client)
+  let isAdminByEmail = false;
+  try {
+    const adminConfigSnap = await db.collection('config').doc('admins').get();
+    if (adminConfigSnap.exists) {
+      const emails = adminConfigSnap.data().emails || [];
+      const bootstrapEmails = ['abaray66@gmail.com'];
+      const allEmails = [...bootstrapEmails, ...emails].map(e => String(e).trim().toLowerCase());
+      isAdminByEmail = allEmails.includes((decodedToken.email || '').toLowerCase());
+    } else {
+      isAdminByEmail = (decodedToken.email || '').toLowerCase() === 'abaray66@gmail.com';
+    }
+  } catch (e) {
+    isAdminByEmail = (decodedToken.email || '').toLowerCase() === 'abaray66@gmail.com';
+  }
+
+  const isAdmin = isAdminByEmail || member.role === 'admin';
   const isSubAdmin = member.role === 'subadmin';
   const isSubAdminLocal = member.role === 'subadminLocal';
   const isMember = member.role === 'member';
@@ -458,7 +474,8 @@ module.exports = async function handler(req, res) {
           member: ['member_reply', 'reopen', 'attachment_added']
         };
 
-        if (!allowedTypes[member.role]?.includes(type)) {
+        const effectiveRole = isAdmin ? 'admin' : (isSubAdmin ? 'subadmin' : (isSubAdminLocal ? 'subadminLocal' : 'member'));
+        if (!allowedTypes[effectiveRole]?.includes(type)) {
           return res.status(403).json({ error: 'Forbidden', code: 'invalid_type' });
         }
 
