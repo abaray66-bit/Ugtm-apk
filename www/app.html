@@ -6552,8 +6552,14 @@ function shareReportPdf(report){
      }
   }
 
-  pdf.setFontSize(16);
-   pdf.text(prepareArabicText((t.shareReportHeader||'Signalement UGTM')+(report.name&&!report.anonymous?' - '+report.name:'')), pageW-margin, y, {align:'right'}); y+=8;
+   pdf.setFontSize(18);
+   pdf.text(prepareArabicText('UGTM Souss-Massa — Signalement'), pageW/2, y, {align:'center'}); y+=6;
+   if(report.name&&!report.anonymous){
+     pdf.setFontSize(12);
+     pdf.text(prepareArabicText(report.name), pageW/2, y, {align:'center'}); y+=4;
+   }
+   pdf.setFontSize(10);
+   pdf.text(prepareArabicText('Fédération nationale de la Santé — Région Souss-Massa'), pageW/2, y, {align:'center'}); y+=8;
    pdf.setLineWidth(0.5);
    pdf.line(margin, y, pageW-margin, y); y+=6;
   pdf.setFontSize(11);
