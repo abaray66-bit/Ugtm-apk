@@ -940,7 +940,8 @@ service cloud.firestore {
           && request.resource.data.adminNote == ''
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['application', 'signature', 'status', 'adminNote',
-                      'adminSignature', 'signedBy', 'signedAt', 'updatedAt'])
+                      'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
+                      'structureId'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''
