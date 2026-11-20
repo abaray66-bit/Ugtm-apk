@@ -505,7 +505,7 @@ service cloud.firestore {
         && okText(request.resource.data.get('province', ''), 40)
         && request.resource.data.updatedAt == request.time;
 
-      allow delete: if isAdmin();
+
     }
 
     // ==========================================================
@@ -671,10 +671,9 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time;
 
-      allow update: if isAdmin() || isSubAdmin() || isSubAdminLocal();
-      allow update: if signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid;
-
-      allow delete: if isAdmin();
+      // Seul le backend peut modifier (via Admin SDK, les règles sont bypassées)
+      allow update: if false;
+      allow delete: if false;
     }
 
     match /reportInterventions/{id} {
@@ -683,7 +682,7 @@ service cloud.firestore {
         || (isSubAdminLocal() && resource.data.get('structureId', '') != '' && resource.data.structureId == assignedLocalStructure())
         || (signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid);
 
-      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid && request.resource.data.createdAt == request.time;
+      allow create: if false;  // Seul le backend peut créer
 
       allow update: if false;
       allow delete: if false;

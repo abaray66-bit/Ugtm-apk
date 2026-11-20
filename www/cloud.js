@@ -1890,6 +1890,35 @@ function syncPublicProvinceContacts(){
     });
   }).catch(function(e){hooks.error(e, true);});
 }
+
+async function reportAction(action, reportId, params){
+  params = params || {};
+  var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!configured) throw new Error('Backend URL absent');
+  var url = String(configured).replace(/\/+$/, '');
+  var user = auth && auth.currentUser;
+  if (!user && typeof getAuth === 'function') {
+    try { user = getAuth(firebaseApp).currentUser; } catch(err){}
+  }
+  if (!user) throw new Error('Non connecté');
+  var token = await (user.getIdToken ? user.getIdToken() : Promise.reject(new Error('no getIdToken')));
+  var payload = { action: action, reportId: reportId };
+  Object.keys(params).forEach(function(k){ payload[k] = params[k]; });
+  var res = await fetch(url + '/api/report-action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify(payload)
+  });
+  var raw = '';
+  try { raw = await res.text(); } catch(err){}
+  var parsed = {};
+  try { parsed = JSON.parse(raw); } catch(err){}
+  if (!res.ok) {
+    throw new Error((parsed.error || 'Erreur serveur') + (parsed.code ? ' (' + parsed.code + ')' : ''));
+  }
+  return parsed;
+}
+
 var admin = {
 
   /* ----------------------------------------------------
@@ -2462,62 +2491,22 @@ var admin = {
 
   addIntervention:
     function(reportId, intervention){
-      var ref = doc(collection(db, 'reportInterventions'));
-      var id = reportId + '_' + (intervention.seq || 0);
-      var data = {
-        reportId: String(reportId || '').slice(0,128),
-        seq: Number(intervention.seq || 0),
-        authorUid: auth.currentUser ? auth.currentUser.uid : '',
-        authorRole: String(intervention.authorRole || 'member').slice(0,20),
-        authorName: String(intervention.authorName || '').slice(0,120),
-        authorStructure: String(intervention.authorStructure || '').slice(0,40),
-        authorProvince: String(intervention.authorProvince || '').slice(0,40),
-        type: String(intervention.type || 'admin_note').slice(0,20),
-        level: String(intervention.level || 'local').slice(0,20),
-        content: String(intervention.content || '').slice(0,4000),
-        attachmentIds: Array.isArray(intervention.attachmentIds) ? intervention.attachmentIds : [],
-        statusBefore: String(intervention.statusBefore || 'new').slice(0,20),
-        statusAfter: String(intervention.statusAfter || 'new').slice(0,20),
-        createdAt: serverTimestamp(),
-        isSystem: !!intervention.isSystem
-      };
-      return setDoc(doc(db, 'reportInterventions', id), data).then(function(){ return id; });
+      return reportAction('addIntervention', reportId, {
+        type: intervention.type || 'admin_note',
+        level: intervention.level || 'local',
+        content: intervention.content || '',
+        attachmentIds: intervention.attachmentIds || []
+      });
     },
 
   transferReport:
     function(id, toUid, reason){
-      var report = (S.reports || []).filter(function(r){ return r.id === id; })[0];
-      var fromUid = report ? (report.assignedTo || '') : '';
-      var status = report ? report.status : 'in_progress';
-      var response = report ? (report.response || '') : '';
-      return updateDoc(doc(db, 'reports', id), {
-        status: status,
-        response: String(response).slice(0,3000),
-        assignedTo: String(toUid || '').slice(0,128),
-        transferredFrom: String(fromUid || '').slice(0,128),
-        transferredTo: String(toUid || '').slice(0,128),
-        transferredAt: serverTimestamp(),
-        transferredReason: String(reason || '').slice(0,500),
-        lastInterventionBy: auth.currentUser ? auth.currentUser.uid : '',
-        lastInterventionAt: serverTimestamp(),
-        lastInterventionLevel: 'local',
-        updatedAt: serverTimestamp()
-      });
+      return reportAction('transfer', id, { toUid: toUid, reason: reason });
     },
 
   reopenReport:
     function(id, reason){
-      return updateDoc(doc(db, 'reports', id), {
-        status: 'reopened',
-        response: '',
-        reopenReason: String(reason || '').slice(0,500),
-        reopenedAt: serverTimestamp(),
-        reopenedBy: auth.currentUser ? auth.currentUser.uid : '',
-        lastInterventionBy: auth.currentUser ? auth.currentUser.uid : '',
-        lastInterventionAt: serverTimestamp(),
-        lastInterventionLevel: 'local',
-        updatedAt: serverTimestamp()
-      });
+      return reportAction('reopen', id, { reason: reason });
     },
 
   getReportInterventions:
@@ -2546,36 +2535,21 @@ var admin = {
             createdAt: x.createdAt,
             isSystem: !!x.isSystem
           };
-        }).sort(function(a,b){ return a.seq - b.seq; });
+        }).sort(function(a,b){ return (a.seq||0) - (b.seq||0); });
       }).catch(function(){ return []; });
     },
   updateReport:
     function(id, status, response, extra){
-      var data = {
-        status: status,
-        response: String(response || '').slice(0,3000),
-        updatedAt: serverTimestamp(),
-        lastInterventionBy: auth.currentUser ? auth.currentUser.uid : '',
-        lastInterventionAt: serverTimestamp(),
-        lastInterventionLevel: (extra && extra.level) || 'local'
-      };
-      if (extra) {
-        if (extra.assignedTo !== undefined) data.assignedTo = String(extra.assignedTo || '').slice(0,128);
-        if (extra.assignedStructure !== undefined) data.assignedStructure = String(extra.assignedStructure || '').slice(0,40);
-        if (extra.assignedProvince !== undefined) data.assignedProvince = String(extra.assignedProvince || '').slice(0,40);
-        if (extra.memberResponsePending !== undefined) data.memberResponsePending = !!extra.memberResponsePending;
-        if (extra.closedAt) data.closedAt = serverTimestamp();
-        if (extra.closedBy) data.closedBy = String(extra.closedBy).slice(0,128);
-        if (extra.reopenReason) data.reopenReason = String(extra.reopenReason).slice(0,500);
-        if (extra.reopenedAt) data.reopenedAt = serverTimestamp();
-        if (extra.reopenedBy) data.reopenedBy = String(extra.reopenedBy).slice(0,128);
-        if (extra.transferredFrom) data.transferredFrom = String(extra.transferredFrom).slice(0,128);
-        if (extra.transferredTo) data.transferredTo = String(extra.transferredTo).slice(0,128);
-        if (extra.transferredAt) data.transferredAt = serverTimestamp();
-        if (extra.transferredReason) data.transferredReason = String(extra.transferredReason).slice(0,500);
-        if (extra.interventionLevel) data.interventionLevel = String(extra.interventionLevel).slice(0,20);
+      if (status === 'closed') {
+        return reportAction('close', id, { response: response || '' });
       }
-      return updateDoc(doc(db, 'reports', id), data);
+      if (status === 'reopened') {
+        return reportAction('reopen', id, { reason: (extra && extra.reopenReason) || response || '' });
+      }
+      if (status === 'in_progress' && extra && extra.memberResponsePending === false) {
+        return reportAction('respond', id, { content: response || '' });
+      }
+      return reportAction('statusChange', id, { status: status });
     },
 
   /* Décision sur une demande d'adhésion : seuls le statut, la note et la
@@ -3400,6 +3374,7 @@ async function cloudMarkNotificationRead(id){
     adhesionPdfFileName: adhesionPdfFileName,
 
     addReport: addReport,
+    reportAction: reportAction,
     admin: admin,
 
     enablePushNotifications: async function(){

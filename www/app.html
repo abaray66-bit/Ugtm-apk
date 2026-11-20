@@ -3802,7 +3802,7 @@ window.markNotificationRead=markNotificationRead;
 <p class="hint" id="eEditHint" hidden></p>
 <button class="btn ghost block" type="button" data-adm-act="cancelEvent" id="eCancelEdit" hidden data-i18n="admCancelEdit">Annuler la modification</button>
 
-<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo"></p><ul class="list" id="admDialogueList" style="margin:8px 0"></ul><div class="field"><label for="admDialogueFile">Document PDF (nom libre, multi-PDF)</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Publier / Notifier</button></div><p class="hint" style="margin-top:8px">Sélectionnez un PDF depuis votre appareil : il est téléversé (stocké dans Firestore, sans forfait payant/Storage) et les adhérents éligibles (connectés, actifs, adhésion acceptée et signée) sont notifiés. Consultation seule dans l’app. Taille max 8 Mo par PDF.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialogueZoomOut" aria-label="Zoom -">−</button><button class="btn ghost small" type="button" id="dialogueZoomFit">Ajuster</button><button class="btn ghost small" type="button" id="dialogueZoomIn" aria-label="Zoom +">+</button><span style="width:8px"></span><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--soft);border-radius:12px;display:block;text-align:center;padding:8px;-webkit-user-select:none;user-select:none;touch-action:pan-x pan-y pinch-zoom"><canvas id="dialogueCanvas" style="max-width:100%;height:auto;display:inline-block"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
+<h2 class="h2" style="margin-top:28px" data-i18n="admEventPublished">Événements publiés</h2><ul class="list" id="admEventList"></ul></div><div id="adm-reports" class="admin-section" hidden><p class="hint" data-i18n="rAdminOnly"></p><ul class="list" id="admReportList"></ul></div><div id="adm-adhesions" class="admin-section" hidden><ul class="list" id="admAdhesionList"></ul></div><div id="adm-localstructures" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalStructuresTitle"></h3><div class="admin-struct-toolbar" id="admLocalStructToolbar"></div><ul class="list" id="admLocalStructList"></ul></div></div><div id="adm-localproposals" class="admin-section" hidden><div class="admin-panel"><h3 data-i18n="admLocalProposalsTitle"></h3><ul class="list" id="admLocalProposalList"></ul></div></div><div id="adm-dialogue" class="admin-section" hidden><div class="admin-panel"><h3>Dialogue social</h3><p class="hint" id="admDialogueInfo"></p><ul class="list" id="admDialogueList" style="margin:8px 0"></ul><div class="field"><label for="admDialogueFile">Document PDF (nom libre, multi-PDF)</label><input id="admDialogueFile" type="file" accept="application/pdf"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="button" id="admDialogueUpload">Publier / Notifier</button></div><p class="hint" style="margin-top:8px">Sélectionnez un PDF depuis votre appareil : il est téléversé (stocké dans Firestore, sans forfait payant/Storage) et les adhérents éligibles (connectés, actifs, adhésion acceptée et signée) sont notifiés. Consultation seule dans l’app. Taille max 8 Mo par PDF.</p></div></div><div class="signmodal" id="admSignModal" hidden role="dialog" aria-modal="true" aria-labelledby="admSignTitle"><div class="signmodal-box"><h2 class="h2" id="admSignTitle" data-i18n="admDossierTitle"></h2><div class="adhdoc" id="admDossierInfo"></div><div id="admSignArea"><p class="hint" data-i18n="admSignHint"></p><div class="signmodal-canvas"><canvas id="admSignCanvas" width="900" height="300"></canvas></div><div class="signmodal-actions"><button class="btn ghost small" type="button" id="admSignClear" data-i18n="adhClearSign"></button><span class="adh-sign-state" id="admSignState" data-i18n="adhNoSignature"></span></div><div class="field"><label for="admSignNote" data-i18n="admSignNote"></label><input id="admSignNote" maxlength="1000" autocomplete="off"></div></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admSignCancel" data-i18n="admClose"></button><button class="btn gold" type="button" id="admSignConfirm" data-i18n="admSignConfirm"></button></div></div></div><div class="signmodal" id="admTransferModal" hidden role="dialog" aria-modal="true"><div class="signmodal-box"><h2 class="h2">Transférer le signalement</h2><div class="field"><label>Destinataire</label><select id="admTransferRecipient" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px"><option value="">-- Sélectionner --</option></select></div><div class="field"><label>Motif du transfert</label><textarea id="admTransferReason" rows="3" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px" placeholder="Motif (3 à 500 caractères)"></textarea></div><div class="signmodal-buttons"><button class="btn ghost" type="button" id="admTransferCancel">Annuler</button><button class="btn gold" type="button" id="admTransferConfirm">Transférer</button></div></div></div></section><div class="signmodal" id="dialogueViewer" hidden role="dialog" aria-modal="true" aria-label="Dialogue social" oncontextmenu="return false"><div class="signmodal-box" style="max-width:900px;height:92vh;max-height:none;display:flex;flex-direction:column" oncontextmenu="return false"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><h2 class="h2" style="margin:0;font-size:18px">Dialogue social</h2><button class="btn ghost small" type="button" id="dialogueViewerClose">Fermer</button></div><div style="display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-bottom:8px"><button class="btn ghost small" type="button" id="dialogueZoomOut" aria-label="Zoom -">−</button><button class="btn ghost small" type="button" id="dialogueZoomFit">Ajuster</button><button class="btn ghost small" type="button" id="dialogueZoomIn" aria-label="Zoom +">+</button><span style="width:8px"></span><button class="btn ghost small" type="button" id="dialoguePrev">‹</button><span id="dialoguePageInfo" class="hint" style="margin:0"></span><button class="btn ghost small" type="button" id="dialogueNext">›</button></div><div id="dialogueCanvasWrap" style="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--soft);border-radius:12px;display:block;text-align:center;padding:8px;-webkit-user-select:none;user-select:none;touch-action:pan-x pan-y pinch-zoom"><canvas id="dialogueCanvas" style="max-width:100%;height:auto;display:inline-block"></canvas></div></div></div></main><!-- Navigation --><nav class="tabs" id="tabs" role="tablist" aria-label="Navigation"><button class="tab" type="button" role="tab" aria-selected="true" data-tab="home">
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M3 11l9-8 9 8"/>
 <path d="M5 10v10h14V10"/>
@@ -5791,7 +5791,22 @@ renderGallery();
     // Expose so openSignInChoiceModal can ensure wiring after modal exists in DOM
     window._wireSignInChoice=wireSignInChoice;
     wireSignInChoice();
-  })();
+    var transferCancel=document.getElementById('admTransferCancel');
+  if(transferCancel)transferCancel.addEventListener('click',function(){document.getElementById('admTransferModal').hidden=true;});
+  var transferConfirm=document.getElementById('admTransferConfirm');
+  if(transferConfirm)transferConfirm.addEventListener('click',function(){
+    var modal=document.getElementById('admTransferModal');
+    var id=modal.getAttribute('data-report-id');
+    var toUid=document.getElementById('admTransferRecipient').value;
+    var reason=document.getElementById('admTransferReason').value.trim();
+    if(!toUid){ toast('Veuillez sélectionner un destinataire.',4500); return; }
+    if(reason.length<3||reason.length>500){ toast('Motif invalide.',4500); return; }
+    modal.hidden=true;
+    if(window.CLOUD&&window.CLOUD.admin&&window.CLOUD.admin.transferReport){
+      window.CLOUD.admin.transferReport(id,toUid,reason).catch(showError);
+    }
+  });
+})();
 
   try{
     if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App){
@@ -10788,26 +10803,45 @@ c.admin.reopenReport(id,reason).catch(showError);
 else if(a==='transferReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
-  // Liste des destinataires éligibles (sous-admins provinciaux, locaux, admin régional)
   var recipients=(S.members||[]).filter(function(m){
-    return m.status==='active' && (m.role==='subadmin' || m.role==='subadminLocal' || m.role==='admin');
+    if(m.status!=='active') return false;
+    if(!(m.role==='subadmin' || m.role==='subadminLocal' || m.role==='admin')) return false;
+    // Exclure le secrétaire national UGTM
+    var name=(m.name||'').toLowerCase();
+    var email=(m.email||'').toLowerCase();
+    if(name.indexOf('secrétaire national')!==-1 || name.indexOf('secretaire national')!==-1) return false;
+    if(email.indexOf('national')!==-1) return false;
+    return true;
   });
   if(recipients.length===0){ toast('Aucun destinataire disponible.',4500); return; }
-  var opts=recipients.map(function(m){ return m.uid+'\t'+(m.name||m.email||m.uid)+' ('+(m.role==='subadmin'?'Sub-admin provincial':m.role==='subadminLocal'?'Sub-admin local':'Admin')+')'; }).join('\n');
-  var choice=window.prompt((t.admPromptTransferTo||'Sélectionner le destinataire (nom) :')+'\n'+opts+'\n\nSaisir le nom exact :','');
-  if(choice===null||!choice.trim())return;
-  var toUid=null;
-  recipients.forEach(function(m){
-    var label=(m.name||m.email||m.uid);
-    if(label.toLowerCase().indexOf(choice.trim().toLowerCase())!==-1) toUid=m.uid;
-  });
-  if(!toUid){ toast('Destinataire introuvable.',4500); return; }
-  var reason=window.prompt(t.admPromptTransferReason||'Motif du transfert :','');
-  if(reason===null||reason.trim().length<3||reason.trim().length>500){
-    toast(t.admToastTransferReasonInvalid||'Motif invalide (3 à 500 caractères).',4500);
-    return;
+  var sel=document.getElementById('admTransferRecipient');
+  if(sel){
+    sel.innerHTML='<option value="">-- Sélectionner --</option>';
+    var groups={provincial:[],local:[],admin:[]};
+    recipients.forEach(function(m){
+      if(m.role==='subadmin') groups.provincial.push(m);
+      else if(m.role==='subadminLocal') groups.local.push(m);
+      else groups.admin.push(m);
+    });
+    if(groups.provincial.length){
+      var optgroup=document.createElement('optgroup'); optgroup.label='Sous-admins provinciaux';
+      groups.provincial.forEach(function(m){ var o=document.createElement('option'); o.value=m.uid; o.textContent=(m.name||m.email||m.uid); optgroup.appendChild(o); });
+      sel.appendChild(optgroup);
+    }
+    if(groups.local.length){
+      var optgroup=document.createElement('optgroup'); optgroup.label='Sous-admins locaux';
+      groups.local.forEach(function(m){ var o=document.createElement('option'); o.value=m.uid; o.textContent=(m.name||m.email||m.uid); optgroup.appendChild(o); });
+      sel.appendChild(optgroup);
+    }
+    if(groups.admin.length){
+      var optgroup=document.createElement('optgroup'); optgroup.label='Administrateurs régionaux';
+      groups.admin.forEach(function(m){ var o=document.createElement('option'); o.value=m.uid; o.textContent=(m.name||m.email||m.uid); optgroup.appendChild(o); });
+      sel.appendChild(optgroup);
+    }
   }
-  c.admin.transferReport(id,toUid,reason.trim()).catch(showError);
+  document.getElementById('admTransferReason').value='';
+  document.getElementById('admTransferModal').hidden=false;
+  document.getElementById('admTransferModal').setAttribute('data-report-id', id);
 }
 }
 
