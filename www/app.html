@@ -6587,6 +6587,50 @@ if(report.response){
 }
 
   /* Photos jointes */
+  if(window.CLOUD&&window.CLOUD.admin&&typeof window.CLOUD.admin.getReportInterventions==='function'){
+    try{
+      window.CLOUD.admin.getReportInterventions(report.id).then(function(interventions){
+        if(Array.isArray(interventions)&&interventions.length>0){
+          pdf.addPage();
+          pdf.setFontSize(14);
+          pdf.text(prepareArabicText('Historique du dossier'), margin, y, {align:'left'}); y+=8;
+          pdf.setLineWidth(0.3);
+          pdf.line(margin, y, pageW-margin, y); y+=6;
+          interventions.forEach(function(iv){
+            pdf.setFontSize(12);
+            var author = (iv.authorName||iv.authorUid||'') + (iv.authorRole?' ('+iv.authorRole+')':'');
+            pdf.text(prepareArabicText('• '+author+' — '+iv.type), margin, y, {align:'left'}); y+=5;
+            if(iv.content){
+              var ivLines=pdf.splitTextToSize(prepareArabicText(String(iv.content)), pageW-margin*2);
+              pdf.setFontSize(11);
+              var isArabicIv=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(iv.content));
+              pdf.text(ivLines, isArabicIv?pageW-margin:margin, y, {align:isArabicIv?'right':'left'}); y+=ivLines.length*5+4;
+            }
+            if(iv.statusBefore&&iv.statusAfter&&iv.statusBefore!==iv.statusAfter){
+              pdf.setFontSize(10);
+              pdf.text(prepareArabicText('Statut: '+iv.statusBefore+' → '+iv.statusAfter), margin, y, {align:'left'}); y+=4;
+            }
+            y+=2;
+            if(y>270){ pdf.addPage(); y=15; }
+          });
+        }
+        /* Photos jointes */
+        if(window.CLOUD&&window.CLOUD.getReportAttachment){
+          try{
+            window.CLOUD.getReportAttachment(report.id).then(function(arr){
+              attachImages(pdf, arr, t, pageW, margin, y);
+              finalizeAndShare(pdf, report, t);
+            }).catch(function(){ finalizeAndShare(pdf, report, t); });
+            return;
+          }catch(e){}
+        }
+        finalizeAndShare(pdf, report, t);
+      }).catch(function(){ finalizeAndShare(pdf, report, t); });
+      return;
+    }catch(e){}
+  }
+
+  /* Photos jointes */
   if(window.CLOUD&&window.CLOUD.getReportAttachment){
     try{
       window.CLOUD.getReportAttachment(report.id).then(function(arr){
@@ -10744,14 +10788,26 @@ c.admin.reopenReport(id,reason).catch(showError);
 else if(a==='transferReport'){
 var report=(S.reports||[]).filter(function(x){return x.id===id;})[0];
 if(report){
-var toUid=window.prompt(t.admPromptTransferTo||'UID du destinataire :','');
-if(toUid===null||!toUid.trim())return;
-var reason=window.prompt(t.admPromptTransferReason||'Motif du transfert :','');
-if(reason===null||reason.trim().length<3||reason.trim().length>500){
-toast(t.admToastTransferReasonInvalid||'Motif invalide (3 à 500 caractères).',4500);
-return;
-}
-c.admin.transferReport(id,toUid.trim(),reason.trim()).catch(showError);
+  // Liste des destinataires éligibles (sous-admins provinciaux, locaux, admin régional)
+  var recipients=(S.members||[]).filter(function(m){
+    return m.status==='active' && (m.role==='subadmin' || m.role==='subadminLocal' || m.role==='admin');
+  });
+  if(recipients.length===0){ toast('Aucun destinataire disponible.',4500); return; }
+  var opts=recipients.map(function(m){ return m.uid+'\t'+(m.name||m.email||m.uid)+' ('+(m.role==='subadmin'?'Sub-admin provincial':m.role==='subadminLocal'?'Sub-admin local':'Admin')+')'; }).join('\n');
+  var choice=window.prompt((t.admPromptTransferTo||'Sélectionner le destinataire (nom) :')+'\n'+opts+'\n\nSaisir le nom exact :','');
+  if(choice===null||!choice.trim())return;
+  var toUid=null;
+  recipients.forEach(function(m){
+    var label=(m.name||m.email||m.uid);
+    if(label.toLowerCase().indexOf(choice.trim().toLowerCase())!==-1) toUid=m.uid;
+  });
+  if(!toUid){ toast('Destinataire introuvable.',4500); return; }
+  var reason=window.prompt(t.admPromptTransferReason||'Motif du transfert :','');
+  if(reason===null||reason.trim().length<3||reason.trim().length>500){
+    toast(t.admToastTransferReasonInvalid||'Motif invalide (3 à 500 caractères).',4500);
+    return;
+  }
+  c.admin.transferReport(id,toUid,reason.trim()).catch(showError);
 }
 }
 
