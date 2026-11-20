@@ -2680,6 +2680,7 @@ var admin = {
     function(uid, structureId){
       if (!session.isSubAdmin) return Promise.reject(new Error('Réservé au sous-admin de province.'));
       var u = String(uid || '');
+      if (u === (session.user && session.user.uid || '')) return Promise.reject(new Error('Un sous-admin ne peut pas se proposer sous-admin local.'));
       var sid = String(structureId || '');
       if (!u || !sid) return Promise.reject(new Error('UID et structureId requis.'));
       var memberRef = doc(db, 'members', u);

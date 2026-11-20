@@ -7840,7 +7840,7 @@ esc(m.role==='subadmin'?t.admMemRemoveRole:t.admMemSetSubAdmin)+
 
 /* Le sous-admin provincial peut proposer un membre actif de SA
    province comme sous-admin local de l'une de ses structures. */
-if(S.isSubAdmin&&!S.isAdmin&&m.status==='active'&&m.prov&&m.prov===((S.member&&S.member.adminProvince)||'')){
+if(S.isSubAdmin&&!S.isAdmin&&m.status==='active'&&m.prov&&m.prov===((S.member&&S.member.adminProvince)||'')&&m.uid!==((S.user&&S.user.uid)||'')){
 acts+='<button type="button" class="btn ghost small" data-adm-act="proposeSubAdminLocal" data-uid="'+uid+'">'+esc(t.admMemProposeSubAdminLocal)+'</button>';
 }
 
