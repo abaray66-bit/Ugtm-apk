@@ -6563,13 +6563,13 @@ function shareReportPdf(report){
    pdf.setLineWidth(0.5);
    pdf.line(margin, y, pageW-margin, y); y+=6;
   pdf.setFontSize(11);
-pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'right'}); y+=6;
-if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), pageW-margin, y, {align:'right'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), pageW-margin, y, {align:'right'}); y+=6;
-if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), pageW-margin, y, {align:'right'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), pageW-margin, y, {align:'right'}); y+=6;
-if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), pageW-margin, y, {align:'right'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), pageW-margin, y, {align:'right'}); y+=8;
+pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'left'}); y+=6;
+if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), pageW-margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), pageW-margin, y, {align:'left'}); y+=6;
+if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), pageW-margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), pageW-margin, y, {align:'left'}); y+=6;
+if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), pageW-margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), pageW-margin, y, {align:'left'}); y+=8;
 
 if(report.description){
   pdf.setFontSize(12);
@@ -6578,16 +6578,16 @@ if(report.description){
   var lines=pdf.splitTextToSize(desc, pageW-margin*2);
   pdf.setFontSize(11);
   var isArabic=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.description||''));
-  pdf.text(lines, pageW-margin, y, {align:'right'}); y+=lines.length*5+6;
+  pdf.text(lines, pageW-margin, y, {align:'left'}); y+=lines.length*5+6;
 }
 
 if(report.response){
   pdf.setFontSize(12);
-  pdf.text(prepareArabicText('Réponse de l\'administration:'), pageW-margin, y, {align:'right'}); y+=6;
+  pdf.text(prepareArabicText('Réponse de l\'administration:'), pageW-margin, y, {align:'left'}); y+=6;
   var resp=prepareArabicText(String(report.response||''));
   var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
   pdf.setFontSize(11);
-  pdf.text(rlines, pageW-margin, y, {align:'right'}); y+=rlines.length*5+8;
+  pdf.text(rlines, pageW-margin, y, {align:'left'}); y+=rlines.length*5+8;
 }
 
   /* Photos jointes */
