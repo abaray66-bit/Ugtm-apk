@@ -11799,7 +11799,12 @@ window.UGTM.failed(err);
           row1('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
-          row1('Établissement / structure',app.establishment);
+          row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
+          if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
+          if(app.niveauSanitaire)row1('Niveau sanitaire',app.niveauSanitaire);
+          if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
+          if(app.unite)row1('Unité',app.unite);
+          if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
           row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(app['function']));
           row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(app.specialty),'PPR',app.ppr);
 
@@ -12194,6 +12199,15 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhProvince',app.province||'');
           prefillIfEmpty('adhEstablishment',app.establishment||'');
           prefillIfEmpty('adhService',app.service||'');
+          /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
+          if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
+          if(req.district) prefillIfEmpty('adhDistrict',req.district);
+          if(req.niveauSanitaire) document.getElementById('adhNiveauSanitaire').value=req.niveauSanitaire;
+          if(req.division) prefillIfEmpty('adhDivision',req.division);
+          if(req.serviceGst) prefillIfEmpty('adhServiceGst',req.serviceGst);
+          if(req.unite) prefillIfEmpty('adhUnite',req.unite);
+          if(req.serviceHospitalier) prefillIfEmpty('adhServiceHospitalier',req.serviceHospitalier);
+          if(req.espaceSanitaire||req.district) gstCascade();
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
