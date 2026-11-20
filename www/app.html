@@ -6583,20 +6583,19 @@ pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLa
 
 function attachImages(pdf, arr, t, pageW, margin, y){
   if(!Array.isArray(arr)||arr.length===0)return;
-  var imgY=y;
-  pdf.setFontSize(12);
-  pdf.text('Pièces jointes:', margin, imgY); imgY+=6;
   arr.forEach(function(a,i){
     if(!a||!(a.data||a.uri))return;
     var data=a.data||a.uri;
     var mime='image/jpeg';
     if(typeof data==='string'&&data.indexOf('data:')===0){ mime=data.substring(5,data.indexOf(';')); data=data.slice(data.indexOf(',')+1); }
     try{
-      pdf.addImage(data, mime, margin, imgY, pageW-margin*2, 40);
-      imgY+=46;
+      pdf.addPage();
+      pdf.setFontSize(12);
+      pdf.text('Pièce jointe '+(i+1)+'/'+arr.length, margin, 15);
+      pdf.addImage(data, mime, margin, 25, pageW-margin*2, 247);
     }catch(e){}
   });
-  return imgY;
+  return y;
 }
 
 function finalizeAndShare(pdf, report, t){
