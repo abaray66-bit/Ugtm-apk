@@ -1259,6 +1259,10 @@ async function submitAdhesion(application,signature){
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
     phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
+    espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),
+    niveauSanitaire:String(application.niveauSanitaire||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),
+    serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),
+    serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),
     service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
     specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
     type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
@@ -1289,9 +1293,9 @@ async function submitAdhesion(application,signature){
          la signature du responsable de la soumission précédente est
          effacée. Le dossier repart avec UNE seule signature — celle de
          l'adhérent — et la case du responsable à valider. */
-      tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),updatedAt:serverTimestamp()});
-    }else{
-      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),niveauSanitaire:String(application.niveauSanitaire||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),updatedAt:serverTimestamp()});
+     }else{
+       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),niveauSanitaire:String(application.niveauSanitaire||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
     }
     return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){
