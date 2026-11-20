@@ -2005,8 +2005,10 @@ var admin = {
         if (contactSnap.exists() && contactSnap.data().uid !== uid)
           throw new Error('Un sous-admin est déjà affecté à ce secteur. Retirez son rôle avant de le remplacer.');
 
-        var oldRef = doc(db, 'provinceContacts', old);
-        var oldSnap = await tx.get(oldRef);
+        var oldSnap = null;
+        if (old) {
+          oldSnap = await tx.get(doc(db, 'provinceContacts', old));
+        }
 
         tx.update(doc(db, 'members', uid), {role: 'subadmin', adminProvince: assigned});
 
