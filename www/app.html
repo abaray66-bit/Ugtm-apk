@@ -9769,8 +9769,8 @@ window.ugtmEsc=esc;
 
 function go(name){
 
-  if(name==='admin'&&!(S.isAdmin||S.isSubAdmin))
-  name='me';
+if(name==='admin'&&!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal))
+name='me';
 
   /* Accès au formulaire conditionné au statut du dossier :
      une demande en attente de traitement ou déjà traitée
