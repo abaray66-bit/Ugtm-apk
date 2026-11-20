@@ -6553,23 +6553,19 @@ function shareReportPdf(report){
   }
 
    pdf.setFontSize(20);
-   pdf.text(prepareArabicText('UGTM Souss-Massa — Signalement'), pageW/2, y, {align:'center'}); y+=6;
-   if(report.name&&!report.anonymous){
-     pdf.setFontSize(14);
-     pdf.text(prepareArabicText(report.name), pageW/2, y, {align:'center'}); y+=4;
-   }
+   pdf.text(prepareArabicText('UGTM Souss-Massa — Signalement'+(report.name&&!report.anonymous?' — '+report.name:'')), pageW/2, y, {align:'center'}); y+=6;
    pdf.setFontSize(12);
    pdf.text(prepareArabicText('Fédération nationale de la Santé — Région Souss-Massa'), pageW/2, y, {align:'center'}); y+=8;
    pdf.setLineWidth(0.5);
    pdf.line(margin, y, pageW-margin, y); y+=6;
   pdf.setFontSize(13);
-pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'left'}); y+=6;
-if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), pageW-margin, y, {align:'left'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), pageW-margin, y, {align:'left'}); y+=6;
-if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), pageW-margin, y, {align:'left'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), pageW-margin, y, {align:'left'}); y+=6;
-if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), pageW-margin, y, {align:'left'}); y+=6; }
-pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), pageW-margin, y, {align:'left'}); y+=8;
+pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), margin, y, {align:'left'}); y+=6;
+if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), margin, y, {align:'left'}); y+=6;
+if(report.etab){ pdf.text(prepareArabicText((t.shareReportEtab||'Etab')+': '+String(report.etab)), margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportProvince||'Prov')+': '+(provName(report.province,lang)||report.province||'')), margin, y, {align:'left'}); y+=6;
+if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+String(report.date)), margin, y, {align:'left'}); y+=6; }
+pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), margin, y, {align:'left'}); y+=8;
 
 if(report.description){
   pdf.setFontSize(14);
@@ -6583,7 +6579,7 @@ if(report.description){
 
 if(report.response){
   pdf.setFontSize(14);
-  pdf.text(prepareArabicText('Réponse de l\'administration:'), pageW-margin, y, {align:'left'}); y+=6;
+  pdf.text(prepareArabicText('Réponse de l\'administration:'), margin, y, {align:'left'}); y+=6;
   var resp=prepareArabicText(String(report.response||''));
   var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
   pdf.setFontSize(13);
