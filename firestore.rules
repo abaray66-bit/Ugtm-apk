@@ -661,333 +661,41 @@ service cloud.firestore {
     }
 
     match /reports/{id} {
-      // ---- LECTURE ----
-      // Admin : tous les reports.
-      // Sub-admin provincial : reports de sa province (code ou libellé).
-      // Sub-admin local : reports dont structureId == sa structure.
-      // Membre propriétaire : son propre report (sauf anonymes).
-      // Reports legacy sans structureId : lisibles par admin et sub-admin provincial.
       allow read: if isAdmin()
-        || (isSubAdmin()
-            && (resource.data.province == assignedProvince()
-                || resource.data.province == assignedProvinceLabel()))
-        || (isSubAdminLocal()
-            && resource.data.get('structureId', '') != ''
-            && resource.data.structureId == assignedLocalStructure())
-        || (signedIn()
-            && resource.data.anonymous == false
-            && resource.data.ownerUid == request.auth.uid);
+        || (isSubAdmin() && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel()))
+        || (isSubAdminLocal() && resource.data.get('structureId', '') != '' && resource.data.structureId == assignedLocalStructure())
+        || (signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid);
 
-      // ---- CRÉATION ----
-      allow create: if request.resource.data.keys().hasOnly([
-          'ownerUid',
-          'anonymous',
-          'name',
-          'etab',
-          'structureId',
-          'age',
-          'da',
-          'category',
-          'description',
-          'date',
-          'province',
-          'attachmentName',
-          'attachmentType',
-          'attachmentData',
-          'attachmentCount',
-          'status',
-          'response',
-          'interventionLevel',
-          'assignedTo',
-          'assignedStructure',
-          'assignedProvince',
-          'memberResponsePending',
-          'createdAt',
-          'updatedAt'
-        ])
+      allow create: if (signedIn() || request.resource.data.anonymous == true)
         && request.resource.data.status == 'new'
-        && request.resource.data.response == ''
-        && request.resource.data.interventionLevel == 'local'
-        && request.resource.data.get('assignedTo', '') == ''
-        && request.resource.data.get('memberResponsePending', false) == false
         && request.resource.data.createdAt == request.time
-        && request.resource.data.updatedAt == request.time
-        && request.resource.data.anonymous is bool
-        && request.resource.data.name is string
-        && request.resource.data.etab is string
-        && request.resource.data.structureId is string
-        && (request.resource.data.anonymous == true
-            || request.resource.data.structureId.size() >= 0)
-        && request.resource.data.da is string
-        && request.resource.data.category is string
-        && request.resource.data.description is string
-        && request.resource.data.date is string
-        && request.resource.data.province is string
-        && request.resource.data.province in [
-          'Agadir Ida-Outanane',
-          'Inezgane-Aït Melloul',
-          'Chtouka-Aït Baha',
-          'Taroudant',
-          'Tiznit',
-          'Tata'
-        ]
-        && request.resource.data.attachmentName is string
-        && request.resource.data.attachmentType is string
-        && request.resource.data.attachmentCount is int
-        && request.resource.data.attachmentCount >= 0
-        && request.resource.data.attachmentCount <= 3
-        && request.resource.data.attachmentData is string
-        && okText(request.resource.data.name, 120)
-        && okText(request.resource.data.etab, 160)
-        && okText(request.resource.data.structureId, 40)
-        && okText(request.resource.data.age, 10)
-        && okText(request.resource.data.da, 80)
-        && okText(request.resource.data.category, 60)
-        && okText(request.resource.data.description, 4000)
-        && request.resource.data.description.size() >= 10
-        && request.resource.data.date.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
-        && okText(request.resource.data.date, 20)
-        && okText(request.resource.data.attachmentName, 120)
-        && okText(request.resource.data.attachmentType, 80)
-        && okText(request.resource.data.attachmentData, 420000)
-        && (
-          (
-            request.resource.data.anonymous == true
-            && request.resource.data.ownerUid == ''
-            && request.resource.data.name == ''
-            && request.resource.data.age == ''
-          ) || (
-            signedIn()
-            && request.resource.data.anonymous == false
-            && request.resource.data.ownerUid == request.auth.uid
-          )
-        );
+        && request.resource.data.updatedAt == request.time;
 
-      // ---- MISE À JOUR ----
-      // Cas A : Responsable habilité
-      allow update: if isReportManager(resource.data)
-        && request.resource.data.updatedAt == request.time
-        && request.resource.data.lastInterventionBy == request.auth.uid
-        && request.resource.data.lastInterventionAt == request.time
-        // Transfert : si assignedTo change, transferredReason obligatoire et != soi-même
-        && (request.resource.data.assignedTo == resource.data.get('assignedTo', '')
-            || (request.resource.data.get('transferredReason', '').size() > 0
-                && request.resource.data.get('transferredReason', '').size() <= 500
-                && request.resource.data.assignedTo != request.auth.uid))
-        // Transfert : vérification du destinataire (même province pour subadmin)
-        && (request.resource.data.assignedTo == resource.data.get('assignedTo', '')
-            || isAdmin()
-            || (isSubAdmin() && exists(/databases/$(database)/documents/members/$(request.resource.data.assignedTo))
-                && get(/databases/$(database)/documents/members/$(request.resource.data.assignedTo)).data.adminProvince == assignedProvince())
-            || (isSubAdminLocal() && exists(/databases/$(database)/documents/members/$(request.resource.data.assignedTo))
-                && get(/databases/$(database)/documents/members/$(request.resource.data.assignedTo)).data.adminStructure == assignedLocalStructure()))
-        // Clôture : ne pas clôturer un report déjà clôturé
-        && (request.resource.data.status != 'closed' || resource.data.status != 'closed')
-        // Réouverture : reopenReason obligatoire
-        && (request.resource.data.status != 'reopened'
-            || (request.resource.data.get('reopenReason', '').size() > 0
-                && request.resource.data.get('reopenReason', '').size() <= 500));
-
-      // Cas B : Membre propriétaire répond
-      allow update: if signedIn()
-        && resource.data.anonymous == false
-        && resource.data.ownerUid == request.auth.uid
-        && resource.data.status == 'pending_response'
-        && request.resource.data.status == 'in_progress'
-        && request.resource.data.memberResponsePending == false
-        && request.resource.data.updatedAt == request.time
-        && request.resource.data.lastInterventionBy == request.auth.uid
-        && request.resource.data.lastInterventionAt == request.time;
-
-      // Cas C : Membre propriétaire réouvre
-      allow update: if signedIn()
-        && resource.data.anonymous == false
-        && resource.data.ownerUid == request.auth.uid
-        && resource.data.status == 'closed'
-        && request.resource.data.status == 'reopened'
-        && request.resource.data.reopenedAt == request.time
-        && request.resource.data.reopenedBy == request.auth.uid
-        && request.resource.data.get('reopenReason', '').size() > 0
-        && request.resource.data.get('reopenReason', '').size() <= 500
-        && request.resource.data.updatedAt == request.time
-        && request.resource.data.lastInterventionBy == request.auth.uid
-        && request.resource.data.lastInterventionAt == request.time;
+      allow update: if isAdmin() || isSubAdmin() || isSubAdminLocal();
+      allow update: if signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid;
 
       allow delete: if isAdmin();
     }
 
-    // =========================
-    // INTERVENTIONS DES SIGNALEMENTS
-    // Sous-collection immuable : chaque intervention est un document
-    // historique qui ne peut ni être modifié ni supprimé.
-    // =========================
     match /reportInterventions/{id} {
-      // ---- LECTURE ----
       allow read: if isAdmin()
-        || (isSubAdmin()
-            && (get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.province == assignedProvince()
-                || get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.province == assignedProvinceLabel()))
-        || (isSubAdminLocal()
-            && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.get('structureId', '') != ''
-            && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.structureId == assignedLocalStructure())
-        || (signedIn()
-            && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.anonymous == false
-            && get(/databases/$(database)/documents/reports/$(resource.data.reportId)).data.ownerUid == request.auth.uid);
+        || (isSubAdmin() && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel()))
+        || (isSubAdminLocal() && resource.data.get('structureId', '') != '' && resource.data.structureId == assignedLocalStructure())
+        || (signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid);
 
-      // ---- CRÉATION ----
-      allow create: if signedIn()
-        && request.resource.data.keys().hasOnly([
-            'reportId', 'seq', 'authorUid', 'authorRole', 'authorName',
-            'authorStructure', 'authorProvince', 'type', 'level', 'content',
-            'attachmentIds', 'statusBefore', 'statusAfter', 'createdAt', 'isSystem'
-          ])
-        && request.resource.data.reportId is string
-        && request.resource.data.reportId.size() > 0
-        && exists(/databases/$(database)/documents/reports/$(request.resource.data.reportId))
-        && request.resource.data.seq is int
-        && request.resource.data.seq >= 0
-        && request.resource.data.authorUid == request.auth.uid
-        && request.resource.data.authorRole in ['member', 'subadminLocal', 'subadmin', 'admin']
-        && request.resource.data.type in ['admin_note', 'member_reply', 'status_change', 'transfer', 'closure', 'reopen', 'attachment_added', 'system']
-        && request.resource.data.level in ['local', 'provincial', 'regional', 'national', 'institutional']
-        && request.resource.data.content is string
-        && request.resource.data.content.size() > 0
-        && request.resource.data.content.size() <= 4000
-        && request.resource.data.statusBefore in ['new', 'in_progress', 'pending_response', 'closed', 'reopened']
-        && request.resource.data.statusAfter in ['new', 'in_progress', 'pending_response', 'closed', 'reopened']
-        && request.resource.data.createdAt == request.time
-        && (
-          // Responsable habilité sur le report parent
-          isAdmin()
-          || (isSubAdmin()
-              && (get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.province == assignedProvince()
-                  || get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.province == assignedProvinceLabel()))
-          || (isSubAdminLocal()
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.get('structureId', '') != ''
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.structureId == assignedLocalStructure())
-          // Membre propriétaire (types limités)
-          || (get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.anonymous == false
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.ownerUid == request.auth.uid
-              && request.resource.data.type in ['member_reply', 'reopen', 'attachment_added'])
-        )
-        // Cohérence type/authorRole
-        && (
-          (request.resource.data.type == 'member_reply' && request.resource.data.authorRole == 'member')
-          || (request.resource.data.type in ['admin_note', 'status_change', 'transfer', 'closure']
-              && request.resource.data.authorRole != 'member')
-          || (request.resource.data.type in ['reopen', 'attachment_added', 'system'])
-        )
-        // authorRole doit correspondre au rôle réel
-        && (
-          (request.resource.data.authorRole == 'member' && !isAdmin() && !isSubAdmin() && !isSubAdminLocal())
-          || (request.resource.data.authorRole == 'subadminLocal' && isSubAdminLocal())
-          || (request.resource.data.authorRole == 'subadmin' && isSubAdmin())
-          || (request.resource.data.authorRole == 'admin' && isAdmin())
-        )
-        // authorName doit correspondre au nom réel (sauf admin)
-        && (
-          (request.resource.data.authorRole == 'admin' && request.resource.data.authorName.size() > 0 && request.resource.data.authorName.size() <= 120)
-          || (request.resource.data.authorRole != 'admin'
-              && request.resource.data.authorName == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.name)
-        )
-        // isSystem réservé aux admins
-        && (request.resource.data.get('isSystem', false) == false || isAdmin())
-        // authorStructure doit correspondre (si posé)
-        && (
-          request.resource.data.get('authorStructure', '') == ''
-          || request.resource.data.authorStructure == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('adminStructure', '')
-          || request.resource.data.authorStructure == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('etab', '')
-        )
-        // authorProvince doit correspondre (si posé)
-        && (
-          request.resource.data.get('authorProvince', '') == ''
-          || request.resource.data.authorProvince == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('adminProvince', '')
-          || request.resource.data.authorProvince == get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('prov', '')
-        )
-        // Cohérence statusBefore/statusAfter
-        && (
-          (request.resource.data.type == 'closure' && request.resource.data.statusAfter == 'closed')
-          || (request.resource.data.type == 'member_reply' && request.resource.data.statusAfter == 'in_progress')
-          || (request.resource.data.type == 'transfer' && request.resource.data.statusAfter == request.resource.data.statusBefore)
-          || (request.resource.data.type == 'reopen' && request.resource.data.statusAfter == 'reopened')
-          || (request.resource.data.type in ['admin_note', 'attachment_added', 'system', 'status_change'])
-        );
+      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid && request.resource.data.createdAt == request.time;
 
-      // ---- MISE À JOUR : INTERDITE ----
       allow update: if false;
-
-      // ---- SUPPRESSION : INTERDITE ----
       allow delete: if false;
     }
 
-    // =========================
-    // PIÈCES JOINTES DES SIGNALEMENTS
-    // =========================
     match /reportAttachments/{id} {
       allow read: if isAdmin()
-        || (isSubAdmin()
-            && (resource.data.province == assignedProvince()
-                || resource.data.province == assignedProvinceLabel()))
-        || (isSubAdminLocal()
-            && resource.data.get('structureId', '') != ''
-            && resource.data.structureId == assignedLocalStructure())
-        || (signedIn()
-            && resource.data.anonymous == false
-            && resource.data.ownerUid == request.auth.uid);
+        || (isSubAdmin() && (resource.data.province == assignedProvince() || resource.data.province == assignedProvinceLabel()))
+        || (isSubAdminLocal() && resource.data.get('structureId', '') != '' && resource.data.structureId == assignedLocalStructure())
+        || (signedIn() && resource.data.anonymous == false && resource.data.ownerUid == request.auth.uid);
 
-      allow create: if request.resource.data.keys().hasOnly([
-          'ownerUid',
-          'anonymous',
-          'province',
-          'structureId',
-          'name',
-          'type',
-          'data',
-          'reportId',
-          'interventionSeq',
-          'createdAt'
-        ])
-        && request.resource.data.createdAt == request.time
-        && request.resource.data.anonymous is bool
-        && request.resource.data.ownerUid is string
-        && request.resource.data.province is string
-        && request.resource.data.province in [
-          'Agadir Ida-Outanane',
-          'Inezgane-Aït Melloul',
-          'Chtouka-Aït Baha',
-          'Taroudant',
-          'Tiznit',
-          'Tata'
-        ]
-        && request.resource.data.name is string
-        && request.resource.data.type is string
-        && request.resource.data.data is string
-        && request.resource.data.reportId is string
-        && request.resource.data.reportId.size() > 0
-        && exists(/databases/$(database)/documents/reports/$(request.resource.data.reportId))
-        && okText(request.resource.data.name, 120)
-        && okText(request.resource.data.type, 80)
-        && okText(request.resource.data.data, 420000)
-        && request.resource.data.data.size() > 0
-        && (
-          // Responsable habilité sur le report parent
-          isAdmin()
-          || (isSubAdmin()
-              && (get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.province == assignedProvince()
-                  || get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.province == assignedProvinceLabel()))
-          || (isSubAdminLocal()
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.get('structureId', '') != ''
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.structureId == assignedLocalStructure())
-          // Membre propriétaire du report parent
-          || (get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.anonymous == false
-              && get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.ownerUid == request.auth.uid)
-        )
-        // Cohérence dénormalisée
-        && request.resource.data.province == get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.province
-        && request.resource.data.ownerUid == get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.ownerUid
-        && request.resource.data.anonymous == get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.anonymous
-        && request.resource.data.get('structureId', '') == get(/databases/$(database)/documents/reports/$(request.resource.data.reportId)).data.get('structureId', '')
-        && request.resource.data.get('interventionSeq', -1) is int;
+      allow create: if signedIn() && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 420000 && request.resource.data.createdAt == request.time;
 
       allow update: if false;
       allow delete: if isAdmin();
