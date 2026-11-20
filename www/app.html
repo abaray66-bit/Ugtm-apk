@@ -6598,8 +6598,8 @@ function attachImages(pdf, arr, t, pageW, margin, y){
       pdf.addPage();
       pdf.setFontSize(12);
       pdf.text('Pièce jointe '+(i+1)+'/'+arr.length, margin, 15);
-      // Compresser en hauteur : max 120mm de haut, largeur auto
-      pdf.addImage('data:'+mime+';base64,'+data, mime, margin, 25, pageW-margin*2, 120, undefined, 'FAST');
+      // Photo centrée, hauteur max 180mm, largeur auto
+      pdf.addImage('data:'+mime+';base64,'+data, mime, margin, 25, pageW-margin*2, 180, undefined, 'FAST');
     }catch(e){
       try{
         pdf.addPage();
