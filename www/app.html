@@ -4045,8 +4045,13 @@ Fédération nationale de la Santé
 Région Souss-Massa`,
  aud:`Adhérents`,
 newsPhoto:`Photo (facultative)`,
-newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
-newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
+  newsPhotoHint:`Image JPG, PNG ou WebP, redimensionnée automatiquement.`,
+  newsPhotoError:`Choisissez une image JPG, PNG ou WebP de taille raisonnable.`,
+  newsPhotoErrorFormat:`Format d'image non supporté. Utilisez JPG, PNG ou WebP.`,
+  newsPhotoErrorSize:`Fichier trop volumineux (maximum 50 Mo).`,
+  newsPhotoErrorRead:`Impossible de lire le fichier.`,
+  newsPhotoErrorDecode:`Image corrompue ou non décodable.`,
+  newsPhotoErrorTooBig:`Image trop volumineuse après compression (max 800 Ko).`,
   newsPhotos:`Photos (1 à 3)`,
   newsPhotosHint:`Jusqu'à 3 images, redimensionnées automatiquement.`,
   reportPhotos:`Photos (1 à 3)`,
@@ -4740,8 +4745,13 @@ share:`مشاركة عبر واتساب`,
 جهة سوس ماسة`,
  aud:`للمنخرطين`,
 newsPhoto:`صورة (اختياري)`,
-newsPhotoHint:`صورة JPG أو PNG أو WebP، سيتم تصغيرها تلقائيا.`,
-newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناسب.`,
+  newsPhotoHint:`صورة JPG أو PNG أو WebP، يتم تصغيرها تلقائيا.`,
+  newsPhotoError:`اختاروا صورة JPG أو PNG أو WebP بحجم مناسب.`,
+  newsPhotoErrorFormat:`شكل الصورة غير مدعوم. استخدموا JPG أو PNG أو WebP.`,
+  newsPhotoErrorSize:`الملف كبير جدًا (أقصى 50 م.ب).`,
+  newsPhotoErrorRead:`لا يمكن قراءة الملف.`,
+  newsPhotoErrorDecode:`الصورة تالفة أو لا يمكن فك تشفيرها.`,
+  newsPhotoErrorTooBig:`الصورة كبيرة جدًا بعد الضغط (أقصى 800 ك.ب).`,
   newsPhotos:`صور (1 إلى 3)`,
   newsPhotosHint:`حتى 3 صور، يتم تصغيرها تلقائيًا.`,
   reportPhotos:`صور (1 إلى 3)`,
@@ -9268,45 +9278,45 @@ $('eDate').value=todayStr();
 }
 
 function imageData(file){
-return new Promise(function(resolve,reject){
-if(!file){resolve('');return;}
-// Vérification du format : accepte JPG, PNG, WebP, GIF (extension ou MIME type)
-var isImageType = /image\//.test(file.type||'');
-var isImageExt = /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name||'');
-if(!isImageType && !isImageExt){reject(new Error(T().newsPhotoError));return;}
-if(file.size>50000000){reject(new Error(T().newsPhotoError));return;}
-var reader=new FileReader();
-reader.onerror=function(){reject(new Error(T().newsPhotoError));};
-reader.onload=function(){
-var img=new Image();
-img.onerror=function(){reject(new Error(T().newsPhotoError));};
-img.onload=function(){
-try{
-var scale=Math.min(1,1000/Math.max(img.width,img.height));
-var canvas=document.createElement('canvas');
-var quality=.82,data='';
-var minScale=0.02;
-for(var attempt=0;attempt<100;attempt++){
-canvas.width=Math.max(1,Math.round(img.width*scale));
-canvas.height=Math.max(1,Math.round(img.height*scale));
-var ctx=canvas.getContext('2d');
-if(!ctx){reject(new Error(T().newsPhotoError));return;}
-ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-ctx.drawImage(img,0,0,canvas.width,canvas.height);
-data=canvas.toDataURL('image/jpeg',quality);
-if(data.length<=800000)break;
-if(quality>0.2){quality=Math.max(0.2,quality-0.08);}
-else if(scale>minScale){scale*=0.7;quality=0.7;}
-else{break;}
-}
-if(data.length>800000){reject(new Error(T().newsPhotoError));return;}
-resolve(data);
-}catch(err){reject(new Error(T().newsPhotoError));}
-};
-img.src=reader.result;
-};
-reader.readAsDataURL(file);
-});
+  return new Promise(function(resolve,reject){
+    if(!file){resolve('');return;}
+    // Vérification du format : accepte JPG, PNG, WebP, GIF (extension ou MIME type)
+    var isImageType = /image\//.test(file.type||'');
+    var isImageExt = /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name||'');
+    if(!isImageType && !isImageExt){reject(new Error(T().newsPhotoErrorFormat));return;}
+    if(file.size>50000000){reject(new Error(T().newsPhotoErrorSize));return;}
+    var reader=new FileReader();
+    reader.onerror=function(){reject(new Error(T().newsPhotoErrorRead));};
+    reader.onload=function(){
+      var img=new Image();
+      img.onerror=function(){reject(new Error(T().newsPhotoErrorDecode));};
+      img.onload=function(){
+        try{
+          var scale=Math.min(1,1000/Math.max(img.width,img.height));
+          var canvas=document.createElement('canvas');
+          var quality=.82,data='';
+          var minScale=0.02;
+          for(var attempt=0;attempt<100;attempt++){
+            canvas.width=Math.max(1,Math.round(img.width*scale));
+            canvas.height=Math.max(1,Math.round(img.height*scale));
+            var ctx=canvas.getContext('2d');
+            if(!ctx){reject(new Error(T().newsPhotoErrorDecode));return;}
+            ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.drawImage(img,0,0,canvas.width,canvas.height);
+            data=canvas.toDataURL('image/jpeg',quality);
+            if(data.length<=800000)break;
+            if(quality>0.2){quality=Math.max(0.2,quality-0.08);}
+            else if(scale>minScale){scale*=0.7;quality=0.7;}
+            else{break;}
+          }
+          if(data.length>800000){reject(new Error(T().newsPhotoErrorTooBig));return;}
+          resolve(data);
+        }catch(err){reject(new Error(T().newsPhotoErrorDecode));}
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 /* Un double appui sur « Publier » créait deux publications (donc deux
