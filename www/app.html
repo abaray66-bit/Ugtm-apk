@@ -6552,17 +6552,17 @@ function shareReportPdf(report){
      }
   }
 
-   pdf.setFontSize(18);
+   pdf.setFontSize(20);
    pdf.text(prepareArabicText('UGTM Souss-Massa — Signalement'), pageW/2, y, {align:'center'}); y+=6;
    if(report.name&&!report.anonymous){
-     pdf.setFontSize(12);
+     pdf.setFontSize(14);
      pdf.text(prepareArabicText(report.name), pageW/2, y, {align:'center'}); y+=4;
    }
-   pdf.setFontSize(10);
+   pdf.setFontSize(12);
    pdf.text(prepareArabicText('Fédération nationale de la Santé — Région Souss-Massa'), pageW/2, y, {align:'center'}); y+=8;
    pdf.setLineWidth(0.5);
    pdf.line(margin, y, pageW-margin, y); y+=6;
-  pdf.setFontSize(11);
+  pdf.setFontSize(13);
 pdf.text(prepareArabicText((t.shareReportRef||'Ref')+': '+(report.id||'')), pageW-margin, y, {align:'left'}); y+=6;
 if(!report.anonymous&&report.name){ pdf.text(prepareArabicText((t.shareReportMember||'Adhérent')+': '+String(report.name)), pageW-margin, y, {align:'left'}); y+=6; }
 pdf.text(prepareArabicText((t.shareReportCategory||'Cat')+': '+(reportCategoryLabelI18n(report.category)||report.category||'')), pageW-margin, y, {align:'left'}); y+=6;
@@ -6572,22 +6572,22 @@ if(report.date){ pdf.text(prepareArabicText((t.shareReportDate||'Date')+': '+Str
 pdf.text(prepareArabicText((t.shareReportStatus||'Statut')+': '+(reportStatusLabelI18n(report.status)||report.status||'')), pageW-margin, y, {align:'left'}); y+=8;
 
 if(report.description){
-  pdf.setFontSize(12);
+  pdf.setFontSize(14);
   pdf.text(prepareArabicText((t.shareReportSummary||'Résumé')+':'), margin, y, {align:'left'}); y+=6;
   var desc=prepareArabicText(String(report.description||''));
   var lines=pdf.splitTextToSize(desc, pageW-margin*2);
-  pdf.setFontSize(11);
+  pdf.setFontSize(13);
   var isArabic=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.description||''));
-  pdf.text(lines, pageW-margin, y, {align:'left'}); y+=lines.length*5+6;
+  pdf.text(lines, isArabic?pageW-margin:margin, y, {align:isArabic?'right':'left'}); y+=lines.length*5+6;
 }
 
 if(report.response){
-  pdf.setFontSize(12);
+  pdf.setFontSize(14);
   pdf.text(prepareArabicText('Réponse de l\'administration:'), pageW-margin, y, {align:'left'}); y+=6;
   var resp=prepareArabicText(String(report.response||''));
   var rlines=pdf.splitTextToSize(resp, pageW-margin*2);
-  pdf.setFontSize(11);
-  pdf.text(rlines, pageW-margin, y, {align:'left'}); y+=rlines.length*5+8;
+  pdf.setFontSize(13);
+  var isArabicResp=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(report.response||'')); pdf.text(rlines, isArabicResp?pageW-margin:margin, y, {align:isArabicResp?'right':'left'}); y+=rlines.length*5+8;
 }
 
   /* Photos jointes */
