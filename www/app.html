@@ -6588,12 +6588,23 @@ function attachImages(pdf, arr, t, pageW, margin, y){
     var data=a.data||a.uri;
     var mime='image/jpeg';
     if(typeof data==='string'&&data.indexOf('data:')===0){ mime=data.substring(5,data.indexOf(';')); data=data.slice(data.indexOf(',')+1); }
+    if(!mime||mime==='image/jpeg'){
+      // Try to detect mime from base64 header
+      if(data.indexOf('/9j/')===0) mime='image/jpeg';
+      else if(data.indexOf('iVBOR')===0) mime='image/png';
+      else if(data.indexOf('R0lGOD')===0) mime='image/gif';
+    }
     try{
       pdf.addPage();
       pdf.setFontSize(12);
       pdf.text('Pièce jointe '+(i+1)+'/'+arr.length, margin, 15);
-      pdf.addImage(data, mime, margin, 25, pageW-margin*2, 247);
-    }catch(e){}
+      pdf.addImage('data:'+mime+';base64,'+data, mime, margin, 25, pageW-margin*2, 247);
+    }catch(e){
+      try{
+        pdf.addPage();
+        pdf.text('Erreur chargement image '+(i+1), margin, 15);
+      }catch(e2){}
+    }
   });
   return y;
 }
