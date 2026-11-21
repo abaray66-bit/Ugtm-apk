@@ -1260,6 +1260,14 @@ async function submitAdhesion(application,signature){
     phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
     rattachement:String(application.rattachement||'').slice(0,40),
+    rattachementLabel:String(application.rattachementLabel||'').trim().slice(0,120),
+    province:String(application.province||'').slice(0,40),provinceLabel:String(application.provinceLabel||'').trim().slice(0,120),
+    structureLocale:String(application.structureLocale||'').trim().slice(0,160),
+    niveauSanitaire:String(application.niveauSanitaire||'').trim().slice(0,40),niveauSanitaireLabel:String(application.niveauSanitaireLabel||'').trim().slice(0,120),
+    espaceSanitaireLabel:String(application.espaceSanitaireLabel||'').trim().slice(0,120),districtLabel:String(application.districtLabel||'').trim().slice(0,120),
+    divisionLabel:String(application.divisionLabel||'').trim().slice(0,120),serviceGstLabel:String(application.serviceGstLabel||'').trim().slice(0,120),uniteLabel:String(application.uniteLabel||'').trim().slice(0,120),
+    directionPoleLabel:String(application.directionPoleLabel||'').trim().slice(0,160),divisionPoleLabel:String(application.divisionPoleLabel||'').trim().slice(0,160),servicePoleLabel:String(application.servicePoleLabel||'').trim().slice(0,160),
+    directionAdminLabel:String(application.directionAdminLabel||'').trim().slice(0,160),divisionAdminLabel:String(application.divisionAdminLabel||'').trim().slice(0,160),serviceAdminLabel:String(application.serviceAdminLabel||'').trim().slice(0,160),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
     espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),
     division:String(application.division||'').trim().slice(0,40),
@@ -1268,16 +1276,20 @@ async function submitAdhesion(application,signature){
     service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
     specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
     directionPole:String(application.directionPole||'').trim().slice(0,120),divisionPole:String(application.divisionPole||'').trim().slice(0,120),servicePole:String(application.servicePole||'').trim().slice(0,120),
+    directionAdmin:String(application.directionAdmin||'').trim().slice(0,120),
     divisionAdmin:String(application.divisionAdmin||'').trim().slice(0,120),serviceAdmin:String(application.serviceAdmin||'').trim().slice(0,120),
     type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
   };
   var isSanitaire = clean.rattachement === 'dgaSanitaire';
   var isPole = clean.rattachement === 'pole';
   var isAdmin = clean.rattachement === 'dgaAdministrative';
-  var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.rattachement,clean.function,clean.commitment,application.signature];
-  if(isSanitaire) reqFields.push(clean.province);
+  var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.rattachement,clean.province,clean.function,clean.specialty,clean.commitment,application.signature];
+  if(isSanitaire) reqFields.push(clean.niveauSanitaire,clean.establishment);
   if(isPole) reqFields.push(clean.directionPole,clean.divisionPole,clean.servicePole);
-  if(isAdmin) reqFields.push(clean.divisionAdmin,clean.serviceAdmin);
+  if(isAdmin){
+    reqFields.push(clean.directionAdmin,clean.serviceAdmin);
+    if(clean.directionAdmin!=='direct')reqFields.push(clean.divisionAdmin);
+  }
   if(reqFields.some(function(v){return!v;}))
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
   if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
