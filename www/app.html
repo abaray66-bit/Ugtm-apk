@@ -12632,10 +12632,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             });
           }
 
-          if (provVal && typeof HOSP_LIST !== 'undefined') {
+          if (espVal && typeof HOSP_LIST !== 'undefined') {
             var distVal = district ? district.value : '';
             HOSP_LIST.filter(function(h) {
-              if (h.p !== provVal) return false;
+              if (h.e !== espVal) return false;
               if (distVal && h.d && h.d !== distVal) return false;
               return true;
             }).forEach(function(h) {
@@ -12735,8 +12735,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if (esspSelect) {
           var esspCurrent = esspSelect.value;
           esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          if (etabSelect.value === 'other' && provVal && typeof ESSP_LIST !== 'undefined') {
-            ESSP_LIST.filter(function(e) { return e.p === provVal; }).forEach(function(e) {
+          if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
+            ESSP_LIST.filter(function(e) { return e.e === espVal; }).forEach(function(e) {
               var opt = document.createElement('option');
               opt.value = e.n; opt.textContent = e.n; esspSelect.appendChild(opt);
             });
@@ -12764,26 +12764,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       // Seul le rattachement relance gstCascade (affichage/masquage des branches)
       // Chaque select enfant gère ses propres enfants via son propre onchange
       // défini dans gstCascade : ainsi un choix enfant ne réinitialise jamais ses parents.
-      var ids = ['adhRattachement',
-                 'adhStructure','adhFunction','adhSpecialty','adhEsspSelect'].filter(Boolean);
+      var ids = ['adhRattachement'].filter(Boolean);
       ids.forEach(function(id){
         var el = document.getElementById(id);
         if (el) {
           el.addEventListener('change', gstCascade);
           el.addEventListener('input', gstCascade);
-          /* WebView Android : forcer le rafraîchissement de l'affichage
-             de la valeur sélectionnée après fermeture du dropdown. */
-          el.addEventListener('blur', function(){
-            var sel=this;
-            if(sel.value){
-              sel.blur();
-              setTimeout(function(){
-                var idx=sel.selectedIndex;
-                sel.selectedIndex=idx;
-                sel.focus();
-              }, 0);
-            }
-          });
           fixSelectLabels(id);
         }
       });
@@ -12792,17 +12778,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       // Quand elle change, on ne touche pas aux niveaux sanitaires (espace, district, etc.).
       var provSel = document.getElementById('adhProvince');
       if (provSel) {
-        provSel.addEventListener('blur', function(){
-          var sel=this;
-          if(sel.value){
-            sel.blur();
-            setTimeout(function(){
-              var idx=sel.selectedIndex;
-              sel.selectedIndex=idx;
-              sel.focus();
-            }, 0);
-          }
-        });
         fixSelectLabels('adhProvince');
       }
 
@@ -12857,9 +12832,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           // ESSP selon district
           if (esspSelect) {
             esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            if (etabSelect.value === 'other' && p && typeof ESSP_LIST !== 'undefined') {
+            if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
               ESSP_LIST.filter(function(e) {
-                if (e.p !== p) return false;
+                if (e.e !== espVal) return false;
                 if (d && e.d && e.d !== d) return false;
                 return true;
               }).forEach(function(e) {
@@ -12879,17 +12854,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if (serviceHosp) serviceHosp.value = '';
           if (etabOther) etabOther.style.display = 'none';
           fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
-        });
-        distSel.addEventListener('blur', function(){
-          var sel=this;
-          if(sel.value){
-            sel.blur();
-            setTimeout(function(){
-              var idx=sel.selectedIndex;
-              sel.selectedIndex=idx;
-              sel.focus();
-            }, 0);
-          }
         });
         fixSelectLabels('adhDistrict');
       }
