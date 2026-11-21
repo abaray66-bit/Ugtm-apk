@@ -12726,405 +12726,335 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       window.addEventListener('resize',closeActive);
     }
 
-    function gstCascade() {
-      var rattachement = document.getElementById('adhRattachement');
-      var rattleVal = rattachement ? rattachement.value : '';
-
-      // Masquer tous les groupes de branche
-      ['rattle-pole','rattle-sanitaire','rattle-administrative'].forEach(function(cls){
-        document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display = 'none'; });
+    function setCascadeField(id, visible){
+      var wrap=document.getElementById(id);
+      if(wrap)wrap.style.display=visible?'':'none';
+    }
+    function resetCascadeSelect(id, disabled){
+      var el=document.getElementById(id);
+      if(!el)return;
+      el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
+      el.value='';
+      el.disabled=!!disabled;
+      fixSelectLabels(id);
+    }
+    function fillCascadeSelect(id, items, disabled){
+      var el=document.getElementById(id);
+      if(!el)return;
+      var selected=el.value;
+      el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
+      (items||[]).forEach(function(item){
+        var o=document.createElement('option');
+        if(typeof item==='string'){o.value=item;o.textContent=item;}
+        else{o.value=item.value;o.textContent=item.label;}
+        el.appendChild(o);
       });
-
-      function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
-      function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
-
-      resetInput('adhEspaceSanitaire');
-      document.getElementById('adhEtabOtherWrap').style.display='none';
-      ['adhDirectionPole','adhDivisionPole','adhServicePole'].forEach(resetSel);
-      ['adhDivisionAdmin','adhServiceAdmin'].forEach(resetSel);
-
-      if (!rattleVal) { fixSelectLabels('adhRattachement'); return; }
-
-      // === BRANCHE : PÔLE === Direction → Division → Service
-      if (rattleVal === 'pole') {
-        document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = ''; });
-        var dirSel = document.getElementById('adhDirectionPole');
-        var divSel = document.getElementById('adhDivisionPole');
-        var svcSel = document.getElementById('adhServicePole');
-
-        dirSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        GST_DATA.pole.directions.forEach(function(d){
-          var opt = document.createElement('option'); opt.value = d.value; opt.textContent = d.label; dirSel.appendChild(opt);
-        });
-        dirSel.disabled = false;
-
-        dirSel.onchange = function(){
-          divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          divSel.disabled = true; svcSel.disabled = true;
-          var dirVal = dirSel.value;
-          if (dirVal && GST_DATA.pole.divisions[dirVal]) {
-            GST_DATA.pole.divisions[dirVal].forEach(function(div){
-              var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
-            });
-            divSel.disabled = false;
-          }
-          fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
-        };
-
-        divSel.onchange = function(){
-          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          svcSel.disabled = true;
-          var divVal = divSel.value;
-          if (divVal && GST_DATA.pole.services[divVal]) {
-            GST_DATA.pole.services[divVal].forEach(function(svc){
-              var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-            });
-            svcSel.disabled = false;
-          }
-        };
-
-        if (dirSel.value && GST_DATA.pole.divisions[dirSel.value]) { dirSel.onchange(); }
-        if (divSel.value && GST_DATA.pole.services[divSel.value]) { divSel.onchange(); }
-        fixSelectLabels('adhDirectionPole'); fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
-        return;
-      }
-
-      // === BRANCHE : ADMINISTRATIVE === Division → Service
-      if (rattleVal === 'dgaAdministrative') {
-        document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = ''; });
-        var divSel = document.getElementById('adhDivisionAdmin');
-        var svcSel = document.getElementById('adhServiceAdmin');
-
-        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        GST_DATA.administrative.divisions.forEach(function(d){
-          var opt = document.createElement('option'); opt.value = d; opt.textContent = d; divSel.appendChild(opt);
-        });
-        divSel.disabled = false;
-
-        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        GST_DATA.administrative.servicesDirects.forEach(function(s){
-          var opt = document.createElement('option'); opt.value = s; opt.textContent = s; svcSel.appendChild(opt);
-        });
-        svcSel.disabled = false;
-
-        divSel.onchange = function(){
-          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          GST_DATA.administrative.servicesDirects.forEach(function(s){
-            var opt = document.createElement('option'); opt.value = s; opt.textContent = s; svcSel.appendChild(opt);
-          });
-          var divVal = divSel.value;
-          if (divVal && GST_DATA.administrative.services[divVal]) {
-            GST_DATA.administrative.services[divVal].forEach(function(svc){
-              var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-            });
-          }
-          svcSel.disabled = false;
-        };
-        fixSelectLabels('adhDivisionAdmin'); fixSelectLabels('adhServiceAdmin');
-        return;
-      }
-
-      // === BRANCHE : SANITAIRE === Province → Espace/District → Établissement → Division → Service → Unité
-      if (rattleVal === 'dgaSanitaire') {
-        document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = ''; });
-
-        var espace = document.getElementById('adhEspaceSanitaire');
-        var district = document.getElementById('adhDistrict');
-        var etab = document.getElementById('adhEtablissement');
-        var etabOther = document.getElementById('adhEtabOtherWrap');
-        var division = document.getElementById('adhDivision');
-        var service = document.getElementById('adhServiceGst');
-        var unite = document.getElementById('adhUnite');
-        var serviceHosp = document.getElementById('adhServiceHospitalier');
-
-        if (!espace || !district || !etab || !division || !service || !unite) return;
-
-        var provSelect = document.getElementById('adhProvince');
-        var provVal = provSelect ? provSelect.value : '';
-
-        espace.disabled = false;
-
-        var espVal = espace.value || '';
-        district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        if (espVal && GST_DATA.espaces[espVal]) {
-          GST_DATA.espaces[espVal].districts.forEach(function(d) {
-            var opt = document.createElement('option');
-            opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
-          });
-          district.disabled = false;
-          district.value = '';
-        } else { district.disabled = true; }
-
-        espace.onchange = function(){
-          espace.disabled = false;
-          espVal = espace.value;
-          district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          district.disabled = true;
-          district.value = '';
-          if (espVal && GST_DATA.espaces[espVal]) {
-            GST_DATA.espaces[espVal].districts.forEach(function(d) {
-              var opt = document.createElement('option');
-              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
-            });
-            district.disabled = false;
-          }
-          etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          etab.disabled = true;
-          etab.value = '';
-          division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          division.disabled = true;
-          division.value = '';
-          service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          service.disabled = true;
-          service.value = '';
-          unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          unite.disabled = true;
-          unite.value = '';
-          serviceHosp.value = '';
-          etabOther.style.display = 'none';
-        };
-
-        var etabSelect = document.getElementById('adhEtablissement');
-        if (etabSelect) {
-          var currentVal = etabSelect.value;
-          etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          etabSelect.disabled = false;
-
-          if (espVal === 'agadir') {
-            GST_DATA.etablissementsN3.forEach(function(e) {
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
-            });
-          }
-
-          if (espVal && typeof HOSP_LIST !== 'undefined') {
-            var distVal = district ? district.value : '';
-            HOSP_LIST.filter(function(h) {
-              if (h.e !== espVal) return false;
-              if (distVal && h.d && h.d !== distVal) return false;
-              return true;
-            }).forEach(function(h) {
-              var opt = document.createElement('option');
-              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
-            });
-          }
-
-          var otherOpt = document.createElement('option');
-          otherOpt.value = 'other';
-          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
-          etabSelect.appendChild(otherOpt);
-
-          if (currentVal && Array.from(etabSelect.options).some(function(o){return o.value===currentVal;})) {
-            etabSelect.value = currentVal;
-          }
-        }
-
-        etabSelect.onchange = function(){
-          var etabVal = etabSelect.value;
-          etabOther.style.display = (etabVal === 'other') ? '' : 'none';
-
-          var niveauCode = '';
-          if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
-          else if (etabVal === 'other') niveauCode = espVal ? 'N2' : 'N1';
-          else if (espVal) niveauCode = 'N2';
-
-          division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          division.disabled = true;
-          service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          service.disabled = true;
-          unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          unite.disabled = true;
-          serviceHosp.value = '';
-
-          if (niveauCode === 'N3') {
-            ['Division Sanitaire', 'Division Administrative'].forEach(function(d){
-              var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
-            });
-            division.disabled = false;
-          } else if (niveauCode === 'N2') {
-            division.disabled = true;
-            service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            GST_DATA.servicesN2Sanitaire.forEach(function(s){
-              var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
-            });
-            service.disabled = false;
-          } else if (niveauCode === 'N1') {
-            division.disabled = true;
-            service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            GST_DATA.servicesN1.forEach(function(s){
-              var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
-            });
-            service.disabled = false;
-          }
-
-          serviceHosp.disabled = false;
-        };
-
-        division.onchange = function(){
-          var divVal = division.value;
-          service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          service.disabled = true;
-          unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          unite.disabled = true;
-
-          var etabVal = etabSelect.value;
-          var niveauCode = '';
-          if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
-
-          var services = [];
-          if (divVal === 'sanitaire') {
-            if (niveauCode === 'N3') services = GST_DATA.servicesN3Sanitaire;
-          } else if (divVal === 'administrative') {
-            services = GST_DATA.servicesN3Admin;
-          }
-
-          services.forEach(function(s){
-            var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
-          });
-          service.disabled = services.length === 0;
-        };
-
-        service.onchange = function(){
-          var svcVal = service.value;
-          unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          var unites = [];
-          if (GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
-          unites.forEach(function(u){
-            var opt = document.createElement('option'); opt.value = u; opt.textContent = u; unite.appendChild(opt);
-          });
-          unite.disabled = unites.length === 0;
-        };
-
-        var esspSelect = document.getElementById('adhEsspSelect');
-        if (esspSelect) {
-          var esspCurrent = esspSelect.value;
-          esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
-            ESSP_LIST.filter(function(e) { return e.e === espVal; }).forEach(function(e) {
-              var opt = document.createElement('option');
-              opt.value = e.id; opt.textContent = e.n + ' — ' + e.m + ' (' + e.c + ')'; esspSelect.appendChild(opt);
-            });
-            esspSelect.style.display = '';
-          } else {
-            esspSelect.style.display = 'none';
-          }
-          if (esspCurrent && Array.from(esspSelect.options).some(function(o){return o.value===esspCurrent;})) {
-            esspSelect.value = esspCurrent;
-          }
-        }
-
-        if (espace.value) { espace.onchange(); }
-        if (etabSelect.value) { etabSelect.onchange(); }
-        if (division.value) { division.onchange(); }
-        if (service.value) { service.onchange(); }
-
-        fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
-        return;
+      if(selected&&Array.prototype.some.call(el.options,function(o){return o.value===selected;}))el.value=selected;
+      el.disabled=!!disabled||!(items&&items.length);
+      fixSelectLabels(id);
+    }
+    function clearFunctionStep(){
+      var f=document.getElementById('adhFunction');
+      var s=document.getElementById('adhSpecialty');
+      var fd=document.getElementById('adhFunctionDetail');
+      var so=document.getElementById('adhSpecialtyOther');
+      if(f){f.value='';f.disabled=true;f.required=false;}
+      if(s){s.value='';s.disabled=true;}
+      if(fd){fd.value='';fd.disabled=true;}
+      if(so){so.value='';so.disabled=true;}
+      setCascadeField('adhFunctionWrap',false);
+      setCascadeField('adhSpecialtyWrap',false);
+      if(typeof window.toggleConditionalFields==='function')window.toggleConditionalFields();
+    }
+    function showFunctionStep(){
+      var f=document.getElementById('adhFunction');
+      if(!f)return;
+      f.disabled=false;
+      f.required=true;
+      setCascadeField('adhFunctionWrap',true);
+      var s=document.getElementById('adhSpecialty');
+      if(s){
+        s.disabled=!f.value;
+        setCascadeField('adhSpecialtyWrap',!!f.value);
       }
     }
-
-    // Attach listeners
-    function attachAdhListeners(){
-      // Seul le rattachement relance gstCascade (affichage/masquage des branches)
-      // Chaque select enfant gère ses propres enfants via son propre onchange
-      // défini dans gstCascade : ainsi un choix enfant ne réinitialise jamais ses parents.
-      var ids = ['adhRattachement'].filter(Boolean);
-      ids.forEach(function(id){
-        var el = document.getElementById(id);
-        if (el) {
-          el.addEventListener('change', gstCascade);
-          el.addEventListener('input', gstCascade);
-          fixSelectLabels(id);
-        }
-      });
-
-      // Province : la province d’affiliation est indépendante de l’espace sanitaire.
-      // Quand elle change, on ne touche pas aux niveaux sanitaires (espace, district, etc.).
-      var provSel = document.getElementById('adhProvince');
-      if (provSel) {
-        fixSelectLabels('adhProvince');
-      }
-
-      // District : met à jour les établissements selon le district (sans toucher aux parents)
-      var distSel = document.getElementById('adhDistrict');
-      if (distSel) {
-        distSel.addEventListener('change', function(){
-          var d = distSel.value;
-          var p = document.getElementById('adhProvince') ? document.getElementById('adhProvince').value : '';
-          var espace = document.getElementById('adhEspaceSanitaire');
-          var espVal = espace ? espace.value : '';
-          var etabSelect = document.getElementById('adhEtablissement');
-          var division = document.getElementById('adhDivision');
-          var service = document.getElementById('adhServiceGst');
-          var unite = document.getElementById('adhUnite');
-          var serviceHosp = document.getElementById('adhServiceHospitalier');
-          var etabOther = document.getElementById('adhEtabOtherWrap');
-          var esspSelect = document.getElementById('adhEsspSelect');
-
-          etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          etabSelect.disabled = true;
-          etabSelect.value = '';
-
-          // Hôpitaux de l'espace sanitaire ET du district
-          if (espVal && typeof HOSP_LIST !== 'undefined') {
-            HOSP_LIST.filter(function(h) {
-              if (h.e !== espVal) return false;
-              if (d && h.d && h.d !== d) return false;
-              return true;
-            }).forEach(function(h) {
-              var opt = document.createElement('option');
-              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
-            });
-          }
-          // HU N3 si espace agadir (peu importe le district)
-          var espace = document.getElementById('adhEspaceSanitaire');
-          var espVal = espace ? espace.value : '';
-          if (espVal === 'agadir' && typeof GST_DATA !== 'undefined') {
-            GST_DATA.etablissementsN3.forEach(function(e) {
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
-            });
-          }
-
-          var otherOpt = document.createElement('option');
-          otherOpt.value = 'other';
-          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
-          etabSelect.appendChild(otherOpt);
-          etabSelect.disabled = false;
-
-          // ESSP selon district
-          if (esspSelect) {
-            esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
-              ESSP_LIST.filter(function(e) {
-                if (e.e !== espVal) return false;
-                if (d && e.d && e.d !== d) return false;
-                return true;
-              }).forEach(function(e) {
-                var opt = document.createElement('option');
-                opt.value = e.n; opt.textContent = e.n; esspSelect.appendChild(opt);
-              });
-              esspSelect.style.display = '';
-            } else {
-              esspSelect.style.display = 'none';
-            }
-          }
-
-          // Réinitialiser niveaux enfants
-          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
-          if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
-          if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
-          if (serviceHosp) serviceHosp.value = '';
-          if (etabOther) etabOther.style.display = 'none';
-          fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
+    function bindFunctionStep(){
+      var f=document.getElementById('adhFunction');
+      if(f&&!f._adhCascadeBound){
+        f._adhCascadeBound=true;
+        f.addEventListener('change',function(){
+          var s=document.getElementById('adhSpecialty');
+          if(s)s.disabled=!f.value;
+          setCascadeField('adhSpecialtyWrap',!!f.value);
+          if(typeof window.toggleConditionalFields==='function')window.toggleConditionalFields();
         });
-        fixSelectLabels('adhDistrict');
       }
+    }
+    function clearSanitaryChildren(){
+      ['adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
+      ['adhDistrictWrap','adhEtablissementWrap','adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap','adhEtabOtherWrap'].forEach(function(id){setCascadeField(id,false);});
+      var sh=document.getElementById('adhServiceHospitalier'), other=document.getElementById('adhEtabOther');
+      var essp=document.getElementById('adhEsspSelect');
+      if(sh){sh.value='';sh.disabled=true;}
+      if(other){other.value='';other.disabled=true;}
+      if(essp){essp.value='';essp.disabled=true;}
+      clearFunctionStep();
+    }
+    function sanitaryRouteOptions(level,space,district){
+      if(level==='tertiary')return GST_DATA.etablissementsN3;
+      if(level==='space'){
+        if(!space)return [];
+        return [{value:'space:'+space,label:GST_DATA.espaceStructures[space]}];
+      }
+      if(level==='district'){
+        if(!space||!district)return [];
+        return [{value:'district:'+district,label:GST_DATA.districtStructures[district]}];
+      }
+      if(level==='hospital'){
+        if(!space||!district)return [];
+        return HOSP_LIST.filter(function(h){return h.e===space&&h.d===district;}).map(function(h){
+          return {value:'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_'),label:h.n+' ('+h.c+')'};
+        }).concat([{value:'other',label:(window.ugtmT&&window.ugtmT().adhOtherEtab)||'Autre établissement'}]);
+      }
+      if(level==='essp'){
+        if(!space||!district)return [];
+        return ESSP_LIST.filter(function(e){return e.e===space&&e.d===district;}).map(function(e){
+          return {value:e.id,label:e.n+' — '+e.m+' ('+e.c+')'};
+        });
+      }
+      return [];
+    }
+    function refreshSanitaryEstablishment(){
+      var level=document.getElementById('adhNiveauSanitaire');
+      var space=document.getElementById('adhEspaceSanitaire');
+      var district=document.getElementById('adhDistrict');
+      var etab=document.getElementById('adhEtablissement');
+      var l=level?level.value:'', sp=space?space.value:'', d=district?district.value:'';
+      var needsSpace=l&&l!=='tertiary';
+      var needsDistrict=['district','hospital','essp'].indexOf(l)>=0;
+      setCascadeField('adhEspaceSanitaireWrap',!!needsSpace);
+      setCascadeField('adhDistrictWrap',!!(needsDistrict&&sp));
+      space.disabled=!needsSpace;
+      district.disabled=!(needsDistrict&&sp);
+      var options=sanitaryRouteOptions(l,sp,d);
+      fillCascadeSelect('adhEtablissement',options,!options.length);
+      var showEtab=!!(options.length&&((l==='tertiary')||(l==='space'&&sp)||(needsDistrict&&sp&&d)));
+      setCascadeField('adhEtablissementWrap',showEtab);
+      setCascadeField('adhEtabOtherWrap',false);
+      resetCascadeSelect('adhDivision',true);resetCascadeSelect('adhServiceGst',true);resetCascadeSelect('adhUnite',true);
+      ['adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap'].forEach(function(id){setCascadeField(id,false);});
+      var sh=document.getElementById('adhServiceHospitalier');if(sh){sh.value='';sh.disabled=true;}
+      if(etab&&etab.value&&options.some(function(o){return o.value===etab.value;}))refreshSanitaryDetail();
+      else clearFunctionStep();
+    }
+    function sanitaryDivisionsFor(level){
+      return GST_DATA.sanitaire.divisionOptions;
+    }
+    function refreshSanitaryDetail(){
+      var level=document.getElementById('adhNiveauSanitaire').value;
+      var etab=document.getElementById('adhEtablissement');
+      var etabVal=etab?etab.value:'';
+      var isOther=etabVal==='other';
+      setCascadeField('adhEtabOtherWrap',isOther);
+      var other=document.getElementById('adhEtabOther');
+      if(other)other.disabled=!isOther;
+      if(isOther){
+        ['adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
+        ['adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap'].forEach(function(id){setCascadeField(id,false);});
+        clearFunctionStep();
+        if(other&&other.value.trim())showFunctionStep();
+        return;
+      }
+      var spacePath=['tertiary','space','district'].indexOf(level)>=0;
+      if(level==='hospital'){
+        setCascadeField('adhDivisionWrap',false);resetCascadeSelect('adhDivision',true);
+        fillCascadeSelect('adhServiceGst',GST_DATA.sanitaire.hospitalServices,false);
+        setCascadeField('adhServiceGstWrap',true);
+        setCascadeField('adhUniteWrap',false);resetCascadeSelect('adhUnite',true);
+        clearFunctionStep();
+        if(document.getElementById('adhServiceGst').value)refreshSanitaryService();
+        return;
+      }
+      if(level==='essp'){
+        ['adhDivision','adhServiceGst'].forEach(function(id){resetCascadeSelect(id,true);});
+        ['adhDivisionWrap','adhServiceGstWrap','adhServiceHospitalierWrap'].forEach(function(id){setCascadeField(id,false);});
+        fillCascadeSelect('adhUnite',GST_DATA.sanitaire.esspUnits,false);
+        setCascadeField('adhUniteWrap',true);
+        clearFunctionStep();
+        var unit=document.getElementById('adhUnite');
+        unit.onchange=function(){if(unit.value)showFunctionStep();else clearFunctionStep();};
+        if(unit.value)showFunctionStep();
+        return;
+      }
+      if(!spacePath||!etabVal){clearFunctionStep();return;}
+      fillCascadeSelect('adhDivision',sanitaryDivisionsFor(level),false);
+      setCascadeField('adhDivisionWrap',true);
+      resetCascadeSelect('adhServiceGst',true);resetCascadeSelect('adhUnite',true);
+      setCascadeField('adhServiceGstWrap',false);setCascadeField('adhUniteWrap',false);
+      var div=document.getElementById('adhDivision');
+      div.onchange=function(){
+        var route=level==='tertiary'?'tertiary':'level2';
+        var services=GST_DATA.sanitaire.services[route][div.value]||[];
+        fillCascadeSelect('adhServiceGst',services,!services.length);
+        setCascadeField('adhServiceGstWrap',!!services.length);
+        setCascadeField('adhUniteWrap',false);resetCascadeSelect('adhUnite',true);
+        setCascadeField('adhServiceHospitalierWrap',false);
+        clearFunctionStep();
+        var svc=document.getElementById('adhServiceGst');
+        svc.onchange=refreshSanitaryService;
+        if(svc.value)refreshSanitaryService();
+      };
+      if(div.value)div.onchange();
+    }
+    function refreshSanitaryService(){
+      var svc=document.getElementById('adhServiceGst');
+      var level=document.getElementById('adhNiveauSanitaire').value;
+      var val=svc?svc.value:'';
+      var unit=document.getElementById('adhUnite');
+      resetCascadeSelect('adhUnite',true);
+      setCascadeField('adhUniteWrap',false);
+      clearFunctionStep();
+      var sh=document.getElementById('adhServiceHospitalier');
+      if(val==='Service hospitalier 1…n'){
+        setCascadeField('adhServiceHospitalierWrap',true);
+        if(sh){sh.disabled=false;sh.required=true;}
+        if(sh&&sh.value.trim())showFunctionStep();
+        return;
+      }
+      setCascadeField('adhServiceHospitalierWrap',false);
+      if(sh){sh.value='';sh.disabled=true;sh.required=false;}
+      var units=GST_DATA.sanitaire.units[val]||[];
+      if(units.length){
+        fillCascadeSelect('adhUnite',units,false);
+        setCascadeField('adhUniteWrap',true);
+        unit.onchange=function(){if(unit.value)showFunctionStep();else clearFunctionStep();};
+        if(unit.value)showFunctionStep();
+      }else if(val){
+        showFunctionStep();
+      }
+    }
+    function setupSanitaryCascade(){
+      var level=document.getElementById('adhNiveauSanitaire');
+      var space=document.getElementById('adhEspaceSanitaire');
+      var district=document.getElementById('adhDistrict');
+      var etab=document.getElementById('adhEtablissement');
+      if(!level||!space||!district||!etab)return;
+      level.disabled=false;
+      setCascadeField('adhNiveauSanitaireWrap',true);
+      setCascadeField('adhEspaceSanitaireWrap',false);
+      setCascadeField('adhDistrictWrap',false);
+      setCascadeField('adhEtablissementWrap',false);
+      ['adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap','adhEtabOtherWrap'].forEach(function(id){setCascadeField(id,false);});
+      clearSanitaryChildren();
+      level.onchange=function(){
+        space.value='';district.value='';
+        clearSanitaryChildren();
+        if(level.value==='tertiary'){
+          fillCascadeSelect('adhEtablissement',GST_DATA.etablissementsN3,false);
+          setCascadeField('adhEtablissementWrap',true);
+        }else{
+          refreshSanitaryEstablishment();
+        }
+      };
+      space.onchange=function(){
+        district.value='';
+        clearSanitaryChildren();
+        var needed=['district','hospital','essp'].indexOf(level.value)>=0;
+        if(needed&&space.value){
+          var dis=GST_DATA.espaces[space.value]?GST_DATA.espaces[space.value].districts:[];
+          fillCascadeSelect('adhDistrict',dis.map(function(d){return {value:d,label:GST_DATA.districts[d]||d};}),!dis.length);
+          setCascadeField('adhDistrictWrap',!!dis.length);
+        }else resetCascadeSelect('adhDistrict',true);
+        refreshSanitaryEstablishment();
+      };
+      district.onchange=function(){clearSanitaryChildren();refreshSanitaryEstablishment();};
+      etab.onchange=function(){refreshSanitaryDetail();};
+      var other=document.getElementById('adhEtabOther');
+      if(other)other.oninput=function(){if(other.value.trim())showFunctionStep();else clearFunctionStep();};
+      var sh=document.getElementById('adhServiceHospitalier');
+      if(sh)sh.oninput=function(){if(sh.value.trim())showFunctionStep();else clearFunctionStep();};
+      refreshSanitaryEstablishment();
+    }
+    function setupPoleCascade(){
+      var dir=document.getElementById('adhDirectionPole'),div=document.getElementById('adhDivisionPole'),svc=document.getElementById('adhServicePole');
+      if(!dir||!div||!svc)return;
+      ['rattle-pole'].forEach(function(cls){document.querySelectorAll('.'+cls).forEach(function(el){el.style.display='';});});
+      fillCascadeSelect('adhDirectionPole',GST_DATA.pole.directions,false);
+      setCascadeField('adhDirectionPoleWrap',true);setCascadeField('adhDivisionPoleWrap',false);setCascadeField('adhServicePoleWrap',false);
+      resetCascadeSelect('adhDivisionPole',true);resetCascadeSelect('adhServicePole',true);
+      clearFunctionStep();
+      dir.onchange=function(){
+        resetCascadeSelect('adhDivisionPole',true);resetCascadeSelect('adhServicePole',true);
+        setCascadeField('adhDivisionPoleWrap',false);setCascadeField('adhServicePoleWrap',false);
+        var divisions=GST_DATA.pole.divisions[dir.value]||[];
+        if(divisions.length){fillCascadeSelect('adhDivisionPole',divisions,false);setCascadeField('adhDivisionPoleWrap',true);}
+        clearFunctionStep();
+      };
+      div.onchange=function(){
+        var services=GST_DATA.pole.services[div.value]||[];
+        fillCascadeSelect('adhServicePole',services,!services.length);
+        setCascadeField('adhServicePoleWrap',!!services.length);
+        clearFunctionStep();
+      };
+      svc.onchange=function(){if(svc.value)showFunctionStep();else clearFunctionStep();};
+    }
+    function setupAdministrativeCascade(){
+      var dir=document.getElementById('adhDirectionAdmin'),div=document.getElementById('adhDivisionAdmin'),svc=document.getElementById('adhServiceAdmin');
+      if(!dir||!div||!svc)return;
+      document.querySelectorAll('.rattle-administrative').forEach(function(el){el.style.display='';});
+      fillCascadeSelect('adhDirectionAdmin',GST_DATA.administrative.directions,false);
+      setCascadeField('adhDirectionAdminWrap',true);setCascadeField('adhDivisionAdminWrap',false);setCascadeField('adhServiceAdminWrap',false);
+      resetCascadeSelect('adhDivisionAdmin',true);resetCascadeSelect('adhServiceAdmin',true);
+      clearFunctionStep();
+      dir.onchange=function(){
+        resetCascadeSelect('adhDivisionAdmin',true);resetCascadeSelect('adhServiceAdmin',true);
+        setCascadeField('adhDivisionAdminWrap',false);setCascadeField('adhServiceAdminWrap',false);
+        if(dir.value==='direct'){
+          fillCascadeSelect('adhServiceAdmin',GST_DATA.administrative.directServices,false);
+          setCascadeField('adhServiceAdminWrap',true);
+        }else{
+          var divs=GST_DATA.administrative.divisions[dir.value]||[];
+          if(divs.length){fillCascadeSelect('adhDivisionAdmin',divs,false);setCascadeField('adhDivisionAdminWrap',true);}
+        }
+        clearFunctionStep();
+      };
+      div.onchange=function(){
+        var services=GST_DATA.administrative.services[div.value]||[];
+        fillCascadeSelect('adhServiceAdmin',services,!services.length);
+        setCascadeField('adhServiceAdminWrap',!!services.length);
+        clearFunctionStep();
+      };
+      svc.onchange=function(){if(svc.value)showFunctionStep();else clearFunctionStep();};
+    }
+    function gstCascade(){
+      var rattachement=document.getElementById('adhRattachement');
+      var value=rattachement?rattachement.value:'';
+      ['rattle-pole','rattle-sanitaire','rattle-administrative'].forEach(function(cls){
+        document.querySelectorAll('.'+cls).forEach(function(el){el.style.display='none';});
+      });
+      clearFunctionStep();
+      ['adhDirectionPole','adhDivisionPole','adhServicePole','adhDirectionAdmin','adhDivisionAdmin','adhServiceAdmin','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
+      var level=document.getElementById('adhNiveauSanitaire');if(level){level.value='';level.disabled=true;}
+      var space=document.getElementById('adhEspaceSanitaire');if(space){space.value='';space.disabled=true;}
+      var hosp=document.getElementById('adhServiceHospitalier');if(hosp){hosp.value='';hosp.disabled=true;hosp.required=false;}
+      var other=document.getElementById('adhEtabOther');if(other){other.value='';other.disabled=true;}
+      ['adhNiveauSanitaireWrap','adhEspaceSanitaireWrap','adhDistrictWrap','adhEtablissementWrap','adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap','adhEtabOtherWrap','adhDirectionPoleWrap','adhDivisionPoleWrap','adhServicePoleWrap','adhDirectionAdminWrap','adhDivisionAdminWrap','adhServiceAdminWrap'].forEach(function(id){setCascadeField(id,false);});
+      if(!value){fixSelectLabels('adhRattachement');return;}
+      if(value==='pole'){setupPoleCascade();return;}
+      if(value==='dgaAdministrative'){setupAdministrativeCascade();return;}
+      if(value==='dgaSanitaire'){document.querySelectorAll('.rattle-sanitaire').forEach(function(el){el.style.display='';});setupSanitaryCascade();return;}
+    }
+    function attachAdhListeners(){
+      var branch=document.getElementById('adhRattachement');
+      if(branch){
+        branch.addEventListener('change',gstCascade);
+        fixSelectLabels('adhRattachement');
+      }
+      ['adhProvince','adhStructure'].forEach(function(id){fixSelectLabels(id);});
     }
     attachAdhListeners();
+    gstCascade();
+
     gstCascade();
     initAndroidAdhesionSelects();
 
