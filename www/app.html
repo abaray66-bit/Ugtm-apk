@@ -12450,6 +12450,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
 
       if (!rattleVal) return;
 
+      // Province obligatoire uniquement en branche sanitaire
+      var provSelect = document.getElementById('adhProvince');
+      if (provSelect) {
+        provSelect.disabled = (rattleVal !== 'dgaSanitaire');
+        if (rattleVal !== 'dgaSanitaire') provSelect.value = '';
+      }
+
       // === BRANCHE : PÔLE === Direction → Division → Service
       if (rattleVal === 'pole') {
         document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = ''; });
@@ -12721,7 +12728,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
     // Attach listeners
     function attachAdhListeners(){
       var ids = ['adhRattachement','adhDirectionPole','adhDivisionPole','adhServicePole',
-                 adhProvince ? 'adhProvince' : null, 'adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite',
+                 'adhProvince','adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite',
                  'adhDivisionAdmin','adhServiceAdmin'].filter(Boolean);
       ids.forEach(function(id){
         var el = document.getElementById(id);
