@@ -3202,6 +3202,17 @@ button.primary:active {
     position:relative;
     z-index:5;
   }
+  /* Sélecteurs de cascade : garantir interactivité sur WebView Android */
+  #adhRattachement,#adhDirectionPole,#adhDivisionPole,#adhServicePole,
+  #adhProvince,#adhEspaceSanitaire,#adhDistrict,#adhEtablissement,
+  #adhDivision,#adhServiceGst,#adhUnite,#adhDivisionAdmin,#adhServiceAdmin{
+    pointer-events:auto!important;
+    z-index:10!important;
+    overflow:visible!important;
+  }
+  .adh-grid,.adh-digital-form{
+    overflow:visible!important;
+  }
 
 .adhesion-info{
   margin-top:12px;
