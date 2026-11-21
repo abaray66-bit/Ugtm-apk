@@ -864,7 +864,8 @@ service cloud.firestore {
         && request.resource.data.adminNote == ''
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
-        && request.resource.data.province in adhesionProvinces()
+        && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
+            || request.resource.data.province in adhesionProvinces())
         && okText(request.resource.data.email, 254)
         && request.resource.data.signature is string
         && request.resource.data.signature.size() > 0

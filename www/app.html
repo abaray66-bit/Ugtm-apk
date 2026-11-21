@@ -12503,12 +12503,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
             divSel.disabled = false;
-            // Auto-sélection de la première division et affichage de ses services
-            if (divSel.options.length > 1) {
-              divSel.value = divSel.options[1].value;
-              divSel.onchange();
-            }
           }
+          fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         };
 
         divSel.onchange = function(){
@@ -12520,10 +12516,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
             svcSel.disabled = false;
-            // Auto-sélection du premier service
-            if (svcSel.options.length > 1) {
-              svcSel.value = svcSel.options[1].value;
-            }
           }
         };
 
@@ -12649,7 +12641,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
           }
 
           if (provVal && typeof HOSP_LIST !== 'undefined') {
-            HOSP_LIST.filter(function(h) { return h.p === provVal; }).forEach(function(h) {
+            var distVal = district ? district.value : '';
+            HOSP_LIST.filter(function(h) {
+              if (h.p !== provVal) return false;
+              if (distVal && h.d && h.d !== distVal) return false;
+              return true;
+            }).forEach(function(h) {
               var opt = document.createElement('option');
               opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
               opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
@@ -12772,9 +12769,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
 
     // Attach listeners
     function attachAdhListeners(){
-      var ids = ['adhRattachement','adhDirectionPole','adhDivisionPole','adhServicePole',
-                 'adhProvince','adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite',
-                 'adhDivisionAdmin','adhServiceAdmin',
+      // Seul le rattachement relance gstCascade (affichage/masquage des branches)
+      // Chaque select enfant gère ses propres enfants via son propre onchange
+      // défini dans gstCascade : ainsi un choix enfant ne réinitialise jamais ses parents.
+      var ids = ['adhRattachement',
                  'adhStructure','adhFunction','adhSpecialty','adhEsspSelect'].filter(Boolean);
       ids.forEach(function(id){
         var el = document.getElementById(id);
@@ -12787,12 +12785,159 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
             var sel=this;
             if(sel.value){
               sel.blur();
-              setTimeout(function(){ sel.focus(); }, 0);
+              setTimeout(function(){
+                var idx=sel.selectedIndex;
+                sel.selectedIndex=idx;
+                sel.focus();
+              }, 0);
             }
           });
           fixSelectLabels(id);
         }
       });
+
+      // Province : met à jour espace + district (sans toucher aux niveaux déjà sélectionnés)
+      var provSel = document.getElementById('adhProvince');
+      if (provSel) {
+        provSel.addEventListener('change', function(){
+          var p = provSel.value;
+          var espace = document.getElementById('adhEspaceSanitaire');
+          var district = document.getElementById('adhDistrict');
+          var provinceToEspace = {
+            agadir: 'agadir', taroudant: 'taroudant', tata: 'taroudant',
+            tiznit: 'agadir', inezgane: 'agadir', chtouka: 'agadir'
+          };
+          var defaultEspace = provinceToEspace[p] || '';
+          if (defaultEspace && espace) {
+            espace.value = defaultEspace;
+            espace.disabled = false;
+          }
+          // Reconstruire les districts de l'espace
+          var espVal = espace ? espace.value : '';
+          district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          district.disabled = true;
+          district.value = '';
+          if (espVal && typeof GST_DATA !== 'undefined' && GST_DATA.espaces[espVal]) {
+            GST_DATA.espaces[espVal].districts.forEach(function(d) {
+              var opt = document.createElement('option');
+              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
+            });
+            district.disabled = false;
+          }
+          // Réinitialiser les niveaux enfants (pas les parents)
+          var etab = document.getElementById('adhEtablissement');
+          var division = document.getElementById('adhDivision');
+          var service = document.getElementById('adhServiceGst');
+          var unite = document.getElementById('adhUnite');
+          var serviceHosp = document.getElementById('adhServiceHospitalier');
+          var etabOther = document.getElementById('adhEtabOtherWrap');
+          if (etab) { etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etab.disabled = true; etab.value = ''; }
+          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
+          if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
+          if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
+          if (serviceHosp) serviceHosp.value = '';
+          if (etabOther) etabOther.style.display = 'none';
+          fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite');
+        });
+        provSel.addEventListener('blur', function(){
+          var sel=this;
+          if(sel.value){
+            sel.blur();
+            setTimeout(function(){
+              var idx=sel.selectedIndex;
+              sel.selectedIndex=idx;
+              sel.focus();
+            }, 0);
+          }
+        });
+        fixSelectLabels('adhProvince');
+      }
+
+      // District : met à jour les établissements selon le district (sans toucher aux parents)
+      var distSel = document.getElementById('adhDistrict');
+      if (distSel) {
+        distSel.addEventListener('change', function(){
+          var d = distSel.value;
+          var p = document.getElementById('adhProvince') ? document.getElementById('adhProvince').value : '';
+          var etabSelect = document.getElementById('adhEtablissement');
+          var division = document.getElementById('adhDivision');
+          var service = document.getElementById('adhServiceGst');
+          var unite = document.getElementById('adhUnite');
+          var serviceHosp = document.getElementById('adhServiceHospitalier');
+          var etabOther = document.getElementById('adhEtabOtherWrap');
+          var esspSelect = document.getElementById('adhEsspSelect');
+
+          etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          etabSelect.disabled = true;
+          etabSelect.value = '';
+
+          // Hôpitaux de la province ET du district
+          if (p && typeof HOSP_LIST !== 'undefined') {
+            HOSP_LIST.filter(function(h) {
+              if (h.p !== p) return false;
+              if (d && h.d && h.d !== d) return false;
+              return true;
+            }).forEach(function(h) {
+              var opt = document.createElement('option');
+              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
+            });
+          }
+          // HU N3 si espace agadir (peu importe le district)
+          var espace = document.getElementById('adhEspaceSanitaire');
+          var espVal = espace ? espace.value : '';
+          if (espVal === 'agadir' && typeof GST_DATA !== 'undefined') {
+            GST_DATA.etablissementsN3.forEach(function(e) {
+              var opt = document.createElement('option');
+              opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
+            });
+          }
+
+          var otherOpt = document.createElement('option');
+          otherOpt.value = 'other';
+          otherOpt.textContent = T().adhOtherEtab || 'Autre établissement';
+          etabSelect.appendChild(otherOpt);
+          etabSelect.disabled = false;
+
+          // ESSP selon district
+          if (esspSelect) {
+            esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            if (etabSelect.value === 'other' && p && typeof ESSP_LIST !== 'undefined') {
+              ESSP_LIST.filter(function(e) {
+                if (e.p !== p) return false;
+                if (d && e.d && e.d !== d) return false;
+                return true;
+              }).forEach(function(e) {
+                var opt = document.createElement('option');
+                opt.value = e.n; opt.textContent = e.n; esspSelect.appendChild(opt);
+              });
+              esspSelect.style.display = '';
+            } else {
+              esspSelect.style.display = 'none';
+            }
+          }
+
+          // Réinitialiser niveaux enfants
+          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
+          if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
+          if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
+          if (serviceHosp) serviceHosp.value = '';
+          if (etabOther) etabOther.style.display = 'none';
+          fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
+        });
+        distSel.addEventListener('blur', function(){
+          var sel=this;
+          if(sel.value){
+            sel.blur();
+            setTimeout(function(){
+              var idx=sel.selectedIndex;
+              sel.selectedIndex=idx;
+              sel.focus();
+            }, 0);
+          }
+        });
+        fixSelectLabels('adhDistrict');
+      }
     }
     attachAdhListeners();
     gstCascade();
