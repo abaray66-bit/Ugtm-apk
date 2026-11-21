@@ -12900,6 +12900,18 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
         espace.disabled = false;
 
+        // Province → Espace : présélectionner l'espace correspondant à la province
+        var provSelect = document.getElementById('adhProvince');
+        var provVal = provSelect ? provSelect.value : '';
+        var provinceToEspace = {
+          agadir: 'agadir', inezgane: 'agadir', chtouka: 'agadir', tiznit: 'agadir',
+          taroudant: 'taroudant', tata: 'taroudant'
+        };
+        var defaultEspace = provinceToEspace[provVal] || '';
+        if (defaultEspace && !espace.value) {
+          espace.value = defaultEspace;
+        }
+
         var espVal = espace.value || '';
         district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
         if (espVal && GST_DATA.espaces[espVal]) {
@@ -13115,10 +13127,51 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         }
       });
 
-      // Province : la province d’affiliation est indépendante de l’espace sanitaire.
-      // Quand elle change, on ne touche pas aux niveaux sanitaires (espace, district, etc.).
+      // Province → Espace sanitaire : quand la province change, l'espace se met à jour
+      // (sans toucher aux niveaux inférieurs qui restent gérés par l'espace)
       var provSel = document.getElementById('adhProvince');
       if (provSel) {
+        provSel.addEventListener('change', function(){
+          var p = provSel.value;
+          var espace = document.getElementById('adhEspaceSanitaire');
+          var district = document.getElementById('adhDistrict');
+          var etab = document.getElementById('adhEtablissement');
+          var division = document.getElementById('adhDivision');
+          var service = document.getElementById('adhServiceGst');
+          var unite = document.getElementById('adhUnite');
+          var serviceHosp = document.getElementById('adhServiceHospitalier');
+          var etabOther = document.getElementById('adhEtabOtherWrap');
+
+          var provinceToEspace = {
+            agadir: 'agadir', inezgane: 'agadir', chtouka: 'agadir', tiznit: 'agadir',
+            taroudant: 'taroudant', tata: 'taroudant'
+          };
+          var defaultEspace = provinceToEspace[p] || '';
+          if (defaultEspace && espace) {
+            espace.value = defaultEspace;
+            espace.disabled = false;
+          }
+          // Reconstruire les districts de l'espace
+          var espVal = espace ? espace.value : '';
+          district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          district.disabled = true;
+          district.value = '';
+          if (espVal && GST_DATA.espaces[espVal]) {
+            GST_DATA.espaces[espVal].districts.forEach(function(d) {
+              var opt = document.createElement('option');
+              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
+            });
+            district.disabled = false;
+          }
+          // Réinitialiser niveaux enfants (pas les parents province/espace)
+          if (etab) { etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etab.disabled = true; etab.value = ''; }
+          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
+          if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
+          if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
+          if (serviceHosp) serviceHosp.value = '';
+          if (etabOther) etabOther.style.display = 'none';
+          fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite');
+        });
         fixSelectLabels('adhProvince');
       }
 
