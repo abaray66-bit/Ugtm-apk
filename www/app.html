@@ -3542,7 +3542,6 @@ window.markNotificationRead=markNotificationRead;
         <div class="field"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
         <div class="field adh-full" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
-        <div class="field"><label for="adhNiveauSanitaire" data-i18n="adhNiveauSanitaire"></label><input id="adhNiveauSanitaire" type="text" readonly style="background:var(--surface-2);"></div>
         <div class="field"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option><option value="sanitaire" data-i18n="adhDivisionSanitaire"></option><option value="administrative" data-i18n="adhDivisionAdministrative"></option></select></div>
         <div class="field"><label for="adhServiceGst" data-i18n="adhServiceGst"></label><select id="adhServiceGst"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhUnite" data-i18n="adhUnite"></label><select id="adhUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -11811,7 +11810,6 @@ window.UGTM.failed(err);
           section('SITUATION PROFESSIONNELLE');
           row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
           if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
-          if(app.niveauSanitaire)row1('Niveau sanitaire',app.niveauSanitaire);
           if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
           if(app.unite)row1('Unité',app.unite);
           if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
@@ -12212,7 +12210,6 @@ window.UGTM.failed(err);
           /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
           if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
           if(req.district) prefillIfEmpty('adhDistrict',req.district);
-          if(req.niveauSanitaire) document.getElementById('adhNiveauSanitaire').value=req.niveauSanitaire;
           if(req.division) prefillIfEmpty('adhDivision',req.division);
           if(req.serviceGst) prefillIfEmpty('adhServiceGst',req.serviceGst);
           if(req.unite) prefillIfEmpty('adhUnite',req.unite);
@@ -12362,9 +12359,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
       var district = document.getElementById('adhDistrict');
       var etab = document.getElementById('adhEtablissement');
       var etabOther = document.getElementById('adhEtabOtherWrap');
-      var niveau = document.getElementById('adhNiveauSanitaire');
-      var division = document.getElementById('adhDivision');
-      var service = document.getElementById('adhServiceGst');
+       var division = document.getElementById('adhDivision');
+       var service = document.getElementById('adhServiceGst');
       var unite = document.getElementById('adhUnite');
       if (!espace || !district || !etab) return;
 
@@ -12420,26 +12416,20 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
        var niveauText = '';
        var niveauCode = '';
        if (etabVal && etabVal.startsWith('hu_')) {
-         niveauText = T().adhNiveau3 || 'Niveau III — Tertiaire';
          niveauCode = 'N3';
        } else if (etabVal === 'other') {
          if (etabOther) etabOther.style.display = '';
-         // Niveau déduit de l'espace sanitaire
          if (espVal) {
-           niveauText = T().adhNiveau2 || 'Niveau II — Secondaire';
            niveauCode = 'N2';
          } else {
-           niveauText = T().adhNiveau1 || 'Niveau I — Proximité';
            niveauCode = 'N1';
          }
        } else {
          if (etabOther) etabOther.style.display = 'none';
          if (espVal) {
-           niveauText = T().adhNiveau2 || 'Niveau II — Secondaire';
            niveauCode = 'N2';
          }
        }
-       if (niveau) niveau.value = niveauText;
 
        // Division change → service options
        if (division && service) {

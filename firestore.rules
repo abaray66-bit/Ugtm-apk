@@ -841,7 +841,7 @@ service cloud.firestore {
     'uid', 'email', 'province', 'application', 'signature',
     'status', 'adminNote', 'createdAt', 'updatedAt',
     'structureId', 'espaceSanitaire', 'district',
-    'niveauSanitaire', 'division', 'serviceGst',
+    'division', 'serviceGst',
     'unite', 'serviceHospitalier'
   ])
         && request.resource.data.uid == uid
@@ -944,7 +944,7 @@ service cloud.firestore {
             .hasOnly(['application', 'signature', 'status', 'adminNote',
                       'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
                       'structureId', 'espaceSanitaire', 'district',
-                      'niveauSanitaire', 'division', 'serviceGst',
+                      'division', 'serviceGst',
                       'unite', 'serviceHospitalier'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
