@@ -3604,7 +3604,7 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-sanitaire" id="adhEspaceSanitaireWrap" style="display:none"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire" disabled><option value="" data-i18n="adhEspaceChoose"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDistrictWrap" style="display:none"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEtablissementWrap" style="display:none"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
-        <div class="field adh-full rattle-sanitaire" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
+        <div class="field adh-full rattle-sanitaire" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><input id="adhEtabOther" type="text" maxlength="160" placeholder="Saisir l’établissement à préciser"></div>
         <div class="field rattle-sanitaire" id="adhDivisionWrap" style="display:none"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhServiceGstWrap" style="display:none"><label for="adhServiceGst" data-i18n="adhServiceGst"></label><select id="adhServiceGst"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhUniteWrap" style="display:none"><label for="adhUnite" data-i18n="adhUnite"></label><select id="adhUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -12787,11 +12787,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
           if(s)s.disabled=!f.value;
           setCascadeField('adhSpecialtyWrap',!!f.value);
           if(typeof window.toggleConditionalFields==='function')window.toggleConditionalFields();
+          var fd=document.getElementById('adhFunctionDetail');
+          if(fd)fd.disabled=!(f.value==='function_to_specify');
+          var so=document.getElementById('adhSpecialtyOther');
+          if(so)so.disabled=!(s&&s.value==='other');
         });
       }
     }
-    function clearSanitaryChildren(){
-      ['adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
+    function clearSanitaryChildren(keepDistrict){
+      if(!keepDistrict)resetCascadeSelect('adhDistrict',true);
+      ['adhEtablissement','adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
       ['adhDistrictWrap','adhEtablissementWrap','adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap','adhEtabOtherWrap'].forEach(function(id){setCascadeField(id,false);});
       var sh=document.getElementById('adhServiceHospitalier'), other=document.getElementById('adhEtabOther');
       var essp=document.getElementById('adhEsspSelect');
@@ -12967,7 +12972,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         }else resetCascadeSelect('adhDistrict',true);
         refreshSanitaryEstablishment();
       };
-      district.onchange=function(){clearSanitaryChildren();refreshSanitaryEstablishment();};
+      district.onchange=function(){clearSanitaryChildren(true);refreshSanitaryEstablishment();};
       etab.onchange=function(){refreshSanitaryDetail();};
       var other=document.getElementById('adhEtabOther');
       if(other)other.oninput=function(){if(other.value.trim())showFunctionStep();else clearFunctionStep();};
@@ -13045,6 +13050,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       if(value==='dgaSanitaire'){document.querySelectorAll('.rattle-sanitaire').forEach(function(el){el.style.display='';});setupSanitaryCascade();return;}
     }
     function attachAdhListeners(){
+      bindFunctionStep();
       var branch=document.getElementById('adhRattachement');
       if(branch){
         branch.addEventListener('change',gstCascade);
