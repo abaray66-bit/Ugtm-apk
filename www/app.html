@@ -3192,15 +3192,21 @@ button.primary:active {
     padding:10px 12px;
     border:1px solid var(--border-accent);
     border-radius:var(--radius-s);
-    background:var(--surface);
-    color:var(--ink);
+    background:#fff;
+    color:#111;
     font-size:16px;
     box-sizing:border-box;
-    appearance:auto;
-    -webkit-appearance:auto;
+    -webkit-appearance:menulist;
+    appearance:menulist;
     pointer-events:auto;
     position:relative;
     z-index:5;
+    display:block;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 38px;
   }
   /* Sélecteurs de cascade : garantir interactivité sur WebView Android */
   #adhRattachement,#adhDirectionPole,#adhDivisionPole,#adhServicePole,
@@ -12702,6 +12708,72 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
           }
 
           serviceHosp.disabled = false;
+        };
+
+        // District : reconstruire les établissements quand le district change
+        district.onchange = function(){
+          var distVal = district.value;
+          var p = provSelect ? provSelect.value : '';
+          var etabSelect2 = document.getElementById('adhEtablissement');
+          var etabOther2 = document.getElementById('adhEtabOtherWrap');
+          var esspSelect2 = document.getElementById('adhEsspSelect');
+
+          etabSelect2.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          etabSelect2.disabled = true;
+          etabSelect2.value = '';
+
+          // Hôpitaux de la province ET du district
+          if (p && typeof HOSP_LIST !== 'undefined') {
+            HOSP_LIST.filter(function(h) {
+              if (h.p !== p) return false;
+              if (distVal && h.d && h.d !== distVal) return false;
+              return true;
+            }).forEach(function(h) {
+              var opt = document.createElement('option');
+              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect2.appendChild(opt);
+            });
+          }
+          // HU N3 si espace agadir
+          var espVal2 = espace ? espace.value : '';
+          if (espVal2 === 'agadir' && typeof GST_DATA !== 'undefined') {
+            GST_DATA.etablissementsN3.forEach(function(e) {
+              var opt = document.createElement('option');
+              opt.value = e.value; opt.textContent = e.label; etabSelect2.appendChild(opt);
+            });
+          }
+
+          var otherOpt2 = document.createElement('option');
+          otherOpt2.value = 'other';
+          otherOpt2.textContent = T().adhOtherEtab || 'Autre établissement';
+          etabSelect2.appendChild(otherOpt2);
+          etabSelect2.disabled = false;
+
+          // ESSP selon district
+          if (esspSelect2) {
+            esspSelect2.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            if (etabSelect2.value === 'other' && p && typeof ESSP_LIST !== 'undefined') {
+              ESSP_LIST.filter(function(e) {
+                if (e.p !== p) return false;
+                if (distVal && e.d && e.d !== distVal) return false;
+                return true;
+              }).forEach(function(e) {
+                var opt = document.createElement('option');
+                opt.value = e.n; opt.textContent = e.n; esspSelect2.appendChild(opt);
+              });
+              esspSelect2.style.display = '';
+            } else {
+              esspSelect2.style.display = 'none';
+            }
+          }
+
+          // Réinitialiser niveaux enfants (pas les parents)
+          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
+          if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
+          if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
+          if (serviceHosp) serviceHosp.value = '';
+          if (etabOther2) etabOther2.style.display = 'none';
+          fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         };
 
         division.onchange = function(){
