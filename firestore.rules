@@ -467,9 +467,9 @@ service cloud.firestore {
     // jamais le texte libre etab/province.
     // ==========================================================
     match /localStructures/{structureId} {
-      allow read: if isAdmin()
-        || (isSubAdmin() && resource.data.province == assignedProvince())
-        || (isSubAdminLocal() && structureId == assignedLocalStructure());
+      // Les adhérents connectés doivent pouvoir choisir leur bureau local
+      // lors de l'adhésion. Ces données décrivent uniquement des structures.
+      allow read: if signedIn();
 
       allow create: if isAdmin()
         && request.resource.data.keys().hasOnly([
