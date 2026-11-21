@@ -3196,26 +3196,13 @@ button.primary:active {
     color:#111;
     font-size:16px;
     box-sizing:border-box;
-    -webkit-appearance:menulist;
-    appearance:menulist;
+    -webkit-appearance:auto;
+    appearance:auto;
     pointer-events:auto;
-    position:relative;
-    z-index:5;
     display:block;
   }
-  /* Sélecteurs de cascade : garantir interactivité sur WebView Android */
-  #adhRattachement,#adhDirectionPole,#adhDivisionPole,#adhServicePole,
-  #adhProvince,#adhEspaceSanitaire,#adhDistrict,#adhEtablissement,
-  #adhDivision,#adhServiceGst,#adhUnite,#adhDivisionAdmin,#adhServiceAdmin{
-    pointer-events:auto!important;
-    z-index:10!important;
-    overflow:visible!important;
-    background:#fff!important;
-    color:#111!important;
-    -webkit-tap-highlight-color:transparent;
-  }
   .adh-grid,.adh-digital-form{
-    overflow:visible!important;
+    overflow:visible;
   }
 
   /* Android WebView: custom dropdown surface backed by the original select value. */
