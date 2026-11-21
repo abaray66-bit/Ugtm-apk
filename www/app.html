@@ -12301,6 +12301,11 @@ window.UGTM.failed(err);
           syncRenewalReason();
           if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
 
+          /* Les champs communs établissement/service sont resaisis selon la branche,
+             on ne conserve pas les valeurs de l'ancienne demande. */
+          document.getElementById('adhEstablishment').value='';
+          document.getElementById('adhService').value='';
+
           /* Appliquer l'affichage final */
           window.toggleConditionalFields();
         }).catch(function(){}).then(function(){
@@ -12311,6 +12316,10 @@ window.UGTM.failed(err);
       }
 
       /* 6. Forcer l'affichage au chargement initial */
+      /* Les champs communs établissement/service sont resaisis selon la branche,
+         on ne conserve pas les valeurs de l'ancienne demande ou du profil. */
+      document.getElementById('adhEstablishment').value='';
+      document.getElementById('adhService').value='';
       window.toggleConditionalFields();
 
       if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
