@@ -12919,8 +12919,19 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
         province:document.getElementById('adhProvince').value,
+        structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
+        rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
         espaceSanitaire:document.getElementById('adhEspaceSanitaire').value,
         district:document.getElementById('adhDistrict').value,
+        division:document.getElementById('adhDivision').value,
+        serviceGst:document.getElementById('adhServiceGst').value,
+        unite:document.getElementById('adhUnite').value,
+        serviceHospitalier:document.getElementById('adhServiceHospitalier').value.trim(),
+        directionPole:document.getElementById('adhDirectionPole')?document.getElementById('adhDirectionPole').value:'',
+        divisionPole:document.getElementById('adhDivisionPole')?document.getElementById('adhDivisionPole').value:'',
+        servicePole:document.getElementById('adhServicePole')?document.getElementById('adhServicePole').value:'',
+        divisionAdmin:document.getElementById('adhDivisionAdmin')?document.getElementById('adhDivisionAdmin').value:'',
+        serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
         establishment:(function(){
           var sel=document.getElementById('adhEtablissement');
           if(sel && sel.value && sel.value!=='other')return sel.value;
