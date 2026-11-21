@@ -3540,7 +3540,7 @@ window.markNotificationRead=markNotificationRead;
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
         <div class="field"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="hu_specialites_agadir" data-i18n="adhHuSpecialites"></option><option value="hu_mere_enfant_agadir" data-i18n="adhHuMereEnfant"></option><option value="hu_oncologie_agadir" data-i18n="adhHuOncologie"></option><option value="hu_psychiatrie_agadir" data-i18n="adhHuPsychiatrie"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
+        <div class="field"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
         <div class="field adh-full" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><input id="adhEtabOther" type="text" maxlength="160"></div>
         <div class="field"><label for="adhNiveauSanitaire" data-i18n="adhNiveauSanitaire"></label><input id="adhNiveauSanitaire" type="text" readonly style="background:var(--surface-2);"></div>
         <div class="field"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option><option value="sanitaire" data-i18n="adhDivisionSanitaire"></option><option value="administrative" data-i18n="adhDivisionAdministrative"></option></select></div>
@@ -12381,8 +12381,27 @@ window.UGTM.failed(err);
         district.disabled = true;
       }
 
-      // Etablissement: show HU list only for Agadir espace
-      // (handled by select options already in HTML)
+       // Établissement : HU uniquement pour l'espace Agadir
+       var etabSelect = document.getElementById('adhEtablissement');
+       if (etabSelect) {
+         var currentVal = etabSelect.value;
+         etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+         if (espVal === 'agadir') {
+           GST_DATA.etablissementsN3.forEach(function(e) {
+             var opt = document.createElement('option');
+             opt.value = e.value;
+             opt.textContent = e.label;
+             etabSelect.appendChild(opt);
+           });
+         }
+         var otherOpt = document.createElement('option');
+         otherOpt.value = 'other';
+         otherOpt.textContent = T().adhOtherEtab || 'Autre établissement';
+         etabSelect.appendChild(otherOpt);
+         if (currentVal && Array.from(etabSelect.options).some(function(o){return o.value===currentVal;})) {
+           etabSelect.value = currentVal;
+         }
+       }
 
        // Niveau déduit de l'établissement et de l'espace sanitaire
        var etabVal = etab.value;
