@@ -3619,6 +3619,11 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-administrative" id="adhDivisionAdminWrap" style="display:none"><label for="adhDivisionAdmin" data-i18n="adhDivisionAdmin"></label><select id="adhDivisionAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-administrative" id="adhServiceAdminWrap" style="display:none"><label for="adhServiceAdmin" data-i18n="adhServiceAdmin"></label><select id="adhServiceAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
+        <div class="field adh-full" id="adhStructureLocaleDerivedWrap" style="display:none">
+          <label for="adhStructureLocaleDerived" data-i18n="adhStructureDerived"></label>
+          <input id="adhStructureLocaleDerived" type="text" readonly>
+        </div>
+
         <!-- Champs communs -->
         
         <div class="field" id="adhEstablishmentLegacyWrap" style="display:none"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" disabled></div>
@@ -3999,7 +4004,7 @@ heroShare:`Partager l'application`,
 adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
-adhProfessional:`Situation professionnelle`, adhProvince:`Province d'affiliation syndicale (bureau provincial)`, adhRattachementChoose:`Sélectionner une branche`, adhNiveauSanitaire:`Type de structure sanitaire`, adhNiveauSanitaireChoose:`Sélectionner le parcours sanitaire`, adhNiveauTertiaire:`CHU — niveau tertiaire`, adhNiveauEspace:`Direction d’espace sanitaire`, adhNiveauDistrict:`Direction de district sanitaire`, adhNiveauDgaDirect:`Services directement rattachés à la DGA sanitaire`, adhNiveauTertiaire:`CHU — niveau tertiaire`, adhNiveauEspace:`Direction d’espace sanitaire`, adhNiveauDistrict:`Direction de district sanitaire`, adhNiveauHopitalDirect:`Hôpital rattaché directement à l’espace sanitaire`, adhNiveauHopitalDistrict:`Hôpital rattaché à un district`, adhNiveauEssp:`ESSP / EMS`, adhEspaceChoose:`Sélectionner l’espace sanitaire`, adhDirectionAdmin:`Direction ou service directement rattaché`, adhEspaceSanitaire:`Espace sanitaire`, adhEspaceAgadir:`Espace sanitaire Agadir`, adhEspaceTaroudant:`Espace sanitaire Taroudant`, adhDistrict:`District sanitaire`, adhEtablissement:`Établissement`, adhNiveauSanitaire:`Parcours sanitaire`, adhDivision:`Division ou rattachement direct`, adhServiceGst:`Service / unité`, adhUnite:`Unité`, adhServiceHospitalier:`Nom du service hospitalier à préciser`, adhStructure:`Structure locale / délégation`, adhStructureChoose:`Sélectionner une structure locale`, adhStructureNone:`Aucune structure locale disponible pour cette province`, adhStructureError:`Erreur de chargement des structures`, adhStructureLoading:`Chargement des structures…`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction / poste occupé`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`, adhOtherEtab:`Autre établissement`, adhDivisionSanitaire:`Division sanitaire`, adhDivisionAdministrative:`Division administrative`, adhNiveau3:`Niveau III — Tertiaire`, adhNiveau2:`Niveau II — Secondaire`, adhNiveau1:`Niveau I — Proximité`, adhNiveauPrimaire:`Niveau primaire — ESSP`, adhHuSpecialites:`HU Mohammed VI des Spécialités Agadir`, adhHuMereEnfant:`HU Mohammed VI Mère-Enfant Agadir`, adhHuOncologie:`HU Mohammed VI Oncologie Agadir`, adhHuPsychiatrie:`HU Mohammed VI Psychiatrie Agadir`, adhDistrictAgadir:`Agadir`, adhDistrictInezgane:`Inezgane`, adhDistrictChtouka:`Chtouka Aït Baha`, adhDistrictTiznit:`Tiznit`, adhDistrictTaroudant:`Taroudant`, adhDistrictTata:`Tata`, adhDistrictOuladTeima:`Oulad Teima (district Taroudant)`, adhStructureMere:`Structure mère`, adhRattachement:`Rattachement organisationnel`, adhRattachementPole:`Pôle de pilotage et de gouvernance générale`, adhRattachementDGA_Sanitaire:`Branche sanitaire (DGA Sanitaire)`, adhRattachementDGA_Administrative:`Branche administrative (DGA Administrative)`, adhDirectionPole:`Direction ou rattachement direct (Pôle)`, adhDivisionPole:`Division ou rattachement direct (Pôle)`, adhServicePole:`Service (Pôle)`, adhDivisionAdmin:`Division (DGA Administrative)`, adhServiceAdmin:`Service (DGA Administrative)`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province d'affiliation syndicale (bureau provincial)`, adhRattachementChoose:`Sélectionner une branche`, adhNiveauSanitaire:`Type de structure sanitaire`, adhNiveauSanitaireChoose:`Sélectionner le parcours sanitaire`, adhNiveauTertiaire:`CHU — niveau tertiaire`, adhNiveauEspace:`Direction d’espace sanitaire`, adhNiveauDistrict:`Direction de district sanitaire`, adhNiveauDgaDirect:`Services directement rattachés à la DGA sanitaire`, adhNiveauTertiaire:`CHU — niveau tertiaire`, adhNiveauEspace:`Direction d’espace sanitaire`, adhNiveauDistrict:`Direction de district sanitaire`, adhNiveauHopitalDirect:`Hôpital rattaché directement à l’espace sanitaire`, adhNiveauHopitalDistrict:`Hôpital rattaché à un district`, adhNiveauEssp:`ESSP / EMS`, adhEspaceChoose:`Sélectionner l’espace sanitaire`, adhDirectionAdmin:`Direction ou service directement rattaché`, adhEspaceSanitaire:`Espace sanitaire`, adhEspaceAgadir:`Espace sanitaire Agadir`, adhEspaceTaroudant:`Espace sanitaire Taroudant`, adhDistrict:`District sanitaire`, adhEtablissement:`Établissement`, adhNiveauSanitaire:`Parcours sanitaire`, adhDivision:`Division ou rattachement direct`, adhServiceGst:`Service / unité`, adhUnite:`Unité`, adhServiceHospitalier:`Nom du service hospitalier à préciser`, adhStructure:`Structure locale / délégation`, adhStructureDerived:`Délégation déduite de votre rattachement`, adhStructureChoose:`Sélectionner une structure locale`, adhStructureNone:`Aucune structure locale disponible pour cette province`, adhStructureError:`Erreur de chargement des structures`, adhStructureLoading:`Chargement des structures…`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`Fonction / poste occupé`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`, adhOtherEtab:`Autre établissement`, adhDivisionSanitaire:`Division sanitaire`, adhDivisionAdministrative:`Division administrative`, adhNiveau3:`Niveau III — Tertiaire`, adhNiveau2:`Niveau II — Secondaire`, adhNiveau1:`Niveau I — Proximité`, adhNiveauPrimaire:`Niveau primaire — ESSP`, adhHuSpecialites:`HU Mohammed VI des Spécialités Agadir`, adhHuMereEnfant:`HU Mohammed VI Mère-Enfant Agadir`, adhHuOncologie:`HU Mohammed VI Oncologie Agadir`, adhHuPsychiatrie:`HU Mohammed VI Psychiatrie Agadir`, adhDistrictAgadir:`Agadir`, adhDistrictInezgane:`Inezgane`, adhDistrictChtouka:`Chtouka Aït Baha`, adhDistrictTiznit:`Tiznit`, adhDistrictTaroudant:`Taroudant`, adhDistrictTata:`Tata`, adhDistrictOuladTeima:`Oulad Teima (district Taroudant)`, adhStructureMere:`Structure mère`, adhRattachement:`Rattachement organisationnel`, adhRattachementPole:`Pôle de pilotage et de gouvernance générale`, adhRattachementDGA_Sanitaire:`Branche sanitaire (DGA Sanitaire)`, adhRattachementDGA_Administrative:`Branche administrative (DGA Administrative)`, adhDirectionPole:`Direction ou rattachement direct (Pôle)`, adhDivisionPole:`Division ou rattachement direct (Pôle)`, adhServicePole:`Service (Pôle)`, adhDivisionAdmin:`Division (DGA Administrative)`, adhServiceAdmin:`Service (DGA Administrative)`,
 adhFunctionChoose:`Choisir une fonction`,
 adhFunctionToSpecify:`Fonction à préciser`,
 adhFunctionNone:`Sans fonction`,
@@ -4644,7 +4649,7 @@ heroShare:`شاركوا التطبيق`,
 adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
-adhProfessional:`الوضعية المهنية`, adhProvince:`إقليم الانتساب النقابي (المكتب الإقليمي)`, adhRattachementChoose:`اختر الفرع التنظيمي`, adhNiveauSanitaire:`نوع البنية الصحية`, adhNiveauSanitaireChoose:`اختر المسار الصحي`, adhNiveauTertiaire:`مستشفى جامعي — المستوى الثالث`, adhNiveauEspace:`مديرية الفضاء الصحي`, adhNiveauDistrict:`مديرية الدائرة الصحية`, adhNiveauDgaDirect:`المصالح المرتبطة مباشرة بالمديرية العامة للصحة`, adhNiveauTertiaire:`مستشفى جامعي — المستوى الثالث`, adhNiveauEspace:`مديرية الفضاء الصحي`, adhNiveauDistrict:`مديرية الدائرة الصحية`, adhNiveauHopitalDirect:`مستشفى مرتبط مباشرة بالفضاء الصحي`, adhNiveauHopitalDistrict:`مستشفى تابع لدائرة صحية`, adhNiveauEssp:`مؤسسة الرعاية الصحية الأولية / EMS`, adhEspaceChoose:`اختر الفضاء الصحي`, adhDirectionAdmin:`المديرية أو مصلحة مرتبطة مباشرة`, adhEspaceSanitaire:`الفضاء الصحي`, adhEspaceAgadir:`الفضاء الصحي أكادير`, adhEspaceTaroudant:`الفضاء الصحي تارودانت`, adhDistrict:`الدائرة الصحية`, adhEtablissement:`المؤسسة`, adhNiveauSanitaire:`مسار الهيكل الصحي`, adhDivision:`القسم أو الارتباط المباشر`, adhServiceGst:`المصلحة / الوحدة`, adhUnite:`الوحدة`, adhServiceHospitalier:`اسم المصلحة الاستشفائية`, adhStructure:`الهيكل المحلي / التفويض`, adhStructureChoose:`اختر هيكلًا محليًا`, adhStructureNone:`لا توجد هياكل محلية متاحة لهذا الإقليم`, adhStructureError:`خطأ في تحميل الهياكل`, adhStructureLoading:`جاري تحميل الهياكل…`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`, adhOtherEtab:`مؤسسة أخرى`, adhDivisionSanitaire:`القسم الصحي`, adhDivisionAdministrative:`القسم الإداري`, adhNiveau3:`المستوى III — ثالثي`, adhNiveau2:`المستوى II — ثانوي`, adhNiveau1:`المستوى I — القرب`, adhNiveauPrimaire:`المستوى الأولي — ESSP`, adhHuSpecialites:`المستشفى الجامعي محمد السادس للتخصصات أكادير`, adhHuMereEnfant:`المستشفى الجامعي محمد السادس للأم والطفل أكادير`, adhHuOncologie:`المستشفى الجامعي محمد السادس لعلم الأورام أكادير`, adhHuPsychiatrie:`المستشفى الجامعي محمد السادس للطب النفسي أكادير`, adhDistrictAgadir:`أكادير`, adhDistrictInezgane:`إنزكان`, adhDistrictChtouka:`اشتوكة أيت باها`, adhDistrictTiznit:`تيزنيت`, adhDistrictTaroudant:`تارودانت`, adhDistrictTata:`طاطا`, adhDistrictOuladTeima:`أولاد تايمة (دائرة تارودانت)`, adhStructureMere:`الهيكل الأم`, adhRattachement:`الارتباط التنظيمي`, adhRattachementPole:`مجلس القيادة والإدارة العامة`, adhRattachementDGA_Sanitaire:`فرع صحي (نائب المدير العام للصحة)`, adhRattachementDGA_Administrative:`فرع إداري (نائب المدير العام للإدارة)`, adhDirectionPole:`المديرية أو الارتباط المباشر (القيادة)`, adhDivisionPole:`القسم أو الارتباط المباشر (القيادة)`, adhServicePole:`المصلحة (المجلس)`, adhDivisionAdmin:`القسم (نائب المدير العام للإدارة)`, adhServiceAdmin:`المصلحة (نائب المدير العام للإدارة)`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`إقليم الانتساب النقابي (المكتب الإقليمي)`, adhRattachementChoose:`اختر الفرع التنظيمي`, adhNiveauSanitaire:`نوع البنية الصحية`, adhNiveauSanitaireChoose:`اختر المسار الصحي`, adhNiveauTertiaire:`مستشفى جامعي — المستوى الثالث`, adhNiveauEspace:`مديرية الفضاء الصحي`, adhNiveauDistrict:`مديرية الدائرة الصحية`, adhNiveauDgaDirect:`المصالح المرتبطة مباشرة بالمديرية العامة للصحة`, adhNiveauTertiaire:`مستشفى جامعي — المستوى الثالث`, adhNiveauEspace:`مديرية الفضاء الصحي`, adhNiveauDistrict:`مديرية الدائرة الصحية`, adhNiveauHopitalDirect:`مستشفى مرتبط مباشرة بالفضاء الصحي`, adhNiveauHopitalDistrict:`مستشفى تابع لدائرة صحية`, adhNiveauEssp:`مؤسسة الرعاية الصحية الأولية / EMS`, adhEspaceChoose:`اختر الفضاء الصحي`, adhDirectionAdmin:`المديرية أو مصلحة مرتبطة مباشرة`, adhEspaceSanitaire:`الفضاء الصحي`, adhEspaceAgadir:`الفضاء الصحي أكادير`, adhEspaceTaroudant:`الفضاء الصحي تارودانت`, adhDistrict:`الدائرة الصحية`, adhEtablissement:`المؤسسة`, adhNiveauSanitaire:`مسار الهيكل الصحي`, adhDivision:`القسم أو الارتباط المباشر`, adhServiceGst:`المصلحة / الوحدة`, adhUnite:`الوحدة`, adhServiceHospitalier:`اسم المصلحة الاستشفائية`, adhStructure:`الهيكل المحلي / التفويض`, adhStructureDerived:`التفويض المستنتج من الارتباط التنظيمي`, adhStructureChoose:`اختر هيكلًا محليًا`, adhStructureNone:`لا توجد هياكل محلية متاحة لهذا الإقليم`, adhStructureError:`خطأ في تحميل الهياكل`, adhStructureLoading:`جاري تحميل الهياكل…`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`, adhOtherEtab:`مؤسسة أخرى`, adhDivisionSanitaire:`القسم الصحي`, adhDivisionAdministrative:`القسم الإداري`, adhNiveau3:`المستوى III — ثالثي`, adhNiveau2:`المستوى II — ثانوي`, adhNiveau1:`المستوى I — القرب`, adhNiveauPrimaire:`المستوى الأولي — ESSP`, adhHuSpecialites:`المستشفى الجامعي محمد السادس للتخصصات أكادير`, adhHuMereEnfant:`المستشفى الجامعي محمد السادس للأم والطفل أكادير`, adhHuOncologie:`المستشفى الجامعي محمد السادس لعلم الأورام أكادير`, adhHuPsychiatrie:`المستشفى الجامعي محمد السادس للطب النفسي أكادير`, adhDistrictAgadir:`أكادير`, adhDistrictInezgane:`إنزكان`, adhDistrictChtouka:`اشتوكة أيت باها`, adhDistrictTiznit:`تيزنيت`, adhDistrictTaroudant:`تارودانت`, adhDistrictTata:`طاطا`, adhDistrictOuladTeima:`أولاد تايمة (دائرة تارودانت)`, adhStructureMere:`الهيكل الأم`, adhRattachement:`الارتباط التنظيمي`, adhRattachementPole:`مجلس القيادة والإدارة العامة`, adhRattachementDGA_Sanitaire:`فرع صحي (نائب المدير العام للصحة)`, adhRattachementDGA_Administrative:`فرع إداري (نائب المدير العام للإدارة)`, adhDirectionPole:`المديرية أو الارتباط المباشر (القيادة)`, adhDivisionPole:`القسم أو الارتباط المباشر (القيادة)`, adhServicePole:`المصلحة (المجلس)`, adhDivisionAdmin:`القسم (نائب المدير العام للإدارة)`, adhServiceAdmin:`المصلحة (نائب المدير العام للإدارة)`,
 adhFunctionChoose:`اختر وظيفة`,
 adhFunctionToSpecify:`وظيفة لتحديد`,
 adhFunctionNone:`بدون وظيفة`,
@@ -12744,6 +12749,40 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       el.required=!el.disabled;
       fixSelectLabels(id);
     }
+    function selectedOrgLabel(id){
+      var el=document.getElementById(id);
+      if(!el||!el.value||el.selectedIndex<0)return '';
+      var option=el.options[el.selectedIndex];
+      return String((option&&(option.label||option.textContent))||'').trim();
+    }
+    function deriveAdhStructureLocale(){
+      var branch=(document.getElementById('adhRattachement')||{}).value||'';
+      if(branch==='dgaSanitaire'){
+        var district=(document.getElementById('adhDistrict')||{}).value||'';
+        if(district)return GST_DATA.districtStructures[district]||('District sanitaire '+selectedOrgLabel('adhDistrict'));
+        var customService=(document.getElementById('adhServiceHospitalier')||{}).value||'';
+        var otherEtab=(document.getElementById('adhEtabOther')||{}).value||'';
+        return selectedOrgLabel('adhUnite')
+          ||String(customService).trim()
+          ||String(otherEtab).trim()
+          ||selectedOrgLabel('adhServiceGst')
+          ||selectedOrgLabel('adhEtablissement')
+          ||selectedOrgLabel('adhEspaceSanitaire')
+          ||'Branche sanitaire';
+      }
+      if(branch==='pole')return selectedOrgLabel('adhServicePole')||selectedOrgLabel('adhDivisionPole')||selectedOrgLabel('adhDirectionPole')||'Pôle de pilotage';
+      if(branch==='dgaAdministrative')return selectedOrgLabel('adhServiceAdmin')||selectedOrgLabel('adhDivisionAdmin')||selectedOrgLabel('adhDirectionAdmin')||'Branche administrative';
+      return '';
+    }
+    function refreshAdhStructureLocale(){
+      var wrap=document.getElementById('adhStructureLocaleDerivedWrap');
+      var input=document.getElementById('adhStructureLocaleDerived');
+      if(!wrap||!input)return;
+      var value=deriveAdhStructureLocale();
+      input.value=value;
+      setCascadeField('adhStructureLocaleDerivedWrap',!!value);
+    }
+
     function clearFunctionStep(){
       var f=document.getElementById('adhFunction');
       var s=document.getElementById('adhSpecialty');
@@ -12755,6 +12794,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       if(so){so.value='';so.disabled=true;}
       setCascadeField('adhFunctionWrap',false);
       setCascadeField('adhSpecialtyWrap',false);
+      var derived=document.getElementById('adhStructureLocaleDerived');if(derived)derived.value='';
+      setCascadeField('adhStructureLocaleDerivedWrap',false);
       if(typeof window.toggleConditionalFields==='function')window.toggleConditionalFields();
     }
     function showFunctionStep(){
@@ -12763,6 +12804,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       f.disabled=false;
       f.required=true;
       setCascadeField('adhFunctionWrap',true);
+      refreshAdhStructureLocale();
       var s=document.getElementById('adhSpecialty');
       if(s){
         s.disabled=!f.value;
@@ -13277,7 +13319,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         address:document.getElementById('adhAddress').value.trim(),
         province:document.getElementById('adhProvince').value,
         provinceLabel:adhSelectedText('adhProvince'),
-        structureLocale:adhSelectedText('adhStructure'),
+        structureLocale:(document.getElementById('adhStructureLocaleDerived')||{}).value||'',
         rattachementLabel:adhSelectedText('adhRattachement'),
         niveauSanitaireLabel:adhSelectedText('adhNiveauSanitaire'),
         espaceSanitaireLabel:adhSelectedText('adhEspaceSanitaire'),
