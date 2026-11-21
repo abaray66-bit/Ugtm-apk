@@ -3619,11 +3619,6 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-administrative" id="adhDivisionAdminWrap" style="display:none"><label for="adhDivisionAdmin" data-i18n="adhDivisionAdmin"></label><select id="adhDivisionAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-administrative" id="adhServiceAdminWrap" style="display:none"><label for="adhServiceAdmin" data-i18n="adhServiceAdmin"></label><select id="adhServiceAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
-        <div class="field adh-full" id="adhStructureLocaleDerivedWrap" style="display:none">
-          <label for="adhStructureLocaleDerived" data-i18n="adhStructureDerived"></label>
-          <input id="adhStructureLocaleDerived" type="text" readonly>
-        </div>
-
         <!-- Champs communs -->
         
         <div class="field" id="adhEstablishmentLegacyWrap" style="display:none"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160" disabled></div>
@@ -12774,15 +12769,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       if(branch==='dgaAdministrative')return selectedOrgLabel('adhServiceAdmin')||selectedOrgLabel('adhDivisionAdmin')||selectedOrgLabel('adhDirectionAdmin')||'Branche administrative';
       return '';
     }
-    function refreshAdhStructureLocale(){
-      var wrap=document.getElementById('adhStructureLocaleDerivedWrap');
-      var input=document.getElementById('adhStructureLocaleDerived');
-      if(!wrap||!input)return;
-      var value=deriveAdhStructureLocale();
-      input.value=value;
-      setCascadeField('adhStructureLocaleDerivedWrap',!!value);
-    }
-
     function clearFunctionStep(){
       var f=document.getElementById('adhFunction');
       var s=document.getElementById('adhSpecialty');
@@ -12794,8 +12780,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       if(so){so.value='';so.disabled=true;}
       setCascadeField('adhFunctionWrap',false);
       setCascadeField('adhSpecialtyWrap',false);
-      var derived=document.getElementById('adhStructureLocaleDerived');if(derived)derived.value='';
-      setCascadeField('adhStructureLocaleDerivedWrap',false);
       if(typeof window.toggleConditionalFields==='function')window.toggleConditionalFields();
     }
     function showFunctionStep(){
@@ -12804,7 +12788,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       f.disabled=false;
       f.required=true;
       setCascadeField('adhFunctionWrap',true);
-      refreshAdhStructureLocale();
       var s=document.getElementById('adhSpecialty');
       if(s){
         s.disabled=!f.value;
@@ -13319,7 +13302,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         address:document.getElementById('adhAddress').value.trim(),
         province:document.getElementById('adhProvince').value,
         provinceLabel:adhSelectedText('adhProvince'),
-        structureLocale:(document.getElementById('adhStructureLocaleDerived')||{}).value||'',
+        structureLocale:deriveAdhStructureLocale(),
         rattachementLabel:adhSelectedText('adhRattachement'),
         niveauSanitaireLabel:adhSelectedText('adhNiveauSanitaire'),
         espaceSanitaireLabel:adhSelectedText('adhEspaceSanitaire'),
