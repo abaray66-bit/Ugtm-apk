@@ -12481,6 +12481,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
             divSel.disabled = false;
+            // Auto-sélection de la première division et affichage de ses services
+            if (divSel.options.length > 1) {
+              divSel.value = divSel.options[1].value;
+              divSel.onchange();
+            }
           }
         };
 
@@ -12493,6 +12498,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
             svcSel.disabled = false;
+            // Auto-sélection du premier service
+            if (svcSel.options.length > 1) {
+              svcSel.value = svcSel.options[1].value;
+            }
           }
         };
 
