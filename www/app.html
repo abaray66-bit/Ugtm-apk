@@ -12349,12 +12349,11 @@ window.UGTM.failed(err);
       if(!structSelect)return;
       var currentValue=structSelect.value;
       structSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
-      structSelect.disabled=true;
-      if(!province)return;
+      structSelect.disabled=false;
       if(typeof window.CLOUD!=='undefined' && window.CLOUD.admin && window.CLOUD.admin.getLocalStructures){
         window.CLOUD.admin.getLocalStructures().then(function(list){
           var filtered=list.filter(function(s){
-            return s.province===province && !s.archived;
+            return !s.archived && (!province || s.province===province);
           });
           if(filtered.length===0){
             structSelect.innerHTML='<option value="" data-i18n="adhStructureNone"></option>';
@@ -13175,6 +13174,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         });
         fixSelectLabels('adhDistrict');
+      }
+
+      // Recharger les structures locales selon la province (toutes les branches)
+      var provSel2 = document.getElementById('adhProvince');
+      if (provSel2) {
+        loadLocalStructures(provSel2.value || '');
       }
     }
     attachAdhListeners();
