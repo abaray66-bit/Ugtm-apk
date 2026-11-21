@@ -12771,7 +12771,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       // === BRANCHE : PÔLE === Direction → Division → Service
       if (rattleVal === 'pole') {
-        document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = ''; });
+        document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = 'block'; });
         var dirSel = document.getElementById('adhDirectionPole');
         var divSel = document.getElementById('adhDivisionPole');
         var svcSel = document.getElementById('adhServicePole');
@@ -12821,7 +12821,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       // === BRANCHE : ADMINISTRATIVE === Direction → Division → Service
       if (rattleVal === 'dgaAdministrative') {
-        document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = ''; });
+        document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = 'block'; });
         var dirSel = document.getElementById('adhDirectionAdmin');
         var divSel = document.getElementById('adhDivisionAdmin');
         var svcSel = document.getElementById('adhServiceAdmin');
@@ -12871,7 +12871,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       // === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité
       if (rattleVal === 'dgaSanitaire') {
-        document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = ''; });
+        document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
 
         var espace = document.getElementById('adhEspaceSanitaire');
         var district = document.getElementById('adhDistrict');
@@ -13040,6 +13040,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if (el) {
           el.addEventListener('change', gstCascade);
           el.addEventListener('input', gstCascade);
+          el.addEventListener('click', gstCascade);
+          el.addEventListener('blur', gstCascade);
           fixSelectLabels(id);
         }
       });
