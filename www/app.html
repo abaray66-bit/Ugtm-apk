@@ -12507,7 +12507,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       if(!form)return;
 
       function translations(){
-        try{return typeof T==='function'?(T()||{}):{};}catch(e){return {};}
+        try{return typeof window.ugtmT==='function'?(window.ugtmT()||{}):{};}catch(e){return {};}
       }
       function getOptionText(option){
         if(!option)return '';
@@ -12892,7 +12892,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
           var otherOpt = document.createElement('option');
           otherOpt.value = 'other';
-          otherOpt.textContent = T().adhOtherEtab || 'Autre établissement';
+          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
           etabSelect.appendChild(otherOpt);
 
           if (currentVal && Array.from(etabSelect.options).some(function(o){return o.value===currentVal;})) {
@@ -13070,7 +13070,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
           var otherOpt = document.createElement('option');
           otherOpt.value = 'other';
-          otherOpt.textContent = T().adhOtherEtab || 'Autre établissement';
+          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
           etabSelect.appendChild(otherOpt);
           etabSelect.disabled = false;
 
