@@ -13282,7 +13282,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         return;
       }
 
-      function adhSelectedText(id){var el=document.getElementById(id);return el&&el.selectedIndex>=0?String((el.options[el.selectedIndex]||{}).textContent||'').trim():'';}
+      function adhSelectedText(id){var el=document.getElementById(id);return el&&el.value&&el.selectedIndex>=0?String((el.options[el.selectedIndex]||{}).textContent||'').trim():'';}
       var data={
         nom:document.getElementById('adhNom').value.trim(),
         prenom:document.getElementById('adhPrenom').value.trim(),
