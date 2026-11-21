@@ -3192,26 +3192,38 @@ button.primary:active {
     padding:10px 12px;
     border:1px solid var(--border-accent);
     border-radius:var(--radius-s);
-    background:var(--surface);
-    color:var(--ink);
+    background:#fff;
+    color:#111;
     font-size:16px;
     box-sizing:border-box;
-    appearance:auto;
-    -webkit-appearance:auto;
+    -webkit-appearance:menulist;
+    appearance:menulist;
     pointer-events:auto;
     position:relative;
     z-index:5;
+    display:block;
   }
   /* Sélecteurs de cascade : garantir interactivité sur WebView Android */
   #adhRattachement,#adhDirectionPole,#adhDivisionPole,#adhServicePole,
   #adhProvince,#adhEspaceSanitaire,#adhDistrict,#adhEtablissement,
   #adhDivision,#adhServiceGst,#adhUnite,#adhDivisionAdmin,#adhServiceAdmin{
     pointer-events:auto!important;
-    z-index:10!important;
+    z-index:100!important;
     overflow:visible!important;
     background:#fff!important;
     color:#111!important;
+    opacity:1!important;
+    visibility:visible!important;
     -webkit-tap-highlight-color:transparent;
+    outline:2px solid #1976d2!important;
+    outline-offset:-2px!important;
+  }
+  #adhRattachement option,#adhDirectionPole option,#adhDivisionPole option,#adhServicePole option,
+  #adhProvince option,#adhEspaceSanitaire option,#adhDistrict option,#adhEtablissement option,
+  #adhDivision option,#adhServiceGst option,#adhUnite option,#adhDivisionAdmin option,#adhServiceAdmin option{
+    background:#fff!important;
+    color:#111!important;
+    padding:8px 10px!important;
   }
   .adh-grid,.adh-digital-form{
     overflow:visible!important;
@@ -12787,7 +12799,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
             var sel=this;
             if(sel.value){
               sel.blur();
-              setTimeout(function(){ sel.focus(); }, 0);
+              setTimeout(function(){
+                var idx=sel.selectedIndex;
+                sel.selectedIndex=idx;
+                sel.focus();
+              }, 0);
             }
           });
           fixSelectLabels(id);
