@@ -3209,6 +3209,9 @@ button.primary:active {
     pointer-events:auto!important;
     z-index:10!important;
     overflow:visible!important;
+    background:#fff!important;
+    color:#111!important;
+    -webkit-tap-highlight-color:transparent;
   }
   .adh-grid,.adh-digital-form{
     overflow:visible!important;
@@ -12441,6 +12444,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
       }
     };
 
+    // WebView Android : forcer le label de chaque option pour l'affichage du champ sélectionné
+    function fixSelectLabels(selectId){
+      var sel=document.getElementById(selectId);
+      if(!sel)return;
+      for(var i=0;i<sel.options.length;i++){
+        var o=sel.options[i];
+        if(!o.label||o.label==='')o.label=o.textContent||o.value||'';
+      }
+    }
+
     function gstCascade() {
       var rattachement = document.getElementById('adhRattachement');
       var rattleVal = rattachement ? rattachement.value : '';
@@ -12453,14 +12466,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
 
-      // Réinitialiser tous les champs de cascade (espace gardé statique en HTML)
-      ['adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite','adhServiceHospitalier','adhEsspSelect','adhEtabOther'].forEach(function(id){ resetSel(id); resetInput(id); });
       resetInput('adhEspaceSanitaire');
       document.getElementById('adhEtabOtherWrap').style.display='none';
       ['adhDirectionPole','adhDivisionPole','adhServicePole'].forEach(resetSel);
       ['adhDivisionAdmin','adhServiceAdmin'].forEach(resetSel);
 
-      if (!rattleVal) return;
+      if (!rattleVal) { fixSelectLabels('adhRattachement'); return; }
 
       // Province obligatoire uniquement en branche sanitaire
       var provSelect = document.getElementById('adhProvince');
@@ -12518,6 +12529,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
 
         if (dirSel.value && GST_DATA.pole.divisions[dirSel.value]) { dirSel.onchange(); }
         if (divSel.value && GST_DATA.pole.services[divSel.value]) { divSel.onchange(); }
+        fixSelectLabels('adhDirectionPole'); fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         return;
       }
 
@@ -12552,6 +12564,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
           }
           svcSel.disabled = false;
         };
+        fixSelectLabels('adhDivisionAdmin'); fixSelectLabels('adhServiceAdmin');
         return;
       }
 
@@ -12751,6 +12764,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
         if (etabSelect.value) { etabSelect.onchange(); }
         if (division.value) { division.onchange(); }
         if (service.value) { service.onchange(); }
+
+        fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         return;
       }
     }
@@ -12759,12 +12774,23 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
     function attachAdhListeners(){
       var ids = ['adhRattachement','adhDirectionPole','adhDivisionPole','adhServicePole',
                  'adhProvince','adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite',
-                 'adhDivisionAdmin','adhServiceAdmin'].filter(Boolean);
+                 'adhDivisionAdmin','adhServiceAdmin',
+                 'adhStructure','adhFunction','adhSpecialty','adhEsspSelect'].filter(Boolean);
       ids.forEach(function(id){
         var el = document.getElementById(id);
         if (el) {
           el.addEventListener('change', gstCascade);
           el.addEventListener('input', gstCascade);
+          /* WebView Android : forcer le rafraîchissement de l'affichage
+             de la valeur sélectionnée après fermeture du dropdown. */
+          el.addEventListener('blur', function(){
+            var sel=this;
+            if(sel.value){
+              sel.blur();
+              setTimeout(function(){ sel.focus(); }, 0);
+            }
+          });
+          fixSelectLabels(id);
         }
       });
     }
