@@ -13060,8 +13060,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
     }
     attachAdhListeners();
     gstCascade();
-
-    gstCascade();
     initAndroidAdhesionSelects();
 
     /* Verrou renouvellement : un adhérent déjà accepté n'accède au
@@ -13241,8 +13239,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
         province:document.getElementById('adhProvince').value,
+        structureLocale:(function(){var s=document.getElementById('adhStructure');return s&&s.selectedIndex>0?(s.options[s.selectedIndex].textContent||''):'';})(),
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
+        niveauSanitaire:document.getElementById('adhNiveauSanitaire')?document.getElementById('adhNiveauSanitaire').value:'',
         espaceSanitaire:document.getElementById('adhEspaceSanitaire').value,
         district:document.getElementById('adhDistrict').value,
         division:document.getElementById('adhDivision').value,
@@ -13254,9 +13254,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         servicePole:document.getElementById('adhServicePole')?document.getElementById('adhServicePole').value:'',
         divisionAdmin:document.getElementById('adhDivisionAdmin')?document.getElementById('adhDivisionAdmin').value:'',
         serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
+        directionAdmin:document.getElementById('adhDirectionAdmin')?document.getElementById('adhDirectionAdmin').value:'',
         establishment:(function(){
           var sel=document.getElementById('adhEtablissement');
-          if(sel && sel.value && sel.value!=='other')return sel.value;
+          if(sel && sel.value && sel.value!=='other')return (sel.options[sel.selectedIndex]||{}).textContent||sel.value;
           if(sel && sel.value==='other'){
             var essp=document.getElementById('adhEsspSelect');
             if(essp && essp.value)return (essp.options[essp.selectedIndex]||{}).textContent||essp.value;
