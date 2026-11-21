@@ -736,7 +736,11 @@ service cloud.firestore {
     function adhesionAppKeys() {
       return ['nom', 'prenom', 'cin', 'dob', 'phone', 'address',
               'province', 'establishment', 'service', 'function',
-              'specialty', 'ppr', 'type', 'reason', 'commitment', 'date'];
+              'specialty', 'ppr', 'type', 'reason', 'commitment', 'date',
+              'structureMere', 'rattachement', 'espaceSanitaire', 'district',
+              'division', 'serviceGst', 'unite', 'serviceHospitalier',
+              'directionPole', 'divisionPole', 'servicePole',
+              'divisionAdmin', 'serviceAdmin'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -842,7 +846,9 @@ service cloud.firestore {
     'status', 'adminNote', 'createdAt', 'updatedAt',
     'structureId', 'espaceSanitaire', 'district',
     'division', 'serviceGst',
-    'unite', 'serviceHospitalier'
+    'unite', 'serviceHospitalier',
+    'rattachement', 'directionPole', 'divisionPole', 'servicePole',
+    'divisionAdmin', 'serviceAdmin'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -933,7 +939,8 @@ service cloud.firestore {
           && (resource.data.status == 'needs_completion'
             || request.resource.data.application.type == 'renewal')
           && request.resource.data.uid == uid
-          && request.resource.data.province in adhesionProvinces()
+        && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
+            || request.resource.data.province in adhesionProvinces())
           && request.resource.data.province == resource.data.province
           && request.resource.data.email == resource.data.email
           && request.resource.data.createdAt == resource.data.createdAt
@@ -945,7 +952,9 @@ service cloud.firestore {
                       'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
                       'structureId', 'espaceSanitaire', 'district',
                       'division', 'serviceGst',
-                      'unite', 'serviceHospitalier'])
+                      'unite', 'serviceHospitalier',
+                      'rattachement', 'directionPole', 'divisionPole', 'servicePole',
+                      'divisionAdmin', 'serviceAdmin'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''
