@@ -11888,7 +11888,7 @@ window.UGTM.failed(err);
             if(app.niveauSanitaireLabel)row1('Parcours sanitaire',app.niveauSanitaireLabel);
             if(app.espaceSanitaireLabel)row1('Espace sanitaire',app.espaceSanitaireLabel);
             if(app.districtLabel)row1('District sanitaire',app.districtLabel);
-            if(app.establishment)row1('Établissement / structure',app.establishment);
+            if(app.establishment&&['space','district'].indexOf(app.niveauSanitaire)<0)row1('Établissement / structure',app.establishment);
             if(app.division&&app.division!=='direct'&&app.divisionLabel)row1('Division',app.divisionLabel);
             var sanitaryService=app.serviceHospitalier||app.serviceGstLabel||app.serviceGst||'';
             if(sanitaryService)row1(app.serviceHospitalier?'Service hospitalier':'Service',sanitaryService);
@@ -12452,9 +12452,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
           { value: 'dga_service_samu', label: 'Service SAMU' },
           { value: 'dga_bureau_ordre', label: 'Bureau d’ordre, Documentation et Archives' }
         ],
+        dgaDirectServices: {
+          dga_division_pharmacie_regionale: ['Service de la gestion des médicaments','Service de la gestion des dispositifs médicaux','Service des réactifs, consommables et produits chimiques']
+        },
         divisionTertiaryOptions: [
           { value: 'sanitaire', label: 'Division sanitaire' },
-          { value: 'administrative', label: 'Division administrative' }
+          { value: 'administrative', label: 'Division administrative' },
+          { value: 'direct', label: 'Sans division — services rattachés directement à la direction' }
         ],
         divisionOptions: [
           { value: 'sanitaire', label: 'Division sanitaire' },
@@ -12482,6 +12486,18 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
           'Service Ingénierie Maintenance': ['Unité SI','Unité Bâtiments Installations techniques','Unité Équipements'],
           'Service Achats Appro Logistique': ['Unité Achats','Unité Approvisionnement','Unité Logistique'],
           'Service Affaires Administratives': ['Unité SI','Unité Capital Humain','Unité Affaires Financières','Unité Ingénierie et Maintenance','Unité Approvisionnement Logistique']
+        },
+        unitsByRoute: {
+          tertiary: {
+            'Service Affaires financières': ['Unité Régie','Unité Comptabilité'],
+            'Service Facturation Recouvrement': ['Unité Admission','Unité Facturation','Unité Recouvrement']
+          },
+          level2: {
+            'Service Affaires financières': ['Unité Régie','Unité Comptabilité','Unité Admission','Unité Facturation','Unité Recouvrement']
+          },
+          hospital: {
+            'Service Affaires Administratives': ['Unité SI','Unité Capital Humain','Unité Affaires Financières','Unité Ingénierie et Maintenance','Unité Approvisionnement Logistique']
+          }
         }
       },
       pole: {
@@ -12507,7 +12523,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
           'Division Prévention et Promotion Santé Publique': ['Service Prévention et Promotion Santé','Service Mobilisation Communautaire et Intersectorialité'],
           'Division Performance Programmes Santé Publique': ['Service Appui à la Mise en Œuvre des Programmes Santé Publique','Service Suivi et Évaluation'],
           'Division Audit, Qualité et Contrôle de Gestion': ['Service Audit','Service Qualité et Sécurité Patient','Service Contrôle de Gestion'],
-          'Division Recherche et Innovation': ['Service Recherche et Innovation','Service Coopération Scientifique'],
+          'Division Recherche et Innovation': ['Service Recherche et Innovation','Service de la coopération et de la communication scientifique'],
           'Services directement rattachés': ['Service Communication','Service Appui à l’Inspection et au Contrôle des Établissements']
         }
       },
@@ -12527,7 +12543,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         },
         services: {
           'Division Gestion du Personnel': ['Service Gestion carrières','Service Gestion de la paie'],
-          'Division Affaires Juridiques et Sociales': ['Service Juridique et contentieux','Service Affaires sociales'],
+          'Division Affaires Juridiques et Sociales': ['Service Sécurité au travail','Service Juridique et contentieux','Service Affaires sociales'],
           'Division Formation': ['Service Formation pratique','Service Formation continue'],
           'Division Comptabilité et Budget': ['Service Comptabilité générale et analytique','Service Élaboration et suivi budgétaire'],
           'Division Facturation, Recouvrement et Recettes': ['Service Régie','Service Facturation, Recouvrement et Recettes'],
@@ -12922,7 +12938,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       if(level==='dgaDirect'){
         ['adhDivision','adhServiceGst','adhUnite'].forEach(function(id){resetCascadeSelect(id,true);});
         ['adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap'].forEach(function(id){setCascadeField(id,false);});
-        clearFunctionStep();if(etabVal)showFunctionStep();return;
+        clearFunctionStep();
+        var directServices=GST_DATA.sanitaire.dgaDirectServices[etabVal]||[];
+        if(directServices.length){
+          fillCascadeSelect('adhServiceGst',directServices,false);
+          setCascadeField('adhServiceGstWrap',true);
+          var dgaService=document.getElementById('adhServiceGst');
+          dgaService.onchange=function(){if(dgaService.value)showFunctionStep();else clearFunctionStep();};
+          if(dgaService.value)showFunctionStep();
+        }else if(etabVal)showFunctionStep();
+        return;
       }
       if(level==='hospital'||level==='hospitalSpace'){
         setCascadeField('adhDivisionWrap',false);resetCascadeSelect('adhDivision',true);
@@ -12994,7 +13019,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
       }
       setCascadeField('adhServiceHospitalierWrap',false);
       if(sh){sh.value='';sh.disabled=true;sh.required=false;}
-      var units=GST_DATA.sanitaire.units[val]||[];
+      var unitRoute=level==='tertiary'?'tertiary':(['space','district'].indexOf(level)>=0?'level2':(['hospital','hospitalSpace'].indexOf(level)>=0?'hospital':''));
+      var routeUnits=(GST_DATA.sanitaire.unitsByRoute||{})[unitRoute]||{};
+      var units=routeUnits[val]||GST_DATA.sanitaire.units[val]||[];
       if(units.length){
         fillCascadeSelect('adhUnite',units,false);
         setCascadeField('adhUniteWrap',true);
