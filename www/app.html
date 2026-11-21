@@ -12762,12 +12762,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka","e":"a
         if(district)return GST_DATA.districtStructures[district]||('District sanitaire '+selectedOrgLabel('adhDistrict'));
         var customService=(document.getElementById('adhServiceHospitalier')||{}).value||'';
         var otherEtab=(document.getElementById('adhEtabOther')||{}).value||'';
-        return selectedOrgLabel('adhUnite')
-          ||String(customService).trim()
-          ||String(otherEtab).trim()
-          ||selectedOrgLabel('adhServiceGst')
+        return String(otherEtab).trim()
           ||selectedOrgLabel('adhEtablissement')
           ||selectedOrgLabel('adhEspaceSanitaire')
+          ||selectedOrgLabel('adhUnite')
+          ||String(customService).trim()
+          ||selectedOrgLabel('adhServiceGst')
           ||'Branche sanitaire';
       }
       if(branch==='pole')return selectedOrgLabel('adhServicePole')||selectedOrgLabel('adhDivisionPole')||selectedOrgLabel('adhDirectionPole')||'Pôle de pilotage';
