@@ -733,6 +733,15 @@ service cloud.firestore {
     // Les champs du dossier sont exigés à la création (hasAll ci-dessous),
     // ce qui garantit que chaque lecture d'un champ est sans risque
     // d'erreur d'évaluation.
+    // Clés toujours requises dans application (hasAll)
+    function adhesionAppRequiredKeys() {
+      return ['nom', 'prenom', 'cin', 'dob', 'phone', 'address',
+              'province', 'establishment', 'service', 'function',
+              'specialty', 'ppr', 'type', 'reason', 'commitment', 'date'];
+    }
+
+    // Toutes les clés autorisées dans application (hasOnly) — inclut les
+    // champs conditionnels selon la branche de rattachement.
     function adhesionAppKeys() {
       return ['nom', 'prenom', 'cin', 'dob', 'phone', 'address',
               'province', 'establishment', 'service', 'function',
@@ -799,7 +808,7 @@ service cloud.firestore {
     // les opérateurs && courts-circuitent : aucun accès à risque.
     function adhesionAppOk(app, province) {
       return app is map
-        && app.keys().hasAll(adhesionAppKeys())
+        && app.keys().hasAll(adhesionAppRequiredKeys())
         && app.keys().hasOnly(adhesionAppKeys())
         && okText(app.nom, 100)
         && app.nom.size() > 0
