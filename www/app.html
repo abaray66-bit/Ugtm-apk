@@ -12442,8 +12442,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=true; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
 
-      // Réinitialiser tous les champs de cascade
-      ['adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite','adhServiceHospitalier','adhEsspSelect','adhEtabOther'].forEach(function(id){ resetSel(id); resetInput(id); });
+      // Réinitialiser tous les champs de cascade (espace gardé statique en HTML)
+      ['adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite','adhServiceHospitalier','adhEsspSelect','adhEtabOther'].forEach(function(id){ resetSel(id); resetInput(id); });
+      resetInput('adhEspaceSanitaire');
       document.getElementById('adhEtabOtherWrap').style.display='none';
       ['adhDirectionPole','adhDivisionPole','adhServicePole'].forEach(resetSel);
       ['adhDivisionAdmin','adhServiceAdmin'].forEach(resetSel);
