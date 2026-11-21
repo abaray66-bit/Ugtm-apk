@@ -3573,7 +3573,7 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-pole" id="adhServicePoleWrap" style="display:none"><label for="adhServicePole" data-i18n="adhServicePole"></label><select id="adhServicePole"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
         <!-- === BRANCHE : SANITAIRE === Province → Espace/District → Établissement → Division → Service → Unité -->
-        <div class="field rattle-sanitaire" id="adhProvinceWrap" style="display:none"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEspaceSanitaireWrap" style="display:none"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDistrictWrap" style="display:none"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEtablissementWrap" style="display:none"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
@@ -12479,13 +12479,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       if (!rattleVal) { fixSelectLabels('adhRattachement'); return; }
 
-      // Province obligatoire uniquement en branche sanitaire
-      var provSelect = document.getElementById('adhProvince');
-      if (provSelect) {
-        provSelect.disabled = (rattleVal !== 'dgaSanitaire');
-        if (rattleVal !== 'dgaSanitaire') provSelect.value = '';
-      }
-
       // === BRANCHE : PÔLE === Direction → Division → Service
       if (rattleVal === 'pole') {
         document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = ''; });
@@ -12819,6 +12812,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         distSel.addEventListener('change', function(){
           var d = distSel.value;
           var p = document.getElementById('adhProvince') ? document.getElementById('adhProvince').value : '';
+          var espace = document.getElementById('adhEspaceSanitaire');
+          var espVal = espace ? espace.value : '';
           var etabSelect = document.getElementById('adhEtablissement');
           var division = document.getElementById('adhDivision');
           var service = document.getElementById('adhServiceGst');
@@ -12831,10 +12826,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           etabSelect.disabled = true;
           etabSelect.value = '';
 
-          // Hôpitaux de la province ET du district
-          if (p && typeof HOSP_LIST !== 'undefined') {
+          // Hôpitaux de l'espace sanitaire ET du district
+          if (espVal && typeof HOSP_LIST !== 'undefined') {
             HOSP_LIST.filter(function(h) {
-              if (h.p !== p) return false;
+              if (h.e !== espVal) return false;
               if (d && h.d && h.d !== d) return false;
               return true;
             }).forEach(function(h) {
