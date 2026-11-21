@@ -3538,11 +3538,11 @@ window.markNotificationRead=markNotificationRead;
       <div class="adh-step-title"><span>02</span><strong data-i18n="adhProfessional"></strong></div>
       <div class="adh-grid">
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
+        <div class="field"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option><option value="sanitaire" data-i18n="adhDivisionSanitaire"></option><option value="administrative" data-i18n="adhDivisionAdministrative"></option></select></div>
         <div class="field"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
         <div class="field"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
         <div class="field adh-full" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
-        <div class="field"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option><option value="sanitaire" data-i18n="adhDivisionSanitaire"></option><option value="administrative" data-i18n="adhDivisionAdministrative"></option></select></div>
         <div class="field"><label for="adhServiceGst" data-i18n="adhServiceGst"></label><select id="adhServiceGst"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhUnite" data-i18n="adhUnite"></label><select id="adhUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhServiceHospitalier" data-i18n="adhServiceHospitalier"></label><input id="adhServiceHospitalier" type="text" maxlength="120"></div>
@@ -12431,48 +12431,30 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP"},{"p":"inezgane","n"
          }
        }
 
-       // Division change → service options
-       if (division && service) {
-         var divVal = division.value;
-         service.innerHTML = '<option value=""></option>';
-         var services = [];
-         if (niveauCode === 'N3') {
-           if (divVal === 'sanitaire') services = GST_DATA.servicesN3Sanitaire;
-           else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
-         } else if (niveauCode === 'N2') {
-           if (divVal === 'sanitaire') services = GST_DATA.servicesN2Sanitaire;
-           else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
-         } else if (niveauCode === 'N1') {
-           // N1: pas de division, services directs
-           services = GST_DATA.servicesN1;
-         }
-         services.forEach(function(s) {
-           var opt = document.createElement('option');
-           opt.value = s; opt.textContent = s;
-           service.appendChild(opt);
-         });
-         service.disabled = services.length === 0;
-         // Pour N1, masquer la division
-         if (niveauCode === 'N1') {
-           division.disabled = true;
-           division.value = '';
-           division.parentElement.style.display = 'none';
-         } else {
-           division.disabled = false;
-           division.parentElement.style.display = '';
-         }
-
-         // Arbre inversé : masquer les champs sanitaires si division administrative
-         var svcHosp = document.getElementById('adhServiceHospitalier');
-         if (svcHosp) {
-           if (divVal === 'administrative') {
-             svcHosp.parentElement.style.display = 'none';
-             svcHosp.value = '';
-           } else {
-             svcHosp.parentElement.style.display = '';
-           }
-         }
-       }
+        // Division change → service options
+        if (division && service) {
+          var divVal = division.value;
+          service.innerHTML = '<option value=""></option>';
+          var services = [];
+          if (niveauCode === 'N1') {
+            // N1: pas de division, services directs
+            services = GST_DATA.servicesN1;
+          } else if (divVal === 'sanitaire') {
+            if (niveauCode === 'N3') services = GST_DATA.servicesN3Sanitaire;
+            else if (niveauCode === 'N2') services = GST_DATA.servicesN2Sanitaire;
+          } else if (divVal === 'administrative') {
+            services = GST_DATA.servicesN3Admin;
+          }
+          services.forEach(function(s) {
+            var opt = document.createElement('option');
+            opt.value = s; opt.textContent = s;
+            service.appendChild(opt);
+          });
+          service.disabled = services.length === 0;
+          // Division toujours visible (choix en haut du formulaire)
+          division.disabled = false;
+          division.parentElement.style.display = '';
+        }
 
        // ESSP : peupler le select quand "Autre" est sélectionné
        var esspSelect = document.getElementById('adhEsspSelect');
