@@ -3539,7 +3539,7 @@ window.markNotificationRead=markNotificationRead;
       <div class="adh-grid">
         <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
-        <div class="field"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="selectProvince"></option></select></div>
+        <div class="field"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="hu_specialites_agadir" data-i18n="adhHuSpecialites"></option><option value="hu_mere_enfant_agadir" data-i18n="adhHuMereEnfant"></option><option value="hu_oncologie_agadir" data-i18n="adhHuOncologie"></option><option value="hu_psychiatrie_agadir" data-i18n="adhHuPsychiatrie"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
         <div class="field adh-full" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><input id="adhEtabOther" type="text" maxlength="160"></div>
         <div class="field"><label for="adhNiveauSanitaire" data-i18n="adhNiveauSanitaire"></label><input id="adhNiveauSanitaire" type="text" readonly style="background:var(--surface-2);"></div>
@@ -12342,7 +12342,7 @@ window.UGTM.failed(err);
         { value: 'hu_oncologie_agadir', label: 'HU Mohammed VI Oncologie Agadir', niveau: 'N3' },
         { value: 'hu_psychiatrie_agadir', label: 'HU Mohammed VI Psychiatrie Agadir', niveau: 'N3' }
       ],
-      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n'],
+      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Pharmacie', 'Service Accueil / Qualité / Performance'],
       servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique'],
       unites: {
         'Capital humain': ['Gestion des RH', 'Formation'],
@@ -12350,7 +12350,7 @@ window.UGTM.failed(err);
         'Ingénierie et Maintenance': ['SI', 'Bâtiments / Installations techniques', 'Équipements'],
         'Achats, Approvisionnement et Logistique': ['Achats', 'Approvisionnement', 'Logistique']
       },
-      servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS'],
+      servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
       unitesN1: ['Pharmacie', 'Accueil / Qualité / Performance', 'SI', 'Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Approvisionnement / Logistique']
     };
@@ -12384,47 +12384,76 @@ window.UGTM.failed(err);
       // Etablissement: show HU list only for Agadir espace
       // (handled by select options already in HTML)
 
-      // Niveau déduit de l'établissement
-      var etabVal = etab.value;
-      var niveauText = '';
-      if (etabVal && etabVal.startsWith('hu_')) {
-        niveauText = T().adhNiveau3 || 'Niveau III — Tertiaire';
-      } else if (etabVal === 'other' && etabOther) {
-        etabOther.style.display = '';
-      } else {
-        if (etabOther) etabOther.style.display = 'none';
-      }
-      if (niveau) niveau.value = niveauText;
+       // Niveau déduit de l'établissement et de l'espace sanitaire
+       var etabVal = etab.value;
+       var niveauText = '';
+       var niveauCode = '';
+       if (etabVal && etabVal.startsWith('hu_')) {
+         niveauText = T().adhNiveau3 || 'Niveau III — Tertiaire';
+         niveauCode = 'N3';
+       } else if (etabVal === 'other') {
+         if (etabOther) etabOther.style.display = '';
+         // Niveau déduit de l'espace sanitaire
+         if (espVal) {
+           niveauText = T().adhNiveau2 || 'Niveau II — Secondaire';
+           niveauCode = 'N2';
+         } else {
+           niveauText = T().adhNiveau1 || 'Niveau I — Proximité';
+           niveauCode = 'N1';
+         }
+       } else {
+         if (etabOther) etabOther.style.display = 'none';
+         if (espVal) {
+           niveauText = T().adhNiveau2 || 'Niveau II — Secondaire';
+           niveauCode = 'N2';
+         }
+       }
+       if (niveau) niveau.value = niveauText;
 
-      // Division change → service options
-      if (division && service) {
-        var divVal = division.value;
-        service.innerHTML = '<option value=""></option>';
-        var services = [];
-        if (etabVal && etabVal.startsWith('hu_')) {
-          if (divVal === 'sanitaire') services = GST_DATA.servicesN3Sanitaire;
-          else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
-        }
-        services.forEach(function(s) {
-          var opt = document.createElement('option');
-          opt.value = s; opt.textContent = s;
-          service.appendChild(opt);
-        });
-        service.disabled = services.length === 0;
-      }
+       // Division change → service options
+       if (division && service) {
+         var divVal = division.value;
+         service.innerHTML = '<option value=""></option>';
+         var services = [];
+         if (niveauCode === 'N3') {
+           if (divVal === 'sanitaire') services = GST_DATA.servicesN3Sanitaire;
+           else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
+         } else if (niveauCode === 'N2') {
+           if (divVal === 'sanitaire') services = GST_DATA.servicesN2Sanitaire;
+           else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
+         } else if (niveauCode === 'N1') {
+           // N1: pas de division, services directs
+           services = GST_DATA.servicesN1;
+         }
+         services.forEach(function(s) {
+           var opt = document.createElement('option');
+           opt.value = s; opt.textContent = s;
+           service.appendChild(opt);
+         });
+         service.disabled = services.length === 0;
+         // Pour N1, masquer la division
+         if (niveauCode === 'N1') {
+           division.disabled = true;
+           division.value = '';
+         } else {
+           division.disabled = false;
+         }
+       }
 
-      // Service change → unité options
-      if (service && unite) {
-        var svcVal = service.value;
-        unite.innerHTML = '<option value=""></option>';
-        var unites = GST_DATA.unites[svcVal] || [];
-        unites.forEach(function(u) {
-          var opt = document.createElement('option');
-          opt.value = u; opt.textContent = u;
-          unite.appendChild(opt);
-        });
-        unite.disabled = unites.length === 0;
-      }
+       // Service change → unité options
+       if (service && unite) {
+         var svcVal = service.value;
+         unite.innerHTML = '<option value=""></option>';
+         var unites = [];
+         if (GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
+         else if (niveauCode === 'N1') unites = GST_DATA.unitesN1;
+         unites.forEach(function(u) {
+           var opt = document.createElement('option');
+           opt.value = u; opt.textContent = u;
+           unite.appendChild(opt);
+         });
+         unite.disabled = unites.length === 0;
+       }
     }
 
     // Attach listeners
