@@ -12783,31 +12783,22 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         });
         dirSel.disabled = false;
 
-        // Divisions directes (sans direction parente) et services directs
-        GST_DATA.pole.divisionsDirectes.forEach(function(div){
-          var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
-        });
-        GST_DATA.pole.servicesDirects.forEach(function(svc){
-          var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-        });
-        svcSel.disabled = GST_DATA.pole.servicesDirects.length === 0;
+        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        divSel.disabled = true;
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        svcSel.disabled = true;
 
         dirSel.onchange = function(){
           divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           divSel.disabled = true; svcSel.disabled = true;
-          // Ajouter les divisions directes
-          GST_DATA.pole.divisionsDirectes.forEach(function(div){
-            var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
-          });
+          divSel.value = ''; svcSel.value = '';
           var dirVal = dirSel.value;
           if (dirVal && GST_DATA.pole.divisions[dirVal]) {
             GST_DATA.pole.divisions[dirVal].forEach(function(div){
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
             divSel.disabled = false;
-          } else if (!dirVal) {
-            divSel.disabled = GST_DATA.pole.divisionsDirectes.length === 0;
           }
           fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         };
@@ -12815,23 +12806,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         divSel.onchange = function(){
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.disabled = true;
-          // Ajouter les services directs
-          GST_DATA.pole.servicesDirects.forEach(function(svc){
-            var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-          });
+          svcSel.value = '';
           var divVal = divSel.value;
           if (divVal && GST_DATA.pole.services[divVal]) {
             GST_DATA.pole.services[divVal].forEach(function(svc){
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
             svcSel.disabled = false;
-          } else if (!divVal) {
-            svcSel.disabled = GST_DATA.pole.servicesDirects.length === 0;
           }
         };
 
-        if (dirSel.value && GST_DATA.pole.divisions[dirSel.value]) { dirSel.onchange(); }
-        if (divSel.value && GST_DATA.pole.services[divSel.value]) { divSel.onchange(); }
         fixSelectLabels('adhDirectionPole'); fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         return;
       }
@@ -12849,27 +12833,22 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         });
         dirSel.disabled = false;
 
-        GST_DATA.administrative.servicesDirects.forEach(function(svc){
-          var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-        });
-        svcSel.disabled = GST_DATA.administrative.servicesDirects.length === 0;
+        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        divSel.disabled = true;
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        svcSel.disabled = true;
 
         dirSel.onchange = function(){
           divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           divSel.disabled = true; svcSel.disabled = true;
-          // Ajouter les services directs
-          GST_DATA.administrative.servicesDirects.forEach(function(svc){
-            var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-          });
+          divSel.value = ''; svcSel.value = '';
           var dirVal = dirSel.value;
           if (dirVal && GST_DATA.administrative.divisions[dirVal]) {
             GST_DATA.administrative.divisions[dirVal].forEach(function(div){
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
             divSel.disabled = false;
-          } else if (!dirVal) {
-            divSel.disabled = true;
           }
           fixSelectLabels('adhDivisionAdmin'); fixSelectLabels('adhServiceAdmin');
         };
@@ -12877,27 +12856,21 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         divSel.onchange = function(){
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.disabled = true;
-          GST_DATA.administrative.servicesDirects.forEach(function(svc){
-            var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
-          });
+          svcSel.value = '';
           var divVal = divSel.value;
           if (divVal && GST_DATA.administrative.services[divVal]) {
             GST_DATA.administrative.services[divVal].forEach(function(svc){
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
             svcSel.disabled = false;
-          } else if (!divVal) {
-            svcSel.disabled = GST_DATA.administrative.servicesDirects.length === 0;
           }
         };
 
-        if (dirSel.value && GST_DATA.administrative.divisions[dirSel.value]) { dirSel.onchange(); }
-        if (divSel.value && GST_DATA.administrative.services[divSel.value]) { divSel.onchange(); }
         fixSelectLabels('adhDirectionAdmin'); fixSelectLabels('adhDivisionAdmin'); fixSelectLabels('adhServiceAdmin');
         return;
       }
 
-      // === BRANCHE : SANITAIRE === Espace → District → Établissement → Division → Service → Unité
+      // === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité
       if (rattleVal === 'dgaSanitaire') {
         document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = ''; });
 
@@ -12913,18 +12886,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if (!espace || !district || !etab || !division || !service || !unite) return;
 
         espace.disabled = false;
-
-        // Province → Espace : présélectionner l'espace correspondant à la province
-        var provSelect = document.getElementById('adhProvince');
-        var provVal = provSelect ? provSelect.value : '';
-        var provinceToEspace = {
-          agadir: 'agadir', inezgane: 'agadir', chtouka: 'agadir', tiznit: 'agadir',
-          taroudant: 'taroudant', tata: 'taroudant'
-        };
-        var defaultEspace = provinceToEspace[provVal] || '';
-        if (defaultEspace && !espace.value) {
-          espace.value = defaultEspace;
-        }
 
         var espVal = espace.value || '';
         district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
@@ -12968,90 +12929,48 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
         var etabSelect = document.getElementById('adhEtablissement');
         if (etabSelect) {
-          var currentVal = etabSelect.value;
           etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          etabSelect.disabled = false;
+          etabSelect.disabled = true;
 
-          // HU N3 si espace agadir
-          if (espVal === 'agadir') {
-            GST_DATA.etablissementsN3.forEach(function(e) {
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
-            });
-          }
+          etabSelect.onchange = function(){
+            var etabVal = etabSelect.value;
+            etabOther.style.display = (etabVal === 'other') ? '' : 'none';
 
-          // Hôpitaux de l'espace sanitaire ET du district
-          if (espVal && typeof HOSP_LIST !== 'undefined') {
-            var distVal = district ? district.value : '';
-            HOSP_LIST.filter(function(h) {
-              if (h.e !== espVal) return false;
-              if (distVal && h.d && h.d !== distVal) return false;
-              return true;
-            }).forEach(function(h) {
-              var opt = document.createElement('option');
-              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
-            });
-          }
+            var niveauCode = '';
+            if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
+            else if (etabVal === 'other') niveauCode = espVal ? 'N2' : 'N1';
+            else if (espVal) niveauCode = 'N2';
 
-          // Hôpitaux de proximité N1 de l'espace
-          if (espVal && GST_DATA.etablissementsN1) {
-            GST_DATA.etablissementsN1.forEach(function(e) {
-              if (!e.espace || e.espace === espVal) {
-                var opt = document.createElement('option');
-                opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
-              }
-            });
-          }
-
-          var otherOpt = document.createElement('option');
-          otherOpt.value = 'other';
-          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
-          etabSelect.appendChild(otherOpt);
-
-          if (currentVal && Array.from(etabSelect.options).some(function(o){return o.value===currentVal;})) {
-            etabSelect.value = currentVal;
-          }
-        }
-
-        etabSelect.onchange = function(){
-          var etabVal = etabSelect.value;
-          etabOther.style.display = (etabVal === 'other') ? '' : 'none';
-
-          var niveauCode = '';
-          if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
-          else if (etabVal === 'other') niveauCode = espVal ? 'N2' : 'N1';
-          else if (espVal) niveauCode = 'N2';
-
-          division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          division.disabled = true;
-          service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          service.disabled = true;
-          unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          unite.disabled = true;
-          serviceHosp.value = '';
-
-          if (niveauCode === 'N3') {
-            GST_DATA.sanitaire.divisions.forEach(function(d){
-              var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
-            });
-            division.disabled = false;
-          } else if (niveauCode === 'N2') {
-            GST_DATA.sanitaire.divisions.forEach(function(d){
-              var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
-            });
-            division.disabled = false;
-          } else if (niveauCode === 'N1') {
+            division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
             division.disabled = true;
             service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            GST_DATA.servicesN1.forEach(function(s){
-              var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
-            });
-            service.disabled = false;
-          }
+            service.disabled = true;
+            unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            unite.disabled = true;
+            serviceHosp.value = '';
 
-          serviceHosp.disabled = false;
-        };
+            if (niveauCode === 'N3') {
+              GST_DATA.sanitaire.divisions.forEach(function(d){
+                var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
+              });
+              division.disabled = false;
+            } else if (niveauCode === 'N2') {
+              GST_DATA.sanitaire.divisions.forEach(function(d){
+                var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
+              });
+              division.disabled = false;
+            } else if (niveauCode === 'N1') {
+              division.disabled = true;
+              service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+              GST_DATA.servicesN1.forEach(function(s){
+                var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
+              });
+              service.disabled = false;
+            }
+
+            serviceHosp.disabled = false;
+          };
+        }
 
         division.onchange = function(){
           var divVal = division.value;
@@ -13074,13 +12993,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             services = GST_DATA.servicesN1;
           }
 
-          // Divisions transverses de la DGA Sanitaire
-          if (niveauCode === 'N2' || niveauCode === 'N3') {
-            GST_DATA.sanitaire.divisions.forEach(function(d){
-              var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
-            });
-          }
-
           services.forEach(function(s){
             var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
           });
@@ -13100,7 +13012,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
         var esspSelect = document.getElementById('adhEsspSelect');
         if (esspSelect) {
-          var esspCurrent = esspSelect.value;
           esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
             ESSP_LIST.filter(function(e) { return e.e === espVal; }).forEach(function(e) {
@@ -13111,16 +13022,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           } else {
             esspSelect.style.display = 'none';
           }
-          if (esspCurrent && Array.from(esspSelect.options).some(function(o){return o.value===esspCurrent;})) {
-            esspSelect.value = esspCurrent;
-          }
         }
 
         if (espace.value) { espace.onchange(); }
-        if (etabSelect.value) { etabSelect.onchange(); }
-        if (division.value) { division.onchange(); }
-        if (service.value) { service.onchange(); }
-
         fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         return;
       }
@@ -13142,7 +13046,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       });
 
       // Province → Espace sanitaire : quand la province change, l'espace se met à jour
-      // (sans toucher aux niveaux inférieurs qui restent gérés par l'espace)
       var provSel = document.getElementById('adhProvince');
       if (provSel) {
         provSel.addEventListener('change', function(){
@@ -13194,7 +13097,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       if (distSel) {
         distSel.addEventListener('change', function(){
           var d = distSel.value;
-          var p = document.getElementById('adhProvince') ? document.getElementById('adhProvince').value : '';
           var espace = document.getElementById('adhEspaceSanitaire');
           var espVal = espace ? espace.value : '';
           var etabSelect = document.getElementById('adhEtablissement');
@@ -13222,12 +13124,21 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             });
           }
           // HU N3 si espace agadir (peu importe le district)
-          var espace = document.getElementById('adhEspaceSanitaire');
-          var espVal = espace ? espace.value : '';
-          if (espVal === 'agadir' && typeof GST_DATA !== 'undefined') {
+          var espace2 = document.getElementById('adhEspaceSanitaire');
+          var espVal2 = espace2 ? espace2.value : '';
+          if (espVal2 === 'agadir' && typeof GST_DATA !== 'undefined') {
             GST_DATA.etablissementsN3.forEach(function(e) {
               var opt = document.createElement('option');
               opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
+            });
+          }
+          // Hôpitaux de proximité N1 de l'espace
+          if (espVal2 && GST_DATA.etablissementsN1) {
+            GST_DATA.etablissementsN1.forEach(function(e) {
+              if (!e.espace || e.espace === espVal2) {
+                var opt = document.createElement('option');
+                opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
+              }
             });
           }
 
@@ -13240,9 +13151,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           // ESSP selon district
           if (esspSelect) {
             esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            if (etabSelect.value === 'other' && espVal && typeof ESSP_LIST !== 'undefined') {
+            if (etabSelect.value === 'other' && espVal2 && typeof ESSP_LIST !== 'undefined') {
               ESSP_LIST.filter(function(e) {
-                if (e.e !== espVal) return false;
+                if (e.e !== espVal2) return false;
                 if (d && e.d && e.d !== d) return false;
                 return true;
               }).forEach(function(e) {
