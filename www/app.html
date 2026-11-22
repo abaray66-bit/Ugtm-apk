@@ -13255,6 +13255,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           etabSelect.onchange = function(){
             var etabVal = etabSelect.value;
             var divVal = division.value;
+            var selectedHospitalRecord = (typeof HOSP_LIST !== 'undefined' ? HOSP_LIST.filter(function(h){return 'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_')===etabVal;})[0] : null);
             etabOther.style.display = (etabVal === 'other') ? '' : 'none';
             service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
             service.disabled = true;
@@ -13282,6 +13283,19 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
             var niveauCode = etabVal && etabVal.indexOf('hu_') === 0 ? 'N3' : (etabVal ? 'N2' : '');
             var services = [];
+            if(selectedHospitalRecord && selectedHospitalRecord.c==='HPr'){
+              services=GST_DATA.servicesN1;
+              services.forEach(function(s){var opt=document.createElement('option');opt.value=s;opt.textContent=s;service.appendChild(opt);});
+              service.disabled=false;
+              if(serviceWrap)serviceWrap.style.display='';
+              fixSelectLabels('adhServiceGst');
+              return;
+            }
+            if(selectedHospitalRecord && (selectedHospitalRecord.c==='HP'||selectedHospitalRecord.c==='HR')){
+              var hospitalWrap=document.getElementById('adhServiceHospitalierWrap');
+              if(hospitalWrap)hospitalWrap.style.display='';
+              return;
+            }
             // Les détails de services sont documentés uniquement pour le CHU Spécialités.
             if (niveauCode === 'N3' && etabVal === 'hu_specialites_agadir') {
               if (divVal === 'Division Sanitaire') services = GST_DATA.servicesN3Sanitaire;
@@ -13387,6 +13401,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var unites = [];
           if (etabSelect.value === 'hu_specialites_agadir' && GST_DATA.unites && GST_DATA.unites[svcVal]) {
             unites = GST_DATA.unites[svcVal];
+          } else if (etabSelect.value.indexOf('hosp_')===0) {
+            var proximityRecord=(typeof HOSP_LIST!=='undefined'?HOSP_LIST.filter(function(h){return 'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_')===etabSelect.value;})[0]:null);
+            if(proximityRecord&&proximityRecord.c==='HPr')unites=GST_DATA.unitesN1||[];
           }
           unites.forEach(function(u){
             var opt = document.createElement('option');
