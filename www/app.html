@@ -12415,6 +12415,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
       unitesN1: ['Pharmacie', 'Accueil / Qualité / Performance', 'SI', 'Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Approvisionnement / Logistique'],
+      // Unités documentées à la page 114 pour le CHU Mohammed VI des Spécialités.
+      unites: {
+        'Capital humain': ['Unité Gestion des RH', 'Unité Formation'],
+        'Affaires financières': ['Unité Régie', 'Unité Comptabilité'],
+        'Ingénierie et Maintenance': ['Unité SI', 'Unité Bâtiments Installations techniques', 'Unité Équipements'],
+        'Achats, Approvisionnement et Logistique': ['Unité Achats', 'Unité Approvisionnement', 'Unité Logistique'],
+        'Facturation Recouvrement': ['Unité Admission', 'Unité Facturation', 'Unité Recouvrement']
+      },
       pole: {
         directions: [
           { value: 'direction_strategie_sante_publique', label: 'Direction de la stratégie et de la santé publique' },
@@ -13001,7 +13009,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var services = [];
           // Le détail des services est documenté pour le CHU Spécialités (N3).
           // Ne pas extrapoler cette organisation aux établissements N2 ou N1.
-          if (niveauCode === 'N3') {
+          if (niveauCode === 'N3' && etabVal === 'hu_specialites_agadir') {
             if (divVal === 'Division Sanitaire') services = GST_DATA.servicesN3Sanitaire;
             else if (divVal === 'Division Administrative') services = GST_DATA.servicesN3Admin;
           }
@@ -13016,18 +13024,27 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var svcVal = service.value;
           unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           var unites = [];
-          if (GST_DATA.unites && GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
+          if (etabSelect.value === 'hu_specialites_agadir' && GST_DATA.unites && GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
           unites.forEach(function(u){
             var opt = document.createElement('option'); opt.value = u; opt.textContent = u; unite.appendChild(opt);
           });
           unite.disabled = unites.length === 0;
+          var serviceHospWrap = document.getElementById('adhServiceHospitalierWrap');
+          var showServiceHosp = etabSelect.value === 'hu_specialites_agadir' && division.value === 'Division Sanitaire' && svcVal === 'Services hospitaliers 1 à n';
+          if (serviceHospWrap) serviceHospWrap.style.display = showServiceHosp ? '' : 'none';
+          if (!showServiceHosp && serviceHosp) serviceHosp.value = '';
         };
 
         var esspSelect = document.getElementById('adhEsspSelect');
         if (esspSelect) {
           esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           esspSelect.style.display = 'none';
+          esspSelect.required = false;
+          var esspWrapInit = document.getElementById('adhEsspWrap');
+          if (esspWrapInit) esspWrapInit.style.display = 'none';
         }
+        var serviceHospWrapInit = document.getElementById('adhServiceHospitalierWrap');
+        if (serviceHospWrapInit) serviceHospWrapInit.style.display = 'none';
 
         if (espace.value) { espace.onchange(); }
         fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
