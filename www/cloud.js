@@ -1283,6 +1283,7 @@ async function submitAdhesion(application,signature){
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
     structureId:String(application.structureId||'').trim().slice(0,40),
     structureName:String(application.structureName||'').trim().slice(0,120),
+    hospitalPole:String(application.hospitalPole||'').trim().slice(0,120),
     rattachement:String(application.rattachement||'').slice(0,40),
     niveauRattachement:String(application.niveauRattachement||'').trim().slice(0,40),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
