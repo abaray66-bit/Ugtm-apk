@@ -1000,7 +1000,7 @@ service cloud.firestore {
                       'division', 'serviceGst',
                       'unite', 'serviceHospitalier',
                       'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-                      'directionAdmin', 'divisionAdmin', 'serviceAdmin'])
+                      'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''
