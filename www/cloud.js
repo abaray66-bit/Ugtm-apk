@@ -1292,7 +1292,7 @@ async function submitAdhesion(application,signature){
     }else if(sanitaryEstablishment==='HR Hassan II'){
       reqFields.push(clean.serviceHospitalier);
     }else if(sanitaryEstablishment.indexOf('HP ')===0||sanitaryEstablishment.indexOf('Hôpital de proximité ')===0){
-      reqFields.push(clean.serviceGst,clean.unite);
+      reqFields.push(clean.serviceGst||clean.unite);
     }else{
       reqFields.push(clean.unite);
     }
