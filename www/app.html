@@ -12307,14 +12307,80 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhProvince',app.province||'');
           prefillIfEmpty('adhEstablishment',app.establishment||'');
           prefillIfEmpty('adhService',app.service||'');
-          /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
-          if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
-          if(req.district) prefillIfEmpty('adhDistrict',req.district);
-          if(req.division) prefillIfEmpty('adhDivision',req.division);
-          if(req.serviceGst) prefillIfEmpty('adhServiceGst',req.serviceGst);
-          if(req.unite) prefillIfEmpty('adhUnite',req.unite);
-          if(req.serviceHospitalier) prefillIfEmpty('adhServiceHospitalier',req.serviceHospitalier);
-          if(req.espaceSanitaire||req.district) gstCascade();
+
+          /* Restaurer la cascade depuis application (les champs GST sont
+             enregistrés dans application par submitAdhesion, pas renvoyés
+             à plat par getMyAdhesionRequest). */
+          if(app.rattachement){
+            var rattSel=document.getElementById('adhRattachement');
+            if(rattSel){
+              rattSel.value=app.rattachement;
+              gstCascade();
+            }
+          }
+          function fireChange(el){
+            if(el)el.dispatchEvent(new Event('change',{bubbles:true}));
+          }
+          if(app.rattachement==='pole'){
+            var dirP=document.getElementById('adhDirectionPole');
+            var divP=document.getElementById('adhDivisionPole');
+            var svcP=document.getElementById('adhServicePole');
+            if(dirP&&app.directionPole){dirP.value=app.directionPole;if(dirP.onchange)dirP.onchange();}
+            if(divP&&app.divisionPole){divP.value=app.divisionPole;if(divP.onchange)divP.onchange();}
+            if(svcP&&app.servicePole)svcP.value=app.servicePole;
+          }else if(app.rattachement==='dgaAdministrative'){
+            var dirA=document.getElementById('adhDirectionAdmin');
+            var divA=document.getElementById('adhDivisionAdmin');
+            var svcA=document.getElementById('adhServiceAdmin');
+            if(dirA&&app.directionAdmin){dirA.value=app.directionAdmin;if(dirA.onchange)dirA.onchange();}
+            if(divA&&app.divisionAdmin){divA.value=app.divisionAdmin;if(divA.onchange)divA.onchange();}
+            if(svcA&&app.serviceAdmin)svcA.value=app.serviceAdmin;
+          }else if(app.rattachement==='dgaSanitaire'){
+            var prov=document.getElementById('adhProvince');
+            var espaceSaved=document.getElementById('adhEspaceSanitaire');
+            var districtSaved=document.getElementById('adhDistrict');
+            var divisionSaved=document.getElementById('adhDivision');
+            var etabSaved=document.getElementById('adhEtablissement');
+            var serviceSaved=document.getElementById('adhServiceGst');
+            var uniteSaved=document.getElementById('adhUnite');
+            var serviceHospSaved=document.getElementById('adhServiceHospitalier');
+            if(prov&&app.province){prov.value=app.province;fireChange(prov);}
+            if(espaceSaved&&app.espaceSanitaire){
+              espaceSaved.value=app.espaceSanitaire;
+              if(espaceSaved.onchange)espaceSaved.onchange();
+            }
+            if(districtSaved&&app.district){
+              districtSaved.value=app.district;
+              fireChange(districtSaved);
+            }
+            if(divisionSaved&&app.division){
+              divisionSaved.value=app.division;
+              if(divisionSaved.onchange)divisionSaved.onchange();
+            }
+            if(etabSaved&&app.establishment){
+              if(app.establishment.indexOf('essp_')===0){
+                etabSaved.value='other';
+              }else if(app.establishment.indexOf('direct_')===0||app.establishment.indexOf('hosp_')===0||app.establishment.indexOf('hu_')===0){
+                etabSaved.value=app.establishment;
+              }else{
+                etabSaved.value='other';
+              }
+              if(etabSaved.onchange)etabSaved.onchange();
+            }
+            if(app.establishment && (app.establishmentCommune||app.establishmentType)){
+              var esspIndex=ESSP_LIST.findIndex(function(e){
+                return e.n===app.establishment && e.c===(app.establishmentCommune||'') && e.t===(app.establishmentType||'');
+              });
+              var esspSaved=document.getElementById('adhEsspSelect');
+              if(esspIndex>=0&&esspSaved)esspSaved.value='essp_'+esspIndex;
+            }
+            if(serviceSaved&&app.serviceGst){
+              serviceSaved.value=app.serviceGst;
+              if(serviceSaved.onchange)serviceSaved.onchange();
+            }
+            if(uniteSaved&&app.unite)uniteSaved.value=app.unite;
+            if(serviceHospSaved&&app.serviceHospitalier)serviceHospSaved.value=app.serviceHospitalier;
+          }
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
