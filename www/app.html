@@ -3590,8 +3590,13 @@ window.markNotificationRead=markNotificationRead;
           <input id="adhStructureMere" type="text" readonly value="GST Souss-Massa">
         </div>
 
-        <!-- Niveau 1 : Rattachement organisationnel -->
-        <div class="field"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option><option value="pole" data-i18n="adhRattachementPole"></option><option value="dgaSanitaire" data-i18n="adhRattachementDGA_Sanitaire"></option><option value="dgaAdministrative" data-i18n="adhRattachementDGA_Administrative"></option></select></div>
+        <!-- Le niveau classe le parcours ; la cascade hiérarchique reste dans chaque branche. -->
+        <div class="field adh-full" id="adhNiveauOrganisationnelWrap"><label for="adhNiveauOrganisationnel">Niveau d'affectation</label><select id="adhNiveauOrganisationnel" required><option value="">Choisir un niveau</option><option value="regional">Niveau régional — GST</option><option value="territorial">Espaces sanitaires — niveau secondaire et primaire</option></select></div>
+        <div class="field" id="adhRattachementWrap" style="display:none"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalStructureWrap" style="display:none"><label for="adhSanitaireRegionalStructure">Structure de la direction adjointe sanitaire</label><select id="adhSanitaireRegionalStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalDivisionWrap" style="display:none"><label for="adhSanitaireRegionalDivision">Division</label><select id="adhSanitaireRegionalDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalServiceWrap" style="display:none"><label for="adhSanitaireRegionalService">Service</label><select id="adhSanitaireRegionalService"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalUniteWrap" style="display:none"><label for="adhSanitaireRegionalUnite">Unité</label><select id="adhSanitaireRegionalUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
         <!-- === BRANCHE : PÔLE DE PILOTAGE === Direction → Division → Service -->
         <div class="field rattle-pole" id="adhDirectionPoleWrap" style="display:none"><label for="adhDirectionPole" data-i18n="adhDirectionPole"></label><select id="adhDirectionPole"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -11905,8 +11910,9 @@ window.UGTM.failed(err);
             if(app.directionAdmin)row1('Direction administrative',app.directionAdmin);
             if(app.divisionAdmin)row1('Division / rattachement',app.divisionAdmin);
             if(app.serviceAdmin)row1('Service administratif',app.serviceAdmin);
-          }else if(app.rattachement==='dgaSanitaire'){
-            if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
+          }else if(app.rattachement==='dgaSanitaire'||app.rattachement==='territorialSanitaire'){
+            if(app.niveauOrganisationnel!=='regional'&&app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
+            if(app.establishment)row1('Structure sanitaire',app.establishment);
             if(app.division)row1('Division / rattachement',app.division);
             if(app.serviceGst)row1('Service',app.serviceGst);
             if(app.unite)row1('Unité',app.unite);
@@ -12313,10 +12319,10 @@ window.UGTM.failed(err);
              à plat par getMyAdhesionRequest). */
           if(app.rattachement){
             var rattSel=document.getElementById('adhRattachement');
-            if(rattSel){
-              rattSel.value=app.rattachement;
-              gstCascade();
-            }
+            var levelSel=document.getElementById('adhNiveauOrganisationnel');
+            var restoredLevel=app.niveauOrganisationnel||(app.rattachement==='dgaSanitaire'&&app.province?'territorial':'regional');
+            if(levelSel){levelSel.value=restoredLevel;if(window.configureAdhLevel)window.configureAdhLevel(restoredLevel,false);}
+            if(rattSel){rattSel.value=(app.rattachement==='dgaSanitaire'&&restoredLevel==='territorial')?'territorialSanitaire':app.rattachement;gstCascade();}
           }
           function fireChange(el){
             if(el)el.dispatchEvent(new Event('change',{bubbles:true}));
@@ -12335,7 +12341,16 @@ window.UGTM.failed(err);
             if(dirA&&app.directionAdmin){dirA.value=app.directionAdmin;if(dirA.onchange)dirA.onchange();}
             if(divA&&app.divisionAdmin){divA.value=app.divisionAdmin;if(divA.onchange)divA.onchange();}
             if(svcA&&app.serviceAdmin)svcA.value=app.serviceAdmin;
-          }else if(app.rattachement==='dgaSanitaire'){
+          }else if(app.rattachement==='dgaSanitaire'&&!(app.niveauOrganisationnel==='territorial'||(!app.niveauOrganisationnel&&app.province))){
+            var structureR=document.getElementById('adhSanitaireRegionalStructure');
+            var divisionR=document.getElementById('adhSanitaireRegionalDivision');
+            var serviceR=document.getElementById('adhSanitaireRegionalService');
+            var uniteR=document.getElementById('adhSanitaireRegionalUnite');
+            if(structureR&&app.establishment){structureR.value=app.establishment;if(structureR.onchange)structureR.onchange();}
+            if(divisionR&&app.division){divisionR.value=app.division;if(divisionR.onchange)divisionR.onchange();}
+            if(serviceR&&app.serviceGst){serviceR.value=app.serviceGst;if(serviceR.onchange)serviceR.onchange();}
+            if(uniteR&&app.unite)uniteR.value=app.unite;
+          }else if(app.rattachement==='dgaSanitaire'||app.rattachement==='territorialSanitaire'){
             var prov=document.getElementById('adhProvince');
             var espaceSaved=document.getElementById('adhEspaceSanitaire');
             var districtSaved=document.getElementById('adhDistrict');
@@ -12856,6 +12871,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       ['rattle-pole','rattle-sanitaire','rattle-administrative'].forEach(function(cls){
         document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display = 'none'; });
       });
+      document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){el.style.display='none';});
 
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
@@ -12972,8 +12988,57 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         return;
       }
 
-      // === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité
+      // === BRANCHE SANITAIRE RÉGIONALE === rattachement direct ou CHU → Division → Service → Unité
       if (rattleVal === 'dgaSanitaire') {
+        document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){el.style.display='block';});
+        var structure=document.getElementById('adhSanitaireRegionalStructure');
+        var divisionR=document.getElementById('adhSanitaireRegionalDivision');
+        var serviceR=document.getElementById('adhSanitaireRegionalService');
+        var uniteR=document.getElementById('adhSanitaireRegionalUnite');
+        var divisionWrapR=document.getElementById('adhSanitaireRegionalDivisionWrap');
+        var serviceWrapR=document.getElementById('adhSanitaireRegionalServiceWrap');
+        var uniteWrapR=document.getElementById('adhSanitaireRegionalUniteWrap');
+        function clearRegional(sel){sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';sel.value='';sel.disabled=true;}
+        clearRegional(structure);clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
+        GST_DATA.sanitaire.rattachementsDirects.forEach(function(item){var o=document.createElement('option');o.value=item.value;o.textContent=item.label;structure.appendChild(o);});
+        GST_DATA.etablissementsN3.forEach(function(item){var o=document.createElement('option');o.value=item.value;o.textContent=item.label;structure.appendChild(o);});
+        structure.disabled=false;
+        divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
+        structure.onchange=function(){
+          clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
+          divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
+          if(structure.value.indexOf('hu_')===0){
+            ['Division Sanitaire','Division Administrative'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
+            if(structure.value==='hu_specialites_agadir'){var o=document.createElement('option');o.value='Services directement rattachés à la direction du CHU Spécialités';o.textContent=o.value;divisionR.appendChild(o);}
+            divisionR.disabled=false;divisionWrapR.style.display='';
+          }
+          fixSelectLabels('adhSanitaireRegionalDivision');
+        };
+        divisionR.onchange=function(){
+          clearRegional(serviceR);clearRegional(uniteR);serviceWrapR.style.display='none';uniteWrapR.style.display='none';
+          var services=[];
+          if(structure.value==='hu_specialites_agadir'){
+            if(divisionR.value==='Division Sanitaire')services=GST_DATA.servicesN3Sanitaire;
+            else if(divisionR.value==='Division Administrative')services=GST_DATA.servicesN3Admin;
+            else if(divisionR.value==='Services directement rattachés à la direction du CHU Spécialités')services=GST_DATA.servicesN3Direct;
+          }
+          services.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;serviceR.appendChild(o);});
+          if(services.length){serviceR.disabled=false;serviceWrapR.style.display='';}
+          fixSelectLabels('adhSanitaireRegionalService');
+        };
+        serviceR.onchange=function(){
+          clearRegional(uniteR);
+          var list=GST_DATA.unites&&GST_DATA.unites[serviceR.value]?GST_DATA.unites[serviceR.value]:[];
+          list.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;uniteR.appendChild(o);});
+          if(list.length){uniteR.disabled=false;uniteWrapR.style.display='';}
+          fixSelectLabels('adhSanitaireRegionalUnite');
+        };
+        fixSelectLabels('adhSanitaireRegionalStructure');
+        return;
+      }
+
+      // === BRANCHE TERRITORIALE === Espace → District → Division → Établissement → Service → Unité
+      if (rattleVal === 'territorialSanitaire') {
         document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
 
         var espace = document.getElementById('adhEspaceSanitaire');
@@ -13086,10 +13151,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         }
 
         division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        var directSanitaireOpt = document.createElement('option');
-        directSanitaireOpt.value = 'Rattachements directs de la DGA sanitaire (hors district)';
-        directSanitaireOpt.textContent = directSanitaireOpt.value;
-        division.appendChild(directSanitaireOpt);
         division.disabled = false;
         division.onchange = function(){
           var divVal = division.value;
@@ -13116,28 +13177,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if (esspWrapOnDivision) esspWrapOnDivision.style.display = 'none';
           if (!divVal) return;
 
-          if (divVal === 'Rattachements directs de la DGA sanitaire (hors district)') {
-            GST_DATA.sanitaire.rattachementsDirects.forEach(function(item){
-              var opt = document.createElement('option');
-              opt.value = item.value;
-              opt.textContent = item.label;
-              etabSelect.appendChild(opt);
-            });
-            etabSelect.disabled = false;
-            fixSelectLabels('adhEtablissement');
-            return;
-          }
-          if (divVal === 'Services directement rattachés à la direction du CHU Spécialités') {
-            var specialites = GST_DATA.etablissementsN3.filter(function(e){ return e.value === 'hu_specialites_agadir'; });
-            specialites.forEach(function(e){
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label;
-              etabSelect.appendChild(opt);
-            });
-            etabSelect.disabled = specialites.length === 0;
-            fixSelectLabels('adhEtablissement');
-            return;
-          }
           if (!district.value) return;
 
           if (typeof HOSP_LIST !== 'undefined') {
@@ -13150,13 +13189,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               var opt = document.createElement('option');
               opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
               opt.textContent = h.n + ' (' + h.c + ')';
-              etabSelect.appendChild(opt);
-            });
-          }
-          if (espVal === 'agadir' && district.value === 'agadir') {
-            GST_DATA.etablissementsN3.forEach(function(e){
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label;
               etabSelect.appendChild(opt);
             });
           }
@@ -13207,7 +13239,22 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     }
 
     // Attach listeners
+    function configureAdhLevel(level,preserveBranch){
+      var wrap=document.getElementById('adhRattachementWrap'),sel=document.getElementById('adhRattachement');
+      if(!sel)return;
+      var previous=preserveBranch?sel.value:'';
+      sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
+      var choices=level==='regional'?[{value:'pole',label:'Pilotage'},{value:'dgaAdministrative',label:'Direction adjointe administrative'},{value:'dgaSanitaire',label:'Direction adjointe sanitaire'}]:level==='territorial'?[{value:'territorialSanitaire',label:'Espaces sanitaires — niveau secondaire et primaire'}]:[];
+      choices.forEach(function(x){var o=document.createElement('option');o.value=x.value;o.textContent=x.label;sel.appendChild(o);});
+      if(wrap)wrap.style.display=choices.length?'':'none';
+      sel.required=choices.length>0;
+      sel.value=previous&&choices.some(function(x){return x.value===previous;})?previous:'';
+      fixSelectLabels('adhRattachement');
+    }
+    window.configureAdhLevel=configureAdhLevel;
     function attachAdhListeners(){
+      var levelSel=document.getElementById('adhNiveauOrganisationnel');
+      if(levelSel)levelSel.addEventListener('change',function(){configureAdhLevel(levelSel.value,false);gstCascade();});
       // Seul le rattachement relance gstCascade (affichage/masquage des branches)
       // Chaque select enfant gère ses propres enfants via son propre onchange
       // défini dans gstCascade : ainsi un choix enfant ne réinitialise jamais ses parents.
@@ -13327,7 +13374,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     var rattachement = document.getElementById('adhRattachement');
     var rattleVal = rattachement ? rattachement.value : '';
     if (rattleVal === 'pole') document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = 'block'; });
-    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'territorialSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
     if (rattleVal === 'dgaAdministrative') document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = 'block'; });
     }
     window.gstCascade = gstCascade;
@@ -13532,15 +13580,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         dob:document.getElementById('adhDob').value,
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
-        // La province est dérivée du district réellement sélectionné.
-        province:document.getElementById('adhDistrict').value || '',
+        // Les structures régionales ne portent ni province ni district.
+        niveauOrganisationnel:document.getElementById('adhNiveauOrganisationnel').value,
+        province:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(document.getElementById('adhDistrict').value||''),
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
-        espaceSanitaire:document.getElementById('adhEspaceSanitaire').value,
-        district:document.getElementById('adhDistrict').value,
-        division:document.getElementById('adhDivision').value,
-        serviceGst:document.getElementById('adhServiceGst').value,
-        unite:document.getElementById('adhUnite').value,
+        espaceSanitaire:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':document.getElementById('adhEspaceSanitaire').value,
+        district:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':document.getElementById('adhDistrict').value,
+        division:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalDivision').value:document.getElementById('adhDivision').value,
+        serviceGst:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalService').value:document.getElementById('adhServiceGst').value,
+        unite:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalUnite').value:document.getElementById('adhUnite').value,
         serviceHospitalier:document.getElementById('adhServiceHospitalier').value.trim(),
         directionPole:document.getElementById('adhDirectionPole')?document.getElementById('adhDirectionPole').value:'',
         divisionPole:document.getElementById('adhDivisionPole')?document.getElementById('adhDivisionPole').value:'',
@@ -13549,6 +13598,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         divisionAdmin:document.getElementById('adhDivisionAdmin')?document.getElementById('adhDivisionAdmin').value:'',
         serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
         establishment:(function(){
+          if(document.getElementById('adhNiveauOrganisationnel').value==='regional'&&document.getElementById('adhRattachement').value==='dgaSanitaire')return document.getElementById('adhSanitaireRegionalStructure').value||'';
           var sel=document.getElementById('adhEtablissement');
           if(sel && sel.value && sel.value!=='other')return sel.value;
           if(sel && sel.value==='other'){
