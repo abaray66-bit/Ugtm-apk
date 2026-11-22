@@ -974,6 +974,7 @@ service cloud.firestore {
     'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement'
   ])
         && request.resource.data.uid == uid
+        && request.resource.data.get('rattachement', '') == request.resource.data.application.get('rattachement', '')
         && request.resource.data.status == 'pending'
         && request.resource.data.adminNote == ''
         && request.resource.data.createdAt == request.time
@@ -1072,6 +1073,7 @@ service cloud.firestore {
         && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
             || request.resource.data.province in adhesionProvinces())
           && request.resource.data.province == resource.data.province
+          && request.resource.data.get('rattachement', '') == request.resource.data.application.get('rattachement', '')
           && okText(request.resource.data.get('structureId', ''), 40)
           && adhesionStructureValid(request.resource.data.get('structureId', ''), request.resource.data.province)
           && (request.resource.data.get('rattachement', '') == 'dgaSanitaire'

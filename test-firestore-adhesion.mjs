@@ -73,6 +73,10 @@ function applicationPayload(province, over = {}) {
     phone: '0600000000',
     address: 'Hay Mohammadi, Agadir',
     province,
+    rattachement: 'dgaSanitaire',
+    espaceSanitaire: 'espace-' + province,
+    district: province,
+    serviceGst: 'Service de test',
     establishment: 'Lycée Al Wahda',
     service: 'Direction',
     function: 'Directeur',
@@ -87,12 +91,18 @@ function applicationPayload(province, over = {}) {
 }
 
 function requestPayload(uid, province, over = {}) {
+  const application = applicationPayload(province, over.application || {});
+  const hasExplicitStructure = Object.prototype.hasOwnProperty.call(over, 'structureId');
+  const structureId = hasExplicitStructure ? over.structureId :
+    (application.rattachement === 'dgaSanitaire' && ['agadir', 'tiznit'].includes(province)
+      ? 'struct-' + province + '-1' : '');
   return {
     uid,
     email: uid + '@example.com',
     province,
-    structureId: 'struct-' + province + '-1',
-    application: applicationPayload(province, over.application || {}),
+    structureId,
+    rattachement: application.rattachement || '',
+    application,
     signature: 'data:image/png;base64,U0dPUFJJUw==',
     status: 'pending',
     adminNote: '',
@@ -106,7 +116,7 @@ function pdfPayload(uid, province) {
   return {
     uid,
     province,
-    structureId: 'struct-' + province + '-1',
+    structureId: ['agadir', 'tiznit'].includes(province) ? 'struct-' + province + '-1' : '',
     fileName: 'demande-adhesion-' + uid + '.pdf',
     mimeType: 'application/pdf',
     data: 'JVBERi0xLjQK', // en-tête d'un vrai PDF
