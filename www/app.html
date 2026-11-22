@@ -3604,8 +3604,6 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-administrative" id="adhServiceAdminWrap" style="display:none"><label for="adhServiceAdmin" data-i18n="adhServiceAdmin"></label><select id="adhServiceAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
         <!-- Champs communs -->
-        <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160"></div>
-        <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService" type="text" maxlength="120"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
         <div class="field adh-full" id="adhFunctionDetailWrap" style="display:none">
           <label for="adhFunctionDetail" data-i18n="adhFunctionDetail"></label>
@@ -13358,10 +13356,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             var other=document.getElementById('adhEtabOther');
             if(other && other.value.trim())return other.value.trim();
           }
-          var legacy=document.getElementById('adhEstablishment');
-          return legacy?legacy.value.trim():'';
+          return '';
         })(),
-        service:document.getElementById('adhService').value.trim(),
+        service:(function(){
+          var sel=document.getElementById('adhServiceGst');
+          if(sel && sel.value)return sel.value;
+          return '';
+        })(),
         function:(function(){
           var el=document.getElementById('adhFunction');
           if(el.value==='function_to_specify')return String(document.getElementById('adhFunctionDetail').value||'').trim()||el.value;
