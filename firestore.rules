@@ -858,7 +858,10 @@ service cloud.firestore {
         && (app.get('rattachement', '') != 'dgaSanitaire' ||
           (app.get('espaceSanitaire', '').size() > 0
             && app.get('district', '').size() > 0
-            && (app.get('niveauRattachement', '') == ''
+            && ((app.get('niveauRattachement', '') == ''
+                && (app.get('serviceGst', '').size() > 0
+                  || app.get('unite', '').size() > 0
+                  || app.get('serviceHospitalier', '').size() > 0))
               || (app.get('niveauRattachement', '') == 'division'
                 && app.get('division', '').size() > 0
                 && app.get('serviceGst', '').size() > 0)
