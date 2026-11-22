@@ -12873,6 +12873,23 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       window.addEventListener('resize',closeActive);
     }
 
+    // Dictionnaire de rattachement provincial : affiliation hiérarchique distincte du territoire.
+    var GST_PROVINCE_DICTIONARY = {
+      branches: { pole: 'agadir', dgaAdministrative: 'agadir', dgaSanitaire: '' },
+      espaces: { agadir: 'agadir', taroudant: 'taroudant' },
+      districts: {
+        agadir: 'agadir', inezgane: 'inezgane', chtouka: 'chtouka',
+        tiznit: 'tiznit', taroudant: 'taroudant', tata: 'tata'
+      }
+    };
+    function resolveAdhesionProvince(level, branch, espace, district) {
+      if (level === 'regional') return GST_PROVINCE_DICTIONARY.branches[branch] || '';
+      if (district && Object.prototype.hasOwnProperty.call(GST_PROVINCE_DICTIONARY.districts, district)) {
+        return GST_PROVINCE_DICTIONARY.districts[district];
+      }
+      return GST_PROVINCE_DICTIONARY.espaces[espace] || '';
+    }
+
     function gstCascade() {
       var rattachement = document.getElementById('adhRattachement');
       var rattleVal = rattachement ? rattachement.value : '';
@@ -13608,9 +13625,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         dob:document.getElementById('adhDob').value,
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
-        // Les structures régionales ne portent ni province ni district.
+        // La province suit le dictionnaire de rattachement, indépendamment du niveau hiérarchique.
         niveauOrganisationnel:document.getElementById('adhNiveauOrganisationnel').value,
-        province:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(document.getElementById('adhDistrict').value||''),
+        province:resolveAdhesionProvince(
+          document.getElementById('adhNiveauOrganisationnel').value,
+          document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
+          document.getElementById('adhEspaceSanitaire')?document.getElementById('adhEspaceSanitaire').value:'',
+          document.getElementById('adhDistrict')?document.getElementById('adhDistrict').value:''
+        ),
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
         espaceSanitaire:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':document.getElementById('adhEspaceSanitaire').value,
