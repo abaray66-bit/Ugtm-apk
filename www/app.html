@@ -12542,9 +12542,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         { value: 'hp_agadir_n1', label: 'Hôpital de proximité Agadir', niveau: 'N1', espace: 'agadir' },
         { value: 'hp_taroudant_n1', label: 'Hôpital de proximité Taroudant', niveau: 'N1', espace: 'taroudant' }
       ],
-      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n'],
-      servicesN3Direct: ['Service Pharmacie', 'Service Accueil / Qualité / Performance'],
-      servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique', 'Facturation Recouvrement'],
+      servicesN3Sanitaire: ['Service des affaires médicales', 'Service des soins infirmiers'],
+      servicesN3SanitaireHospitalier: ['Services hospitaliers (à préciser)'],
+      servicesN3Direct: ['Service d’accueil, de la qualité et de la performance', 'Service de la pharmacie'],
+      servicesN3Admin: ['Service du capital humain', 'Service des affaires financières', 'Service de la facturation et du recouvrement', 'Service de l’ingénierie et de la maintenance', 'Service d’achat, de l’approvisionnement et de la logistique'],
+      servicesN3AdminAutres: ['Service du capital humain', 'Service des affaires financières (admissions, facturation et recouvrement intégrés)', 'Service de l’ingénierie et de la maintenance', 'Service d’achat, de l’approvisionnement et de la logistique'],
       servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
       unitesN1: ['Unité administrative', 'Unité des soins et de la santé publique', 'Unité de la pharmacie'],
@@ -13065,7 +13067,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
           if(structure.value.indexOf('hu_')===0){
             ['Division Sanitaire','Division Administrative'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
-            if(structure.value==='hu_specialites_agadir'){var o=document.createElement('option');o.value='Services directement rattachés à la direction du CHU Spécialités';o.textContent=o.value;divisionR.appendChild(o);}
+            if(structure.value==='hu_specialites_agadir'){var o=document.createElement('option');o.value='Services directement rattachés au directeur de l’hôpital';o.textContent=o.value;divisionR.appendChild(o);}
             divisionR.disabled=false;divisionWrapR.style.display='';
           }
           fixSelectLabels('adhSanitaireRegionalDivision');
@@ -13073,10 +13075,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         divisionR.onchange=function(){
           clearRegional(serviceR);clearRegional(uniteR);serviceWrapR.style.display='none';uniteWrapR.style.display='none';
           var services=[];
-          if(structure.value==='hu_specialites_agadir'){
+          if(structure.value.indexOf('hu_')===0){
             if(divisionR.value==='Division Sanitaire')services=GST_DATA.servicesN3Sanitaire;
-            else if(divisionR.value==='Division Administrative')services=GST_DATA.servicesN3Admin;
-            else if(divisionR.value==='Services directement rattachés à la direction du CHU Spécialités')services=GST_DATA.servicesN3Direct;
+            else if(divisionR.value==='Division Administrative')services=structure.value==='hu_specialites_agadir'?GST_DATA.servicesN3Admin:GST_DATA.servicesN3AdminAutres;
+            else if(divisionR.value==='Services directement rattachés au directeur de l’hôpital')services=GST_DATA.servicesN3Direct;
           }
           services.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;serviceR.appendChild(o);});
           if(services.length){serviceR.disabled=false;serviceWrapR.style.display='';}
