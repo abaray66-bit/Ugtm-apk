@@ -12547,7 +12547,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique', 'Facturation Recouvrement'],
       servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
-      unitesN1: ['Pharmacie', 'Accueil / Qualité / Performance', 'SI', 'Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Approvisionnement / Logistique'],
+      unitesN1: ['Unité administrative', 'Unité des soins et de la santé publique', 'Unité de la pharmacie'],
       // Unités documentées à la page 114 pour le CHU Mohammed VI des Spécialités.
       unites: {
         'Capital humain': ['Unité Gestion des RH', 'Unité Formation'],
@@ -13395,6 +13395,38 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           fixSelectLabels(id);
         }
       });
+
+      // ESSP / EMS / structures d'appui (décision, chapitre IV, p. 94-95) :
+      // après sélection de la structure, proposer uniquement les trois unités fonctionnelles prévues.
+      var esspUnitSelect = document.getElementById('adhEsspSelect');
+      if (esspUnitSelect) {
+        esspUnitSelect.addEventListener('change', function(){
+          var uniteSelect = document.getElementById('adhUnite');
+          var uniteWrap = document.getElementById('adhUniteWrap');
+          var serviceSelect = document.getElementById('adhServiceGst');
+          var serviceWrap = document.getElementById('adhServiceGstWrap');
+          if (!uniteSelect) return;
+          uniteSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          uniteSelect.value = '';
+          if (serviceSelect) { serviceSelect.value = ''; serviceSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; }
+          var isEssp = String(esspUnitSelect.value || '').indexOf('essp_') === 0;
+          if (isEssp) {
+            ['Unité administrative','Unité des soins et de la santé publique','Unité de la pharmacie'].forEach(function(label){
+              var option = document.createElement('option');
+              option.value = label;
+              option.textContent = label;
+              uniteSelect.appendChild(option);
+            });
+            uniteSelect.disabled = false;
+            if (uniteWrap) uniteWrap.style.display = '';
+            if (serviceWrap) serviceWrap.style.display = 'none';
+          } else {
+            uniteSelect.disabled = true;
+            if (uniteWrap) uniteWrap.style.display = 'none';
+          }
+          fixSelectLabels('adhUnite');
+        });
+      }
 
       // Province → Espace sanitaire : quand la province change, l'espace se met à jour
       var provSel = document.getElementById('adhProvince');
