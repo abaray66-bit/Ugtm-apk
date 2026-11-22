@@ -11880,7 +11880,8 @@ window.UGTM.failed(err);
           var rattachementLabels={pole:'Pôle de pilotage et de gouvernance générale',dgaAdministrative:'Branche administrative (DGA administrative)',dgaSanitaire:'Branche sanitaire (DGA sanitaire)'};
           if(rattachement)row1('Rattachement organisationnel',rattachementLabels[rattachement]||rattachement);
           var niveauValue=app.niveauRattachement||(request&&request.niveauRattachement)||'';
-          var niveauLabel=niveauValue==='divisionDirecte'?'Division directement rattachée au Directeur général':niveauValue==='division'?'Division':niveauValue==='serviceDirect'?(rattachement==='pole'?'Service directement rattaché au Directeur général':(rattachement==='dgaAdministrative'?'Service directement rattaché au DGA administratif':(rattachement==='dgaSanitaire'?'Service directement rattaché au DGA sanitaire':'Service directement rattaché'))):niveauValue;
+          var pdfEstablishment=app.establishment||(request&&request.establishment)||'';
+          var niveauLabel=niveauValue==='divisionDirecte'?'Division directement rattachée au Directeur général':niveauValue==='division'?'Division':niveauValue==='serviceDirect'?(rattachement==='pole'?'Service directement rattaché au Directeur général':(rattachement==='dgaAdministrative'?'Service directement rattaché au DGA administratif':(pdfEstablishment==='DGA branche sanitaire (services centraux)'?'Service directement rattaché au DGA sanitaire':'Service directement rattaché à la direction de la structure'))):niveauValue;
           if(niveauValue)row1('Niveau de rattachement',niveauLabel);
           if(rattachement==='pole'){
             var poleDirectionLabels={direction_strategie_sante_publique:"Direction de la stratégie et de la santé publique",direction_soins_sante_primaires:"Direction des soins de santé primaires, de la prévention et de la promotion de la santé",direction_systemes_information:"Direction des systèmes d'information"};
