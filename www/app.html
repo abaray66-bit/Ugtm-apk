@@ -12376,8 +12376,14 @@ window.UGTM.failed(err);
           structSelect.disabled=true;
         });
       }else{
+        // CLOUD pas encore prêt : réessayer après 1 seconde
         structSelect.innerHTML='<option value="" data-i18n="adhStructureLoading"></option>';
         structSelect.disabled=true;
+        setTimeout(function(){
+          if(typeof window.CLOUD!=='undefined' && window.CLOUD.admin && window.CLOUD.admin.getLocalStructures){
+            loadLocalStructures(province);
+          }
+        }, 1000);
       }
     }
     var provinceSelect=document.getElementById('adhProvince');
@@ -12388,6 +12394,9 @@ window.UGTM.failed(err);
     }
     if(provinceSelect && provinceSelect.value){
       loadLocalStructures(provinceSelect.value);
+    } else {
+      // Pas de province sélectionnée : charger toutes les structures
+      loadLocalStructures('');
     }
 
     /* === Cascade GST : espace sanitaire → district → établissement → niveau → division → service → unité === */
@@ -13178,11 +13187,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         fixSelectLabels('adhDistrict');
       }
 
-      // Recharger les structures locales selon la province (toutes les branches)
+      // Recharger les structures locales (toutes les branches)
       var provSel2 = document.getElementById('adhProvince');
-      if (provSel2) {
-        loadLocalStructures(provSel2.value || '');
-      }
+      loadLocalStructures((provSel2 && provSel2.value) || '');
     }
     window.gstCascade = gstCascade;
     attachAdhListeners();
