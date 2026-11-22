@@ -3591,7 +3591,7 @@ window.markNotificationRead=markNotificationRead;
         </div>
 
         <!-- Le niveau classe le parcours ; la cascade hiérarchique reste dans chaque branche. -->
-        <div class="field adh-full" id="adhNiveauOrganisationnelWrap"><label for="adhNiveauOrganisationnel" data-i18n="adhNiveauOrganisationnel"></label><select id="adhNiveauOrganisationnel" required><option value="">Choisir un niveau</option><option value="regional" data-i18n="adhNiveauRegional"></option><option value="territorial" data-i18n="adhNiveauTerritorial"></option></select></div>
+        <div class="field adh-full" id="adhNiveauOrganisationnelWrap"><label for="adhNiveauOrganisationnel" data-i18n="adhNiveauOrganisationnel"></label><select id="adhNiveauOrganisationnel" required><option value="" data-i18n="adhStructureChoose"></option><option value="regional" data-i18n="adhNiveauRegional"></option><option value="territorial" data-i18n="adhNiveauTerritorial"></option></select></div>
         <div class="field" id="adhRattachementWrap" style="display:none"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalStructureWrap" style="display:none"><label for="adhSanitaireRegionalStructure" data-i18n="adhSanitaireRegionalStructure"></label><select id="adhSanitaireRegionalStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalDivisionWrap" style="display:none"><label for="adhSanitaireRegionalDivision">Division</label><select id="adhSanitaireRegionalDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -13273,9 +13273,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       var labels=typeof window.ugtmT==='function'?(window.ugtmT()||{}):{};
       var choices=level==='regional'?[{value:'pole',key:'adhRattachementPole',label:'Pilotage'},{value:'dgaAdministrative',key:'adhRattachementDGA_Administrative',label:'Direction adjointe administrative'},{value:'dgaSanitaire',key:'adhRattachementDGA_Sanitaire',label:'Direction adjointe sanitaire'}]:level==='territorial'?[{value:'territorialSanitaire',key:'adhRattachementTerritorial',label:'Espaces sanitaires — niveau secondaire et primaire'}]:[];
       choices.forEach(function(x){var o=document.createElement('option');o.value=x.value;o.textContent=labels[x.key]||x.label;sel.appendChild(o);});
-      if(wrap)wrap.style.display=choices.length?'':'none';
-      sel.required=choices.length>0;
-      sel.value=previous&&choices.some(function(x){return x.value===previous;})?previous:'';
+      if(wrap)wrap.style.display=level==='regional'?'':'none';
+      sel.required=level==='regional';
+      sel.value=level==='territorial'?'territorialSanitaire':(previous&&choices.some(function(x){return x.value===previous;})?previous:'');
       fixSelectLabels('adhRattachement');
     }
     window.configureAdhLevel=configureAdhLevel;
