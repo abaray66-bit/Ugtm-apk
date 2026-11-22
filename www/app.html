@@ -11885,14 +11885,20 @@ window.UGTM.failed(err);
           if(niveauValue)row1('Niveau de rattachement',niveauLabel);
           if(rattachement==='pole'){
             var poleDirectionLabels={direction_strategie_sante_publique:"Direction de la stratégie et de la santé publique",direction_soins_sante_primaires:"Direction des soins de santé primaires, de la prévention et de la promotion de la santé",direction_systemes_information:"Direction des systèmes d'information"};
-            row1('Direction (Pôle)',poleDirectionLabels[app.directionPole||request.directionPole||'']||(app.directionPole||request.directionPole||''));
-            row1('Division (Pôle)',app.divisionPole||request.divisionPole||'');
-            row1('Service (Pôle)',app.servicePole||request.servicePole||'');
+            var poleDirectionValue=app.directionPole||request.directionPole||'';
+            var poleDivisionValue=app.divisionPole||request.divisionPole||'';
+            var poleServiceValue=app.servicePole||request.servicePole||'';
+            if(poleDirectionValue)row1('Direction (Pôle)',poleDirectionLabels[poleDirectionValue]||poleDirectionValue);
+            if(poleDivisionValue)row1('Division (Pôle)',poleDivisionValue);
+            if(poleServiceValue)row1('Service (Pôle)',poleServiceValue);
           }else if(rattachement==='dgaAdministrative'){
             var adminDirectionLabels={direction_capital_humain:"Direction du capital humain",direction_affaires_financieres:"Direction des affaires financières",direction_achats_approvisionnement_logistique:"Direction des achats, de l'approvisionnement et de la logistique",direction_ingenierie_maintenance_patrimoine:"Direction de l'ingénierie, de la maintenance et du patrimoine"};
-            row1('Direction (DGA administrative)',adminDirectionLabels[app.directionAdmin||request.directionAdmin||'']||(app.directionAdmin||request.directionAdmin||''));
-            row1('Division (DGA administrative)',app.divisionAdmin||request.divisionAdmin||'');
-            row1('Service (DGA administrative)',app.serviceAdmin||request.serviceAdmin||'');
+            var adminDirectionValue=app.directionAdmin||request.directionAdmin||'';
+            var adminDivisionValue=app.divisionAdmin||request.divisionAdmin||'';
+            var adminServiceValue=app.serviceAdmin||request.serviceAdmin||'';
+            if(adminDirectionValue)row1('Direction (DGA administrative)',adminDirectionLabels[adminDirectionValue]||adminDirectionValue);
+            if(adminDivisionValue)row1('Division (DGA administrative)',adminDivisionValue);
+            if(adminServiceValue)row1('Service (DGA administrative)',adminServiceValue);
           }else{
             row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'CHU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'CHU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'CHU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'CHU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment||request.establishment));
             if(app.espaceSanitaire||request.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire||request.espaceSanitaire,'District',app.district||request.district);
