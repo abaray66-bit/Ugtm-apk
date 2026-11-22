@@ -13067,7 +13067,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
           if(structure.value.indexOf('hu_')===0){
             ['Division Sanitaire','Division Administrative'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
-            if(structure.value==='hu_specialites_agadir'){var o=document.createElement('option');o.value='Services directement rattachés au directeur de l’hôpital';o.textContent=o.value;divisionR.appendChild(o);}
+            var directGroup=document.createElement('option');directGroup.value='Services directement rattachés au directeur de l’hôpital';directGroup.textContent=directGroup.value;divisionR.appendChild(directGroup);
             divisionR.disabled=false;divisionWrapR.style.display='';
           }
           fixSelectLabels('adhSanitaireRegionalDivision');
