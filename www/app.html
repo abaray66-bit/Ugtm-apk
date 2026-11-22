@@ -13345,16 +13345,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               opt.value = div; opt.textContent = div; division.appendChild(opt);
             });
           }
-          var directSanitaireOpt = document.createElement('option');
-          directSanitaireOpt.value = 'Rattachements directs de la DGA sanitaire (hors district)';
-          directSanitaireOpt.textContent = directSanitaireOpt.value;
-          division.appendChild(directSanitaireOpt);
-          if (d === 'agadir') {
-            var directChuOpt = document.createElement('option');
-            directChuOpt.value = 'Services directement rattachés à la direction du CHU Spécialités';
-            directChuOpt.textContent = directChuOpt.value;
-            division.appendChild(directChuOpt);
-          }
           division.disabled = false;
           if (etabSelect) { etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etabSelect.disabled = true; etabSelect.value = ''; }
           if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
