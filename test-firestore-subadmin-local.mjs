@@ -134,7 +134,7 @@ async function createAcceptedAdhesion(uid, structureId, validated = false) {
       province: PROV_AGADIR,
       structureId,
       signature: 'sig-adherent',
-      status: 'accepted',
+      status: validated ? 'accepted' : 'pending',
       adminNote: '',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -148,11 +148,7 @@ async function createAcceptedAdhesion(uid, structureId, validated = false) {
         adminSignature: 'sig-admin',
         signedBy: 'admin-uid',
         signedAt: serverTimestamp()
-      } : {
-        validatedBy: 'subadmin-local-uid',
-        validatedAt: serverTimestamp(),
-        validatedByRole: 'subadminLocal'
-      })
+      } : {})
     });
   });
 }
