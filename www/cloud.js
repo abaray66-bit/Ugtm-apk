@@ -376,6 +376,20 @@ function subscribeLocalStructures(){
         updatedAt: ms(x.updatedAt)
       };
     }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+    // Migration douce des structures déjà existantes vers la projection
+    // publique minimale utilisée par le formulaire d'adhésion.
+    if(session.isAdmin&&snap.docs.length){
+      var batch=writeBatch(db);
+      snap.docs.forEach(function(d){
+        var x=d.data()||{};
+        batch.set(doc(db,'publicLocalStructures',d.id),{
+          structureId:d.id,name:String(x.name||''),etab:String(x.etab||''),
+          province:String(x.province||''),archived:!!x.archived,
+          updatedAt:x.updatedAt||serverTimestamp()
+        });
+      });
+      batch.commit().catch(function(err){console.warn('publicLocalStructures sync:',err);});
+    }
   }, function(err){ hooks.error(err, true); });
 }
 
