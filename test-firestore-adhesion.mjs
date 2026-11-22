@@ -335,6 +335,40 @@ test('administrateur provincial NE PEUT PAS accepter sans signature', async () =
   }));
 });
 
+
+test('PDF : une demande sans structure locale peut être enregistrée par le sous-admin provincial', async () => {
+  const uid = 'adh-no-local-structure';
+  await env.withSecurityRulesDisabled(async (context) => {
+    const data = requestPayload(uid, 'agadir', {
+      structureId: '',
+      status: 'accepted',
+      adminSignature: 'signature-provinciale',
+      signedBy: SUB_AGADIR,
+      signedAt: serverTimestamp()
+    });
+    await setDoc(doc(context.firestore(), 'adhesionRequests', uid), data);
+  });
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  const pdf = { ...pdfPayload(uid, 'agadir'), structureId: '' };
+  await assertSucceeds(setDoc(doc(db, 'adhesionDocuments', uid), pdf));
+});
+
+test('validation : un responsable ne peut pas réaffecter le structureId du dossier', async () => {
+  const uid = 'adh-structure-immutable';
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), 'adhesionRequests', uid), requestPayload(uid, 'agadir'));
+  });
+  const db = env.authenticatedContext(SUB_AGADIR, USER_TOKEN(SUB_AGADIR)).firestore();
+  await assertFails(updateDoc(doc(db, 'adhesionRequests', uid), {
+    status: 'accepted',
+    adminSignature: 'signature-provinciale',
+    signedBy: SUB_AGADIR,
+    signedAt: serverTimestamp(),
+    structureId: 'struct-tiznit-1',
+    updatedAt: serverTimestamp()
+  }));
+});
+
 test('un PDF isolé est refusé et un PDF de mauvaise province est refusé', async () => {
   // 1. Bob n'a aucune demande : son PDF isolé doit être refusé.
   const bobDb = env.authenticatedContext(BOB, USER_TOKEN(BOB)).firestore();

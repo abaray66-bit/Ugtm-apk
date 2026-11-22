@@ -977,6 +977,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'adminNote', 'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
                       'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'])
+          && request.resource.data.get('structureId', '') == resource.data.get('structureId', '')
           && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
           && okText(request.resource.data.adminNote, 1000)
           && request.resource.data.updatedAt == request.time
@@ -1098,9 +1099,23 @@ service cloud.firestore {
         && request.resource.data.uid == uid
         && request.resource.data.province in adhesionProvinces()
         && okText(request.resource.data.structureId, 40)
-        && request.resource.data.structureId.size() > 0
-        && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
-        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
+        && (
+          // Sans structure locale déclarée : seul l'admin général ou le
+          // sous-admin de province peut enregistrer le PDF.
+          (request.resource.data.structureId == ''
+            && (isAdmin() || adhesionIsSubAdminOf(request.resource.data.province)))
+          ||
+          // Avec structure : elle doit exister et être active pour le
+          // sous-admin local. L'admin général/la province peut terminer
+          // un dossier si la structure a été archivée après son dépôt.
+          (request.resource.data.structureId.size() > 0
+            && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
+            && (
+              get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
+              || isAdmin()
+              || adhesionIsSubAdminOf(request.resource.data.province)
+            ))
+        )
         && okText(request.resource.data.fileName, 120)
         && request.resource.data.mimeType == 'application/pdf'
         && request.resource.data.data is string
