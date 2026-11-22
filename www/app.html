@@ -13140,6 +13140,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             });
             district.disabled = false;
           }
+          var etabWrapOnSpaceChange=document.getElementById('adhEtablissementWrap');if(etabWrapOnSpaceChange)etabWrapOnSpaceChange.style.display='';
+          var serviceWrapOnSpaceChange=document.getElementById('adhServiceGstWrap');if(serviceWrapOnSpaceChange)serviceWrapOnSpaceChange.style.display='';
+          var uniteWrapOnSpaceChange=document.getElementById('adhUniteWrap');if(uniteWrapOnSpaceChange)uniteWrapOnSpaceChange.style.display='';
           etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           etab.disabled = true;
           etab.value = '';
@@ -13435,6 +13438,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             if(esspWrapSpecial)esspWrapSpecial.style.display='none';
             if(hospitalWrapSpecial)hospitalWrapSpecial.style.display='none';
             if(esspSelect){esspSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';esspSelect.required=false;}
+            if(serviceHosp)serviceHosp.value='';
+            if(etabOther)etabOther.style.display='none';
             fixSelectLabels('adhDivision');
             return;
           }
