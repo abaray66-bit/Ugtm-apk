@@ -3591,7 +3591,7 @@ window.markNotificationRead=markNotificationRead;
         </div>
 
         <!-- Niveau 1 : Rattachement organisationnel -->
-        <div class="field"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required><option value="" data-i18n="adhStructureChoose"></option><option value="pole" data-i18n="adhRattachementPole"></option><option value="dgaSanitaire" data-i18n="adhRattachementDGA_Sanitaire"></option><option value="dgaAdministrative" data-i18n="adhRattachementDGA_Administrative"></option></select></div>
+        <div class="field"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option><option value="pole" data-i18n="adhRattachementPole"></option><option value="dgaSanitaire" data-i18n="adhRattachementDGA_Sanitaire"></option><option value="dgaAdministrative" data-i18n="adhRattachementDGA_Administrative"></option></select></div>
 
         <!-- === BRANCHE : PÔLE DE PILOTAGE === Direction → Division → Service -->
         <div class="field rattle-pole" id="adhDirectionPoleWrap" style="display:none"><label for="adhDirectionPole" data-i18n="adhDirectionPole"></label><select id="adhDirectionPole"><option value="" data-i18n="adhStructureChoose"></option></select></div>
