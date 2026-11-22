@@ -226,7 +226,7 @@ test('nomination : admin général peut nommer un subadmin local sur une structu
   }
 });
 
-test('proposition : un sous-admin provincial ne peut pas proposer une structure d'une autre province', async () => {
+test("proposition : un sous-admin provincial ne peut pas proposer une structure d'une autre province", async () => {
   await setupStructures();
   await createMember('prov-cross', 'subadmin', STRUCT_A, PROV_AGADIR);
   const db = env.authenticatedContext('prov-cross', userToken('prov-cross')).firestore();
@@ -237,7 +237,7 @@ test('proposition : un sous-admin provincial ne peut pas proposer une structure 
   }));
 });
 
-test('nomination : admin général ne peut pas rattacher un membre à une structure d'une autre province', async () => {
+test("nomination : admin général ne peut pas rattacher un membre à une structure d'une autre province", async () => {
   await setupStructures();
   await createMember('member-agadir-cross', 'member', STRUCT_A, PROV_AGADIR);
   const db = env.authenticatedContext('admin-uid', ADMIN_TOKEN).firestore();
