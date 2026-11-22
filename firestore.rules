@@ -838,6 +838,32 @@ service cloud.firestore {
         && app.get('niveauRattachement', '') in ['', 'direction', 'divisionDirecte', 'serviceDirect', 'division']
         && (app.get('rattachement', '') != 'pole' || app.get('niveauRattachement', '') in ['direction', 'divisionDirecte', 'serviceDirect'])
         && (app.get('rattachement', '') != 'dgaAdministrative' || app.get('niveauRattachement', '') in ['direction', 'serviceDirect'])
+        && (app.get('rattachement', '') != 'pole' ||
+          ((app.get('niveauRattachement', '') == 'direction'
+              && app.get('directionPole', '').size() > 0
+              && app.get('divisionPole', '').size() > 0
+              && app.get('servicePole', '').size() > 0)
+            || (app.get('niveauRattachement', '') == 'divisionDirecte'
+              && app.get('divisionPole', '').size() > 0
+              && app.get('servicePole', '').size() > 0)
+            || (app.get('niveauRattachement', '') == 'serviceDirect'
+              && app.get('servicePole', '').size() > 0)))
+        && (app.get('rattachement', '') != 'dgaAdministrative' ||
+          ((app.get('niveauRattachement', '') == 'direction'
+              && app.get('directionAdmin', '').size() > 0
+              && app.get('divisionAdmin', '').size() > 0
+              && app.get('serviceAdmin', '').size() > 0)
+            || (app.get('niveauRattachement', '') == 'serviceDirect'
+              && app.get('serviceAdmin', '').size() > 0)))
+        && (app.get('rattachement', '') != 'dgaSanitaire' ||
+          (app.get('espaceSanitaire', '').size() > 0
+            && app.get('district', '').size() > 0
+            && (app.get('niveauRattachement', '') == ''
+              || (app.get('niveauRattachement', '') == 'division'
+                && app.get('division', '').size() > 0
+                && app.get('serviceGst', '').size() > 0)
+              || (app.get('niveauRattachement', '') == 'serviceDirect'
+                && app.get('serviceGst', '').size() > 0))))
         && app.province == province
         && app.commitment == true
         && app.type in ['first', 'renewal']
