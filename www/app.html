@@ -12382,7 +12382,7 @@ function selectedEsspEntry(){
   return ESSP_LIST[index]||null;
 }
 ;
-var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":"inezgane","n":"Inezgane","c":"HP","d":"inezgane"},{"p":"taroudant","n":"Mokhtar Es-Soussi","c":"HP","d":"taroudant"},{"p":"taroudant","n":"Oulad Teima","c":"HPr","d":"taroudant"},{"p":"tata","n":"Tata","c":"HP","d":"tata"},{"p":"tiznit","n":"Hassan 1er","c":"HP","d":"tiznit"},{"p":"agadir","n":"HR Hassan II","c":"HR","d":"agadir"}];
+var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":"chtouka","n":"Massa","c":"HPr","d":"chtouka"},{"p":"inezgane","n":"Inezgane","c":"HP","d":"inezgane"},{"p":"inezgane","n":"Lqliâa","c":"HPr","d":"inezgane"},{"p":"taroudant","n":"Mokhtar Es-Soussi","c":"HP","d":"taroudant"},{"p":"taroudant","n":"Oulad Teima","c":"HPr","d":"taroudant"},{"p":"taroudant","n":"Taliouine","c":"HPr","d":"taroudant"},{"p":"tata","n":"Tata","c":"HP","d":"tata"},{"p":"tiznit","n":"Hassan 1er","c":"HP","d":"tiznit"},{"p":"tiznit","n":"Tafraout","c":"HPr","d":"tiznit","status":"construction"},{"p":"agadir","n":"HR Hassan II","c":"HR","d":"agadir"}];
     var GST_DATA = {
       espaces: {
         agadir: { districts: ['agadir','inezgane','chtouka','tiznit'], label: 'Espace sanitaire Agadir' },
@@ -13123,6 +13123,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             HOSP_LIST.filter(function(h) {
               if (h.p !== d) return false;
               if (h.d && h.d !== d) return false;
+              if (h.status === 'construction') return false;
               return true;
             }).forEach(function(h) {
               var opt = document.createElement('option');
@@ -13139,16 +13140,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
             });
           }
-          // Hôpitaux de proximité N1 de l'espace
-          if (espVal2 && GST_DATA.etablissementsN1) {
-            GST_DATA.etablissementsN1.forEach(function(e) {
-              if (!e.espace || e.espace === espVal2) {
-                var opt = document.createElement('option');
-                opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
-              }
-            });
-          }
-
           var otherOpt = document.createElement('option');
           otherOpt.value = 'other';
           otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
