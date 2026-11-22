@@ -837,7 +837,9 @@ service cloud.firestore {
         && structureId is string
         && structureId != ''
         && assignedLocalStructure() != ''
-        && structureId == assignedLocalStructure();
+        && structureId == assignedLocalStructure()
+        && exists(/databases/$(database)/documents/localStructures/$(structureId))
+        && get(/databases/$(database)/documents/localStructures/$(structureId)).data.archived == false;
     }
 
     function adhesionProvinces() {
