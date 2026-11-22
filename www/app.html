@@ -12372,9 +12372,12 @@ function populateEsspSelect(select,province){
 }
 function selectedEsspEntry(){
   var select=document.getElementById('adhEsspSelect');
-  if(!select||!/^essp_\\d+$/.test(String(select.value||'')))return null;
-  var index=Number(String(select.value).slice(5));
-  return Number.isInteger(index)?(ESSP_LIST[index]||null):null;
+  if(!select)return null;
+  var value=String(select.value||'');
+  if(value.indexOf('essp_')!==0)return null;
+  var index=Number(value.slice(5));
+  if(!Number.isInteger(index)||String(index)!==value.slice(5))return null;
+  return ESSP_LIST[index]||null;
 }
 ;
 var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":"inezgane","n":"Inezgane","c":"HP","d":"inezgane"},{"p":"taroudant","n":"Mokhtar Es-Soussi","c":"HP","d":"taroudant"},{"p":"taroudant","n":"Oulad Teima","c":"HPr","d":"taroudant"},{"p":"tata","n":"Tata","c":"HP","d":"tata"},{"p":"tiznit","n":"Hassan 1er","c":"HP","d":"tiznit"},{"p":"agadir","n":"HR Hassan II","c":"HR","d":"agadir"}];
