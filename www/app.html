@@ -3604,7 +3604,6 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-administrative" id="adhServiceAdminWrap" style="display:none"><label for="adhServiceAdmin" data-i18n="adhServiceAdmin"></label><select id="adhServiceAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
         <!-- Champs communs -->
-        <div class="field"><label for="adhStructure" data-i18n="adhStructure"></label><select id="adhStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field"><label for="adhEstablishment" data-i18n="adhEstablishment"></label><input id="adhEstablishment" type="text" maxlength="160"></div>
         <div class="field"><label for="adhService" data-i18n="adhService"></label><input id="adhService" type="text" maxlength="120"></div>
         <div class="field"><label for="adhFunction" data-i18n="adhFunction"></label><select id="adhFunction" required><option value="" data-i18n="adhFunctionChoose"></option><option value="function_to_specify" data-i18n="adhFunctionToSpecify"></option><option value="no_function" data-i18n="adhFunctionNone"></option></select></div>
@@ -12343,61 +12342,7 @@ window.UGTM.failed(err);
     });
     syncRenewalReason();
 
-    /* Charger les structures locales selon la province sélectionnée */
-    function loadLocalStructures(province){
-      var structSelect=document.getElementById('adhStructure');
-      if(!structSelect)return;
-      var currentValue=structSelect.value;
-      structSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
-      structSelect.disabled=false;
-      if(typeof window.CLOUD!=='undefined' && window.CLOUD.admin && window.CLOUD.admin.getLocalStructures){
-        window.CLOUD.admin.getLocalStructures().then(function(list){
-          var filtered=list.filter(function(s){
-            return !s.archived && (!province || s.province===province);
-          });
-          if(filtered.length===0){
-            structSelect.innerHTML='<option value="" data-i18n="adhStructureNone"></option>';
-            structSelect.disabled=true;
-            return;
-          }
-          filtered.forEach(function(s){
-            var opt=document.createElement('option');
-            opt.value=s.structureId;
-            opt.textContent=s.name+' ('+s.etab+')';
-            structSelect.appendChild(opt);
-          });
-          structSelect.disabled=false;
-          if(currentValue && Array.from(structSelect.options).some(function(o){return o.value===currentValue;})){
-            structSelect.value=currentValue;
-          }
-        }).catch(function(err){
-          console.warn('loadLocalStructures:', err);
-          structSelect.innerHTML='<option value="" data-i18n="adhStructureError"></option>';
-          structSelect.disabled=true;
-        });
-      }else{
-        // CLOUD pas encore prêt : réessayer après 1 seconde
-        structSelect.innerHTML='<option value="" data-i18n="adhStructureLoading"></option>';
-        structSelect.disabled=true;
-        setTimeout(function(){
-          if(typeof window.CLOUD!=='undefined' && window.CLOUD.admin && window.CLOUD.admin.getLocalStructures){
-            loadLocalStructures(province);
-          }
-        }, 1000);
-      }
-    }
-    var provinceSelect=document.getElementById('adhProvince');
-    if(provinceSelect){
-      provinceSelect.addEventListener('change',function(){
-        loadLocalStructures(this.value);
-      });
-    }
-    if(provinceSelect && provinceSelect.value){
-      loadLocalStructures(provinceSelect.value);
-    } else {
-      // Pas de province sélectionnée : charger toutes les structures
-      loadLocalStructures('');
-    }
+    /* (loadLocalStructures supprimé — le champ adhStructure a été retiré du formulaire) */
 
     /* === Cascade GST : espace sanitaire → district → établissement → niveau → division → service → unité === */
 var ESSP_LIST=[{"p":"agadir","n":"Hay El Mohamadi"},{"p":"agadir","n":"Bensergaou"},{"p":"agadir","n":"Anza"},{"p":"agadir","n":"Tikiouine"},{"p":"agadir","n":"N.Talborjt"},{"p":"agadir","n":"Ihchach"},{"p":"agadir","n":"Bouargane"},{"p":"agadir","n":"Q.Industriel"},{"p":"agadir","n":"Amsernate"},{"p":"agadir","n":"El Qods"},{"p":"agadir","n":"Essalam"},{"p":"agadir","n":"Taddarte"},{"p":"agadir","n":"Anza Al Ouliya"},{"p":"agadir","n":"C.Diagnostic Tuberculose"},{"p":"agadir","n":"Laboratoire Epidemiologique"},{"p":"agadir","n":"Talborjt"},{"p":"agadir","n":"Tarik Al Kheir"},{"p":"agadir","n":"Aghroud"},{"p":"agadir","n":"Bir Anzarane"},{"p":"agadir","n":"Drarga"},{"p":"agadir","n":"Tamait Izdar"},{"p":"agadir","n":"Azrarag"},{"p":"agadir","n":"Amskroud"},{"p":"agadir","n":"Sidi Boushab"},{"p":"agadir","n":"Tamait Oufella"},{"p":"agadir","n":"Assaka Idmine"},{"p":"agadir","n":"Ikhrdidene"},{"p":"agadir","n":"Aziar"},{"p":"agadir","n":"Imesker"},{"p":"agadir","n":"Immouzzer"},{"p":"agadir","n":"Tadrarte"},{"p":"agadir","n":"Isk Ntiki"},{"p":"agadir","n":"Aqesri"},{"p":"agadir","n":"Inrarene"},{"p":"agadir","n":"Taghazout"},{"p":"agadir","n":"Assaka"},{"p":"agadir","n":"Imsouane"},{"p":"agadir","n":"Sidi Belkacem"},{"p":"agadir","n":"Tamri"},{"p":"agadir","n":"Ighallene"},{"p":"agadir","n":"Tamraghte"},{"p":"chtouka","n":"Ait Baha"},{"p":"chtouka","n":"Biougra"},{"p":"chtouka","n":"Touama"},{"p":"chtouka","n":"Sidi Bibi"},{"p":"chtouka","n":"Takade"},{"p":"chtouka","n":"Taddarte"},{"p":"chtouka","n":"Ben Guemoud"},{"p":"chtouka","n":"Ouled Mimoun"},{"p":"chtouka","n":"Ait Amira"},{"p":"chtouka","n":"Anou L'jdid"},{"p":"chtouka","n":"Kbilt Allal"},{"p":"chtouka","n":"Rjila"},{"p":"chtouka","n":"Taouss"},{"p":"chtouka","n":"Ait Ouadrim"},{"p":"chtouka","n":"S.Abdellah"},{"p":"chtouka","n":"Kh.A.Moussa"},{"p":"chtouka","n":"Ida Ougnidif"},{"p":"chtouka","n":"Aguerd"},{"p":"chtouka","n":"Takoucht"},{"p":"chtouka","n":"Taledel"},{"p":"chtouka","n":"Ouagnez"},{"p":"chtouka","n":"Tanalt"},{"p":"chtouka","n":"Targa Ntouchka"},{"p":"chtouka","n":"Tiouaziouine"},{"p":"chtouka","n":"Ait M'zal"},{"p":"chtouka","n":"Hilala"},{"p":"chtouka","n":"Taalate"},{"p":"chtouka","n":"Zao"},{"p":"chtouka","n":"Hellate"},{"p":"chtouka","n":"Belfaa"},{"p":"chtouka","n":"Massa"},{"p":"chtouka","n":"Ifentar"},{"p":"chtouka","n":"Aghbalou"},{"p":"chtouka","n":"Ait Milk"},{"p":"chtouka","n":"Ait Yassine"},{"p":"chtouka","n":"Inchaden"},{"p":"chtouka","n":"Oued Essafa"},{"p":"chtouka","n":"Imzilene"},{"p":"chtouka","n":"Ait Oubelkacem"},{"p":"chtouka","n":"Ighraissen"},{"p":"chtouka","n":"Ait Ouagmar"},{"p":"chtouka","n":"Imi Mqourn"},{"p":"chtouka","n":"Sidi Boushab"},{"p":"inezgane","n":"A.Melloul"},{"p":"inezgane","n":"Lemzar"},{"p":"inezgane","n":"Kasba Taher"},{"p":"inezgane","n":"Azrou"},{"p":"inezgane","n":"Chouhada"},{"p":"inezgane","n":"Kolea"},{"p":"inezgane","n":"Sidi Daoud"},{"p":"inezgane","n":"Laazibe"},{"p":"inezgane","n":"Dcheira"},{"p":"inezgane","n":"Dchira Jihadia (Amougay)"},{"p":"inezgane","n":"Inezgane"},{"p":"inezgane","n":"Dcheira Irhalne"},{"p":"inezgane","n":"CDTMR Inezgane"},{"p":"inezgane","n":"Inzgane"},{"p":"inezgane","n":"Tarraste"},{"p":"inezgane","n":"Jorf"},{"p":"inezgane","n":"Oulad Dahou"},{"p":"inezgane","n":"Ali Ben Haddi"},{"p":"inezgane","n":"Tamllalt"},{"p":"inezgane","n":"Dar Ben Cheikh"},{"p":"inezgane","n":"Temsia"},{"p":"inezgane","n":"Ait Moussa"},{"p":"inezgane","n":"Ikhorbane"},{"p":"inezgane","n":"Labdouaa"},{"p":"taroudant","n":"Ait Iaaza"},{"p":"taroudant","n":"El Guerdane"},{"p":"taroudant","n":"Ighrem"},{"p":"taroudant","n":"Ouled Berhil"},{"p":"taroudant","n":"Oulad Teima"},{"p":"taroudant","n":"Essafa"},{"p":"taroudant","n":"Chrarda"},{"p":"taroudant","n":"Taliouine"},{"p":"taroudant","n":"CDTMR Taroudant"},{"p":"taroudant","n":"LSP Taroudant"},{"p":"taroudant","n":"Taroudante"},{"p":"taroudant","n":"Talmaklate"},{"p":"taroudant","n":"Od Bounouna"},{"p":"taroudant","n":"M'haita"},{"p":"taroudant","n":"Aoulouz"},{"p":"taroudant","n":"A. Abdellah"},{"p":"taroudant","n":"Sidi Mzal"},{"p":"taroudant","n":"Tabia"},{"p":"taroudant","n":"Toufelaazt"},{"p":"taroudant","n":"Imlil"},{"p":"taroudant","n":"Tayert"},{"p":"taroudant","n":"Aguerd Noualous"},{"p":"taroudant","n":"Had Imaoune"},{"p":"taroudant","n":"Anzergue"},{"p":"taroudant","n":"Indouzal"},{"p":"taroudant","n":"Tindine"},{"p":"taroudant","n":"Talidla"},{"p":"taroudant","n":"Tignatine"},{"p":"taroudant","n":"Ouzoune"},{"p":"taroudant","n":"Doussaoune"},{"p":"taroudant","n":"Azaghar N'irs"},{"p":"taroudant","n":"Ouastouane"},{"p":"taroudant","n":"Tlat N'tlaghmine"},{"p":"taroudant","n":"Berguen"},{"p":"taroudant","n":"Nihit"},{"p":"taroudant","n":"Oualqadi"},{"p":"taroudant","n":"Jemaa Tafraout"},{"p":"taroudant","n":"Ida Ou Gailal"},{"p":"taroudant","n":"Igli"},{"p":"taroudant","n":"Oulad Aissa"},{"p":"taroudant","n":"S.Abdellah Ou Said"},{"p":"taroudant","n":"Igoudar"},{"p":"taroudant","n":"Tassoukte"},{"p":"taroudant","n":"Ait Hamd"},{"p":"taroudant","n":"Ouneine"},{"p":"taroudant","n":"Tafingoult"},{"p":"taroudant","n":"Talgjount"},{"p":"taroudant","n":"Tigouga"},{"p":"taroudant","n":"Chafarni"},{"p":"taroudant","n":"Taouiyalte"},{"p":"taroudant","n":"Arazane"},{"p":"taroudant","n":"Jorf"},{"p":"taroudant","n":"El Faid"},{"p":"taroudant","n":"Aguelz"},{"p":"taroudant","n":"Tanamroute"},{"p":"taroudant","n":"Ida Ougoummad"},{"p":"taroudant","n":"Magnoune"},{"p":"taroudant","n":"Ait Oussaih"},{"p":"taroudant","n":"Assads"},{"p":"taroudant","n":"Machraa El Ain"},{"p":"taroudant","n":"Od MHALLA"},{"p":"taroudant","n":"Imighzer"},{"p":"taroudant","n":"Tidsi"},{"p":"taroudant","n":"Ait Ben Hawa"},{"p":"taroudant","n":"El Koddia"},{"p":"taroudant","n":"Boukhachba"},{"p":"taroudant","n":"Lakhnafif"},{"p":"taroudant","n":"Ouled Rahou"},{"p":"taroudant","n":"Ksiba"},{"p":"taroudant","n":"El Aasla"},{"p":"taroudant","n":"Lagfifat"},{"p":"taroudant","n":"Sebt Lagfifat"},{"p":"taroudant","n":"S.A. Ou Aamar"},{"p":"taroudant","n":"Bouassida"},{"p":"taroudant","n":"S.Boumoussa"},{"p":"taroudant","n":"Assaki"},{"p":"taroudant","n":"Tidnass"},{"p":"taroudant","n":"Targa N'mimoun"},{"p":"taroudant","n":"Amzlou"},{"p":"taroudant","n":"Tirit"},{"p":"taroudant","n":"Agadir N'ait Taleb"},{"p":"taroudant","n":"Assarague"},{"p":"taroudant","n":"Ikiss"},{"p":"taroudant","n":"Askaouen"},{"p":"taroudant","n":"Iguidi"},{"p":"taroudant","n":"Aaraben"},{"p":"taroudant","n":"Toubkal"},{"p":"taroudant","n":"Ouzioua"},{"p":"taroudant","n":"Tisrass"},{"p":"taroudant","n":"Agadir Melloul"},{"p":"taroudant","n":"Asserrarghe"},{"p":"taroudant","n":"Tinidar"},{"p":"taroudant","n":"Assaise"},{"p":"taroudant","n":"Ighri"},{"p":"taroudant","n":"Aoudouste"},{"p":"taroudant","n":"Imgoune"},{"p":"taroudant","n":"Ai Iguass"},{"p":"taroudant","n":"Freija"},{"p":"taroudant","n":"S.A.Ou Abdellah"},{"p":"taroudant","n":"Aglagal"},{"p":"taroudant","n":"Sidi Dahmane"},{"p":"taroudant","n":"Tiout"},{"p":"taroudant","n":"Boulaajlat"},{"p":"taroudant","n":"Imoulass"},{"p":"taroudant","n":"Tafraouten"},{"p":"taroudant","n":"Tamssoulte"},{"p":"taroudant","n":"Tigouliane"},{"p":"taroudant","n":"Tamaloukte"},{"p":"taroudant","n":"Migrane"},{"p":"taroudant","n":"Sidi Borja"},{"p":"taroudant","n":"Tazemmourt"},{"p":"taroudant","n":"Argana"},{"p":"taroudant","n":"Bigoudine"},{"p":"taroudant","n":"Barrage"},{"p":"taroudant","n":"Tanoute"},{"p":"taroudant","n":"Talmakante"},{"p":"taroudant","n":"D'kheila"},{"p":"taroudant","n":"Tnine Od Teima"},{"p":"taroudant","n":"Brahim Roudani (Ait Hmida)"},{"p":"taroudant","n":"Bouida"},{"p":"taroudant","n":"Oueld Salem"},{"p":"taroudant","n":"Ahmer"},{"p":"taroudant","n":"Laaouissate"},{"p":"taroudant","n":"Lamnizla"},{"p":"taroudant","n":"Zt. S.TAHER"},{"p":"taroudant","n":"Sidi Moussa"},{"p":"tata","n":"Akka"},{"p":"tata","n":"Fam El Hisne"},{"p":"tata","n":"Icht"},{"p":"tata","n":"Foum-Zguid"},{"p":"tata","n":"Oued Hellal"},{"p":"tata","n":"Tata"},{"p":"tata","n":"Daraa"},{"p":"tata","n":"Tamanarte (Aguerd)"},{"p":"tata","n":"Anamer"},{"p":"tata","n":"Ait Ouabelli"},{"p":"tata","n":"Tadakouste"},{"p":"tata","n":"Touzounine"},{"p":"tata","n":"K S.Abd B.M'barek"},{"p":"tata","n":"Allougoum"},{"p":"tata","n":"Khriouiaa"},{"p":"tata","n":"Tlite"},{"p":"tata","n":"Tissint"},{"p":"tata","n":"Mghimima"},{"p":"tata","n":"El Kasbat"},{"p":"tata","n":"Aguinane (Fiferd)"},{"p":"tata","n":"Akka-Ighane"},{"p":"tata","n":"Akka-Iguerne"},{"p":"tata","n":"Dou Ougadir"},{"p":"tata","n":"Ibn Yacoub (Imintatelt)"},{"p":"tata","n":"Iligh"},{"p":"tata","n":"Issafen"},{"p":"tata","n":"Idaoutinest"},{"p":"tata","n":"Tizza"},{"p":"tata","n":"Tizaghte (Tizgui)"},{"p":"tata","n":"Imi-N-Guisselte"},{"p":"tata","n":"Tagmoute"},{"p":"tata","n":"Assoul"},{"p":"tata","n":"Addis"},{"p":"tata","n":"Oum Lguerdane"},{"p":"tata","n":"Tigzmerte"},{"p":"tata","n":"Imitek"},{"p":"tiznit","n":"Tafraoute"},{"p":"tiznit","n":"Houmman El Fatouaki"},{"p":"tiznit","n":"CRSR Tiznit"},{"p":"tiznit","n":"Abdellah Chefchaouni"},{"p":"tiznit","n":"El Mers"},{"p":"tiznit","n":"Tiremsane"},{"p":"tiznit","n":"Anzi"},{"p":"tiznit","n":"Taf.El Mouloud"},{"p":"tiznit","n":"Aday"},{"p":"tiznit","n":"Ait Ahmed"},{"p":"tiznit","n":"Tifrmit"},{"p":"tiznit","n":"Takaterte"},{"p":"tiznit","n":"Idaousemllal"},{"p":"tiznit","n":"Tizoughrane"},{"p":"tiznit","n":"Taghzifte"},{"p":"tiznit","n":"Azour oulili"},{"p":"tiznit","n":"Tazeroualte"},{"p":"tiznit","n":"Toumanar"},{"p":"tiznit","n":"Assif Oudrar"},{"p":"tiznit","n":"Ighir Mouss"},{"p":"tiznit","n":"Tighmi"},{"p":"tiznit","n":"Amelne"},{"p":"tiznit","n":"Tarsouat"},{"p":"tiznit","n":"Izerbi"},{"p":"tiznit","n":"Tassrirt"},{"p":"tiznit","n":"Ait Ouafqa"},{"p":"tiznit","n":"Tahala"},{"p":"tiznit","n":"Afella Ighir"},{"p":"tiznit","n":"Aglou"},{"p":"tiznit","n":"Zaouite"},{"p":"tiznit","n":"Igrar S.Abdrahman"},{"p":"tiznit","n":"Al Gaada"},{"p":"tiznit","n":"Laaouina"},{"p":"tiznit","n":"Al Feid"},{"p":"tiznit","n":"Bounaamane"},{"p":"tiznit","n":"Tagounsa"},{"p":"tiznit","n":"Sidi Bouabdlli"},{"p":"tiznit","n":"Kh.Tafraout"},{"p":"tiznit","n":"Tisgharine"},{"p":"tiznit","n":"Ouijjane"},{"p":"tiznit","n":"Assaka"},{"p":"tiznit","n":"Reggada"},{"p":"tiznit","n":"Talainte"},{"p":"tiznit","n":"Ighir Melloulene"},{"p":"tiznit","n":"Igherme"},{"p":"tiznit","n":"Ras Mouka"},{"p":"tiznit","n":"Ait Semlalte"},{"p":"tiznit","n":"Ouled Noumer"},{"p":"tiznit","n":"El Maader"},{"p":"tiznit","n":"Ait Oumribte"},{"p":"tiznit","n":"Sahel"},{"p":"tiznit","n":"Ichafoudene"},{"p":"tiznit","n":"Lkraima"},{"p":"tiznit","n":"Ilmssite"},{"p":"tiznit","n":"Lmssaidira"},{"p":"tiznit","n":"Iferda"},{"p":"tiznit","n":"Bouzerze"}];
@@ -12769,7 +12714,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       resetInput('adhEspaceSanitaire');
       resetInput('adhEstablishment');
       resetInput('adhService');
-      ['adhStructure','adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
+      ['adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
       document.getElementById('adhEtabOtherWrap').style.display='none';
@@ -13187,9 +13132,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         fixSelectLabels('adhDistrict');
       }
 
-      // Recharger les structures locales (toutes les branches)
-      var provSel2 = document.getElementById('adhProvince');
-      loadLocalStructures((provSel2 && provSel2.value) || '');
     }
     window.gstCascade = gstCascade;
     attachAdhListeners();
@@ -13435,7 +13377,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         reason:reason,
         commitment:true,
         date:document.getElementById('adhDate').value,
-        structureId:document.getElementById('adhStructure').value,
+        structureId:(document.getElementById('adhStructure')?document.getElementById('adhStructure').value:''),
         signature:signatureJpeg()
       };
 
