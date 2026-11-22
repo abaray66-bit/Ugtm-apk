@@ -12463,7 +12463,391 @@ function esspRecordValue(e){return e.n+' ('+e.t+') — '+e.c;}
 function esspRecordLabel(e){return e.n+' — '+(ESSP_CATS[e.t]||e.t)+' ('+e.t+') — '+e.c;}
 /* Oulad Teima reste une entrée hospitalière distincte de l'ESSP CSU-1 homonyme ; statut HP à confirmer. Houmman El Fatouaki est exclu des HP : la source ESSP le classe CDTMR et LSP. */
 /* Pour les trois autres CHU, admission, facturation et recouvrement restent intégrés au Service des affaires financières : aucune entrée de service séparée. */
-var GST_DATA = {"espaces":{"agadir":{"districts":["agadir","inezgane","chtouka","tiznit"],"label":"Espace sanitaire Agadir"},"taroudant":{"districts":["taroudant","tata"],"label":"Espace sanitaire Taroudant"}},"districts":{"agadir":"Agadir","inezgane":"Inezgane","chtouka":"Chtouka Aït Baha","tiznit":"Tiznit","taroudant":"Taroudant","tata":"Tata"},"etablissementsN3":[{"value":"hu_specialites_agadir","label":"CHU Mohammed VI des Spécialités Agadir","niveau":"N3","modele":"chu_specialites"},{"value":"hu_mere_enfant_agadir","label":"CHU Mohammed VI Mère-Enfant Agadir","niveau":"N3","modele":"chu_autres"},{"value":"hu_oncologie_agadir","label":"CHU Mohammed VI Oncologie Agadir","niveau":"N3","modele":"chu_autres"},{"value":"hu_psychiatrie_agadir","label":"CHU Mohammed VI Psychiatrie Agadir","niveau":"N3","modele":"chu_autres"}],"pole":{"directions":[{"value":"direction_strategie_sante_publique","label":"Direction de la stratégie et de la santé publique"},{"value":"direction_soins_sante_primaires","label":"Direction des soins de santé primaires, de la prévention et de la promotion de la santé"},{"value":"direction_systemes_information","label":"Direction des systèmes d'information"}],"divisions":{"direction_strategie_sante_publique":["Division de la santé publique","Division de la stratégie","Division de la stratégie pharmaceutique"],"direction_soins_sante_primaires":["Division de la prévention et de la promotion de la santé publique","Division de la performance des programmes de santé publique"],"direction_systemes_information":["Division des infrastructures, des systèmes, des réseaux et de la sécurité des systèmes informatiques","Division des logiciels et des systèmes informatiques","Division de la production de l'information et des statistiques"]},"divisionsDirectes":["Division audit, qualité et contrôle de gestion","Division de la recherche et de l'innovation"],"servicesDirects":["Service de la communication","Service d'appui à l'inspection et au contrôle des établissements"],"services":{"Division de la santé publique":["Service de la surveillance épidémiologique et du contrôle sanitaire aux frontières","Service des programmes de santé publique"],"Division de la stratégie":["Service de la planification stratégique et de la coordination des filières","Service partenariats"],"Division de la stratégie pharmaceutique":["Service de la planification pharmaceutique","Service de la pharmacovigilance"],"Division de la prévention et de la promotion de la santé publique":["Service de la prévention et de la promotion de la santé","Service de la mobilisation communautaire et de l'intersectorialité"],"Division de la performance des programmes de santé publique":["Service d'appui à la mise en œuvre des programmes de santé publique","Service de suivi et d'évaluation"],"Division des infrastructures, des systèmes, des réseaux et de la sécurité des systèmes informatiques":["Service des réseaux, de la maintenance et de la sécurité des systèmes informatiques","Service de l'infrastructure et des systèmes informatiques"],"Division des logiciels et des systèmes informatiques":["Service de la conception et du multimédia","Service de développement informatique"],"Division de la production de l'information et des statistiques":["Service des statistiques","Service de business intelligence (BI)"],"Division audit, qualité et contrôle de gestion":["Service audit","Service qualité et sécurité du patient","Service contrôle de gestion"],"Division de la recherche et de l'innovation":["Service de la recherche et de l'innovation","Service de la coopération et de la communication scientifique"]}},"administrative":{"directions":[{"value":"direction_capital_humain","label":"Direction du capital humain"},{"value":"direction_affaires_financieres","label":"Direction des affaires financières"},{"value":"direction_achats_approvisionnement_logistique","label":"Direction des achats, de l'approvisionnement et de la logistique"},{"value":"direction_ingenierie_maintenance_patrimoine","label":"Direction de l'ingénierie, de la maintenance et du patrimoine"}],"divisions":{"direction_capital_humain":["Division de la gestion du personnel","Division des affaires juridiques et sociales","Division de la formation"],"direction_affaires_financieres":["Division de la comptabilité et du budget","Division de la facturation, du recouvrement et des recettes","Division des dépenses"],"direction_achats_approvisionnement_logistique":["Division des achats","Division de l'approvisionnement et de la logistique","Division de l'approvisionnement et de la logistique pharmaceutique"],"direction_ingenierie_maintenance_patrimoine":["Division de l'ingénierie et de la maintenance","Division du patrimoine"]},"servicesDirects":["Service du bureau d'ordre, de la documentation et des archives"],"services":{"Division de la gestion du personnel":["Service de la gestion des carrières","Service de la gestion de la paie"],"Division des affaires juridiques et sociales":["Service de la sécurité au travail","Service des affaires juridiques et du contentieux","Service des affaires sociales"],"Division de la formation":["Service de la formation pratique","Service de la formation continue"],"Division de la comptabilité et du budget":["Service de la comptabilité générale et analytique","Service de l'élaboration et du suivi budgétaire"],"Division de la facturation, du recouvrement et des recettes":["Service de la régie","Service de la facturation, du recouvrement et des recettes"],"Division des dépenses":["Service des dépenses des produits pharmaceutiques","Service des dépenses fonctionnelles et diverses"],"Division des achats":["Service des achats des produits pharmaceutiques","Service des achats divers"],"Division de l'approvisionnement et de la logistique":["Service des approvisionnements et de la logistique diverse","Service du parc auto"],"Division de l'approvisionnement et de la logistique pharmaceutique":["Service de la logistique des produits pharmaceutiques","Service de l'approvisionnement des produits pharmaceutiques"],"Division de l'ingénierie et de la maintenance":["Service des bâtiments","Service des installations techniques","Service des équipements"],"Division du patrimoine":["Service du patrimoine mobilier","Service du patrimoine immobilier"]}},"sanitaire":{"modeles":{"chu_specialites":{"directServices":["Service d'accueil, de la qualité et de la performance","Service de la pharmacie"],"divisions":{"Division administrative":["Service du capital humain","Service des affaires financières","Service de la facturation et du recouvrement","Service de l'ingénierie et de la maintenance","Service d'achat, de l'approvisionnement et de la logistique"],"Division sanitaire":["Service des affaires médicales","Service des soins infirmiers"]},"hospital":true},"chu_autres":{"directServices":["Service d'accueil, de la qualité et de la performance","Service de la pharmacie"],"divisions":{"Division administrative":["Service du capital humain","Service des affaires financières","Service de l'ingénierie et de la maintenance","Service d'achat, de l'approvisionnement et de la logistique"],"Division sanitaire":["Service des affaires médicales","Service des soins infirmiers"]},"hospital":true},"espace_sanitaire":{"directServices":["Service d'accueil, de la qualité et de la performance","Service de la pharmacie","Commission médicale"],"divisions":{"Division administrative":["Service du capital humain","Service des affaires financières","Service des achats, de l'approvisionnement et de la logistique","Service de l'ingénierie et de la maintenance"],"Division sanitaire":["Service des affaires médicales","Service des soins infirmiers","Service de la santé publique"]},"hospital":false},"district_sanitaire":{"directServices":["Service d'accueil, de la qualité et de la performance","Service de la pharmacie","Commission médicale"],"divisions":{"Division administrative":["Service du capital humain","Service des affaires financières","Service des achats, de l'approvisionnement et de la logistique","Service de l'ingénierie et de la maintenance"],"Division sanitaire":["Service des affaires médicales","Service des soins infirmiers","Service de la santé publique"]},"hospital":false},"hopital_proximite":{"services":["Service des affaires administratives","Service des soins infirmiers","Service des affaires médicales","Service de la santé publique"],"unites":["Unité d'accueil, de la qualité et de la performance","Unité de la pharmacie"],"hospital":true},"hospital_autre":{"hospital":true},"essp_ems_appui":{"unites":["Unité administrative","Unité des soins et de la santé publique","Unité de la pharmacie"],"hospital":false},"dga_sanitaire":{"directServices":["Service d'aide médicale urgente régional (SAMU)","Service de la santé publique","Bureau d'ordre, de la documentation et des archives"],"divisions":{"Division de la pharmacie régionale":["Service de la gestion des médicaments","Service de la gestion des dispositifs médicaux","Service des réactifs, des consommables et des produits chimiques"]},"hospital":false}}},"supports":{"agadir":{"label":"HR Hassan II","modele":"hospital_autre"},"inezgane":{"label":"HP Inezgane","modele":"hopital_proximite"},"chtouka":{"label":"HP Mokhtar Soussi","modele":"hopital_proximite"},"tiznit":{"label":"HP Hassan 1er","modele":"hopital_proximite"},"taroudant":{"label":"HP Mokhtar Es-Soussi","modele":"hopital_proximite"},"tata":{"label":"HP Tata","modele":"hopital_proximite"}},"hopitauxProximite":{"taroudant":["Oulad Teima"]},"dgaSanitaireLabel":"DGA branche sanitaire (services centraux)"};
+var GST_DATA = {
+  "espaces": {
+    "agadir": {
+      "districts": [
+        "agadir",
+        "inezgane",
+        "chtouka",
+        "tiznit"
+      ],
+      "label": "Espace sanitaire Agadir"
+    },
+    "taroudant": {
+      "districts": [
+        "taroudant",
+        "tata"
+      ],
+      "label": "Espace sanitaire Taroudant"
+    }
+  },
+  "districts": {
+    "agadir": "Agadir",
+    "inezgane": "Inezgane",
+    "chtouka": "Chtouka Aït Baha",
+    "tiznit": "Tiznit",
+    "taroudant": "Taroudant",
+    "tata": "Tata"
+  },
+  "etablissementsN3": [
+    {
+      "value": "hu_specialites_agadir",
+      "label": "CHU Mohammed VI des Spécialités Agadir",
+      "niveau": "N3",
+      "modele": "chu_specialites"
+    },
+    {
+      "value": "hu_mere_enfant_agadir",
+      "label": "CHU Mohammed VI Mère-Enfant Agadir",
+      "niveau": "N3",
+      "modele": "chu_autres"
+    },
+    {
+      "value": "hu_oncologie_agadir",
+      "label": "CHU Mohammed VI Oncologie Agadir",
+      "niveau": "N3",
+      "modele": "chu_autres"
+    },
+    {
+      "value": "hu_psychiatrie_agadir",
+      "label": "CHU Mohammed VI Psychiatrie Agadir",
+      "niveau": "N3",
+      "modele": "chu_autres"
+    }
+  ],
+  "pole": {
+    "directions": [
+      {
+        "value": "direction_strategie_sante_publique",
+        "label": "Direction de la stratégie et de la santé publique"
+      },
+      {
+        "value": "direction_soins_sante_primaires",
+        "label": "Direction des soins de santé primaires, de la prévention et de la promotion de la santé"
+      },
+      {
+        "value": "direction_systemes_information",
+        "label": "Direction des systèmes d'information"
+      }
+    ],
+    "divisions": {
+      "direction_strategie_sante_publique": [
+        "Division de la santé publique",
+        "Division de la stratégie",
+        "Division de la stratégie pharmaceutique"
+      ],
+      "direction_soins_sante_primaires": [
+        "Division de la prévention et de la promotion de la santé publique",
+        "Division de la performance des programmes de santé publique"
+      ],
+      "direction_systemes_information": [
+        "Division des infrastructures, des systèmes, des réseaux et de la sécurité des systèmes informatiques",
+        "Division des logiciels et des systèmes informatiques",
+        "Division de la production de l'information et des statistiques"
+      ]
+    },
+    "divisionsDirectes": [
+      "Division audit, qualité et contrôle de gestion",
+      "Division de la recherche et de l'innovation"
+    ],
+    "servicesDirects": [
+      "Service de la communication",
+      "Service d'appui à l'inspection et au contrôle des établissements"
+    ],
+    "services": {
+      "Division de la santé publique": [
+        "Service de la surveillance épidémiologique et du contrôle sanitaire aux frontières",
+        "Service des programmes de santé publique"
+      ],
+      "Division de la stratégie": [
+        "Service de la planification stratégique et de la coordination des filières",
+        "Service partenariats"
+      ],
+      "Division de la stratégie pharmaceutique": [
+        "Service de la planification pharmaceutique",
+        "Service de la pharmacovigilance"
+      ],
+      "Division de la prévention et de la promotion de la santé publique": [
+        "Service de la prévention et de la promotion de la santé",
+        "Service de la mobilisation communautaire et de l'intersectorialité"
+      ],
+      "Division de la performance des programmes de santé publique": [
+        "Service d'appui à la mise en œuvre des programmes de santé publique",
+        "Service de suivi et d'évaluation"
+      ],
+      "Division des infrastructures, des systèmes, des réseaux et de la sécurité des systèmes informatiques": [
+        "Service des réseaux, de la maintenance et de la sécurité des systèmes informatiques",
+        "Service de l'infrastructure et des systèmes informatiques"
+      ],
+      "Division des logiciels et des systèmes informatiques": [
+        "Service de la conception et du multimédia",
+        "Service de développement informatique"
+      ],
+      "Division de la production de l'information et des statistiques": [
+        "Service des statistiques",
+        "Service de business intelligence (BI)"
+      ],
+      "Division audit, qualité et contrôle de gestion": [
+        "Service audit",
+        "Service qualité et sécurité du patient",
+        "Service contrôle de gestion"
+      ],
+      "Division de la recherche et de l'innovation": [
+        "Service de la recherche et de l'innovation",
+        "Service de la coopération et de la communication scientifique"
+      ]
+    }
+  },
+  "administrative": {
+    "directions": [
+      {
+        "value": "direction_capital_humain",
+        "label": "Direction du capital humain"
+      },
+      {
+        "value": "direction_affaires_financieres",
+        "label": "Direction des affaires financières"
+      },
+      {
+        "value": "direction_achats_approvisionnement_logistique",
+        "label": "Direction des achats, de l'approvisionnement et de la logistique"
+      },
+      {
+        "value": "direction_ingenierie_maintenance_patrimoine",
+        "label": "Direction de l'ingénierie, de la maintenance et du patrimoine"
+      }
+    ],
+    "divisions": {
+      "direction_capital_humain": [
+        "Division de la gestion du personnel",
+        "Division des affaires juridiques et sociales",
+        "Division de la formation"
+      ],
+      "direction_affaires_financieres": [
+        "Division de la comptabilité et du budget",
+        "Division de la facturation, du recouvrement et des recettes",
+        "Division des dépenses"
+      ],
+      "direction_achats_approvisionnement_logistique": [
+        "Division des achats",
+        "Division de l'approvisionnement et de la logistique",
+        "Division de l'approvisionnement et de la logistique pharmaceutique"
+      ],
+      "direction_ingenierie_maintenance_patrimoine": [
+        "Division de l'ingénierie et de la maintenance",
+        "Division du patrimoine"
+      ]
+    },
+    "servicesDirects": [
+      "Service du bureau d'ordre, de la documentation et des archives"
+    ],
+    "services": {
+      "Division de la gestion du personnel": [
+        "Service de la gestion des carrières",
+        "Service de la gestion de la paie"
+      ],
+      "Division des affaires juridiques et sociales": [
+        "Service de la sécurité au travail",
+        "Service des affaires juridiques et du contentieux",
+        "Service des affaires sociales"
+      ],
+      "Division de la formation": [
+        "Service de la formation pratique",
+        "Service de la formation continue"
+      ],
+      "Division de la comptabilité et du budget": [
+        "Service de la comptabilité générale et analytique",
+        "Service de l'élaboration et du suivi budgétaire"
+      ],
+      "Division de la facturation, du recouvrement et des recettes": [
+        "Service de la régie",
+        "Service de la facturation, du recouvrement et des recettes"
+      ],
+      "Division des dépenses": [
+        "Service des dépenses des produits pharmaceutiques",
+        "Service des dépenses fonctionnelles et diverses"
+      ],
+      "Division des achats": [
+        "Service des achats des produits pharmaceutiques",
+        "Service des achats divers"
+      ],
+      "Division de l'approvisionnement et de la logistique": [
+        "Service des approvisionnements et de la logistique diverse",
+        "Service du parc auto"
+      ],
+      "Division de l'approvisionnement et de la logistique pharmaceutique": [
+        "Service de la logistique des produits pharmaceutiques",
+        "Service de l'approvisionnement des produits pharmaceutiques"
+      ],
+      "Division de l'ingénierie et de la maintenance": [
+        "Service des bâtiments",
+        "Service des installations techniques",
+        "Service des équipements"
+      ],
+      "Division du patrimoine": [
+        "Service du patrimoine mobilier",
+        "Service du patrimoine immobilier"
+      ]
+    }
+  },
+  "sanitaire": {
+    "modeles": {
+      "chu_specialites": {
+        "directServices": [
+          "Service d'accueil, de la qualité et de la performance",
+          "Service de la pharmacie"
+        ],
+        "divisions": {
+          "Division administrative": [
+            "Service du capital humain",
+            "Service des affaires financières",
+            "Service de la facturation et du recouvrement",
+            "Service de l'ingénierie et de la maintenance",
+            "Service d'achat, de l'approvisionnement et de la logistique"
+          ],
+          "Division sanitaire": [
+            "Service des affaires médicales",
+            "Service des soins infirmiers"
+          ]
+        },
+        "hospital": true
+      },
+      "chu_autres": {
+        "directServices": [
+          "Service d'accueil, de la qualité et de la performance",
+          "Service de la pharmacie"
+        ],
+        "divisions": {
+          "Division administrative": [
+            "Service du capital humain",
+            "Service des affaires financières",
+            "Service de l'ingénierie et de la maintenance",
+            "Service d'achat, de l'approvisionnement et de la logistique"
+          ],
+          "Division sanitaire": [
+            "Service des affaires médicales",
+            "Service des soins infirmiers"
+          ]
+        },
+        "hospital": true
+      },
+      "espace_sanitaire": {
+        "directServices": [
+          "Service d'accueil, de la qualité et de la performance",
+          "Service de la pharmacie",
+          "Commission médicale"
+        ],
+        "divisions": {
+          "Division administrative": [
+            "Service du capital humain",
+            "Service des affaires financières",
+            "Service des achats, de l'approvisionnement et de la logistique",
+            "Service de l'ingénierie et de la maintenance"
+          ],
+          "Division sanitaire": [
+            "Service des affaires médicales",
+            "Service des soins infirmiers",
+            "Service de la santé publique"
+          ]
+        },
+        "hospital": false
+      },
+      "district_sanitaire": {
+        "directServices": [
+          "Service d'accueil, de la qualité et de la performance",
+          "Service de la pharmacie",
+          "Commission médicale"
+        ],
+        "divisions": {
+          "Division administrative": [
+            "Service du capital humain",
+            "Service des affaires financières",
+            "Service des achats, de l'approvisionnement et de la logistique",
+            "Service de l'ingénierie et de la maintenance"
+          ],
+          "Division sanitaire": [
+            "Service des affaires médicales",
+            "Service des soins infirmiers",
+            "Service de la santé publique"
+          ]
+        },
+        "hospital": false
+      },
+      "hopital_proximite": {
+        "services": [
+          "Service des affaires administratives",
+          "Service des soins infirmiers",
+          "Service des affaires médicales",
+          "Service de la santé publique"
+        ],
+        "unites": [
+          "Unité d'accueil, de la qualité et de la performance",
+          "Unité de la pharmacie"
+        ],
+        "hospital": true
+      },
+      "hospital_autre": {
+        "hospital": true
+      },
+      "essp_ems_appui": {
+        "unites": [
+          "Unité administrative",
+          "Unité des soins et de la santé publique",
+          "Unité de la pharmacie"
+        ],
+        "hospital": false
+      },
+      "dga_sanitaire": {
+        "directServices": [
+          "Service d'aide médicale urgente régional (SAMU)",
+          "Service de la santé publique",
+          "Bureau d'ordre, de la documentation et des archives"
+        ],
+        "divisions": {
+          "Division de la pharmacie régionale": [
+            "Service de la gestion des médicaments",
+            "Service de la gestion des dispositifs médicaux",
+            "Service des réactifs, des consommables et des produits chimiques"
+          ]
+        },
+        "hospital": false
+      }
+    }
+  },
+  "supports": {
+    "agadir": {
+      "label": "HR Hassan II",
+      "modele": "hospital_autre"
+    },
+    "inezgane": {
+      "label": "HP Inezgane",
+      "modele": "hopital_proximite"
+    },
+    "chtouka": {
+      "label": "HP Mokhtar Soussi",
+      "modele": "hopital_proximite"
+    },
+    "tiznit": {
+      "label": "HP Hassan 1er",
+      "modele": "hopital_proximite"
+    },
+    "taroudant": {
+      "label": "HP Mokhtar Es-Soussi",
+      "modele": "hopital_proximite"
+    },
+    "tata": {
+      "label": "HP Tata",
+      "modele": "hopital_proximite"
+    }
+  },
+  "hopitauxProximite": {
+    "taroudant": [
+      "Oulad Teima"
+    ]
+  },
+  "dgaSanitaireLabel": "DGA branche sanitaire (services centraux)"
+};
 
     // WebView Android : forcer le label de chaque option pour l'affichage du champ sélectionné
     function fixSelectLabels(selectId){
