@@ -13287,7 +13287,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               services=GST_DATA.servicesN1;
               services.forEach(function(s){var opt=document.createElement('option');opt.value=s;opt.textContent=s;service.appendChild(opt);});
               service.disabled=false;
-              if(serviceWrap)serviceWrap.style.display='';
+              var proximityServiceWrap=document.getElementById('adhServiceGstWrap');
+              if(proximityServiceWrap)proximityServiceWrap.style.display='';
               fixSelectLabels('adhServiceGst');
               return;
             }
