@@ -13193,6 +13193,19 @@ window.refreshAdhesionLocalStructureChoices=function(preferredId){
     if(essp&&essp.value){
       establishment=essp.value;aliases.push(essp.value);
       if(essp.selectedIndex>=0)aliases.push(essp.options[essp.selectedIndex].textContent||'');
+      // Accepter aussi le nom usuel de l'ESSP saisi dans la fiche de structure.
+      // Les homonymes (ex. Biougra CSU-1 / CDTMR) restent distingués par leur type.
+      var selectedRecords=typeof ESSP_LIST!=='undefined'?ESSP_LIST.filter(function(e){
+        return esspRecordValue(e)===essp.value;
+      }):[];
+      if(selectedRecords.length===1){
+        var selectedRecord=selectedRecords[0];
+        aliases.push(selectedRecord.n+' ('+selectedRecord.t+')');
+        var sameName=ESSP_LIST.filter(function(e){
+          return e.p===selectedRecord.p&&e.n===selectedRecord.n;
+        });
+        if(sameName.length===1)aliases.push(selectedRecord.n);
+      }
     }else{
       establishment=((other&&other.value)||'').trim();aliases.push(establishment);
     }
