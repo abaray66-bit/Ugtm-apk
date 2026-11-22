@@ -13140,7 +13140,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         });
         fixSelectLabels('adhDistrict');
       }
-
+    // Fallback: afficher les branches même en cas d'erreur
+    var rattachement = document.getElementById('adhRattachement');
+    var rattleVal = rattachement ? rattachement.value : '';
+    if (rattleVal === 'pole') document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'dgaAdministrative') document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = 'block'; });
     }
     window.gstCascade = gstCascade;
     attachAdhListeners();
