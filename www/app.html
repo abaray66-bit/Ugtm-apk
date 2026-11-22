@@ -12898,6 +12898,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       resetInput('adhEspaceSanitaire');
       resetInput('adhEstablishment');
       resetInput('adhService');
+      if(rattleVal!=='territorialSanitaire'){
+        ['adhDistrict','adhDivision','adhEtablissement','adhServiceGst','adhUnite','adhEsspSelect'].forEach(resetSel);
+        var territorialOther=document.getElementById('adhEtabOtherWrap');
+        if(territorialOther)territorialOther.style.display='none';
+      }
       ['adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
