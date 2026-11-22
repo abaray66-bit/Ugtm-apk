@@ -20,8 +20,12 @@ import {
   assertFails
 } from '@firebase/rules-unit-testing';
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   setDoc,
   updateDoc,
   writeBatch,
@@ -86,6 +90,10 @@ async function setupStructures() {
         archived:false,updatedAt:serverTimestamp()
       });
     }
+    await setDoc(doc(context.firestore(),'publicLocalStructures','struct-archived'),{
+      structureId:'struct-archived',name:'Structure archivée',etab:'Ancien établissement',
+      province:PROV_AGADIR,archived:true,updatedAt:serverTimestamp()
+    });
     // Initialise le compteur global
     await setDoc(doc(context.firestore(), 'counters', 'memberNumbers'), {
       next: 2,
@@ -436,6 +444,16 @@ test('un adhérent connecté peut lire la projection publique minimale des struc
   await setupStructures();
   const dbUser = env.authenticatedContext('adh-user', userToken('adh-user')).firestore();
   await assertSucceeds(getDoc(doc(dbUser,'publicLocalStructures',STRUCT_A)));
+});
+
+test('la requête des structures actives est autorisée et exclut les structures archivées', async () => {
+  await setupStructures();
+  const dbUser = env.authenticatedContext('adh-user', userToken('adh-user')).firestore();
+  const snap = await assertSucceeds(getDocs(query(
+    collection(dbUser,'publicLocalStructures'),where('archived','==',false)
+  )));
+  if (snap.size !== 2) throw new Error('La projection doit retourner uniquement les deux structures actives.');
+  await assertFails(getDoc(doc(dbUser,'publicLocalStructures','struct-archived')));
 });
 
 test('un utilisateur non connecté ne peut pas lire les structures locales publiques', async () => {
