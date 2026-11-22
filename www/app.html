@@ -13109,15 +13109,25 @@ window.refreshAdhesionLocalStructureChoices=function(preferredId){
   if(!rattachement||rattachement.value!=='dgaSanitaire'){
     wrap.style.display='none';sel.required=false;sel.value='';return '';
   }
-  var establishment='';
+  var establishment='',aliases=[];
   if(et&&et.value==='other'){
     var essp=$('adhEsspSelect'),other=$('adhEtabOther');
-    establishment=(essp&&essp.value)||((other&&other.value)||'').trim();
-  }else establishment=et?String(et.value||''):'';
+    if(essp&&essp.value){
+      establishment=essp.value;aliases.push(essp.value);
+      if(essp.selectedIndex>=0)aliases.push(essp.options[essp.selectedIndex].textContent||'');
+    }else{
+      establishment=((other&&other.value)||'').trim();aliases.push(establishment);
+    }
+  }else if(et){
+    establishment=String(et.value||'');aliases.push(establishment);
+    if(et.selectedIndex>=0)aliases.push(et.options[et.selectedIndex].textContent||'');
+  }
   var prov=province?String(province.value||''):'';
   function norm(v){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();}
+  var acceptedNames=aliases.map(norm).filter(Boolean);
   var list=(window.__ugtmPublicLocalStructures||[]).filter(function(x){
-    return x&&!x.archived&&norm(x.province)===norm(prov)&&norm(x.etab)===norm(establishment)&&String(x.structureId||x.id||'');
+    return x&&!x.archived&&norm(x.province)===norm(prov)
+      &&acceptedNames.indexOf(norm(x.etab))>=0&&String(x.structureId||x.id||'');
   });
   sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
   list.forEach(function(x){

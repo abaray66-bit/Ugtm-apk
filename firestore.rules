@@ -479,7 +479,7 @@ service cloud.firestore {
         && okText(request.resource.data.name,120)
         && okText(request.resource.data.etab,160)
         && okText(request.resource.data.province,40)
-        && request.resource.data.archived == false
+        && request.resource.data.archived is bool
         && request.resource.data.updatedAt == request.time;
       allow update: if isAdmin()
         && request.resource.data.keys().hasOnly([
