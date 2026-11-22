@@ -13066,8 +13066,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
           divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
           if(structure.value.indexOf('hu_')===0){
-            ['Division Sanitaire','Division Administrative'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
+            ['Division Administrative','Division Sanitaire'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
             var directGroup=document.createElement('option');directGroup.value='Services directement rattachés au directeur de l’hôpital';directGroup.textContent=directGroup.value;divisionR.appendChild(directGroup);
+            divisionR.disabled=false;divisionWrapR.style.display='';
+          } else if(structure.value==='direct_pharmacie_regionale'){
+            var pharmacyDivision=document.createElement('option');pharmacyDivision.value='Division de la pharmacie régionale';pharmacyDivision.textContent=pharmacyDivision.value;divisionR.appendChild(pharmacyDivision);
             divisionR.disabled=false;divisionWrapR.style.display='';
           }
           fixSelectLabels('adhSanitaireRegionalDivision');
@@ -13079,6 +13082,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             if(divisionR.value==='Division Sanitaire')services=GST_DATA.servicesN3Sanitaire;
             else if(divisionR.value==='Division Administrative')services=structure.value==='hu_specialites_agadir'?GST_DATA.servicesN3Admin:GST_DATA.servicesN3AdminAutres;
             else if(divisionR.value==='Services directement rattachés au directeur de l’hôpital')services=GST_DATA.servicesN3Direct;
+          } else if(structure.value==='direct_pharmacie_regionale' && divisionR.value==='Division de la pharmacie régionale'){
+            services=GST_DATA.sanitaire.services['Division de la pharmacie régionale']||[];
           }
           services.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;serviceR.appendChild(o);});
           if(services.length){serviceR.disabled=false;serviceWrapR.style.display='';}
