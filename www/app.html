@@ -12350,6 +12350,8 @@ window.UGTM.failed(err);
             if(divisionR&&app.division){divisionR.value=app.division;if(divisionR.onchange)divisionR.onchange();}
             if(serviceR&&app.serviceGst){serviceR.value=app.serviceGst;if(serviceR.onchange)serviceR.onchange();}
             if(uniteR&&app.unite)uniteR.value=app.unite;
+            var serviceHospRegional=document.getElementById('adhServiceHospitalier');
+            if(serviceHospRegional&&app.serviceHospitalier)serviceHospRegional.value=app.serviceHospitalier;
           }else if(app.rattachement==='dgaSanitaire'||app.rattachement==='territorialSanitaire'){
             var prov=document.getElementById('adhProvince');
             var espaceSaved=document.getElementById('adhEspaceSanitaire');
@@ -12369,10 +12371,16 @@ window.UGTM.failed(err);
               fireChange(districtSaved);
             }
             if(divisionSaved&&app.division){
+              var divisionExists=Array.prototype.some.call(divisionSaved.options,function(o){return o.value===app.division;});
+              if(!divisionExists){var legacyDivision=document.createElement('option');legacyDivision.value=app.division;legacyDivision.textContent=app.division;divisionSaved.appendChild(legacyDivision);}
               divisionSaved.value=app.division;
               if(divisionSaved.onchange)divisionSaved.onchange();
             }
             if(etabSaved&&app.establishment){
+              var savedEstablishmentExists=Array.prototype.some.call(etabSaved.options,function(o){return o.value===app.establishment;});
+              if(!savedEstablishmentExists&&(app.establishment.indexOf('direct_')===0||app.establishment.indexOf('hosp_')===0||app.establishment.indexOf('hu_')===0)){
+                var legacyEstablishment=document.createElement('option');legacyEstablishment.value=app.establishment;legacyEstablishment.textContent=app.establishment;etabSaved.appendChild(legacyEstablishment);
+              }
               if(app.establishment.indexOf('essp_')===0){
                 etabSaved.value='other';
               }else if(app.establishment.indexOf('direct_')===0||app.establishment.indexOf('hosp_')===0||app.establishment.indexOf('hu_')===0){
@@ -12390,6 +12398,8 @@ window.UGTM.failed(err);
               if(esspIndex>=0&&esspSaved)esspSaved.value='essp_'+esspIndex;
             }
             if(serviceSaved&&app.serviceGst){
+              var savedServiceExists=Array.prototype.some.call(serviceSaved.options,function(o){return o.value===app.serviceGst;});
+              if(!savedServiceExists){var legacyService=document.createElement('option');legacyService.value=app.serviceGst;legacyService.textContent=app.serviceGst;serviceSaved.appendChild(legacyService);}
               serviceSaved.value=app.serviceGst;
               if(serviceSaved.onchange)serviceSaved.onchange();
             }
