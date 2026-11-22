@@ -13407,7 +13407,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         dob:document.getElementById('adhDob').value,
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
-        province:document.getElementById('adhProvince').value,
+        // La province est dérivée du district réellement sélectionné.
+        province:document.getElementById('adhDistrict').value || '',
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
         espaceSanitaire:document.getElementById('adhEspaceSanitaire').value,
