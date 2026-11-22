@@ -185,6 +185,7 @@ service cloud.firestore {
             && request.resource.data.adminStructure.size() > 0
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo)
         // Sous-admin local : activation adhésion de SA structure
@@ -208,6 +209,7 @@ service cloud.firestore {
             && request.resource.data.adminStructure == assignedLocalStructure()
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo);
 
@@ -217,7 +219,8 @@ service cloud.firestore {
               || (okText(request.resource.data.adminStructure, 40)
                   && request.resource.data.adminStructure.size() > 0
                   && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
-                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false))
+                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov))
         )
         // Administrateur général : activation sans dossier d'adhésion
         // (migration, cas exceptionnels). Exige numéro depuis le compteur.
@@ -320,6 +323,7 @@ service cloud.firestore {
             && request.resource.data.adminStructure == assignedLocalStructure()
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
                  .lastMemberNo == request.resource.data.memberNo)
         // Rafraîchissement des coordonnées d'un adhérent
@@ -562,7 +566,8 @@ service cloud.firestore {
         && request.resource.data.get('approvedBy', '') == ''
         && request.resource.data.get('approvedAt', '') == ''
         && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
-        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false;
+        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
+        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.province == assignedProvince();
 
       allow update: if (
           (isAdmin()

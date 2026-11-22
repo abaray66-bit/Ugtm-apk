@@ -2820,6 +2820,8 @@ var admin = {
         var strucSnap = await tx.get(strucRef);
         if (!strucSnap.exists()) throw new Error('Structure introuvable');
         if (strucSnap.data().archived) throw new Error('Structure archivée.');
+        if (String(strucSnap.data().province || '') !== String(member.prov || member.adminProvince || ''))
+          throw new Error('La structure et le membre doivent appartenir à la même province.');
         var old = member.adminStructure || '';
         if (old && old !== sid) {
           throw new Error('Le membre est déjà rattaché à une autre structure. Révoquez d\'abord.');
@@ -2871,14 +2873,10 @@ var admin = {
         if (!propSnap.exists()) throw new Error('Proposition introuvable');
         var prop = propSnap.data();
         if (prop.status !== 'pending') throw new Error('Proposition déjà traitée.');
-        return c.admin.setSubAdminLocal(prop.uid, prop.structureId).then(function(){
-          return updateDoc(doc(db, 'localAdminProposals', pid), {
-            status: 'approved',
-            approvedBy: session.user && session.user.uid || '',
-            approvedAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
-          });
-        });
+        if (pid !== String(prop.structureId || '') + '_' + String(prop.uid || ''))
+          throw new Error('Identifiant de proposition incohérent.');
+        // setSubAdminLocal met à jour le membre et la proposition dans une seule transaction.
+        return c.admin.setSubAdminLocal(prop.uid, prop.structureId);
       });
     },
 
