@@ -834,7 +834,22 @@ service cloud.firestore {
         && app['function'].size() > 0
         && okText(app.specialty, 120)
         && okText(app.ppr, 30)
+        && okText(app.get('rattachement', ''), 40)
+        && app.get('rattachement', '') in ['', 'pole', 'dgaSanitaire', 'dgaAdministrative']
+        && okText(app.get('espaceSanitaire', ''), 120)
+        && okText(app.get('district', ''), 120)
+        && okText(app.get('division', ''), 120)
+        && okText(app.get('serviceGst', ''), 120)
+        && okText(app.get('unite', ''), 120)
+        && okText(app.get('serviceHospitalier', ''), 160)
+        && okText(app.get('directionPole', ''), 120)
+        && okText(app.get('divisionPole', ''), 120)
+        && okText(app.get('servicePole', ''), 120)
+        && okText(app.get('directionAdmin', ''), 120)
+        && okText(app.get('divisionAdmin', ''), 120)
+        && okText(app.get('serviceAdmin', ''), 120)
         && okText(app.get('niveauRattachement', ''), 40)
+        && (app.get('rattachement', '') != '' || app.get('niveauRattachement', '') == '')
         && app.get('niveauRattachement', '') in ['', 'direction', 'divisionDirecte', 'serviceDirect', 'division']
         && (app.get('rattachement', '') != 'pole' || app.get('niveauRattachement', '') in ['direction', 'divisionDirecte', 'serviceDirect'])
         && (app.get('rattachement', '') != 'dgaAdministrative' || app.get('niveauRattachement', '') in ['direction', 'serviceDirect'])
