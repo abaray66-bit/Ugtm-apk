@@ -11901,7 +11901,13 @@ window.UGTM.failed(err);
             if(adminServiceValue)row1('Service (DGA administrative)',adminServiceValue);
           }else{
             row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'CHU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'CHU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'CHU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'CHU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment||request.establishment));
-            if(app.espaceSanitaire||request.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire||request.espaceSanitaire,'District',app.district||request.district);
+            if(app.espaceSanitaire||request.espaceSanitaire){
+              var espacePdfValue=app.espaceSanitaire||request.espaceSanitaire;
+              var districtPdfValue=app.district||request.district||'';
+              var espacePdfLabels={agadir:'Espace sanitaire Agadir',taroudant:'Espace sanitaire Taroudant'};
+              var districtPdfLabels={agadir:'Agadir',inezgane:'Inezgane',chtouka:'Chtouka Aït Baha',tiznit:'Tiznit',taroudant:'Taroudant',tata:'Tata'};
+              row2('Espace sanitaire',espacePdfLabels[espacePdfValue]||espacePdfValue,'District',districtPdfLabels[districtPdfValue]||districtPdfValue);
+            }
             var sanitaryDivisionValue=app.division||request.division||'';
             var sanitaryServiceValue=app.serviceGst||request.serviceGst||'';
             var sanitaryDivisionLabel=sanitaryDivisionValue==='sanitaire'?'Division sanitaire':(sanitaryDivisionValue==='administrative'?'Division administrative':sanitaryDivisionValue);
