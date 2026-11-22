@@ -11902,7 +11902,12 @@ window.UGTM.failed(err);
           }else{
             row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'CHU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'CHU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'CHU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'CHU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment||request.establishment));
             if(app.espaceSanitaire||request.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire||request.espaceSanitaire,'District',app.district||request.district);
-            if(app.division||request.division)row2('Division',((app.division||request.division)==='sanitaire'?'Division sanitaire':((app.division||request.division)==='administrative'?'Division administrative':(app.division||request.division))),'Service',app.serviceGst||request.serviceGst);
+            var sanitaryDivisionValue=app.division||request.division||'';
+            var sanitaryServiceValue=app.serviceGst||request.serviceGst||'';
+            var sanitaryDivisionLabel=sanitaryDivisionValue==='sanitaire'?'Division sanitaire':(sanitaryDivisionValue==='administrative'?'Division administrative':sanitaryDivisionValue);
+            if(sanitaryDivisionValue&&sanitaryServiceValue)row2('Division',sanitaryDivisionLabel,'Service',sanitaryServiceValue);
+            else if(sanitaryDivisionValue)row1('Division',sanitaryDivisionLabel);
+            else if(sanitaryServiceValue)row1('Service',sanitaryServiceValue);
             if(app.unite||request.unite)row1('Unité',app.unite||request.unite);
             if(app.serviceHospitalier||request.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier||request.serviceHospitalier);
           }
