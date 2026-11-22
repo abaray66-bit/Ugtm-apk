@@ -11875,11 +11875,24 @@ window.UGTM.failed(err);
           row1('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
-          row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
-          if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
-          if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
-          if(app.unite)row1('Unité',app.unite);
-          if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
+          var rattachement=app.rattachement||request.rattachement||'';
+          var rattachementLabels={pole:'Pôle de pilotage et de gouvernance générale',dgaAdministrative:'Branche administrative (DGA administrative)',dgaSanitaire:'Branche sanitaire (DGA sanitaire)'};
+          if(rattachement)row1('Rattachement organisationnel',rattachementLabels[rattachement]||rattachement);
+          if(rattachement==='pole'){
+            row1('Direction (Pôle)',app.directionPole||request.directionPole||'');
+            row1('Division (Pôle)',app.divisionPole||request.divisionPole||'');
+            row1('Service (Pôle)',app.servicePole||request.servicePole||'');
+          }else if(rattachement==='dgaAdministrative'){
+            row1('Direction (DGA administrative)',app.directionAdmin||request.directionAdmin||'');
+            row1('Division (DGA administrative)',app.divisionAdmin||request.divisionAdmin||'');
+            row1('Service (DGA administrative)',app.serviceAdmin||request.serviceAdmin||'');
+          }else{
+            row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment||request.establishment));
+            if(app.espaceSanitaire||request.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire||request.espaceSanitaire,'District',app.district||request.district);
+            if(app.division||request.division)row2('Division',((app.division||request.division)==='sanitaire'?'Division sanitaire':((app.division||request.division)==='administrative'?'Division administrative':(app.division||request.division))),'Service',app.serviceGst||request.serviceGst);
+            if(app.unite||request.unite)row1('Unité',app.unite||request.unite);
+            if(app.serviceHospitalier||request.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier||request.serviceHospitalier);
+          }
           row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(app['function']));
           row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(app.specialty),'PPR',app.ppr);
 
