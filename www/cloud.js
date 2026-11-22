@@ -1283,7 +1283,10 @@ async function submitAdhesion(application,signature){
   if(clean.rattachement==='dgaSanitaire'){
     reqFields.push(clean.establishment);
     if(clean.establishment.indexOf('hu_')===0)reqFields.push(clean.division);
-    if(clean.establishment==='hu_specialites_agadir')reqFields.push(clean.serviceGst);
+    if(clean.establishment==='hu_specialites_agadir'){
+      reqFields.push(clean.serviceGst);
+      if(clean.serviceGst==='Services hospitaliers 1 à n')reqFields.push(clean.serviceHospitalier);
+    }
   }
   if(isPole) reqFields.push(clean.directionPole,clean.divisionPole,clean.servicePole);
   if(isAdmin) reqFields.push(clean.directionAdmin,clean.divisionAdmin,clean.serviceAdmin);
