@@ -978,6 +978,8 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time
         && okText(request.resource.data.get('structureId', ''), 40)
         && adhesionStructureValid(request.resource.data.get('structureId', ''), request.resource.data.province)
+        && (request.resource.data.get('rattachement', '') == 'dgaSanitaire'
+            || request.resource.data.get('structureId', '') == '')
         && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
             || request.resource.data.province in adhesionProvinces())
         && okText(request.resource.data.email, 254)
@@ -1070,6 +1072,8 @@ service cloud.firestore {
           && request.resource.data.province == resource.data.province
           && okText(request.resource.data.get('structureId', ''), 40)
           && adhesionStructureValid(request.resource.data.get('structureId', ''), request.resource.data.province)
+          && (request.resource.data.get('rattachement', '') == 'dgaSanitaire'
+              || request.resource.data.get('structureId', '') == '')
           && request.resource.data.email == resource.data.email
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.updatedAt == request.time
