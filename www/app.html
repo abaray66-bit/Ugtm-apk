@@ -13182,6 +13182,24 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               var provinceForSpace = document.getElementById('adhProvince');
               if (provinceForSpace) provinceForSpace.value = resolveAdhesionProvince('territorial','territorialSanitaire',espVal,'');
             }
+            // Changer de division d'espace invalide tous les choix des niveaux inférieurs.
+            division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            division.disabled = true; division.value = '';
+            etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            etab.disabled = true; etab.value = '';
+            service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            service.disabled = true; service.value = '';
+            unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            unite.disabled = true; unite.value = '';
+            if (serviceHosp) serviceHosp.value = '';
+            var esspSelectReset = document.getElementById('adhEsspSelect');
+            if (esspSelectReset) { esspSelectReset.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; esspSelectReset.value = ''; esspSelectReset.style.display = 'none'; esspSelectReset.required = false; }
+            var esspWrapReset = document.getElementById('adhEsspWrap');
+            if (esspWrapReset) esspWrapReset.style.display = 'none';
+            var hospitalWrapReset = document.getElementById('adhServiceHospitalierWrap');
+            if (hospitalWrapReset) hospitalWrapReset.style.display = 'none';
+            var etabOtherReset = document.getElementById('adhEtabOtherWrap');
+            if (etabOtherReset) etabOtherReset.style.display = 'none';
             var etabWrap = document.getElementById('adhEtablissementWrap');
             var serviceWrap = document.getElementById('adhServiceGstWrap');
             var uniteWrap = document.getElementById('adhUniteWrap');
