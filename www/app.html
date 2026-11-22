@@ -12998,7 +12998,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         }
 
         division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        division.disabled = true;
+        var directSanitaireOpt = document.createElement('option');
+        directSanitaireOpt.value = 'Rattachements directs de la DGA sanitaire (hors district)';
+        directSanitaireOpt.textContent = directSanitaireOpt.value;
+        division.appendChild(directSanitaireOpt);
+        division.disabled = false;
         division.onchange = function(){
           var divVal = division.value;
           etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
@@ -13200,14 +13204,17 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var esspSelect = document.getElementById('adhEsspSelect');
 
           division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          division.disabled = true;
           if (d && GST_DATA.sanitaire && GST_DATA.sanitaire.divisions) {
             GST_DATA.sanitaire.divisions.forEach(function(div){
               var opt = document.createElement('option');
               opt.value = div; opt.textContent = div; division.appendChild(opt);
             });
-            division.disabled = false;
           }
+          var directSanitaireOpt = document.createElement('option');
+          directSanitaireOpt.value = 'Rattachements directs de la DGA sanitaire (hors district)';
+          directSanitaireOpt.textContent = directSanitaireOpt.value;
+          division.appendChild(directSanitaireOpt);
+          division.disabled = false;
           if (etabSelect) { etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etabSelect.disabled = true; etabSelect.value = ''; }
           if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
           if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
