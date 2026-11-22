@@ -12294,10 +12294,33 @@ window.UGTM.failed(err);
               var es=document.getElementById('adhEspaceSanitaire'), ds=document.getElementById('adhDistrict');
               var et=document.getElementById('adhEtablissement'), vs=document.getElementById('adhDivision');
               var ss=document.getElementById('adhServiceGst'), us=document.getElementById('adhUnite');
+              var essp=document.getElementById('adhEsspSelect'), other=document.getElementById('adhEtabOther');
               var espValue=app.espaceSanitaire||req.espaceSanitaire||'';
+              var savedEstablishment=app.establishment||req.establishment||'';
               if(es){es.value=espValue;if(es.onchange)es.onchange();}
-              if(ds){ds.value=app.district||req.district||'';ds.dispatchEvent(new Event('change',{bubbles:true}));}
-              if(et){et.value=app.establishment||req.establishment||'';if(et.onchange)et.onchange();}
+              if(ds){
+                ds.value=app.district||req.district||'';
+                ds.dispatchEvent(new Event('change',{bubbles:true}));
+              }
+              if(et){
+                var knownEtab=Array.prototype.some.call(et.options,function(o){return o.value===savedEstablishment;});
+                et.value=knownEtab?savedEstablishment:'other';
+                if(et.onchange)et.onchange();
+              }
+              if(essp&&savedEstablishment&&et&&et.value==='other'){
+                var savedEsspOption=Array.prototype.some.call(essp.options,function(o){return o.value===savedEstablishment;});
+                if(!savedEsspOption){
+                  var savedOpt=document.createElement('option');
+                  savedOpt.value=savedEstablishment;
+                  savedOpt.textContent=savedEstablishment;
+                  essp.appendChild(savedOpt);
+                }
+                essp.value=savedEstablishment;
+              }
+              if(other&&et&&et.value==='other'){
+                var isEssp=essp&&essp.value===savedEstablishment;
+                other.value=isEssp?'':savedEstablishment;
+              }
               if(vs){vs.value=app.division||req.division||'';if(vs.onchange)vs.onchange();}
               if(ss){ss.value=app.serviceGst||req.serviceGst||app.service||'';if(ss.onchange)ss.onchange();}
               if(us)us.value=app.unite||req.unite||'';
