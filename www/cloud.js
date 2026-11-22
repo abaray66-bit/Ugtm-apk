@@ -1268,6 +1268,7 @@ async function submitAdhesion(application,signature){
     service:String(application.service||'').trim().slice(0,120),function:String(application.function||'').trim().slice(0,120),
     specialty:String(application.specialty||'').trim().slice(0,120),ppr:String(application.ppr||'').trim().slice(0,30),
     directionPole:String(application.directionPole||'').trim().slice(0,120),divisionPole:String(application.divisionPole||'').trim().slice(0,120),servicePole:String(application.servicePole||'').trim().slice(0,120),
+    directionAdmin:String(application.directionAdmin||'').trim().slice(0,120),
     divisionAdmin:String(application.divisionAdmin||'').trim().slice(0,120),serviceAdmin:String(application.serviceAdmin||'').trim().slice(0,120),
     type:application.type==='renewal'?'renewal':'first',reason:String(application.reason||'').trim().slice(0,200),commitment:application.commitment===true,date:String(application.date||'').slice(0,10)
   };
@@ -1277,7 +1278,7 @@ async function submitAdhesion(application,signature){
   var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.rattachement,clean.function,clean.commitment,application.signature];
   if(isSanitaire) reqFields.push(clean.province);
   if(isPole) reqFields.push(clean.directionPole,clean.divisionPole,clean.servicePole);
-  if(isAdmin) reqFields.push(clean.divisionAdmin,clean.serviceAdmin);
+  if(isAdmin) reqFields.push(clean.directionAdmin,clean.divisionAdmin,clean.serviceAdmin);
   if(reqFields.some(function(v){return!v;}))
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
   if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
@@ -1304,9 +1305,9 @@ async function submitAdhesion(application,signature){
          la signature du responsable de la soumission précédente est
          effacée. Le dossier repart avec UNE seule signature — celle de
          l'adhérent — et la case du responsable à valider. */
-       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,updatedAt:serverTimestamp()});
+       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,updatedAt:serverTimestamp()});
      }else{
-       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
      }
     return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){

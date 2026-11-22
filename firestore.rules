@@ -750,7 +750,7 @@ service cloud.firestore {
               'structureMere', 'rattachement', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
-              'divisionAdmin', 'serviceAdmin'];
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -858,7 +858,7 @@ service cloud.firestore {
     'division', 'serviceGst',
     'unite', 'serviceHospitalier',
     'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-    'divisionAdmin', 'serviceAdmin'
+    'directionAdmin', 'divisionAdmin', 'serviceAdmin'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -965,7 +965,7 @@ service cloud.firestore {
                       'division', 'serviceGst',
                       'unite', 'serviceHospitalier',
                       'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-                      'divisionAdmin', 'serviceAdmin'])
+                      'directionAdmin', 'divisionAdmin', 'serviceAdmin'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''
