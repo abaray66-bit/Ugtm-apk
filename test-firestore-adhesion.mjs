@@ -135,6 +135,16 @@ before(async () => {
       updatedAt: serverTimestamp(),
       archived: false
     });
+    await setDoc(doc(db, 'localStructures', 'struct-tiznit-1'), {
+      name: 'Structure Test Tiznit',
+      etab: 'Hôpital Test',
+      province: 'tiznit',
+      structureId: 'struct-tiznit-1',
+      createdBy: 'admin-uid',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      archived: false
+    });
     // Profils des sous-admins.
     await setDoc(doc(db, 'members', SUB_AGADIR), {
       status: 'active',
@@ -166,6 +176,13 @@ test('un adhérent peut créer sa demande (dossier signé seul)', async () => {
   // Exactement ce qu'envoie submitAdhesion() : le dossier et la
   // signature de l'adhérent, sans aucun PDF.
   await assertSucceeds(setDoc(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir')));
+});
+
+test('un adhérent ne peut pas rattacher une demande à une structure d’une autre province', async () => {
+  const db = env.authenticatedContext(ALICE, USER_TOKEN(ALICE)).firestore();
+  await assertFails(setDoc(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir', {
+    structureId: 'struct-tiznit-1'
+  })));
 });
 
 test('une demande Pôle accepte une division directement rattachée au DG', async () => {

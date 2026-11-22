@@ -804,6 +804,24 @@ service cloud.firestore {
              p;
     }
 
+    function adhesionSameProvince(a, b) {
+      return adhesionProvinceLabel(a) == adhesionProvinceLabel(b);
+    }
+
+    // Un structureId non vide doit désigner une structure active de la
+    // même province. Le vide est admis : le dossier reste alors provincial.
+    function adhesionStructureValid(structureId, province) {
+      return structureId == ''
+        || (structureId is string
+          && structureId.size() > 0
+          && exists(/databases/$(database)/documents/localStructures/$(structureId))
+          && get(/databases/$(database)/documents/localStructures/$(structureId)).data.archived == false
+          && adhesionSameProvince(
+            get(/databases/$(database)/documents/localStructures/$(structureId)).data.province,
+            province
+          ));
+    }
+
     // Vrai quand le sous-admin en cours est celui de la province portée
     // par le dossier (la province peut être un code ou un libellé).
     function adhesionIsSubAdminOf(province) {
@@ -816,6 +834,9 @@ service cloud.firestore {
     // portée par le dossier d'adhésion (champ structureId).
     function adhesionIsSubAdminLocalOf(structureId) {
       return isSubAdminLocal()
+        && structureId is string
+        && structureId != ''
+        && assignedLocalStructure() != ''
         && structureId == assignedLocalStructure();
     }
 
@@ -955,6 +976,8 @@ service cloud.firestore {
         && request.resource.data.adminNote == ''
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
+        && okText(request.resource.data.get('structureId', ''), 40)
+        && adhesionStructureValid(request.resource.data.get('structureId', ''), request.resource.data.province)
         && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
             || request.resource.data.province in adhesionProvinces())
         && okText(request.resource.data.email, 254)
@@ -1045,6 +1068,8 @@ service cloud.firestore {
         && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
             || request.resource.data.province in adhesionProvinces())
           && request.resource.data.province == resource.data.province
+          && okText(request.resource.data.get('structureId', ''), 40)
+          && adhesionStructureValid(request.resource.data.get('structureId', ''), request.resource.data.province)
           && request.resource.data.email == resource.data.email
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.updatedAt == request.time
@@ -1115,6 +1140,10 @@ service cloud.firestore {
               get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
               || isAdmin()
               || adhesionIsSubAdminOf(request.resource.data.province)
+            )
+            && adhesionSameProvince(
+              get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.province,
+              request.resource.data.province
             ))
         )
         && okText(request.resource.data.fileName, 120)
