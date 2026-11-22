@@ -385,7 +385,7 @@ function subscribeLocalStructures(){
         batch.set(doc(db,'publicLocalStructures',d.id),{
           structureId:d.id,name:String(x.name||''),etab:String(x.etab||''),
           province:String(x.province||''),archived:!!x.archived,
-          updatedAt:x.updatedAt||serverTimestamp()
+          updatedAt:serverTimestamp()
         });
       });
       batch.commit().catch(function(err){console.warn('publicLocalStructures sync:',err);});
@@ -2666,7 +2666,7 @@ var admin = {
           batch.set(doc(db,'publicLocalStructures',d.id),{
             structureId:d.id,name:String(x.name||''),etab:String(x.etab||''),
             province:String(x.province||''),archived:!!x.archived,
-            updatedAt:x.updatedAt||serverTimestamp()
+            updatedAt:serverTimestamp()
           });
         });
         return batch.commit().then(function(){
