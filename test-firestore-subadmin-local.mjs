@@ -77,6 +77,15 @@ async function setupStructures() {
       updatedAt: serverTimestamp(),
       archived: false
     });
+    for (const item of [
+      {id:STRUCT_A,name:'Structure A',etab:'Etab A',province:PROV_AGADIR},
+      {id:STRUCT_B,name:'Structure B',etab:'Etab B',province:PROV_TIZNIT}
+    ]) {
+      await setDoc(doc(context.firestore(),'publicLocalStructures',item.id),{
+        structureId:item.id,name:item.name,etab:item.etab,province:item.province,
+        archived:false,updatedAt:serverTimestamp()
+      });
+    }
     // Initialise le compteur global
     await setDoc(doc(context.firestore(), 'counters', 'memberNumbers'), {
       next: 2,
@@ -420,4 +429,26 @@ test('compteur : deux activations séquentielles produisent des numéros distinc
   if (s1.data().memberNo !== 'SM-0003' || s2.data().memberNo !== 'SM-0004') {
     throw new Error('Numéros inattendus: ' + s1.data().memberNo + ' / ' + s2.data().memberNo);
   }
+});
+
+
+test('un adhérent connecté peut lire la projection publique minimale des structures locales', async () => {
+  await setupStructures();
+  const dbUser = env.authenticatedContext('adh-user', userToken('adh-user')).firestore();
+  await assertSucceeds(getDoc(doc(dbUser,'publicLocalStructures',STRUCT_A)));
+});
+
+test('un utilisateur non connecté ne peut pas lire les structures locales publiques', async () => {
+  await setupStructures();
+  const dbAnon = env.unauthenticatedContext().firestore();
+  await assertFails(getDoc(doc(dbAnon,'publicLocalStructures',STRUCT_A)));
+});
+
+test('un adhérent ne peut pas modifier la projection publique des structures locales', async () => {
+  await setupStructures();
+  const dbUser = env.authenticatedContext('adh-user', userToken('adh-user')).firestore();
+  await assertFails(setDoc(doc(dbUser,'publicLocalStructures','fake'),{
+    structureId:'fake',name:'Fake',etab:'Etab',province:PROV_AGADIR,
+    archived:false,updatedAt:serverTimestamp()
+  }));
 });

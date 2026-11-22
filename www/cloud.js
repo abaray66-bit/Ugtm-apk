@@ -1241,6 +1241,14 @@ async function saveProfile(p){
 /* =========================================================
    DEMANDES D'ADHÉSION NUMÉRIQUES — une demande par UID
    ========================================================= */
+async function getPublicLocalStructures(){
+  if(!auth||!auth.currentUser)return [];
+  var snap=await getDocs(query(collection(db,'publicLocalStructures'),where('archived','==',false)));
+  return snap.docs.map(function(d){
+    var x=d.data()||{};
+    return {id:d.id,structureId:d.id,name:String(x.name||''),etab:String(x.etab||''),province:String(x.province||''),archived:!!x.archived};
+  });
+}
 async function getMyAdhesionRequest(){
    var u=auth.currentUser;
    if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
@@ -2635,20 +2643,26 @@ var admin = {
   getLocalStructures:
     function(){
       return getDocs(collection(db, 'localStructures')).then(function(snap){
-        return snap.docs.map(function(d){
-          var x = d.data();
-          return {
-            id: d.id,
-            structureId: d.id,
-            name: x.name || '',
-            etab: x.etab || '',
-            province: x.province || '',
-            createdBy: x.createdBy || '',
-            createdAt: ms(x.createdAt),
-            updatedAt: ms(x.updatedAt),
-            archived: !!x.archived,
-            archivedAt: ms(x.archivedAt)
-          };
+        var batch=writeBatch(db);
+        snap.docs.forEach(function(d){
+          var x=d.data()||{};
+          batch.set(doc(db,'publicLocalStructures',d.id),{
+            structureId:d.id,name:String(x.name||''),etab:String(x.etab||''),
+            province:String(x.province||''),archived:!!x.archived,
+            updatedAt:x.updatedAt||serverTimestamp()
+          });
+        });
+        return batch.commit().then(function(){
+          return snap.docs.map(function(d){
+            var x = d.data();
+            return {
+              id: d.id, structureId: d.id, name: x.name || '',
+              etab: x.etab || '', province: x.province || '',
+              createdBy: x.createdBy || '', createdAt: ms(x.createdAt),
+              updatedAt: ms(x.updatedAt), archived: !!x.archived,
+              archivedAt: ms(x.archivedAt)
+            };
+          });
         });
       });
     },
@@ -2661,16 +2675,20 @@ var admin = {
       if (structureId.length > 40) return Promise.reject(new Error('structureId trop long (40 max).'));
       var name = String(data && data.name || '').trim();
       if (!name) return Promise.reject(new Error('Nom de structure requis.'));
-      return setDoc(doc(db, 'localStructures', structureId), {
-        name: name,
-        etab: String(data && data.etab || '').trim().slice(0,160),
-        province: String(data && data.province || '').trim().slice(0,40),
-        structureId: structureId,
-        createdBy: session.user && session.user.uid || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        archived: false
-      }).then(function(){
+      var etab=String(data && data.etab || '').trim().slice(0,160);
+      var province=String(data && data.province || '').trim().slice(0,40);
+      var batch=writeBatch(db);
+      batch.set(doc(db,'localStructures',structureId),{
+        name:name,etab:etab,province:province,structureId:structureId,
+        createdBy:session.user&&session.user.uid||'',
+        createdAt:serverTimestamp(),updatedAt:serverTimestamp(),
+        archived:false
+      });
+      batch.set(doc(db,'publicLocalStructures',structureId),{
+        structureId:structureId,name:name,etab:etab,province:province,
+        archived:false,updatedAt:serverTimestamp()
+      });
+      return batch.commit().then(function(){
         /* Re-sync immédiat de la liste locale pour que la structure
            créée apparaisse sans rechargement de la page. */
         return window.CLOUD.admin.getLocalStructures().then(function(list){
@@ -2685,11 +2703,14 @@ var admin = {
       if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
       var sid = String(structureId || '');
       if (!sid) return Promise.reject(new Error('structureId requis.'));
-      return updateDoc(doc(db, 'localStructures', sid), {
-        archived: true,
-        archivedAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+      var batch=writeBatch(db);
+      batch.update(doc(db,'localStructures',sid),{
+        archived:true,archivedAt:serverTimestamp(),updatedAt:serverTimestamp()
       });
+      batch.set(doc(db,'publicLocalStructures',sid),{
+        archived:true,updatedAt:serverTimestamp()
+      },{merge:true});
+      return batch.commit();
     },
 
   deleteLocalStructure:
@@ -2697,7 +2718,10 @@ var admin = {
       if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
       var sid = String(structureId || '');
       if (!sid) return Promise.reject(new Error('structureId requis.'));
-      return deleteDoc(doc(db, 'localStructures', sid));
+      var batch=writeBatch(db);
+      batch.delete(doc(db,'localStructures',sid));
+      batch.delete(doc(db,'publicLocalStructures',sid));
+      return batch.commit();
     },
 
   /* ----------------------------------------------------
@@ -3411,6 +3435,7 @@ async function cloudMarkNotificationRead(id){
     deleteAccount: deleteAccount,
 
     getMyAdhesionRequest: getMyAdhesionRequest,
+    getPublicLocalStructures: getPublicLocalStructures,
     submitAdhesion: submitAdhesion,
 
     // Signature électronique du responsable : valide l'adhésion.

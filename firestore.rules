@@ -466,6 +466,33 @@ service cloud.firestore {
     // La clé de sécurité est structureId (identifiant du document),
     // jamais le texte libre etab/province.
     // ==========================================================
+    // Projection minimale des structures locales : lisible par les adhérents
+    // connectés pour rattacher une demande à un structureId stable.
+    // Aucune donnée de créateur ou de gestion interne n'est exposée ici.
+    match /publicLocalStructures/{structureId} {
+      allow read: if signedIn() && resource.data.archived == false;
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'structureId','name','etab','province','archived','updatedAt'
+        ])
+        && request.resource.data.structureId == structureId
+        && okText(request.resource.data.name,120)
+        && okText(request.resource.data.etab,160)
+        && okText(request.resource.data.province,40)
+        && request.resource.data.archived == false
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+          'structureId','name','etab','province','archived','updatedAt'
+        ])
+        && request.resource.data.structureId == structureId
+        && okText(request.resource.data.name,120)
+        && okText(request.resource.data.etab,160)
+        && okText(request.resource.data.province,40)
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isAdmin();
+    }
+
     match /localStructures/{structureId} {
       allow read: if isAdmin()
         || (isSubAdmin() && resource.data.province == assignedProvince())
