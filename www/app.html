@@ -13235,6 +13235,15 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             if (etabWrap) etabWrap.style.display = 'none';
             if (serviceWrap) serviceWrap.style.display = 'none';
             if (uniteWrap) uniteWrap.style.display = 'none';
+            if(divisionEspace.value && divisionEspace.value!=='Division Sanitaire'){
+              var spaceService=document.getElementById('adhServiceGst');
+              var spaceServiceWrap=document.getElementById('adhServiceGstWrap');
+              if(spaceService){spaceService.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';spaceService.disabled=true;}
+              if(divisionEspace.value==='Division Administrative') GST_DATA.servicesN2Admin.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;spaceService.appendChild(opt);});
+              else if(divisionEspace.value==='Service de la pharmacie'||divisionEspace.value==='Service de l’accueil, de la qualité et de la performance'){var directOpt=document.createElement('option');directOpt.value=divisionEspace.value;directOpt.textContent=divisionEspace.value;spaceService.appendChild(directOpt);}
+              if(spaceService&&spaceService.options.length>1){spaceService.disabled=false;if(spaceServiceWrap)spaceServiceWrap.style.display='';}
+              if(divisionEspace.value==='Commission médicale' && spaceServiceWrap)spaceServiceWrap.style.display='none';
+            }
             fixSelectLabels('adhDistrict');
           };
         }
