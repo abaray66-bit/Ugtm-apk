@@ -13401,20 +13401,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             espace.value = defaultEspace;
             espace.disabled = false;
           }
-          // Reconstruire les districts de l'espace
+          // Le changement de province choisit l'espace ; l'utilisateur choisit ensuite sa division.
           var espVal = espace ? espace.value : '';
+          var divisionEspace = document.getElementById('adhDivisionEspace');
+          if (divisionEspace) { divisionEspace.value = ''; divisionEspace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; divisionEspace.disabled = true; }
           district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           district.disabled = true;
           district.value = '';
-          if (espVal && GST_DATA.espaces[espVal]) {
-            var administration=GST_DATA.espaces.administrations[espVal];
-            if(administration){var adminOpt=document.createElement('option');adminOpt.value=administration.value;adminOpt.textContent=administration.label;district.appendChild(adminOpt);}
-            GST_DATA.espaces[espVal].districts.forEach(function(d) {
-              var opt = document.createElement('option');
-              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
-            });
-            district.disabled = false;
-          }
+          if (espace && espace.onchange) espace.onchange();
           // Réinitialiser niveaux enfants (pas les parents province/espace)
           if (etab) { etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etab.disabled = true; etab.value = ''; }
           if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
