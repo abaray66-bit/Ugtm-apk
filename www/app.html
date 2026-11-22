@@ -12308,18 +12308,19 @@ window.UGTM.failed(err);
                 if(et.onchange)et.onchange();
               }
               if(essp&&savedEstablishment&&et&&et.value==='other'){
+                var savedEsspRecord=typeof ESSP_LIST!=='undefined'&&ESSP_LIST.some(function(e){
+                  return e.n===savedEstablishment&&e.p===(app.province||req.province||'');
+                });
                 var savedEsspOption=Array.prototype.some.call(essp.options,function(o){return o.value===savedEstablishment;});
-                if(!savedEsspOption){
+                if(savedEsspRecord&&!savedEsspOption){
                   var savedOpt=document.createElement('option');
                   savedOpt.value=savedEstablishment;
                   savedOpt.textContent=savedEstablishment;
                   essp.appendChild(savedOpt);
+                  savedEsspOption=true;
                 }
-                essp.value=savedEstablishment;
-              }
-              if(other&&et&&et.value==='other'){
-                var isEssp=essp&&essp.value===savedEstablishment;
-                other.value=isEssp?'':savedEstablishment;
+                if(savedEsspRecord&&savedEsspOption)essp.value=savedEstablishment;
+                else if(other)other.value=savedEstablishment;
               }
               if(vs){vs.value=app.division||req.division||'';if(vs.onchange)vs.onchange();}
               if(ss){ss.value=app.serviceGst||req.serviceGst||app.service||'';if(ss.onchange)ss.onchange();}
