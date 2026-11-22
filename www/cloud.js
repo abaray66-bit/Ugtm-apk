@@ -663,6 +663,12 @@ function onUser(user){
 
   hooks.setSession(session);
 
+  // Les structures locales ne sont chargées qu'après authentification :
+  // le formulaire peut avoir été initialisé avant la résolution du module cloud.
+  if (typeof window.loadAdhesionLocalStructures === 'function') {
+    window.loadAdhesionLocalStructures();
+  }
+
   // FCM ne demande jamais la permission automatiquement après connexion :
   // Chrome Android exige une action explicite de l'utilisateur.
   try {
