@@ -12529,9 +12529,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       sanitaire: {
         divisions: [
           'Division Sanitaire',
-          'Division Administrative',
-          'Rattachements directs de la DGA sanitaire (hors district)',
-          'Services directement rattachés à la direction du CHU Spécialités'
+          'Division Administrative'
         ],
         rattachementsDirects: [
           { value: 'direct_pharmacie_regionale', label: 'Division de la pharmacie régionale', kind: 'division' },
@@ -13214,6 +13212,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           directSanitaireOpt.value = 'Rattachements directs de la DGA sanitaire (hors district)';
           directSanitaireOpt.textContent = directSanitaireOpt.value;
           division.appendChild(directSanitaireOpt);
+          if (d === 'agadir') {
+            var directChuOpt = document.createElement('option');
+            directChuOpt.value = 'Services directement rattachés à la direction du CHU Spécialités';
+            directChuOpt.textContent = directChuOpt.value;
+            division.appendChild(directChuOpt);
+          }
           division.disabled = false;
           if (etabSelect) { etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etabSelect.disabled = true; etabSelect.value = ''; }
           if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
