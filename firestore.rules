@@ -858,6 +858,7 @@ service cloud.firestore {
         && okText(app.establishment, 160)
         && okText(app.get('structureName', ''), 120)
         && okText(app.get('hospitalPole', ''), 120)
+        && app.get('hospitalPole', '') in ['', 'Pôle des affaires médicales (PAM)', 'Pôle des soins infirmiers (PSI)', 'Pôle des affaires administratives (PAA)']
         && ((app.get('rattachement', '') in ['pole', 'dgaAdministrative'] && app.establishment == '')
           || app.establishment.size() > 0)
         && okText(app['service'], 120)
