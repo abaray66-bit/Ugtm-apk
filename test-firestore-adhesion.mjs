@@ -155,6 +155,16 @@ before(async () => {
       updatedAt: serverTimestamp(),
       archived: false
     });
+    await setDoc(doc(db, 'localStructures', 'struct-agadir-2'), {
+      name: 'Structure Test Agadir 2',
+      etab: 'Autre établissement test',
+      province: 'agadir',
+      structureId: 'struct-agadir-2',
+      createdBy: 'admin-uid',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      archived: false
+    });
     // Profils des sous-admins.
     await setDoc(doc(db, 'members', SUB_AGADIR), {
       status: 'active',
@@ -391,7 +401,7 @@ test('validation : un responsable ne peut pas réaffecter le structureId du doss
     adminSignature: 'signature-provinciale',
     signedBy: SUB_AGADIR,
     signedAt: serverTimestamp(),
-    structureId: 'struct-tiznit-1',
+    structureId: 'struct-agadir-2',
     updatedAt: serverTimestamp()
   }));
 });
