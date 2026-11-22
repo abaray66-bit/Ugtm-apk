@@ -13188,6 +13188,28 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     attachAdhListeners();
     gstCascade();
 
+    // Polling de secours pour Android WebView : les événements change ne se
+    // déclenchent pas toujours sur les <select> natifs. On vérifie toutes les
+    // 300 ms si une valeur a changé et on déclenche le handler correspondant.
+    var _adhLastValues = {};
+    setInterval(function(){
+      var selects = document.querySelectorAll('#adhesionForm select');
+      Array.prototype.forEach.call(selects, function(sel){
+        if (sel.value !== _adhLastValues[sel.id]) {
+          var oldVal = _adhLastValues[sel.id];
+          _adhLastValues[sel.id] = sel.value;
+          // Ne pas déclencher au premier passage (initialisation)
+          if (oldVal !== undefined) {
+            if (sel.id === 'adhRattachement' && window.gstCascade) {
+              window.gstCascade();
+            } else if (sel.onchange) {
+              sel.onchange();
+            }
+          }
+        }
+      });
+    }, 300);
+
     /* Verrou renouvellement : un adhérent déjà accepté n'accède au
        formulaire que pour un renouvellement avec motif obligatoire
        (window.ADH_RENEWAL_ONLY posé par showMyAdhesionStatus). */
