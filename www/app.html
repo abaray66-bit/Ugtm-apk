@@ -12549,6 +12549,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       servicesN3AdminAutres: ['Service du capital humain', 'Service des affaires financières (admissions, facturation et recouvrement intégrés)', 'Service de l’ingénierie et de la maintenance', 'Service d’achat, de l’approvisionnement et de la logistique'],
       servicesN2Sanitaire: ['Service des affaires médicales', 'Service des soins infirmiers', 'Service de la santé publique'],
       servicesN2Direct: ['Service de l’accueil, de la qualité et de la performance', 'Service de la pharmacie', 'Commission médicale'],
+      servicesDistrictSanitaire: ['Service des affaires médicales', 'Service des soins infirmiers', 'Service de la santé publique'],
+      servicesDistrictAdministrative: ['Service du capital humain', 'Service des affaires financières', 'Service des achats, de l’approvisionnement et de la logistique', 'Service de l’ingénierie et de la maintenance'],
       servicesN2Admin: ['Service du capital humain', 'Service des affaires financières', 'Service des achats, de l’approvisionnement et de la logistique', 'Service de l’ingénierie et de la maintenance'],
       servicesN1: ['Service des affaires administratives', 'Service des soins infirmiers', 'Service des affaires médicales', 'Service de la santé publique'],
       unitesN1: ['Unité de l’accueil, de la qualité et de la performance', 'Unité de la pharmacie'],
@@ -12660,6 +12662,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         divisions: [
           'Division Sanitaire',
           'Division Administrative'
+        ],
+        composantesDirection: [
+          { value: 'Division Sanitaire', kind: 'division' },
+          { value: 'Division Administrative', kind: 'division' },
+          { value: 'Service de la pharmacie', kind: 'service' },
+          { value: 'Commission médicale', kind: 'commission' },
+          { value: 'Service de l’accueil, de la qualité et de la performance', kind: 'service' }
         ],
         rattachementsDirects: [
           { value: 'direct_pharmacie_regionale', label: 'Division de la pharmacie régionale', kind: 'division' },
@@ -13138,8 +13147,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             divisionEspace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
             divisionEspace.disabled = true;
             if (espVal && GST_DATA.espaces[espVal]) {
-              GST_DATA.sanitaire.divisions.forEach(function(name) {
-                var opt = document.createElement('option'); opt.value = name; opt.textContent = name; divisionEspace.appendChild(opt);
+              GST_DATA.sanitaire.composantesDirection.forEach(function(item) {
+                var opt = document.createElement('option'); opt.value = item.value; opt.textContent = item.value; divisionEspace.appendChild(opt);
               });
               divisionEspace.disabled = false;
             }
@@ -13186,6 +13195,17 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               });
               district.disabled = false;
               if (districtWrap) districtWrap.style.display = '';
+            } else if (divisionEspace.value && divisionEspace.value !== 'Division Sanitaire') {
+              var directSpaceService=document.getElementById('adhServiceGst');
+              var directSpaceWrap=document.getElementById('adhServiceGstWrap');
+              var directSpaceUnite=document.getElementById('adhUnite');
+              var directSpaceUniteWrap=document.getElementById('adhUniteWrap');
+              if(directSpaceService){directSpaceService.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';directSpaceService.disabled=true;}
+              if(directSpaceUnite){directSpaceUnite.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';directSpaceUnite.disabled=true;}
+              if(directSpaceWrap)directSpaceWrap.style.display='none';if(directSpaceUniteWrap)directSpaceUniteWrap.style.display='none';
+              if(divisionEspace.value==='Division Administrative') GST_DATA.servicesN2Admin.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;directSpaceService.appendChild(opt);});
+              else if(divisionEspace.value==='Service de la pharmacie'||divisionEspace.value==='Service de l’accueil, de la qualité et de la performance'){var directOpt=document.createElement('option');directOpt.value=divisionEspace.value;directOpt.textContent=divisionEspace.value;directSpaceService.appendChild(directOpt);}
+              if(directSpaceService&&directSpaceService.options.length>1){directSpaceService.disabled=false;if(directSpaceWrap)directSpaceWrap.style.display='';}
             } else if (divisionEspace.value === 'Division Administrative') {
               if (districtWrap) districtWrap.style.display = 'none';
               var provinceForSpace = document.getElementById('adhProvince');
@@ -13304,6 +13324,21 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if (!divVal) return;
 
           if (!district.value) return;
+
+          var directComponent = GST_DATA.sanitaire.composantesDirection.filter(function(x){return x.value===divVal;})[0];
+          if (directComponent) {
+            var directServiceList=[];
+            if(divVal==='Division Administrative') directServiceList=GST_DATA.servicesDistrictAdministrative;
+            else if(divVal==='Division Sanitaire') directServiceList=GST_DATA.servicesDistrictSanitaire;
+            else if(directComponent.kind==='service') directServiceList=[divVal];
+            if(divVal==='Commission médicale'){if(serviceWrap)serviceWrap.style.display='none';if(etabWrap)etabWrap.style.display='none';etabSelect.disabled=true;return;}
+            directServiceList.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;service.appendChild(opt);});
+            service.disabled=directServiceList.length===0;
+            if(serviceWrap)serviceWrap.style.display=directServiceList.length?'':'none';
+            if(etabWrap)etabWrap.style.display='none';etabSelect.disabled=true;
+            fixSelectLabels('adhServiceGst');return;
+          }
+          if (divVal !== 'Établissements relevant du District') return;
 
           if (typeof HOSP_LIST !== 'undefined') {
             HOSP_LIST.filter(function(h){
@@ -13530,10 +13565,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if(uniteWrap)uniteWrap.style.display='';
           if (provinceField) provinceField.value = d || '';
           division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          if (d && GST_DATA.sanitaire && GST_DATA.sanitaire.divisions) {
-            GST_DATA.sanitaire.divisions.forEach(function(div){
-              var opt = document.createElement('option');
-              opt.value = div; opt.textContent = div; division.appendChild(opt);
+          if (d && GST_DATA.sanitaire && GST_DATA.sanitaire.composantesDirection) {
+            GST_DATA.sanitaire.composantesDirection.concat([{value:'Établissements relevant du District',kind:'structures'}]).forEach(function(item){
+              var opt = document.createElement('option'); opt.value = item.value; opt.textContent = item.value; division.appendChild(opt);
             });
           }
           division.disabled = !d;
