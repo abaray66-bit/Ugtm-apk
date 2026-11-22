@@ -776,7 +776,8 @@ service cloud.firestore {
               'structureMere', 'rattachement', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
-              'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement'];
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement',
+              'structureName'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -854,6 +855,7 @@ service cloud.firestore {
         && okText(app.address, 250)
         && app.address.size() > 0
         && okText(app.establishment, 160)
+        && okText(app.get('structureName', ''), 120)
         && ((app.get('rattachement', '') in ['pole', 'dgaAdministrative'] && app.establishment == '')
           || app.establishment.size() > 0)
         && okText(app['service'], 120)

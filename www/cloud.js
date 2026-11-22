@@ -1267,6 +1267,7 @@ async function submitAdhesion(application,signature){
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
     phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
+    structureName:String(application.structureName||'').trim().slice(0,120),
     rattachement:String(application.rattachement||'').slice(0,40),
     niveauRattachement:String(application.niveauRattachement||'').trim().slice(0,40),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
@@ -2703,14 +2704,18 @@ var admin = {
       if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
       var sid = String(structureId || '');
       if (!sid) return Promise.reject(new Error('structureId requis.'));
-      var batch=writeBatch(db);
-      batch.update(doc(db,'localStructures',sid),{
-        archived:true,archivedAt:serverTimestamp(),updatedAt:serverTimestamp()
+      return getDoc(doc(db,'localStructures',sid)).then(function(snap){
+        if(!snap.exists())throw new Error('Structure introuvable.');
+        var x=snap.data()||{},batch=writeBatch(db);
+        batch.update(doc(db,'localStructures',sid),{
+          archived:true,archivedAt:serverTimestamp(),updatedAt:serverTimestamp()
+        });
+        batch.set(doc(db,'publicLocalStructures',sid),{
+          structureId:sid,name:String(x.name||''),etab:String(x.etab||''),
+          province:String(x.province||''),archived:true,updatedAt:serverTimestamp()
+        });
+        return batch.commit();
       });
-      batch.set(doc(db,'publicLocalStructures',sid),{
-        archived:true,updatedAt:serverTimestamp()
-      },{merge:true});
-      return batch.commit();
     },
 
   deleteLocalStructure:

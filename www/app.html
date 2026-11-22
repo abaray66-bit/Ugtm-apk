@@ -11902,6 +11902,7 @@ window.UGTM.failed(err);
             if(adminServiceValue)row1('Service (DGA administrative)',adminServiceValue);
           }else{
             row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'CHU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'CHU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'CHU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'CHU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment||request.establishment));
+            if(app.structureName)row1('Structure locale UGTM',app.structureName);
             if(app.espaceSanitaire||request.espaceSanitaire){
               var espacePdfValue=app.espaceSanitaire||request.espaceSanitaire;
               var districtPdfValue=app.district||request.district||'';
@@ -13081,9 +13082,9 @@ function gstSanitaireInit(){var $=function(id){return document.getElementById(id
 function gstCascade(force){var $=function(id){return document.getElementById(id);},r=$('adhRattachement'),rv=r?r.value:'',level=$('adhNiveauRattachement'),province=$('adhProvince');if(force!==true&&window.__adhGstCascadeReady&&window.__adhGstLastRattachement===rv)return;window.__adhGstLastRattachement=rv;window.__adhGstCascadeReady=true;var choose='<option value="" data-i18n="adhStructureChoose"></option>';function reset(){['adhDirectionPole','adhDivisionPole','adhServicePole','adhDirectionAdmin','adhDivisionAdmin','adhServiceAdmin','adhEspaceSanitaire','adhDistrict','adhEtablissement','adhDivision','adhServiceGst','adhUnite','adhEsspSelect'].forEach(function(id){gstFill($(id),[]);});['adhEtabOther','adhServiceHospitalier'].forEach(function(id){var e=$(id);if(e)e.value='';});['adhDirectionPoleWrap','adhDivisionPoleWrap','adhServicePoleWrap','adhDirectionAdminWrap','adhDivisionAdminWrap','adhServiceAdminWrap','adhEspaceSanitaireWrap','adhDistrictWrap','adhEtablissementWrap','adhEtabOtherWrap','adhDivisionWrap','adhServiceGstWrap','adhUniteWrap','adhServiceHospitalierWrap','adhNiveauRattachementWrap'].forEach(function(id){gstShow(id,false);});level.innerHTML=choose;level.value='';level.disabled=true;level.required=false;level.onchange=null;}reset();gstGroup('rattle-pole',false);gstGroup('rattle-administrative',false);gstGroup('rattle-sanitaire',false);if(province){province.disabled=false;if(province.parentNode)province.parentNode.style.display='';}if(!rv){fixSelectLabels('adhRattachement');return;}if(rv==='pole'){gstGroup('rattle-pole',true);gstLevelOptions([{value:'direction',key:'adhNiveauDirection'},{value:'divisionDirecte',key:'adhNiveauDivisionDirecte'},{value:'serviceDirect',key:'adhNiveauServiceDirectPole'}],function(){gstBuildPole(level.value);});}else if(rv==='dgaAdministrative'){gstGroup('rattle-administrative',true);gstLevelOptions([{value:'direction',key:'adhNiveauDirection'},{value:'serviceDirect',key:'adhNiveauServiceDirectAdmin'}],function(){gstBuildAdmin(level.value);});}else if(rv==='dgaSanitaire'){gstGroup('rattle-sanitaire',true);if(province){province.value='';province.disabled=true;if(province.parentNode)province.parentNode.style.display='none';}gstSanitaireInit();}fixSelectLabels('adhRattachement');}
 function attachAdhListeners(){
   var el=document.getElementById('adhRattachement');
-  if(el){el.addEventListener('change',gstCascade);fixSelectLabels('adhRattachement');}
+  if(el){el.addEventListener('change',function(){gstCascade();window.refreshAdhesionLocalStructureChoices();});fixSelectLabels('adhRattachement');}
   window.loadAdhesionLocalStructures();
-  ['adhEtablissement','adhProvince','adhEsspSelect','adhEtabOther'].forEach(function(id){
+  ['adhEtablissement','adhProvince','adhEspaceSanitaire','adhDistrict','adhEsspSelect','adhEtabOther'].forEach(function(id){
     var field=document.getElementById(id);
     if(field&&!field.__ugtmLocalStructureListener){
       field.__ugtmLocalStructureListener=true;
@@ -13482,6 +13483,7 @@ window.gstSanitaireInit=gstSanitaireInit;attachAdhListeners();gstCascade();
         commitment:true,
         date:document.getElementById('adhDate').value,
         structureId:(document.getElementById('adhStructure')?document.getElementById('adhStructure').value:''),
+        structureName:(function(){var el=document.getElementById('adhStructure');return el&&el.value&&el.selectedIndex>=0?String(el.options[el.selectedIndex].textContent||'').trim():'';})(),
         signature:signatureJpeg()
       };
 
