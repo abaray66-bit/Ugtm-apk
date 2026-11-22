@@ -13154,9 +13154,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               esspSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
               esspSel.style.display = 'none';
               esspSel.required = false;
-              if (etabVal === 'other' && divVal === 'Division Sanitaire' && district.value && typeof ESSP_LIST !== 'undefined') {
+              if ((etabVal === 'other' || !etabVal) && divVal === 'Division Sanitaire' && district.value && typeof ESSP_LIST !== 'undefined') {
                 populateEsspSelect(esspSel, district.value);
-                esspSel.required = esspSel.options.length > 1;
                 if (esspWrap) esspWrap.style.display = '';
               } else if (esspWrap) {
                 esspWrap.style.display = 'none';
@@ -13230,7 +13229,15 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             : (adhLabels.adhOtherEtab || 'Autre établissement');
           etabSelect.appendChild(otherOpt);
           etabSelect.disabled = false;
+          var esspSelectAfterDivision = document.getElementById('adhEsspSelect');
+          var esspWrapAfterDivision = document.getElementById('adhEsspWrap');
+          if (divVal === 'Division Sanitaire' && district.value && esspSelectAfterDivision && typeof ESSP_LIST !== 'undefined') {
+            populateEsspSelect(esspSelectAfterDivision, district.value);
+            esspSelectAfterDivision.required = false;
+            if (esspWrapAfterDivision) esspWrapAfterDivision.style.display = '';
+          }
           fixSelectLabels('adhEtablissement');
+          fixSelectLabels('adhEsspSelect');
         };
 
         service.onchange = function(){
@@ -13620,11 +13627,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
         establishment:(function(){
           if(document.getElementById('adhNiveauOrganisationnel').value==='regional'&&document.getElementById('adhRattachement').value==='dgaSanitaire')return document.getElementById('adhSanitaireRegionalStructure').value||'';
+          var entry=selectedEsspEntry();
+          if(entry)return entry.n;
           var sel=document.getElementById('adhEtablissement');
           if(sel && sel.value && sel.value!=='other')return sel.value;
           if(sel && sel.value==='other'){
-            var entry=selectedEsspEntry();
-            if(entry)return entry.n;
             var other=document.getElementById('adhEtabOther');
             if(other && other.value.trim())return other.value.trim();
           }
