@@ -987,7 +987,8 @@ service cloud.firestore {
             // autres champs doivent rester à leur valeur par défaut.
             // 'accepted' N'EST PAS autorisé ici : il faut passer par les branches
             // de validation avec signature (admin) ou validatedBy (subadminLocal).
-            // structureId est autorisé à rester inchangé (non vide).
+            // structureId reste immuable pour les responsables ; il peut être vide
+            // lorsqu'aucune structure locale n'est déclarée (traitement provincial).
             request.resource.data.status != 'accepted'
             && request.resource.data.get('adminSignature', '') == ''
             && request.resource.data.get('signedBy', '') == ''
