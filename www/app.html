@@ -8571,7 +8571,9 @@ function renderAdminAdhesions(){
 el.innerHTML=list.length?list.map(function(a){
      var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
      if(a.status==='pending'||a.status==='needs_completion'){
-        actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+        if(S.isAdmin||S.isSubAdmin){
+          actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+        }
         if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin){
           actions+='<button type="button" class="btn primary small" data-adm-act="validateAdhesionLocal" data-id="'+esc(a.id)+'">'+esc(t.admLocalValidate)+'</button>';
         }

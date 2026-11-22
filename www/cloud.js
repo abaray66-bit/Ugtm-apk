@@ -334,7 +334,7 @@ function subscribeAdhesions(){
         dob: app.dob || '', phone: app.phone || '',
         establishment: app.establishment || '', specialty: app.specialty || '',
         type: app.type || 'first', reason: app.reason || '', date: app.date || '',
-        signed: !!x.adminSignature,
+        signed: !!(x.adminSignature || x.validatedBy),
         signedBy: x.signedBy || '',
         signedAt: ms(x.signedAt),
         validatedBy: x.validatedBy || '',
