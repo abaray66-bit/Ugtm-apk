@@ -12534,7 +12534,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         'Affaires financières': ['Unité Régie', 'Unité Comptabilité'],
         'Ingénierie et Maintenance': ['Unité SI', 'Unité Bâtiments Installations techniques', 'Unité Équipements'],
         'Achats, Approvisionnement et Logistique': ['Unité Achats', 'Unité Approvisionnement', 'Unité Logistique'],
-        'Facturation Recouvrement': ['Unité Admission', 'Unité Facturation', 'Unité Recouvrement']
+        'Facturation Recouvrement': ['Unité Admission', 'Unité Facturation', 'Unité Recouvrement'],
+        'Service Accueil / Qualité / Performance': ['Unité Accueil Assistance sociale', 'Unité Qualité Performance']
       },
       pole: {
         directions: [
@@ -12998,6 +12999,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var divisionWrapR=document.getElementById('adhSanitaireRegionalDivisionWrap');
         var serviceWrapR=document.getElementById('adhSanitaireRegionalServiceWrap');
         var uniteWrapR=document.getElementById('adhSanitaireRegionalUniteWrap');
+        var serviceHospR=document.getElementById('adhServiceHospitalier');
+        var serviceHospWrapR=document.getElementById('adhServiceHospitalierWrap');
+        if(serviceHospWrapR)serviceHospWrapR.style.display='none';
+        if(serviceHospR)serviceHospR.value='';
         function clearRegional(sel){sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';sel.value='';sel.disabled=true;}
         clearRegional(structure);clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
         GST_DATA.sanitaire.rattachementsDirects.forEach(function(item){var o=document.createElement('option');o.value=item.value;o.textContent=item.label;structure.appendChild(o);});
@@ -13031,6 +13036,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var list=GST_DATA.unites&&GST_DATA.unites[serviceR.value]?GST_DATA.unites[serviceR.value]:[];
           list.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;uniteR.appendChild(o);});
           if(list.length){uniteR.disabled=false;uniteWrapR.style.display='';}
+          var showHospitalier=structure.value==='hu_specialites_agadir'&&divisionR.value==='Division Sanitaire'&&serviceR.value==='Services hospitaliers 1 à n';
+          if(serviceHospWrapR)serviceHospWrapR.style.display=showHospitalier?'':'none';
+          if(!showHospitalier&&serviceHospR)serviceHospR.value='';
           fixSelectLabels('adhSanitaireRegionalUnite');
         };
         fixSelectLabels('adhSanitaireRegionalStructure');
