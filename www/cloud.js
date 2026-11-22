@@ -1247,7 +1247,7 @@ async function getMyAdhesionRequest(){
    var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
    if(!snap.exists()) return null;
    var x=snap.data()||{};
-   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),rattachement:x.rattachement||'',structureId:x.structureId||'',espaceSanitaire:x.espaceSanitaire||'',district:x.district||'',division:x.division||'',serviceGst:x.serviceGst||'',unite:x.unite||'',serviceHospitalier:x.serviceHospitalier||'',directionPole:x.directionPole||'',divisionPole:x.divisionPole||'',servicePole:x.servicePole||'',directionAdmin:x.directionAdmin||'',divisionAdmin:x.divisionAdmin||'',serviceAdmin:x.serviceAdmin||'',establishment:x.establishment||'',application:x.application||{}};
+   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),rattachement:x.rattachement||'',niveauRattachement:x.niveauRattachement||'',structureId:x.structureId||'',espaceSanitaire:x.espaceSanitaire||'',district:x.district||'',division:x.division||'',serviceGst:x.serviceGst||'',unite:x.unite||'',serviceHospitalier:x.serviceHospitalier||'',directionPole:x.directionPole||'',divisionPole:x.divisionPole||'',servicePole:x.servicePole||'',directionAdmin:x.directionAdmin||'',divisionAdmin:x.divisionAdmin||'',serviceAdmin:x.serviceAdmin||'',establishment:x.establishment||'',application:x.application||{}};
  }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
@@ -1260,6 +1260,7 @@ async function submitAdhesion(application,signature){
     phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
     rattachement:String(application.rattachement||'').slice(0,40),
+    niveauRattachement:String(application.niveauRattachement||'').trim().slice(0,40),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
     espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),
     division:String(application.division||'').trim().slice(0,40),
@@ -1276,9 +1277,39 @@ async function submitAdhesion(application,signature){
   var isPole = clean.rattachement === 'pole';
   var isAdmin = clean.rattachement === 'dgaAdministrative';
   var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.rattachement,clean.function,clean.commitment,application.signature];
-  if(isSanitaire) reqFields.push(clean.province);
-  if(isPole) reqFields.push(clean.directionPole,clean.divisionPole,clean.servicePole);
-  if(isAdmin) reqFields.push(clean.directionAdmin,clean.divisionAdmin,clean.serviceAdmin);
+  if(isSanitaire){
+    reqFields.push(clean.province,clean.espaceSanitaire,clean.district,clean.establishment);
+    var sanitaryEstablishment=clean.establishment;
+    var sanitaryHasHierarchy=sanitaryEstablishment.indexOf('Espace sanitaire')===0
+      || sanitaryEstablishment.indexOf('District sanitaire')===0
+      || sanitaryEstablishment.indexOf('hu_')===0
+      || sanitaryEstablishment==='DGA branche sanitaire (services centraux)';
+    if(sanitaryHasHierarchy){
+      reqFields.push(clean.niveauRattachement);
+      if(clean.niveauRattachement==='division')reqFields.push(clean.division,clean.serviceGst);
+      else if(clean.niveauRattachement==='serviceDirect')reqFields.push(clean.serviceGst);
+      else reqFields.push('');
+    }else if(sanitaryEstablishment==='HR Hassan II'){
+      reqFields.push(clean.serviceHospitalier);
+    }else if(sanitaryEstablishment.indexOf('HP ')===0||sanitaryEstablishment.indexOf('Hôpital de proximité ')===0){
+      reqFields.push(clean.serviceGst,clean.unite);
+    }else{
+      reqFields.push(clean.unite);
+    }
+  }
+  if(isPole){
+    reqFields.push(clean.niveauRattachement);
+    if(clean.niveauRattachement==='direction')reqFields.push(clean.directionPole,clean.divisionPole,clean.servicePole);
+    else if(clean.niveauRattachement==='divisionDirecte')reqFields.push(clean.divisionPole,clean.servicePole);
+    else if(clean.niveauRattachement==='serviceDirect')reqFields.push(clean.servicePole);
+    else reqFields.push('');
+  }
+  if(isAdmin){
+    reqFields.push(clean.niveauRattachement);
+    if(clean.niveauRattachement==='direction')reqFields.push(clean.directionAdmin,clean.divisionAdmin,clean.serviceAdmin);
+    else if(clean.niveauRattachement==='serviceDirect')reqFields.push(clean.serviceAdmin);
+    else reqFields.push('');
+  }
   if(reqFields.some(function(v){return!v;}))
     throw new Error('Des champs obligatoires ou la signature sont manquants.');
   if(clean.type==='renewal'&&!clean.reason) throw new Error('Veuillez préciser le motif du renouvellement.');
@@ -1305,9 +1336,9 @@ async function submitAdhesion(application,signature){
          la signature du responsable de la soumission précédente est
          effacée. Le dossier repart avec UNE seule signature — celle de
          l'adhérent — et la case du responsable à valider. */
-       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,updatedAt:serverTimestamp()});
+       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,niveauRattachement:clean.niveauRattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,updatedAt:serverTimestamp()});
      }else{
-       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,niveauRattachement:clean.niveauRattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
      }
     return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){
