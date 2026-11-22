@@ -1281,6 +1281,8 @@ async function submitAdhesion(application,signature){
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
     phone:String(application.phone||'').trim().slice(0,30),address:String(application.address||'').trim().slice(0,250),
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
+    structureId:String(application.structureId||'').trim().slice(0,40),
+    structureName:String(application.structureName||'').trim().slice(0,120),
     structureName:String(application.structureName||'').trim().slice(0,120),
     rattachement:String(application.rattachement||'').slice(0,40),
     niveauRattachement:String(application.niveauRattachement||'').trim().slice(0,40),
