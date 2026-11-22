@@ -12428,6 +12428,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           { value: 'direction_strategie_sante_publique', label: 'Direction de la stratégie et de la santé publique' },
           { value: 'direction_soins_sante_primaires', label: 'Direction des soins de santé primaires, de la prévention et de la promotion de la santé' },
           { value: 'direction_systemes_information', label: 'Direction des systèmes d\'information' },
+          { value: 'rattachement_direct_dg', label: 'Rattachements directs au Directeur Général (sans direction)' },
           { value: 'direction_hopital_specialites_agadir', label: 'Direction H.U. Mohammed VI des Spécialités Agadir' },
           { value: 'direction_hopital_mere_enfant_agadir', label: 'Direction H.U. Mohammed VI Mère-Enfant Agadir' },
           { value: 'direction_hopital_oncologie_agadir', label: 'Direction H.U. Mohammed VI Oncologie Agadir' },
@@ -12447,6 +12448,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             'Division des infrastructures, des systèmes, des réseaux et de la sécurité des systèmes informatiques',
             'Division des logiciels et des systèmes informatiques',
             'Division de la production de l\'information et des statistiques'
+          ],
+          'rattachement_direct_dg': [
+            'Division audit, qualité et contrôle de gestion',
+            'Division de la recherche et de l\'innovation',
+            'Services directement rattachés au Directeur Général (sans division)'
           ],
           'direction_hopital_specialites_agadir': ['Division Sanitaire', 'Division Administrative'],
           'direction_hopital_mere_enfant_agadir': ['Division Sanitaire', 'Division Administrative'],
@@ -12469,7 +12475,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           'Division Sanitaire': ['Service Affaires médicales', 'Service Soins infirmiers', 'Service Pharmacie', 'Service Accueil / Qualité / Performance'],
           'Division Administrative': ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique'],
           'Division audit, qualité et contrôle de gestion': ['Service audit', 'Service qualité et sécurité du patient', 'Service contrôle de gestion'],
-          'Division de la recherche et de l\'innovation': ['Service de la recherche et de l\'innovation', 'Service de la coopération et de la communication scientifique']
+          'Division de la recherche et de l\'innovation': ['Service de la recherche et de l\'innovation', 'Service de la coopération et de la communication scientifique'],
+          'Services directement rattachés au Directeur Général (sans division)': ['Service de la communication', 'Service d\'appui à l\'inspection et au contrôle des établissements']
         }
       },
       administrative: {
@@ -12477,9 +12484,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           { value: 'direction_capital_humain', label: 'Direction du capital humain' },
           { value: 'direction_affaires_financieres', label: 'Direction des affaires financières' },
           { value: 'direction_achats_approvisionnement_logistique', label: 'Direction des achats, de l\'approvisionnement et de la logistique' },
-          { value: 'direction_ingenierie_maintenance_patrimoine', label: 'Direction de l\'ingénierie, de la maintenance et du patrimoine' }
+          { value: 'direction_ingenierie_maintenance_patrimoine', label: 'Direction de l\'ingénierie, de la maintenance et du patrimoine' },
+          { value: 'rattachement_direct_dga_admin', label: 'Rattachement direct à la DGA administrative (sans direction)' }
         ],
         divisions: {
+          'rattachement_direct_dga_admin': ['Services directement rattachés à la DGA administrative (sans division)'],
           'direction_capital_humain': [
             'Division de la gestion du personnel',
             'Division des affaires juridiques et sociales',
@@ -12512,13 +12521,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           'Division de l\'approvisionnement et de la logistique': ['Service des approvisionnements et de la logistique diverse', 'Service du parc auto'],
           'Division de l\'approvisionnement et de la logistique pharmaceutique': ['Service de la logistique des produits pharmaceutiques', 'Service de l\'approvisionnement des produits pharmaceutiques'],
           'Division de l\'ingénierie et de la maintenance': ['Service des bâtiments', 'Service des installations techniques', 'Service des équipements'],
-          'Division du patrimoine': ['Service du patrimoine mobilier', 'Service du patrimoine immobilier']
+          'Division du patrimoine': ['Service du patrimoine mobilier', 'Service du patrimoine immobilier'],
+          'Services directement rattachés à la DGA administrative (sans division)': ['Service du bureau d\'ordre, de la documentation et des archives']
         }
       },
       sanitaire: {
         divisions: [
           'Division Sanitaire',
-          'Division Administrative'
+          'Division Administrative',
+          'Rattachements directs de la DGA sanitaire (hors district)',
+          'Services directement rattachés à la direction du CHU Spécialités'
         ],
         rattachementsDirects: [
           'Division de la pharmacie régionale',
