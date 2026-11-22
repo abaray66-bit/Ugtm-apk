@@ -1276,7 +1276,7 @@ async function submitAdhesion(application,signature){
   var isSanitaire = clean.rattachement === 'dgaSanitaire';
   var isPole = clean.rattachement === 'pole';
   var isAdmin = clean.rattachement === 'dgaAdministrative';
-  var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.rattachement,clean.function,clean.commitment,application.signature];
+  var reqFields = [clean.nom,clean.prenom,clean.cin,clean.dob,clean.phone,clean.address,clean.province,clean.rattachement,clean.function,clean.commitment,application.signature];
   if(isSanitaire){
     reqFields.push(clean.province,clean.espaceSanitaire,clean.district,clean.establishment);
     var sanitaryEstablishment=clean.establishment;
