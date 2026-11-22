@@ -268,14 +268,12 @@ test('une demande sanitaire hôpital de proximité peut utiliser son modèle san
       espaceSanitaire: 'Espace sanitaire Agadir',
       district: 'inezgane',
       establishment: 'HP Inezgane',
-      serviceGst: 'Service des affaires administratives',
       unite: 'Unité de la pharmacie'
     },
     rattachement: 'dgaSanitaire',
     espaceSanitaire: 'Espace sanitaire Agadir',
     district: 'inezgane',
     establishment: 'HP Inezgane',
-    serviceGst: 'Service des affaires administratives',
     unite: 'Unité de la pharmacie'
   };
   await assertSucceeds(setDoc(doc(db, 'adhesionRequests', HP_UID), requestPayload(HP_UID, 'inezgane', over)));
