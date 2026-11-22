@@ -184,7 +184,7 @@ service cloud.firestore {
             && okText(request.resource.data.adminStructure, 40)
             && request.resource.data.adminStructure.size() > 0
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
-            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.get('archived', false) == false
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo)
@@ -208,7 +208,7 @@ service cloud.firestore {
             && request.resource.data.adminProvince == request.resource.data.prov
             && request.resource.data.adminStructure == assignedLocalStructure()
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
-            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.get('archived', false) == false
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
               .lastMemberNo == request.resource.data.memberNo);
@@ -219,7 +219,7 @@ service cloud.firestore {
               || (okText(request.resource.data.adminStructure, 40)
                   && request.resource.data.adminStructure.size() > 0
                   && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
-                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+                  && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.get('archived', false) == false
                   && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov))
         )
         // Administrateur général : activation sans dossier d'adhésion
@@ -322,7 +322,7 @@ service cloud.firestore {
             && request.resource.data.adminProvince == request.resource.data.prov
             && request.resource.data.adminStructure == assignedLocalStructure()
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure))
-            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.archived == false
+            && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.get('archived', false) == false
             && get(/databases/$(database)/documents/localStructures/$(request.resource.data.adminStructure)).data.province == request.resource.data.prov
             && getAfter(/databases/$(database)/documents/counters/memberNumbers).data
                  .lastMemberNo == request.resource.data.memberNo)
@@ -566,7 +566,7 @@ service cloud.firestore {
         && request.resource.data.get('approvedBy', '') == ''
         && request.resource.data.get('approvedAt', '') == ''
         && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
-        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
+        && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.get('archived', false) == false
         && get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.province == assignedProvince();
 
       allow update: if (
@@ -815,7 +815,7 @@ service cloud.firestore {
         || (structureId is string
           && structureId.size() > 0
           && exists(/databases/$(database)/documents/localStructures/$(structureId))
-          && get(/databases/$(database)/documents/localStructures/$(structureId)).data.archived == false
+          && get(/databases/$(database)/documents/localStructures/$(structureId)).data.get('archived', false) == false
           && adhesionSameProvince(
             get(/databases/$(database)/documents/localStructures/$(structureId)).data.province,
             province
@@ -839,7 +839,7 @@ service cloud.firestore {
         && assignedLocalStructure() != ''
         && structureId == assignedLocalStructure()
         && exists(/databases/$(database)/documents/localStructures/$(structureId))
-        && get(/databases/$(database)/documents/localStructures/$(structureId)).data.archived == false;
+        && get(/databases/$(database)/documents/localStructures/$(structureId)).data.get('archived', false) == false;
     }
 
     function adhesionProvinces() {
@@ -1145,7 +1145,7 @@ service cloud.firestore {
           (request.resource.data.structureId.size() > 0
             && exists(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId))
             && (
-              get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.archived == false
+              get(/databases/$(database)/documents/localStructures/$(request.resource.data.structureId)).data.get('archived', false) == false
               || isAdmin()
               || adhesionIsSubAdminOf(request.resource.data.province)
             )
