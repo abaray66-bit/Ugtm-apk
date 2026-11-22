@@ -12972,6 +12972,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               esspSel.required = false;
               if (etabVal === 'other' && divVal === 'Division Sanitaire' && district.value && typeof ESSP_LIST !== 'undefined') {
                 populateEsspSelect(esspSel, district.value);
+                esspSel.required = esspSel.options.length > 1;
                 if (esspWrap) esspWrap.style.display = '';
               } else if (esspWrap) {
                 esspWrap.style.display = 'none';
