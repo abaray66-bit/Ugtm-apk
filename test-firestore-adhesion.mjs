@@ -32,7 +32,11 @@ import {
 const PROJECT_ID = 'ugtm-adhesion-test';
 
 // Comptes de test
-const ALICE = 'alice-uid';     // adhérente d'Agadir
+const ALICE = 'alice-uid';
+const POLE_UID = 'pole-branch-uid';
+const DGA_ADMIN_UID = 'dga-admin-branch-uid';
+const CHU_UID = 'chu-branch-uid';
+const HP_UID = 'hp-branch-uid';     // adhérente d'Agadir
 const BOB = 'bob-uid';         // adhérent d'une autre province (isolé)
 const DAVE = 'dave-uid';       // adhérent de Tata
 const SARA = 'sara-uid';         // adhérente de Tiznit
@@ -161,6 +165,96 @@ test('un adhérent peut créer sa demande (dossier signé seul)', async () => {
   // Exactement ce qu'envoie submitAdhesion() : le dossier et la
   // signature de l'adhérent, sans aucun PDF.
   await assertSucceeds(setDoc(doc(db, 'adhesionRequests', ALICE), requestPayload(ALICE, 'agadir')));
+});
+
+test('une demande Pôle accepte une division directement rattachée au DG', async () => {
+  const db = env.authenticatedContext(POLE_UID, USER_TOKEN(POLE_UID)).firestore();
+  const over = {
+    application: {
+      rattachement: 'pole',
+      niveauRattachement: 'divisionDirecte',
+      establishment: '',
+      divisionPole: 'Division audit, qualité et contrôle de gestion',
+      servicePole: 'Service audit'
+    },
+    rattachement: 'pole',
+    niveauRattachement: 'divisionDirecte',
+    divisionPole: 'Division audit, qualité et contrôle de gestion',
+    servicePole: 'Service audit'
+  };
+  await assertSucceeds(setDoc(doc(db, 'adhesionRequests', POLE_UID), requestPayload(POLE_UID, 'agadir', over)));
+});
+
+test('une demande Pôle sans niveau hiérarchique est refusée', async () => {
+  const uid = POLE_UID + '-invalid';
+  const db = env.authenticatedContext(uid, USER_TOKEN(uid)).firestore();
+  const over = {
+    application: { rattachement: 'pole', establishment: '', divisionPole: 'Division audit', servicePole: 'Service audit' },
+    rattachement: 'pole',
+    divisionPole: 'Division audit',
+    servicePole: 'Service audit'
+  };
+  await assertFails(setDoc(doc(db, 'adhesionRequests', uid), requestPayload(uid, 'agadir', over)));
+});
+
+test('une demande DGA administrative accepte un service directement rattaché au DGA', async () => {
+  const db = env.authenticatedContext(DGA_ADMIN_UID, USER_TOKEN(DGA_ADMIN_UID)).firestore();
+  const over = {
+    application: {
+      rattachement: 'dgaAdministrative',
+      niveauRattachement: 'serviceDirect',
+      establishment: '',
+      serviceAdmin: "Service du bureau d'ordre, de la documentation et des archives"
+    },
+    rattachement: 'dgaAdministrative',
+    niveauRattachement: 'serviceDirect',
+    serviceAdmin: "Service du bureau d'ordre, de la documentation et des archives"
+  };
+  await assertSucceeds(setDoc(doc(db, 'adhesionRequests', DGA_ADMIN_UID), requestPayload(DGA_ADMIN_UID, 'agadir', over)));
+});
+
+test('une demande sanitaire CHU exige division et service au niveau division', async () => {
+  const db = env.authenticatedContext(CHU_UID, USER_TOKEN(CHU_UID)).firestore();
+  const over = {
+    application: {
+      rattachement: 'dgaSanitaire',
+      niveauRattachement: 'division',
+      espaceSanitaire: 'Espace sanitaire Agadir',
+      district: 'agadir',
+      establishment: 'hu_specialites_agadir',
+      division: 'Division administrative',
+      serviceGst: 'Service des affaires financières'
+    },
+    rattachement: 'dgaSanitaire',
+    niveauRattachement: 'division',
+    espaceSanitaire: 'Espace sanitaire Agadir',
+    district: 'agadir',
+    establishment: 'hu_specialites_agadir',
+    division: 'Division administrative',
+    serviceGst: 'Service des affaires financières'
+  };
+  await assertSucceeds(setDoc(doc(db, 'adhesionRequests', CHU_UID), requestPayload(CHU_UID, 'agadir', over)));
+});
+
+test('une demande sanitaire hôpital de proximité peut utiliser son modèle sans niveau division', async () => {
+  const db = env.authenticatedContext(HP_UID, USER_TOKEN(HP_UID)).firestore();
+  const over = {
+    application: {
+      rattachement: 'dgaSanitaire',
+      espaceSanitaire: 'Espace sanitaire Agadir',
+      district: 'inezgane',
+      establishment: 'HP Inezgane',
+      serviceGst: 'Service des affaires administratives',
+      unite: 'Unité de la pharmacie'
+    },
+    rattachement: 'dgaSanitaire',
+    espaceSanitaire: 'Espace sanitaire Agadir',
+    district: 'inezgane',
+    establishment: 'HP Inezgane',
+    serviceGst: 'Service des affaires administratives',
+    unite: 'Unité de la pharmacie'
+  };
+  await assertSucceeds(setDoc(doc(db, 'adhesionRequests', HP_UID), requestPayload(HP_UID, 'inezgane', over)));
 });
 
 test('un adhérent ne peut pas recréer sa demande', async () => {
