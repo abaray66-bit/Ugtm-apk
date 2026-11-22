@@ -749,7 +749,7 @@ service cloud.firestore {
               'structureMere', 'rattachement', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
-              'divisionAdmin', 'serviceAdmin'];
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -795,7 +795,7 @@ service cloud.firestore {
       return ['uid', 'email', 'province', 'application', 'signature',
               'status', 'adminNote', 'adminSignature', 'signedBy',
               'signedAt', 'createdAt', 'updatedAt',
-              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'];
+              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole', 'directionAdmin'];
     }
 
     // Contenu du dossier (application) : toutes les clés attendues,
@@ -857,7 +857,7 @@ service cloud.firestore {
     'division', 'serviceGst',
     'unite', 'serviceHospitalier',
     'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-    'divisionAdmin', 'serviceAdmin'
+    'directionAdmin', 'divisionAdmin', 'serviceAdmin'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -964,7 +964,7 @@ service cloud.firestore {
                       'division', 'serviceGst',
                       'unite', 'serviceHospitalier',
                       'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-                      'divisionAdmin', 'serviceAdmin'])
+                      'directionAdmin', 'divisionAdmin', 'serviceAdmin'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''

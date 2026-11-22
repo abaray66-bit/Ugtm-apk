@@ -12274,14 +12274,36 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhProvince',app.province||'');
           prefillIfEmpty('adhEstablishment',app.establishment||'');
           prefillIfEmpty('adhService',app.service||'');
-          /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
-          if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
-          if(req.district) prefillIfEmpty('adhDistrict',req.district);
-          if(req.division) prefillIfEmpty('adhDivision',req.division);
-          if(req.serviceGst) prefillIfEmpty('adhServiceGst',req.serviceGst);
-          if(req.unite) prefillIfEmpty('adhUnite',req.unite);
-          if(req.serviceHospitalier) prefillIfEmpty('adhServiceHospitalier',req.serviceHospitalier);
-          if(req.espaceSanitaire||req.district) gstCascade();
+          /* Restauration du rattachement et de ses champs dépendants. */
+          var rattachementValue=app.rattachement||req.rattachement||'';
+          var rattachementSelect=document.getElementById('adhRattachement');
+          if(rattachementSelect&&rattachementValue){
+            rattachementSelect.value=rattachementValue;
+            gstCascade(true);
+            if(rattachementValue==='pole'){
+              var dp=document.getElementById('adhDirectionPole'), vp=document.getElementById('adhDivisionPole'), sp=document.getElementById('adhServicePole');
+              if(dp){dp.value=app.directionPole||req.directionPole||'';if(dp.onchange)dp.onchange();}
+              if(vp){vp.value=app.divisionPole||req.divisionPole||'';if(vp.onchange)vp.onchange();}
+              if(sp)sp.value=app.servicePole||req.servicePole||'';
+            }else if(rattachementValue==='dgaAdministrative'){
+              var da=document.getElementById('adhDirectionAdmin'), va=document.getElementById('adhDivisionAdmin'), sa=document.getElementById('adhServiceAdmin');
+              if(da){da.value=app.directionAdmin||req.directionAdmin||'';if(da.onchange)da.onchange();}
+              if(va){va.value=app.divisionAdmin||req.divisionAdmin||'';if(va.onchange)va.onchange();}
+              if(sa)sa.value=app.serviceAdmin||req.serviceAdmin||'';
+            }else if(rattachementValue==='dgaSanitaire'){
+              var es=document.getElementById('adhEspaceSanitaire'), ds=document.getElementById('adhDistrict');
+              var et=document.getElementById('adhEtablissement'), vs=document.getElementById('adhDivision');
+              var ss=document.getElementById('adhServiceGst'), us=document.getElementById('adhUnite');
+              var espValue=app.espaceSanitaire||req.espaceSanitaire||'';
+              if(es){es.value=espValue;if(es.onchange)es.onchange();}
+              if(ds){ds.value=app.district||req.district||'';ds.dispatchEvent(new Event('change',{bubbles:true}));}
+              if(et){et.value=app.establishment||req.establishment||'';if(et.onchange)et.onchange();}
+              if(vs){vs.value=app.division||req.division||'';if(vs.onchange)vs.onchange();}
+              if(ss){ss.value=app.serviceGst||req.serviceGst||app.service||'';if(ss.onchange)ss.onchange();}
+              if(us)us.value=app.unite||req.unite||'';
+              prefillIfEmpty('adhServiceHospitalier',app.serviceHospitalier||req.serviceHospitalier||'');
+            }
+          }
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
@@ -12708,9 +12730,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       window.addEventListener('resize',closeActive);
     }
 
-    function gstCascade() {
+    function gstCascade(force) {
       var rattachement = document.getElementById('adhRattachement');
       var rattleVal = rattachement ? rattachement.value : '';
+      if (!force && window.__adhGstCascadeReady && window.__adhGstLastRattachement === rattleVal) return;
+      window.__adhGstLastRattachement = rattleVal;
+      window.__adhGstCascadeReady = true;
 
       // Masquer tous les groupes de branche
       ['rattle-pole','rattle-sanitaire','rattle-administrative'].forEach(function(cls){
@@ -12723,9 +12748,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       resetInput('adhEspaceSanitaire');
       resetInput('adhEstablishment');
       resetInput('adhService');
-      ['adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
-        var el=document.getElementById(id); if(el) el.value='';
-      });
       document.getElementById('adhEtabOtherWrap').style.display='none';
       ['adhDirectionPole','adhDivisionPole','adhServicePole'].forEach(resetSel);
       ['adhDirectionAdmin','adhDivisionAdmin','adhServiceAdmin'].forEach(resetSel);
@@ -12965,7 +12987,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var svcVal = service.value;
           unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           var unites = [];
-          if (GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
+          if (GST_DATA.unites && GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
           unites.forEach(function(u){
             var opt = document.createElement('option'); opt.value = u; opt.textContent = u; unite.appendChild(opt);
           });
@@ -13361,6 +13383,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         directionPole:document.getElementById('adhDirectionPole')?document.getElementById('adhDirectionPole').value:'',
         divisionPole:document.getElementById('adhDivisionPole')?document.getElementById('adhDivisionPole').value:'',
         servicePole:document.getElementById('adhServicePole')?document.getElementById('adhServicePole').value:'',
+        directionAdmin:document.getElementById('adhDirectionAdmin')?document.getElementById('adhDirectionAdmin').value:'',
         divisionAdmin:document.getElementById('adhDivisionAdmin')?document.getElementById('adhDivisionAdmin').value:'',
         serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
         establishment:(function(){
