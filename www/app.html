@@ -13294,7 +13294,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             }
             if(selectedHospitalRecord && (selectedHospitalRecord.c==='HP'||selectedHospitalRecord.c==='HR')){
               var hospitalWrap=document.getElementById('adhServiceHospitalierWrap');
+              var provincialServiceWrap=document.getElementById('adhServiceGstWrap');
               if(hospitalWrap)hospitalWrap.style.display='';
+              if(provincialServiceWrap)provincialServiceWrap.style.display='none';
               return;
             }
             // Les détails de services sont documentés uniquement pour le CHU Spécialités.
@@ -13411,6 +13413,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             opt.value = u; opt.textContent = u; unite.appendChild(opt);
           });
           unite.disabled = unites.length === 0;
+          var proximityUnitWrap=document.getElementById('adhUniteWrap');
+          if(proximityUnitWrap)proximityUnitWrap.style.display=unites.length?'':'none';
           var serviceHospWrap = document.getElementById('adhServiceHospitalierWrap');
           var showServiceHosp = etabSelect.value === 'hu_specialites_agadir' && division.value === 'Division Sanitaire' && svcVal === 'Services hospitaliers 1 à n';
           if (serviceHospWrap) serviceHospWrap.style.display = showServiceHosp ? '' : 'none';
