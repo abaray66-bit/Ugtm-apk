@@ -13132,6 +13132,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           district.disabled = true;
           district.value = '';
           if (espVal && GST_DATA.espaces[espVal]) {
+            var administration=GST_DATA.espaces.administrations[espVal];
+            if(administration){var adminOpt=document.createElement('option');adminOpt.value=administration.value;adminOpt.textContent=administration.label;district.appendChild(adminOpt);}
             GST_DATA.espaces[espVal].districts.forEach(function(d) {
               var opt = document.createElement('option');
               opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
@@ -13406,6 +13408,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var d = distSel.value;
           var provinceField = document.getElementById('adhProvince');
           var currentEspace=document.getElementById('adhEspaceSanitaire').value;
+          var etabSelect = document.getElementById('adhEtablissement');
+          var division = document.getElementById('adhDivision');
+          var service = document.getElementById('adhServiceGst');
+          var unite = document.getElementById('adhUnite');
+          var serviceHosp = document.getElementById('adhServiceHospitalier');
+          var etabOther = document.getElementById('adhEtabOtherWrap');
+          var esspSelect = document.getElementById('adhEsspSelect');
           var isSpaceAdministration=d.indexOf('space_admin_')===0;
           var etabWrap=document.getElementById('adhEtablissementWrap');
           var serviceWrap=document.getElementById('adhServiceGstWrap');
@@ -13433,14 +13442,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if(serviceWrap)serviceWrap.style.display='';
           if(uniteWrap)uniteWrap.style.display='';
           if (provinceField) provinceField.value = d || '';
-          var etabSelect = document.getElementById('adhEtablissement');
-          var division = document.getElementById('adhDivision');
-          var service = document.getElementById('adhServiceGst');
-          var unite = document.getElementById('adhUnite');
-          var serviceHosp = document.getElementById('adhServiceHospitalier');
-          var etabOther = document.getElementById('adhEtabOtherWrap');
-          var esspSelect = document.getElementById('adhEsspSelect');
-
           division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           if (d && GST_DATA.sanitaire && GST_DATA.sanitaire.divisions) {
             GST_DATA.sanitaire.divisions.forEach(function(div){
