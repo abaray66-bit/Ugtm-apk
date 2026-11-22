@@ -12883,6 +12883,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display = 'none'; });
       });
       document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){el.style.display='none';});
+      var staleEssp=document.getElementById('adhEsspSelect');
+      var staleEsspWrap=document.getElementById('adhEsspWrap');
+      if(staleEssp){staleEssp.required=false;staleEssp.value='';}
+      if(staleEsspWrap)staleEsspWrap.style.display='none';
+      var staleHospitalier=document.getElementById('adhServiceHospitalier');
+      var staleHospitalierWrap=document.getElementById('adhServiceHospitalierWrap');
+      if(staleHospitalier){staleHospitalier.value='';}
+      if(staleHospitalierWrap)staleHospitalierWrap.style.display='none';
 
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
@@ -13617,8 +13625,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           }
           return '';
         })(),
-        establishmentCommune:(function(){var e=selectedEsspEntry();return e?e.c:'';})(),
-        establishmentType:(function(){var e=selectedEsspEntry();return e?e.t:'';})(),
+        establishmentCommune:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(function(){var e=selectedEsspEntry();return e?e.c:'';})(),
+        establishmentType:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(function(){var e=selectedEsspEntry();return e?e.t:'';})(),
         service:(function(){
           var sel=document.getElementById('adhServiceGst');
           if(sel && sel.value)return sel.value;
