@@ -13143,9 +13143,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var etabWrapOnSpaceChange=document.getElementById('adhEtablissementWrap');if(etabWrapOnSpaceChange)etabWrapOnSpaceChange.style.display='';
           var serviceWrapOnSpaceChange=document.getElementById('adhServiceGstWrap');if(serviceWrapOnSpaceChange)serviceWrapOnSpaceChange.style.display='';
           var uniteWrapOnSpaceChange=document.getElementById('adhUniteWrap');if(uniteWrapOnSpaceChange)uniteWrapOnSpaceChange.style.display='';
-          var etabWrapOnSpaceChange=document.getElementById('adhEtablissementWrap');if(etabWrapOnSpaceChange)etabWrapOnSpaceChange.style.display='';
-          var serviceWrapOnSpaceChange=document.getElementById('adhServiceGstWrap');if(serviceWrapOnSpaceChange)serviceWrapOnSpaceChange.style.display='';
-          var uniteWrapOnSpaceChange=document.getElementById('adhUniteWrap');if(uniteWrapOnSpaceChange)uniteWrapOnSpaceChange.style.display='';
           etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           etab.disabled = true;
           etab.value = '';
@@ -13383,6 +13380,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           district.disabled = true;
           district.value = '';
           if (espVal && GST_DATA.espaces[espVal]) {
+            var administration=GST_DATA.espaces.administrations[espVal];
+            if(administration){var adminOpt=document.createElement('option');adminOpt.value=administration.value;adminOpt.textContent=administration.label;district.appendChild(adminOpt);}
             GST_DATA.espaces[espVal].districts.forEach(function(d) {
               var opt = document.createElement('option');
               opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
