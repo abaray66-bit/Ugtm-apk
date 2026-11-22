@@ -827,7 +827,8 @@ service cloud.firestore {
         && okText(app.address, 250)
         && app.address.size() > 0
         && okText(app.establishment, 160)
-        && app.establishment.size() > 0
+        && ((app.get('rattachement', '') in ['pole', 'dgaAdministrative'] && app.establishment == '')
+          || app.establishment.size() > 0)
         && okText(app['service'], 120)
         && okText(app['function'], 120)
         && app['function'].size() > 0
