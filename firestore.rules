@@ -749,7 +749,7 @@ service cloud.firestore {
               'structureMere', 'rattachement', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
-              'directionAdmin', 'divisionAdmin', 'serviceAdmin'];
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -795,7 +795,12 @@ service cloud.firestore {
       return ['uid', 'email', 'province', 'application', 'signature',
               'status', 'adminNote', 'adminSignature', 'signedBy',
               'signedAt', 'createdAt', 'updatedAt',
-              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole', 'directionAdmin'];
+              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole',
+              'espaceSanitaire', 'district', 'division', 'serviceGst',
+              'unite', 'serviceHospitalier', 'rattachement',
+              'directionPole', 'divisionPole', 'servicePole',
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin',
+              'niveauRattachement'];
     }
 
     // Contenu du dossier (application) : toutes les clés attendues,
@@ -828,6 +833,10 @@ service cloud.firestore {
         && app['function'].size() > 0
         && okText(app.specialty, 120)
         && okText(app.ppr, 30)
+        && okText(app.get('niveauRattachement', ''), 40)
+        && app.get('niveauRattachement', '') in ['', 'direction', 'divisionDirecte', 'serviceDirect', 'division']
+        && (app.get('rattachement', '') != 'pole' || app.get('niveauRattachement', '') in ['direction', 'divisionDirecte', 'serviceDirect'])
+        && (app.get('rattachement', '') != 'dgaAdministrative' || app.get('niveauRattachement', '') in ['direction', 'serviceDirect'])
         && app.province == province
         && app.commitment == true
         && app.type in ['first', 'renewal']
@@ -857,7 +866,7 @@ service cloud.firestore {
     'division', 'serviceGst',
     'unite', 'serviceHospitalier',
     'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-    'directionAdmin', 'divisionAdmin', 'serviceAdmin'
+    'directionAdmin', 'divisionAdmin', 'serviceAdmin', 'niveauRattachement'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
