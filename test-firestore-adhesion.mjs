@@ -36,6 +36,7 @@ const ALICE = 'alice-uid';
 const POLE_UID = 'pole-branch-uid';
 const DGA_ADMIN_UID = 'dga-admin-branch-uid';
 const CHU_UID = 'chu-branch-uid';
+const CHU_INVALID_UID = 'chu-invalid-branch-uid';
 const HP_UID = 'hp-branch-uid';     // adhérente d'Agadir
 const BOB = 'bob-uid';         // adhérent d'une autre province (isolé)
 const DAVE = 'dave-uid';       // adhérent de Tata
@@ -213,7 +214,7 @@ test('une demande DGA administrative accepte un service directement rattaché au
   await assertSucceeds(setDoc(doc(db, 'adhesionRequests', DGA_ADMIN_UID), requestPayload(DGA_ADMIN_UID, 'agadir', over)));
 });
 
-test('une demande sanitaire CHU exige division et service au niveau division', async () => {
+test('une demande sanitaire CHU avec division et service est acceptée', async () => {
   const db = env.authenticatedContext(CHU_UID, USER_TOKEN(CHU_UID)).firestore();
   const over = {
     application: {
@@ -234,6 +235,29 @@ test('une demande sanitaire CHU exige division et service au niveau division', a
     serviceGst: 'Service des affaires financières'
   };
   await assertSucceeds(setDoc(doc(db, 'adhesionRequests', CHU_UID), requestPayload(CHU_UID, 'agadir', over)));
+});
+
+test('une demande sanitaire CHU sans service au niveau division est refusée', async () => {
+  const db = env.authenticatedContext(CHU_INVALID_UID, USER_TOKEN(CHU_INVALID_UID)).firestore();
+  const over = {
+    application: {
+      rattachement: 'dgaSanitaire',
+      niveauRattachement: 'division',
+      espaceSanitaire: 'Espace sanitaire Agadir',
+      district: 'agadir',
+      establishment: 'hu_specialites_agadir',
+      division: 'Division administrative',
+      serviceGst: ''
+    },
+    rattachement: 'dgaSanitaire',
+    niveauRattachement: 'division',
+    espaceSanitaire: 'Espace sanitaire Agadir',
+    district: 'agadir',
+    establishment: 'hu_specialites_agadir',
+    division: 'Division administrative',
+    serviceGst: ''
+  };
+  await assertFails(setDoc(doc(db, 'adhesionRequests', CHU_INVALID_UID), requestPayload(CHU_INVALID_UID, 'agadir', over)));
 });
 
 test('une demande sanitaire hôpital de proximité peut utiliser son modèle sans niveau division', async () => {
