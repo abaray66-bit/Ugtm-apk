@@ -3609,8 +3609,8 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-sanitaire" id="adhDistrictWrap" style="display:none"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEtablissementWrap" style="display:none"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
         <div class="field adh-full rattle-sanitaire" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
-        <div class="field adh-full rattle-sanitaire" id="adhEsspWrap" style="display:none"><label for="adhEsspSelect" data-i18n="adhEtablissement"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDivisionWrap" style="display:none"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field adh-full rattle-sanitaire" id="adhEsspWrap" style="display:none"><label for="adhEsspSelect" data-i18n="adhEtablissement"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhServiceGstWrap" style="display:none"><label for="adhServiceGst" data-i18n="adhServiceGst"></label><select id="adhServiceGst"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhUniteWrap" style="display:none"><label for="adhUnite" data-i18n="adhUnite"></label><select id="adhUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhServiceHospitalierWrap" style="display:none"><label for="adhServiceHospitalier" data-i18n="adhServiceHospitalier"></label><input id="adhServiceHospitalier" type="text" maxlength="120"></div>
@@ -12410,8 +12410,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         { value: 'hp_agadir_n1', label: 'Hôpital de proximité Agadir', niveau: 'N1', espace: 'agadir' },
         { value: 'hp_taroudant_n1', label: 'Hôpital de proximité Taroudant', niveau: 'N1', espace: 'taroudant' }
       ],
-      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Pharmacie', 'Service Accueil / Qualité / Performance'],
-      servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique'],
+      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n'],
+      servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique', 'Facturation Recouvrement'],
       servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
       unitesN1: ['Pharmacie', 'Accueil / Qualité / Performance', 'SI', 'Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Approvisionnement / Logistique'],
@@ -12968,6 +12968,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             if (esspSel) {
               esspSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
               esspSel.style.display = 'none';
+              var esspWrapAfterEtabChange = document.getElementById('adhEsspWrap');
+              if (esspWrapAfterEtabChange) esspWrapAfterEtabChange.style.display = 'none';
             }
 
           };
@@ -12997,11 +12999,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           else if (espVal) niveauCode = 'N2';
 
           var services = [];
-          if (niveauCode === 'N3' || niveauCode === 'N2') {
+          // Le détail des services est documenté pour le CHU Spécialités (N3).
+          // Ne pas extrapoler cette organisation aux établissements N2 ou N1.
+          if (niveauCode === 'N3') {
             if (divVal === 'Division Sanitaire') services = GST_DATA.servicesN3Sanitaire;
             else if (divVal === 'Division Administrative') services = GST_DATA.servicesN3Admin;
-          } else if (niveauCode === 'N1') {
-            services = GST_DATA.servicesN1;
           }
 
           services.forEach(function(s){
