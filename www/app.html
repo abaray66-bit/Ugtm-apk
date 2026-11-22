@@ -12411,6 +12411,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         { value: 'hp_taroudant_n1', label: 'Hôpital de proximité Taroudant', niveau: 'N1', espace: 'taroudant' }
       ],
       servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n'],
+      servicesN3Direct: ['Service Pharmacie', 'Service Accueil / Qualité / Performance'],
       servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique', 'Facturation Recouvrement'],
       servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
       servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
@@ -12533,10 +12534,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           'Services directement rattachés à la direction du CHU Spécialités'
         ],
         rattachementsDirects: [
-          'Division de la pharmacie régionale',
-          'Service d\'aide médicale urgente régional (SAMU)',
-          'Service de la santé publique',
-          'Bureau ordre, Documentation Archives'
+          { value: 'direct_pharmacie_regionale', label: 'Division de la pharmacie régionale', kind: 'division' },
+          { value: 'direct_samu', label: 'Service d\'aide médicale urgente régional (SAMU)', kind: 'service' },
+          { value: 'direct_sante_publique', label: 'Service de la santé publique', kind: 'service' },
+          { value: 'direct_bureau_ordre', label: 'Bureau ordre, documentation et archives', kind: 'service' }
         ],
         services: {
           'Division de la pharmacie régionale': ['Service de la gestion des médicaments', 'Service de la gestion des dispositifs médicaux', 'Service des réactifs, des consommables et des produits chimiques']
@@ -12985,6 +12986,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             if (niveauCode === 'N3' && etabVal === 'hu_specialites_agadir') {
               if (divVal === 'Division Sanitaire') services = GST_DATA.servicesN3Sanitaire;
               else if (divVal === 'Division Administrative') services = GST_DATA.servicesN3Admin;
+              else if (divVal === 'Services directement rattachés à la direction du CHU Spécialités') services = GST_DATA.servicesN3Direct;
             }
             services.forEach(function(s){
               var opt = document.createElement('option');
@@ -13020,7 +13022,31 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           }
           var esspWrapOnDivision = document.getElementById('adhEsspWrap');
           if (esspWrapOnDivision) esspWrapOnDivision.style.display = 'none';
-          if (!divVal || !district.value) return;
+          if (!divVal) return;
+
+          if (divVal === 'Rattachements directs de la DGA sanitaire (hors district)') {
+            GST_DATA.sanitaire.rattachementsDirects.forEach(function(item){
+              var opt = document.createElement('option');
+              opt.value = item.value;
+              opt.textContent = item.label;
+              etabSelect.appendChild(opt);
+            });
+            etabSelect.disabled = false;
+            fixSelectLabels('adhEtablissement');
+            return;
+          }
+          if (divVal === 'Services directement rattachés à la direction du CHU Spécialités') {
+            var specialites = GST_DATA.etablissementsN3.filter(function(e){ return e.value === 'hu_specialites_agadir'; });
+            specialites.forEach(function(e){
+              var opt = document.createElement('option');
+              opt.value = e.value; opt.textContent = e.label;
+              etabSelect.appendChild(opt);
+            });
+            etabSelect.disabled = specialites.length === 0;
+            fixSelectLabels('adhEtablissement');
+            return;
+          }
+          if (!district.value) return;
 
           if (typeof HOSP_LIST !== 'undefined') {
             HOSP_LIST.filter(function(h){
