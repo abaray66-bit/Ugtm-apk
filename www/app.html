@@ -12946,9 +12946,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
                   label('adhServiceGst','Type de structure');
                   fill(service,[
                     {value:'Hôpital de proximité',label:'Hôpital de proximité'},
-                    {value:'ESSP',label:'ESSP'},
+                    {value:'Structure d’appui',label:'Structure d’appui'},
                     {value:'EMS',label:'EMS'},
-                    {value:'Structure d’appui',label:'Structure d’appui'}
+                    {value:'ESSP',label:'ESSP'}
                   ]);
                   show('service',true);
                   service.onchange=function(){
@@ -12961,8 +12961,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
                       rows=HOSP_LIST.filter(function(h){return h.d===district.value&&h.c==='HPr';})
                         .map(function(h){return {n:h.n,t:'Hôpital de proximité',c:''};});
                     }else if(service.value==='ESSP'&&typeof ESSP_LIST!=='undefined'){
+                      var esspOrder=['CSU-2','CSU-1','CSR-2','CSR-1','DR'];
                       rows=ESSP_LIST.filter(function(e){
-                        return e.p===district.value&&['CSU-1','CSU-2','CSR-1','CSR-2','DR'].indexOf(e.t)!==-1;
+                        return e.p===district.value&&esspOrder.indexOf(e.t)!==-1;
+                      }).sort(function(a,b){
+                        return esspOrder.indexOf(a.t)-esspOrder.indexOf(b.t);
                       });
                     }else if(service.value==='Structure d’appui'&&typeof ESSP_LIST!=='undefined'){
                       rows=ESSP_LIST.filter(function(e){
