@@ -3591,7 +3591,7 @@ window.markNotificationRead=markNotificationRead;
         </div>
 
         <!-- Le niveau classe le parcours ; la cascade hiérarchique reste dans chaque branche. -->
-        <div class="field adh-full" id="adhNiveauOrganisationnelWrap"><label for="adhNiveauOrganisationnel" data-i18n="adhNiveauOrganisationnel"></label><select id="adhNiveauOrganisationnel" required><option value="" data-i18n="adhStructureChoose"></option><option value="regional" data-i18n="adhNiveauRegional"></option><option value="territorial" data-i18n="adhNiveauTerritorial"></option></select></div>
+        <div class="field adh-full" id="adhPremierSelecteurWrap"><label for="adhPremierSelecteur">Choisissez votre structure de rattachement</label><select id="adhPremierSelecteur" required><option value="">Choisissez votre structure</option><option value="dgaAdministrative">Direction générale adjointe – Branche administrative</option><option value="dgaSanitaire">Direction générale adjointe – Branche sanitaire</option><option value="directionStrategie">Direction Stratégie et Santé Publique</option><option value="directionSI">Direction Systèmes d’Information</option><option value="directionSoinsPrimaires">Direction Soins Santé Primaires – Prévention – Promotion de la Santé</option><option value="divisionAudit">Division Audit, Qualité, Contrôle de Gestion</option><option value="divisionRecherche">Division Recherche et Innovation</option><option value="serviceCommunication">Service Communication</option><option value="serviceInspection">Service Appui Inspection et Contrôle des Établissements</option><option value="comiteHospitaloUniversitaire">Comité Hospitalo-universitaire</option><option value="comitePilotage">Comité de Pilotage et de Suivi</option></select></div><div class="field adh-full" id="adhNiveauOrganisationnelWrap" style="display:none"><label for="adhNiveauOrganisationnel" data-i18n="adhNiveauOrganisationnel"></label><select id="adhNiveauOrganisationnel"><option value="regional">regional</option><option value="territorial">territorial</option></select></div>
         <div class="field" id="adhRattachementWrap" style="display:none"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalStructureWrap" style="display:none"><label for="adhSanitaireRegionalStructure" data-i18n="adhSanitaireRegionalStructure"></label><select id="adhSanitaireRegionalStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalDivisionWrap" style="display:none"><label for="adhSanitaireRegionalDivision">Division</label><select id="adhSanitaireRegionalDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -13455,6 +13455,20 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     window.configureAdhLevel=configureAdhLevel;
     function attachAdhListeners(){
       var levelSel=document.getElementById('adhNiveauOrganisationnel');
+      var firstSel=document.getElementById('adhPremierSelecteur');
+      if(firstSel)firstSel.addEventListener('change',function(){
+        var v=firstSel.value;
+        var level=(v==='dgaAdministrative'||v==='dgaSanitaire')?'regional':'regional';
+        if(levelSel)levelSel.value=level;
+        configureAdhLevel(level,false);
+        var branch=document.getElementById('adhRattachement');
+        if(branch){
+          if(v==='dgaAdministrative')branch.value='dgaAdministrative';
+          else if(v==='dgaSanitaire')branch.value='dgaSanitaire';
+          else branch.value='pole';
+        }
+        gstCascade();
+      });
       if(levelSel)levelSel.addEventListener('change',function(){configureAdhLevel(levelSel.value,false);gstCascade();});
       // Seul le rattachement relance gstCascade (affichage/masquage des branches)
       // Chaque select enfant gère ses propres enfants via son propre onchange
