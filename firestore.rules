@@ -754,12 +754,7 @@ service cloud.firestore {
               'divisionStrategie', 'serviceStrategie',
               'divisionSI', 'serviceSI',
               'divisionSoins', 'serviceSoins',
-              'serviceAudit', 'serviceRecherche',
-              // Champs sanitaire (HU, Espace, Pharmacie)
-              'huDivision', 'huService',
-              'espaceDivision', 'espaceService', 'espaceDistrict',
-              'espaceEtablissement', 'espaceUnite', 'espaceServiceHospitalier',
-              'pharmacieService'];
+              'serviceAudit', 'serviceRecherche'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -871,12 +866,7 @@ service cloud.firestore {
     'divisionStrategie', 'serviceStrategie',
     'divisionSI', 'serviceSI',
     'divisionSoins', 'serviceSoins',
-    'serviceAudit', 'serviceRecherche',
-    // Champs sanitaire (HU, Espace, Pharmacie)
-    'huDivision', 'huService',
-    'espaceDivision', 'espaceService', 'espaceDistrict',
-    'espaceEtablissement', 'espaceUnite', 'espaceServiceHospitalier',
-    'pharmacieService'
+    'serviceAudit', 'serviceRecherche'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -885,27 +875,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time
        && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
            || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'huSpecialitesAgadir'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'huMereEnfantAgadir'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'huOncologieAgadir'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'huPsychiatrieAgadir'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'espaceAgadir'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'espaceTaroudant'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'pharmacieRegionale'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'serviceSantePublique'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'serviceSamu'
-           || request.resource.data.province in adhesionProvinces())
-       && (request.resource.data.get('rattachement', '') != 'bureauOrdre'
-           || request.resource.data.province in adhesionProvinces())
-       && okText(request.resource.data.email, 254)
+        && okText(request.resource.data.email, 254)
        && request.resource.data.signature is string
        && request.resource.data.signature.size() > 0
        && request.resource.data.signature.size() <= 20000
@@ -990,26 +960,6 @@ service cloud.firestore {
           && request.resource.data.uid == uid
           && (request.resource.data.get('rattachement', '') != 'dgaSanitaire'
               || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'huSpecialitesAgadir'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'huMereEnfantAgadir'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'huOncologieAgadir'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'huPsychiatrieAgadir'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'espaceAgadir'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'espaceTaroudant'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'pharmacieRegionale'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'serviceSantePublique'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'serviceSamu'
-              || request.resource.data.province in adhesionProvinces())
-          && (request.resource.data.get('rattachement', '') != 'bureauOrdre'
-              || request.resource.data.province in adhesionProvinces())
           && request.resource.data.province == resource.data.province
           && request.resource.data.email == resource.data.email
           && request.resource.data.createdAt == resource.data.createdAt
@@ -1027,12 +977,7 @@ service cloud.firestore {
                       'divisionStrategie', 'serviceStrategie',
                       'divisionSI', 'serviceSI',
                       'divisionSoins', 'serviceSoins',
-                      'serviceAudit', 'serviceRecherche',
-                      // Champs sanitaire (HU, Espace, Pharmacie)
-                      'huDivision', 'huService',
-                      'espaceDivision', 'espaceService', 'espaceDistrict',
-                      'espaceEtablissement', 'espaceUnite', 'espaceServiceHospitalier',
-                      'pharmacieService'])
+                      'serviceAudit', 'serviceRecherche'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''
