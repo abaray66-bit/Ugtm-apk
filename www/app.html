@@ -13313,10 +13313,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       ids.forEach(function(id){
         var el = document.getElementById(id);
         if (el) {
+          // Ne reconstruire la cascade qu'après un changement réel.
+          // click/input/blur réinitialisaient les sélecteurs enfants pendant la navigation.
           el.addEventListener('change', gstCascade);
-          el.addEventListener('input', gstCascade);
-          el.addEventListener('click', gstCascade);
-          el.addEventListener('blur', gstCascade);
           fixSelectLabels(id);
         }
       });
