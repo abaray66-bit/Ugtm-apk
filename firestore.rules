@@ -747,7 +747,7 @@ service cloud.firestore {
       return ['nom', 'prenom', 'cin', 'dob', 'phone', 'address',
               'province', 'establishment', 'service', 'function',
               'specialty', 'ppr', 'type', 'reason', 'commitment', 'date',
-              'structureMere', 'rattachement', 'espaceSanitaire', 'district',
+              'structureMere', 'rattachement', 'sanitaryStructure', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
               'directionAdmin', 'divisionAdmin', 'serviceAdmin',
@@ -800,7 +800,7 @@ service cloud.firestore {
       return ['uid', 'email', 'province', 'application', 'signature',
               'status', 'adminNote', 'adminSignature', 'signedBy',
               'signedAt', 'createdAt', 'updatedAt',
-              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'];
+              'structureId', 'validatedBy', 'validatedAt', 'validatedByRole', 'sanitaryStructure'];
     }
 
     // Contenu du dossier (application) : toutes les clés attendues,
@@ -835,6 +835,7 @@ service cloud.firestore {
         && okText(app.ppr, 30)
         && app.province == province
         && app.commitment == true
+        && (app.rattachement != 'dgaSanitaire' || app.sanitaryStructure in ['huSpecialitesAgadir','huMereEnfantAgadir','huOncologieAgadir','huPsychiatrieAgadir','espaceAgadir','espaceTaroudant','pharmacieRegionale','serviceSantePublique','serviceSamu','bureauOrdre'])
         && app.type in ['first', 'renewal']
         && okText(app.reason, 200)
         && ((app.type == 'first' && app.reason == '')
@@ -858,7 +859,7 @@ service cloud.firestore {
   && request.resource.data.keys().hasOnly([
     'uid', 'email', 'province', 'application', 'signature',
     'status', 'adminNote', 'createdAt', 'updatedAt',
-    'structureId', 'espaceSanitaire', 'district',
+    'structureId', 'espaceSanitaire', 'district', 'sanitaryStructure',
     'division', 'serviceGst',
     'unite', 'serviceHospitalier',
     'rattachement', 'directionPole', 'divisionPole', 'servicePole',
@@ -969,8 +970,8 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['application', 'signature', 'status', 'adminNote',
                       'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
-                      'structureId', 'espaceSanitaire', 'district',
-                      'division', 'serviceGst',
+                      'structureId', 'espaceSanitaire', 'district', 'sanitaryStructure',
+                       'division', 'serviceGst',
                       'unite', 'serviceHospitalier',
                       'rattachement', 'directionPole', 'divisionPole', 'servicePole',
                       'directionAdmin', 'divisionAdmin', 'serviceAdmin',
