@@ -13547,11 +13547,18 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         serviceRecherche:document.getElementById('adhServiceRecherche')?document.getElementById('adhServiceRecherche').value:'',
         establishment:(function(){
           var sel=document.getElementById('adhEtablissement');
+          var division=document.getElementById('adhDivision');
+          var service=document.getElementById('adhServiceGst');
+          var essp=document.getElementById('adhEsspSelect');
+          var other=document.getElementById('adhEtabOther');
+          if(division&&division.value==='Division sanitaire'){
+            if(sel&&sel.value==='hospital_provincial')return service?service.value:'';
+            if(sel&&sel.value==='proximity_group')return (essp&&essp.value)||(other&&other.value.trim())||'';
+            return '';
+          }
           if(sel && sel.value && sel.value!=='other')return sel.value;
           if(sel && sel.value==='other'){
-            var essp=document.getElementById('adhEsspSelect');
             if(essp && essp.value)return essp.value;
-            var other=document.getElementById('adhEtabOther');
             if(other && other.value.trim())return other.value.trim();
           }
           var dirPole=document.getElementById('adhDirectionPole');
