@@ -13114,6 +13114,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var espaceEtabSel = document.getElementById('adhEspaceEtablissement');
         var espaceEtabOther = document.getElementById('adhEspaceEtabOtherWrap');
         var espaceUniteSel = document.getElementById('adhEspaceUnite');
+        var espaceUniteWrap = document.getElementById('adhEspaceUniteWrap');
         var espaceServiceHosp = document.getElementById('adhEspaceServiceHosp');
         var espaceEsspSel = document.getElementById('adhEspaceEsspSelect');
 
@@ -13146,6 +13147,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
         espaceUniteSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
         espaceUniteSel.disabled = true;
+        if (espaceUniteWrap) espaceUniteWrap.style.display = 'none';
 
         espaceServiceHosp.value = '';
         espaceServiceHosp.disabled = true;
@@ -13181,6 +13183,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             var opt = document.createElement('option'); opt.value = u; opt.textContent = u; espaceUniteSel.appendChild(opt);
           });
           espaceUniteSel.disabled = unites.length === 0;
+          if (espaceUniteWrap) espaceUniteWrap.style.display = unites.length ? 'block' : 'none';
         };
 
         // District → Établissement
@@ -13206,13 +13209,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             });
           }
 
-          // HU N3 si espace agadir
-          if (isAgadir && typeof GST_DATA !== 'undefined') {
-            GST_DATA.etablissementsN3.forEach(function(e) {
-              var opt = document.createElement('option');
-              opt.value = e.value; opt.textContent = e.label; espaceEtabSel.appendChild(opt);
-            });
-          }
+          // Les HU CHU sont sélectionnés au niveau « Structure de la branche sanitaire ».
+          // Ils ne doivent pas être répétés dans les établissements de l'Espace sanitaire.
 
           // Hôpitaux de proximité N1 de l'espace
           if (isAgadir && GST_DATA.etablissementsN1) {
