@@ -11912,7 +11912,7 @@ window.UGTM.failed(err);
           if(app.divisionAdmin)row1('Division (Administrative)',app.divisionAdmin);
           if(app.serviceAdmin)row1('Service (Administrative)',app.serviceAdmin);
           row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
-          if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
+          if(app.espaceSanitaire)row2(String(app.espaceSanitaire).indexOf('Direction Espace sanitaire')===0?'Espace sanitaire':'Structure sanitaire',app.espaceSanitaire,'District',app.district);
           if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
           if(app.unite)row1('Unité',app.unite);
           if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
@@ -12874,6 +12874,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           show('division',true);label('adhDivision','Division');
           fill(division,Object.keys(model));
           division.onchange=function(){
+            if(serviceHospWrap)serviceHospWrap.style.display='none';
+            if(serviceHosp)serviceHosp.value='';
             setServices(model[division.value]||[]);
             if(division.value==='Division sanitaire'&&serviceHospWrap)serviceHospWrap.style.display='';
           };
@@ -12912,6 +12914,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
                 if(otherWrap)otherWrap.style.display='none';
                 if(otherText)otherText.value='';
                 if(etab.value==='other'){
+                  if(serviceHospWrap)serviceHospWrap.style.display='none';
+                  if(serviceHosp)serviceHosp.value='';
                   if(essp&&typeof ESSP_LIST!=='undefined'){
                     var rows=ESSP_LIST.filter(function(e){return e.p===district.value;});
                     var nameCounts={};rows.forEach(function(e){nameCounts[e.n]=(nameCounts[e.n]||0)+1;});
@@ -12925,6 +12929,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
                   setServices([]);
                   fill(unite,esspUnits);show('unite',true);
                 }else if(etab.value){
+                  if(serviceHospWrap)serviceHospWrap.style.display='';
                   setServices(hpServices);
                   fill(unite,hpUnits);show('unite',true);
                 }else{setServices([]);fill(unite,[]);show('unite',false);}
