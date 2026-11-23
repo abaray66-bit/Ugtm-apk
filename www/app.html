@@ -13510,13 +13510,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if(levelSel)levelSel.value=level;
         configureAdhLevel(level,false);
         var branch=document.getElementById('adhRattachement');
+        var isCommittee=(v==='comiteHospitaloUniversitaire'||v==='comitePilotage');
         if(branch){
           if(v==='dgaAdministrative')branch.value='dgaAdministrative';
           else if(v==='dgaSanitaire')branch.value='dgaSanitaire';
+          else if(isCommittee)branch.value='';
           else branch.value='pole';
+          branch.required=!isCommittee;
         }
         var poleFields=document.querySelectorAll('.rattle-pole');
-        if(v==='comiteHospitaloUniversitaire'||v==='comitePilotage'){
+        if(isCommittee){
           poleFields.forEach(function(el){el.style.display='none';});
           var branchWrap=document.getElementById('adhRattachementWrap');
           if(branchWrap)branchWrap.style.display='none';
@@ -13525,8 +13528,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if(branchWrap)branchWrap.style.display='';
         }
         gstCascade();
-        if(v==='comiteHospitaloUniversitaire'||v==='comitePilotage'){
+        if(isCommittee){
           poleFields.forEach(function(el){el.style.display='none';});
+          var branchWrap=document.getElementById('adhRattachementWrap');
+          if(branchWrap)branchWrap.style.display='none';
         }
       });
       if(levelSel)levelSel.addEventListener('change',function(){configureAdhLevel(levelSel.value,false);gstCascade();});
