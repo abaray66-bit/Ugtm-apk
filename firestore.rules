@@ -750,7 +750,11 @@ service cloud.firestore {
               'structureMere', 'rattachement', 'espaceSanitaire', 'district',
               'division', 'serviceGst', 'unite', 'serviceHospitalier',
               'directionPole', 'divisionPole', 'servicePole',
-              'directionAdmin', 'divisionAdmin', 'serviceAdmin'];
+              'directionAdmin', 'divisionAdmin', 'serviceAdmin',
+              'divisionStrategie', 'serviceStrategie',
+              'divisionSI', 'serviceSI',
+              'divisionSoins', 'serviceSoins',
+              'serviceAudit', 'serviceRecherche'];
     }
 
     // Province d'un sous-admin, tolérante à un profil qui n'aurait pas
@@ -858,7 +862,11 @@ service cloud.firestore {
     'division', 'serviceGst',
     'unite', 'serviceHospitalier',
     'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-    'directionAdmin', 'divisionAdmin', 'serviceAdmin'
+    'directionAdmin', 'divisionAdmin', 'serviceAdmin',
+    'divisionStrategie', 'serviceStrategie',
+    'divisionSI', 'serviceSI',
+    'divisionSoins', 'serviceSoins',
+    'serviceAudit', 'serviceRecherche'
   ])
         && request.resource.data.uid == uid
         && request.resource.data.status == 'pending'
@@ -965,7 +973,11 @@ service cloud.firestore {
                       'division', 'serviceGst',
                       'unite', 'serviceHospitalier',
                       'rattachement', 'directionPole', 'divisionPole', 'servicePole',
-                      'directionAdmin', 'divisionAdmin', 'serviceAdmin'])
+                      'directionAdmin', 'divisionAdmin', 'serviceAdmin',
+                      'divisionStrategie', 'serviceStrategie',
+                      'divisionSI', 'serviceSI',
+                      'divisionSoins', 'serviceSoins',
+                      'serviceAudit', 'serviceRecherche'])
           && request.resource.data.get('adminSignature', '') == ''
           && request.resource.data.get('signedBy', '') == ''
           && request.resource.data.get('signedAt', '') == ''

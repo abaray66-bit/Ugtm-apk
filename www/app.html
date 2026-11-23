@@ -3587,16 +3587,11 @@ window.markNotificationRead=markNotificationRead;
         <!-- Niveau 0 : Structure mère (fixe) -->
         <div class="field adh-full" id="adhStructureMereWrap">
           <label data-i18n="adhStructureMere"></label>
-          <input id="adhStructureMere" type="text" readonly value="Direction Générale du GST Région Souss-Massa">
+          <input id="adhStructureMere" type="text" readonly value="GST Souss-Massa">
         </div>
 
-        <!-- Le niveau classe le parcours ; la cascade hiérarchique reste dans chaque branche. -->
-        <div class="field adh-full" id="adhPremierSelecteurWrap"><label for="adhPremierSelecteur">Choisissez votre structure de rattachement</label><select id="adhPremierSelecteur" required><option value="">Choisissez votre structure</option><option value="dgaAdministrative">Direction générale adjointe – Branche administrative</option><option value="dgaSanitaire">Direction générale adjointe – Branche sanitaire</option><option value="directionStrategie">Direction Stratégie et Santé Publique</option><option value="directionSI">Direction Systèmes d’Information</option><option value="directionSoinsPrimaires">Direction Soins Santé Primaires – Prévention – Promotion de la Santé</option><option value="divisionAudit">Division Audit, Qualité, Contrôle de Gestion</option><option value="divisionRecherche">Division Recherche et Innovation</option><option value="serviceCommunication">Service Communication</option><option value="serviceInspection">Service Appui Inspection et Contrôle des Établissements</option><option value="comiteHospitaloUniversitaire">Comité Hospitalo-universitaire</option><option value="comitePilotage">Comité de Pilotage et de Suivi</option></select></div><div class="field adh-full" id="adhNiveauOrganisationnelWrap" style="display:none"><label for="adhNiveauOrganisationnel" data-i18n="adhNiveauOrganisationnel"></label><select id="adhNiveauOrganisationnel"><option value="regional">regional</option><option value="territorial">territorial</option></select></div>
-        <div class="field" id="adhRattachementWrap" style="display:none"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalStructureWrap" style="display:none"><label for="adhSanitaireRegionalStructure" data-i18n="adhSanitaireRegionalStructure"></label><select id="adhSanitaireRegionalStructure"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalDivisionWrap" style="display:none"><label for="adhSanitaireRegionalDivision">Division</label><select id="adhSanitaireRegionalDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalServiceWrap" style="display:none"><label for="adhSanitaireRegionalService">Service</label><select id="adhSanitaireRegionalService"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field rattle-sanitaire-regional" id="adhSanitaireRegionalUniteWrap" style="display:none"><label for="adhSanitaireRegionalUnite">Unité</label><select id="adhSanitaireRegionalUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <!-- Niveau 1 : Rattachement organisationnel -->
+        <div class="field"><label for="adhRattachement" data-i18n="adhRattachement"></label><select id="adhRattachement" required onchange="gstCascade()"><option value="" data-i18n="adhStructureChoose"></option><option value="dgaAdministrative" data-i18n="adhRattachementDGA_Administrative"></option><option value="dgaSanitaire" data-i18n="adhRattachementDGA_Sanitaire"></option><option value="directionStrategie" data-i18n="adhRattachementDirectionStrategie"></option><option value="directionSI" data-i18n="adhRattachementDirectionSI"></option><option value="directionSoins" data-i18n="adhRattachementDirectionSoins"></option><option value="divisionAudit" data-i18n="adhRattachementDivisionAudit"></option><option value="divisionRecherche" data-i18n="adhRattachementDivisionRecherche"></option><option value="serviceCommunication" data-i18n="adhRattachementServiceCommunication"></option><option value="serviceAppuiInspection" data-i18n="adhRattachementServiceAppuiInspection"></option><option value="comiteHospitaloUniversitaire" data-i18n="adhRattachementComiteHospitaloUniversitaire"></option><option value="comitePilotageSuivi" data-i18n="adhRattachementComitePilotageSuivi"></option></select></div>
 
         <!-- === BRANCHE : PÔLE DE PILOTAGE === Direction → Division → Service -->
         <div class="field rattle-pole" id="adhDirectionPoleWrap" style="display:none"><label for="adhDirectionPole" data-i18n="adhDirectionPole"></label><select id="adhDirectionPole"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -3608,15 +3603,43 @@ window.markNotificationRead=markNotificationRead;
         <div class="field rattle-administrative" id="adhDivisionAdminWrap" style="display:none"><label for="adhDivisionAdmin" data-i18n="adhDivisionAdmin"></label><select id="adhDivisionAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-administrative" id="adhServiceAdminWrap" style="display:none"><label for="adhServiceAdmin" data-i18n="adhServiceAdmin"></label><select id="adhServiceAdmin"><option value="" data-i18n="adhStructureChoose"></option></select></div>
 
+        <!-- === BRANCHE : DIRECTION STRATEGIE ET SANTE PUBLIQUE === Division -> Service -->
+        <div class="field rattle-directionStrategie" id="adhDivisionStrategieWrap" style="display:none"><label for="adhDivisionStrategie" data-i18n="adhDivisionStrategie"></label><select id="adhDivisionStrategie"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-directionStrategie" id="adhServiceStrategieWrap" style="display:none"><label for="adhServiceStrategie" data-i18n="adhServiceStrategie"></label><select id="adhServiceStrategie"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+
+        <!-- === BRANCHE : DIRECTION SYSTEMES D'INFORMATION === Division -> Service -->
+        <div class="field rattle-directionSI" id="adhDivisionSIWrap" style="display:none"><label for="adhDivisionSI" data-i18n="adhDivisionSI"></label><select id="adhDivisionSI"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-directionSI" id="adhServiceSIWrap" style="display:none"><label for="adhServiceSI" data-i18n="adhServiceSI"></label><select id="adhServiceSI"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+
+        <!-- === BRANCHE : DIRECTION SOINS SANTE PRIMAIRES === Division -> Service -->
+        <div class="field rattle-directionSoins" id="adhDivisionSoinsWrap" style="display:none"><label for="adhDivisionSoins" data-i18n="adhDivisionSoins"></label><select id="adhDivisionSoins"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field rattle-directionSoins" id="adhServiceSoinsWrap" style="display:none"><label for="adhServiceSoins" data-i18n="adhServiceSoins"></label><select id="adhServiceSoins"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+
+        <!-- === BRANCHE : DIVISION AUDIT, QUALITE, CONTROLE DE GESTION === Service -->
+        <div class="field rattle-divisionAudit" id="adhServiceAuditWrap" style="display:none"><label for="adhServiceAudit" data-i18n="adhServiceAudit"></label><select id="adhServiceAudit"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+
+        <!-- === BRANCHE : DIVISION RECHERCHE ET INNOVATION === Service -->
+        <div class="field rattle-divisionRecherche" id="adhServiceRechercheWrap" style="display:none"><label for="adhServiceRecherche" data-i18n="adhServiceRecherche"></label><select id="adhServiceRecherche"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+
+        <!-- === BRANCHE : SERVICE COMMUNICATION === (feuille) -->
+        <div class="field rattle-serviceCommunication adh-full" id="adhServiceCommunicationWrap" style="display:none"><label data-i18n="adhServiceCommunication"></label><input type="text" readonly value="Service de la communication"></div>
+
+        <!-- === BRANCHE : SERVICE APPUI INSPECTION === (feuille) -->
+        <div class="field rattle-serviceAppuiInspection adh-full" id="adhServiceAppuiInspectionWrap" style="display:none"><label data-i18n="adhServiceAppuiInspection"></label><input type="text" readonly value="Service d'appui a l'inspection et au controle des etablissements"></div>
+
+        <!-- === BRANCHE : COMITE HOSPITALO-UNIVERSITAIRE === (feuille) -->
+        <div class="field rattle-comiteHospitaloUniversitaire adh-full" id="adhComiteHUWrap" style="display:none"><label data-i18n="adhComiteHU"></label><input type="text" readonly value="Comite Hospitalo-universitaire"></div>
+
+        <!-- === BRANCHE : COMITE DE PILOTAGE ET DE SUIVI === (feuille) -->
+        <div class="field rattle-comitePilotageSuivi adh-full" id="adhComitePilotageWrap" style="display:none"><label data-i18n="adhComitePilotage"></label><input type="text" readonly value="Comite de Pilotage et de Suivi"></div>
+
         <!-- === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité -->
-        <div class="field" style="display:none"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
+        <div class="field"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEspaceSanitaireWrap" style="display:none"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
-        <div class="field rattle-sanitaire" id="adhDivisionEspaceWrap" style="display:none"><label for="adhDivisionEspace">Division de l’espace sanitaire</label><select id="adhDivisionEspace"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDistrictWrap" style="display:none"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
-        <div class="field rattle-sanitaire" id="adhDivisionWrap" style="display:none"><label for="adhDivision">Division du district</label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhEtablissementWrap" style="display:none"><label for="adhEtablissement" data-i18n="adhEtablissement"></label><select id="adhEtablissement"><option value="" data-i18n="adhStructureChoose"></option><option value="other" data-i18n="adhOtherEtab"></option></select></div>
-        <div class="field adh-full rattle-sanitaire" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
-        <div class="field adh-full rattle-sanitaire" id="adhEsspWrap" style="display:none"><label for="adhEsspSelect" data-i18n="adhEsspLabel"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select></div>
+        <div class="field adh-full rattle-sanitaire" id="adhEtabOtherWrap" style="display:none"><label for="adhEtabOther" data-i18n="adhOtherEtab"></label><select id="adhEsspSelect"><option value="" data-i18n="adhStructureChoose"></option></select><input id="adhEtabOther" type="text" maxlength="160" placeholder="Ou saisir un autre établissement" style="margin-top:4px;"></div>
+        <div class="field rattle-sanitaire" id="adhDivisionWrap" style="display:none"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhServiceGstWrap" style="display:none"><label for="adhServiceGst" data-i18n="adhServiceGst"></label><select id="adhServiceGst"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhUniteWrap" style="display:none"><label for="adhUnite" data-i18n="adhUnite"></label><select id="adhUnite"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhServiceHospitalierWrap" style="display:none"><label for="adhServiceHospitalier" data-i18n="adhServiceHospitalier"></label><input id="adhServiceHospitalier" type="text" maxlength="120"></div>
@@ -3998,7 +4021,7 @@ heroShare:`Partager l'application`,
 adhDigitalTitle:`Demande d'adhésion`,
 adhDigitalIntro:`Remplissez votre fiche directement dans l'application. La signature se fait au doigt.`,
 adhIdentity:`Identité`, adhNom:`Nom`, adhPrenom:`Prénom`, adhCin:`CIN`, adhDob:`Date de naissance`, adhPhone:`Téléphone`, adhAddress:`Adresse`,
-adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture d'affectation`, adhEspaceSanitaire:`Espace sanitaire`, adhEspaceAgadir:`Espace sanitaire Agadir`, adhEspaceTaroudant:`Espace sanitaire Taroudant`, adhDistrict:`Direction de l'espace sanitaire / District sanitaire`, adhEtablissement:`Établissement`, adhNiveauSanitaire:`Niveau sanitaire (déduit)`, adhDivision:`Division`, adhServiceGst:`Service`, adhUnite:`Unité`, adhServiceHospitalier:`Service hospitalier`, adhStructure:`Structure locale / délégation`, adhStructureChoose:`Sélectionner une structure locale`, adhStructureNone:`Aucune structure locale disponible pour cette province`, adhStructureError:`Erreur de chargement des structures`, adhStructureLoading:`Chargement des structures…`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`(Responsabilité) Fonction`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`, adhOtherEtab:`Autre établissement`, adhEsspLabel:`ESSP du district`, adhEsspOrOther:`ESSP / EMS ou autre établissement`, adhDivisionSanitaire:`Division sanitaire`, adhDivisionAdministrative:`Division administrative`, adhNiveau3:`Niveau III — Tertiaire`, adhNiveau2:`Niveau II — Secondaire`, adhNiveau1:`Niveau I — Proximité`, adhNiveauPrimaire:`Niveau primaire — ESSP`, adhHuSpecialites:`HU Mohammed VI des Spécialités Agadir`, adhHuMereEnfant:`HU Mohammed VI Mère-Enfant Agadir`, adhHuOncologie:`HU Mohammed VI Oncologie Agadir`, adhHuPsychiatrie:`HU Mohammed VI Psychiatrie Agadir`, adhDistrictAgadir:`Agadir`, adhDistrictInezgane:`Inezgane`, adhDistrictChtouka:`Chtouka Aït Baha`, adhDistrictTiznit:`Tiznit`, adhDistrictTaroudant:`Taroudant`, adhDistrictTata:`Tata`, adhDistrictOuladTeima:`Oulad Teima (district Taroudant)`, adhStructureMere:`Structure mère`, adhNiveauOrganisationnel:`Niveau d'affectation`, adhNiveauRegional:`Niveau régional — GST`, adhNiveauTerritorial:`Espaces sanitaires — niveau secondaire et primaire`, adhSanitaireRegionalStructure:`Structure de la direction adjointe sanitaire`, adhRattachementTerritorial:`Espaces sanitaires — niveau secondaire et primaire`, adhRattachement:`Rattachement organisationnel`, adhRattachementPole:`Pôle de pilotage et de gouvernance générale`, adhRattachementDGA_Sanitaire:`Branche sanitaire (DGA Sanitaire)`, adhRattachementDGA_Administrative:`Branche administrative (DGA Administrative)`, adhDirectionPole:`Direction (Pôle)`, adhDirectionAdmin:`Direction (Administrative)`, adhDivisionPole:`Division (Pôle)`, adhServicePole:`Service (Pôle)`, adhDivisionAdmin:`Division (DGA Administrative)`, adhServiceAdmin:`Service (DGA Administrative)`,
+adhProfessional:`Situation professionnelle`, adhProvince:`Province / préfecture d'affectation`, adhEspaceSanitaire:`Espace sanitaire`, adhEspaceAgadir:`Espace sanitaire Agadir`, adhEspaceTaroudant:`Espace sanitaire Taroudant`, adhDistrict:`District sanitaire`, adhEtablissement:`Établissement`, adhNiveauSanitaire:`Niveau sanitaire (déduit)`, adhDivision:`Division`, adhServiceGst:`Service`, adhUnite:`Unité`, adhServiceHospitalier:`Service hospitalier`, adhStructure:`Structure locale / délégation`, adhStructureChoose:`Sélectionner une structure locale`, adhStructureNone:`Aucune structure locale disponible pour cette province`, adhStructureError:`Erreur de chargement des structures`, adhStructureLoading:`Chargement des structures…`, adhEstablishment:`Établissement / structure`, adhService:`Service / unité`, adhFunction:`(Responsabilité) Fonction`, adhSpecialty:`Catégorie professionnelle`, adhPpr:`PPR`, adhOtherEtab:`Autre établissement`, adhDivisionSanitaire:`Division sanitaire`, adhDivisionAdministrative:`Division administrative`, adhNiveau3:`Niveau III — Tertiaire`, adhNiveau2:`Niveau II — Secondaire`, adhNiveau1:`Niveau I — Proximité`, adhNiveauPrimaire:`Niveau primaire — ESSP`, adhHuSpecialites:`HU Mohammed VI des Spécialités Agadir`, adhHuMereEnfant:`HU Mohammed VI Mère-Enfant Agadir`, adhHuOncologie:`HU Mohammed VI Oncologie Agadir`, adhHuPsychiatrie:`HU Mohammed VI Psychiatrie Agadir`, adhDistrictAgadir:`Agadir`, adhDistrictInezgane:`Inezgane`, adhDistrictChtouka:`Chtouka Aït Baha`, adhDistrictTiznit:`Tiznit`, adhDistrictTaroudant:`Taroudant`, adhDistrictTata:`Tata`, adhDistrictOuladTeima:`Oulad Teima (district Taroudant)`, adhStructureMere:`Structure mère`, adhRattachement:`Rattachement organisationnel`, adhRattachementPole:`Pôle de pilotage et de gouvernance générale`, adhRattachementDGA_Sanitaire:`Branche sanitaire (DGA Sanitaire)`, adhRattachementDGA_Administrative:`Branche administrative (DGA Administrative)`, adhRattachementDirectionStrategie:`Direction Stratégie et Santé Publique`, adhRattachementDirectionSI:`Direction Systèmes d'Information`, adhRattachementDirectionSoins:`Direction Soins Santé Primaires`, adhRattachementDivisionAudit:`Division Audit, Qualité, Contrôle de Gestion`, adhRattachementDivisionRecherche:`Division Recherche et Innovation`, adhRattachementServiceCommunication:`Service Communication`, adhRattachementServiceAppuiInspection:`Service Appui Inspection et Contrôle des Établissements`, adhRattachementComiteHospitaloUniversitaire:`Comité Hospitalo-universitaire`, adhRattachementComitePilotageSuivi:`Comité de Pilotage et de Suivi`, adhDirectionPole:`Direction (Pôle)`, adhDirectionAdmin:`Direction (Administrative)`, adhDivisionPole:`Division (Pôle)`, adhServicePole:`Service (Pôle)`, adhDivisionAdmin:`Division (DGA Administrative)`, adhServiceAdmin:`Service (DGA Administrative)`, adhDivisionStrategie:`Division (Stratégie)`, adhServiceStrategie:`Service (Stratégie)`, adhDivisionSI:`Division (SI)`, adhServiceSI:`Service (SI)`, adhDivisionSoins:`Division (Soins)`, adhServiceSoins:`Service (Soins)`, adhServiceAudit:`Service (Audit)`, adhServiceRecherche:`Service (Recherche)`, adhServiceCommunication:`Service Communication`, adhServiceAppuiInspection:`Service Appui Inspection`, adhComiteHU:`Comité Hospitalo-universitaire`, adhComitePilotage:`Comité de Pilotage et de Suivi`,
 adhFunctionChoose:`Choisir une fonction`,
 adhFunctionToSpecify:`Fonction à préciser`,
 adhFunctionNone:`Sans fonction`,
@@ -4643,7 +4666,7 @@ heroShare:`شاركوا التطبيق`,
 adhDigitalTitle:`طلب الانخراط`,
 adhDigitalIntro:`املأوا استمارة الانخراط مباشرة داخل التطبيق. يمكن التوقيع باستعمال الإصبع.`,
 adhIdentity:`الهوية`, adhNom:`الاسم العائلي`, adhPrenom:`الاسم الشخصي`, adhCin:`رقم البطاقة الوطنية`, adhDob:`تاريخ الازدياد`, adhPhone:`الهاتف`, adhAddress:`العنوان`,
-adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEspaceSanitaire:`الفضاء الصحي`, adhEspaceAgadir:`الفضاء الصحي أكادير`, adhEspaceTaroudant:`الفضاء الصحي تارودانت`, adhDistrict:`مديرية الفضاء الصحي / الدائرة الصحية`, adhEtablissement:`المؤسسة`, adhNiveauSanitaire:`المستوى الصحي (مستنتج)`, adhDivision:`القسم`, adhServiceGst:`المصلحة`, adhUnite:`الوحدة`, adhServiceHospitalier:`المصلحة hospitalière`, adhStructure:`الهيكل المحلي / التفويض`, adhStructureChoose:`اختر هيكلًا محليًا`, adhStructureNone:`لا توجد هياكل محلية متاحة لهذا الإقليم`, adhStructureError:`خطأ في تحميل الهياكل`, adhStructureLoading:`جاري تحميل الهياكل…`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`, adhOtherEtab:`مؤسسة أخرى`, adhEsspLabel:`مؤسسات الرعاية الصحية الأولية التابعة للدائرة`, adhEsspOrOther:`مؤسسات الرعاية الصحية الأولية أو مؤسسة أخرى`, adhDivisionSanitaire:`القسم الصحي`, adhDivisionAdministrative:`القسم الإداري`, adhNiveau3:`المستوى III — ثالثي`, adhNiveau2:`المستوى II — ثانوي`, adhNiveau1:`المستوى I — القرب`, adhNiveauPrimaire:`المستوى الأولي — ESSP`, adhHuSpecialites:`المستشفى الجامعي محمد السادس للتخصصات أكادير`, adhHuMereEnfant:`المستشفى الجامعي محمد السادس للأم والطفل أكادير`, adhHuOncologie:`المستشفى الجامعي محمد السادس لعلم الأورام أكادير`, adhHuPsychiatrie:`المستشفى الجامعي محمد السادس للطب النفسي أكادير`, adhDistrictAgadir:`أكادير`, adhDistrictInezgane:`إنزكان`, adhDistrictChtouka:`اشتوكة أيت باها`, adhDistrictTiznit:`تيزنيت`, adhDistrictTaroudant:`تارودانت`, adhDistrictTata:`طاطا`, adhDistrictOuladTeima:`أولاد تايمة (دائرة تارودانت)`, adhStructureMere:`الهيكل الأم`, adhNiveauOrganisationnel:`مستوى التعيين`, adhNiveauRegional:`المستوى الجهوي — المجموعة الصحية الترابية`, adhNiveauTerritorial:`الفضاءات الصحية — المستوى الثانوي والأولي`, adhSanitaireRegionalStructure:`هيكل المديرية المساعدة للصحة`, adhRattachementTerritorial:`الفضاءات الصحية — المستوى الثانوي والأولي`, adhRattachement:`الارتباط التنظيمي`, adhRattachementPole:`مجلس القيادة والإدارة العامة`, adhRattachementDGA_Sanitaire:`فرع صحي (نائب المدير العام للصحة)`, adhRattachementDGA_Administrative:`فرع إداري (نائب المدير العام للإدارة)`, adhDirectionPole:`المديرية (المجلس)`, adhDirectionAdmin:`المديرية (الإدارة)`, adhDivisionPole:`القسم (المجلس)`, adhServicePole:`المصلحة (المجلس)`, adhDivisionAdmin:`القسم (نائب المدير العام للإدارة)`, adhServiceAdmin:`المصلحة (نائب المدير العام للإدارة)`,
+adhProfessional:`الوضعية المهنية`, adhProvince:`الإقليم / العمالة`, adhEspaceSanitaire:`الفضاء الصحي`, adhEspaceAgadir:`الفضاء الصحي أكادير`, adhEspaceTaroudant:`الفضاء الصحي تارودانت`, adhDistrict:`الدائرة الصحية`, adhEtablissement:`المؤسسة`, adhNiveauSanitaire:`المستوى الصحي (مستنتج)`, adhDivision:`القسم`, adhServiceGst:`المصلحة`, adhUnite:`الوحدة`, adhServiceHospitalier:`المصلحة hospitalière`, adhStructure:`الهيكل المحلي / التفويض`, adhStructureChoose:`اختر هيكلًا محليًا`, adhStructureNone:`لا توجد هياكل محلية متاحة لهذا الإقليم`, adhStructureError:`خطأ في تحميل الهياكل`, adhStructureLoading:`جاري تحميل الهياكل…`, adhEstablishment:`المؤسسة / الهيكل`, adhService:`المصلحة / الوحدة`, adhFunction:`الوظيفة`, adhSpecialty:`الفئة المهنية`, adhPpr:`PPR`, adhOtherEtab:`مؤسسة أخرى`, adhDivisionSanitaire:`القسم الصحي`, adhDivisionAdministrative:`القسم الإداري`, adhNiveau3:`المستوى III — ثالثي`, adhNiveau2:`المستوى II — ثانوي`, adhNiveau1:`المستوى I — القرب`, adhNiveauPrimaire:`المستوى الأولي — ESSP`, adhHuSpecialites:`المستشفى الجامعي محمد السادس للتخصصات أكادير`, adhHuMereEnfant:`المستشفى الجامعي محمد السادس للأم والطفل أكادير`, adhHuOncologie:`المستشفى الجامعي محمد السادس لعلم الأورام أكادير`, adhHuPsychiatrie:`المستشفى الجامعي محمد السادس للطب النفسي أكادير`, adhDistrictAgadir:`أكادير`, adhDistrictInezgane:`إنزكان`, adhDistrictChtouka:`اشتوكة أيت باها`, adhDistrictTiznit:`تيزنيت`, adhDistrictTaroudant:`تارودانت`, adhDistrictTata:`طاطا`, adhDistrictOuladTeima:`أولاد تايمة (دائرة تارودانت)`, adhStructureMere:`الهيكل الأم`, adhRattachement:`الارتباط التنظيمي`, adhRattachementPole:`مجلس القيادة والإدارة العامة`, adhRattachementDGA_Sanitaire:`فرع صحي (نائب المدير العام للصحة)`, adhRattachementDGA_Administrative:`فرع إداري (نائب المدير العام للإدارة)`, adhRattachementDirectionStrategie:`ellipsis`, adhRattachementDirectionSI:`ellipsis`, adhRattachementDirectionSoins:`ellipsis`, adhRattachementDivisionAudit:`ellipsis`, adhRattachementDivisionRecherche:`ellipsis`, adhRattachementServiceCommunication:`ellipsis`, adhRattachementServiceAppuiInspection:`ellipsis`, adhRattachementComiteHospitaloUniversitaire:`ellipsis`, adhRattachementComitePilotageSuivi:`ellipsis`, adhDirectionPole:`المديرية (المجلس)`, adhDirectionAdmin:`المديرية (الإدارة)`, adhDivisionPole:`القسم (المجلس)`, adhServicePole:`المصلحة (المجلس)`, adhDivisionAdmin:`القسم (نائب المدير العام للإدارة)`, adhServiceAdmin:`المصلحة (نائب المدير العام للإدارة)`, adhDivisionStrategie:`القسم (الاستراتيجية)`, adhServiceStrategie:`المصلحة (الاستراتيجية)`, adhDivisionSI:`القسم (نظم المعلومات)`, adhServiceSI:`المصلحة (نظم المعلومات)`, adhDivisionSoins:`القسم (الرعاية)`, adhServiceSoins:`المصلحة (الرعاية)`, adhServiceAudit:`المصلحة (التدقيق)`, adhServiceRecherche:`المصلحة (البحث)`, adhServiceCommunication:`المصلحة (التواصل)`, adhServiceAppuiInspection:`المصلحة (الدعم)`, adhComiteHU:`اللجنة Hospitalo-universitaire`, adhComitePilotage:`اللجنة de Pilotage et de Suivi`,
 adhFunctionChoose:`اختر وظيفة`,
 adhFunctionToSpecify:`وظيفة لتحديد`,
 adhFunctionNone:`بدون وظيفة`,
@@ -11882,64 +11905,10 @@ window.UGTM.failed(err);
           row1('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
-          row1('Établissement / structure', (function(v){
-            if(!v)return '';
-            var huLabels={
-              hu_specialites_agadir:'HU Mohammed VI des Spécialités Agadir',
-              hu_mere_enfant_agadir:'HU Mohammed VI Mère-Enfant Agadir',
-              hu_oncologie_agadir:'HU Mohammed VI Oncologie Agadir',
-              hu_psychiatrie_agadir:'HU Mohammed VI Psychiatrie Agadir'
-            };
-            if(huLabels[v])return huLabels[v];
-            if(v==='other')return app.establishment||'';
-            if(v.indexOf('hosp_')===0 && typeof HOSP_LIST!=='undefined'){
-              var hosp=HOSP_LIST.find(function(h){return 'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_')===v;});
-              if(hosp)return hosp.n+' ('+hosp.c+')';
-            }
-            if(v==='dga_sanitaire_admin' && typeof GST_DATA!=='undefined' && GST_DATA.sanitaire)return GST_DATA.sanitaire.direction.label;
-            if(v.indexOf('direct_')===0 && typeof GST_DATA!=='undefined' && GST_DATA.sanitaire){
-              var direct=GST_DATA.sanitaire.rattachementsDirects.find(function(x){return x.value===v;});
-              if(direct)return direct.label;
-            }
-            return v;
-          })(app.establishment));
-          if(app.establishmentCommune||app.establishmentType)row2('Commune',app.establishmentCommune||'','Catégorie',app.establishmentType?(ESSP_CATS[app.establishmentType]||app.establishmentType):'');
-          if(app.structurePrimaire){
-            var primaryLabels={
-              dgaAdministrative:'Direction générale adjointe – Branche administrative',
-              dgaSanitaire:'Direction générale adjointe – Branche sanitaire',
-              directionStrategie:'Direction Stratégie et Santé Publique',
-              directionSI:'Direction Systèmes d’Information',
-              directionSoinsPrimaires:'Direction Soins Santé Primaires – Prévention – Promotion de la Santé',
-              divisionAudit:'Division Audit, Qualité, Contrôle de Gestion',
-              divisionRecherche:'Division Recherche et Innovation',
-              serviceCommunication:'Service Communication',
-              serviceInspection:'Service Appui Inspection et Contrôle des Établissements',
-              comiteHospitaloUniversitaire:'Comité Hospitalo-universitaire',
-              comitePilotage:'Comité de Pilotage et de Suivi'
-            };
-            row1('Structure de rattachement',primaryLabels[app.structurePrimaire]||app.structurePrimaire);
-          }
-          if(app.rattachement==='pole'){
-            if(app.directionPole)row1('Direction',app.directionPole);
-            if(app.divisionPole)row1('Division / rattachement',app.divisionPole);
-            if(app.servicePole)row1('Service',app.servicePole);
-          }else if(app.rattachement==='dgaAdministrative'){
-            if(app.directionAdmin)row1('Direction administrative',app.directionAdmin);
-            if(app.divisionAdmin)row1('Division / rattachement',app.divisionAdmin);
-            if(app.serviceAdmin)row1('Service administratif',app.serviceAdmin);
-          }else if(app.rattachement==='dgaSanitaire'||app.rattachement==='territorialSanitaire'){
-            if(app.niveauOrganisationnel!=='regional'&&app.espaceSanitaire){
-              var espaceLabel=(GST_DATA.espaces[app.espaceSanitaire]||{}).label||app.espaceSanitaire;
-              row1('Espace sanitaire',espaceLabel);
-              if(app.espaceAdministration){var adminInfo=GST_DATA.espaces.administrations[app.espaceSanitaire];row1('Administration de l’espace sanitaire',adminInfo?adminInfo.label:app.espaceAdministration);}
-              else if(app.district)row1('District sanitaire',GST_DATA.districts[app.district]||app.district);
-            }
-            if(app.establishment)row1('Structure sanitaire',app.establishment);
-            if(app.division)row1('Division / rattachement',app.division);
-            if(app.serviceGst)row1('Service',app.serviceGst);
-            if(app.unite)row1('Unité',app.unite);
-          }
+          row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
+          if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
+          if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
+          if(app.unite)row1('Unité',app.unite);
           if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
           row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(app['function']));
           row2('Spécialité',(function(v){if(!v)return '';if(v==='other')return app.specialtyOther||'Autre';var t=(typeof T==='function')?T():{};return t['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(app.specialty),'PPR',app.ppr);
@@ -12335,104 +12304,14 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhProvince',app.province||'');
           prefillIfEmpty('adhEstablishment',app.establishment||'');
           prefillIfEmpty('adhService',app.service||'');
-
-          /* Restaurer la cascade depuis application (les champs GST sont
-             enregistrés dans application par submitAdhesion, pas renvoyés
-             à plat par getMyAdhesionRequest). */
-          if(app.rattachement){
-            var firstSel=document.getElementById('adhPremierSelecteur');
-            if(firstSel&&app.structurePrimaire){
-              firstSel.value=app.structurePrimaire;
-              window.adhTopStructure=app.structurePrimaire;
-            }
-            var rattSel=document.getElementById('adhRattachement');
-            var levelSel=document.getElementById('adhNiveauOrganisationnel');
-            var restoredLevel=app.niveauOrganisationnel||(app.rattachement==='dgaSanitaire'&&app.province?'territorial':'regional');
-            if(levelSel){levelSel.value=restoredLevel;if(window.configureAdhLevel)window.configureAdhLevel(restoredLevel,false);}
-            if(rattSel){rattSel.value=(app.rattachement==='dgaSanitaire'&&restoredLevel==='territorial')?'territorialSanitaire':app.rattachement;gstCascade();}
-          }
-          function fireChange(el){
-            if(el)el.dispatchEvent(new Event('change',{bubbles:true}));
-          }
-          if(app.rattachement==='pole'){
-            var dirP=document.getElementById('adhDirectionPole');
-            var divP=document.getElementById('adhDivisionPole');
-            var svcP=document.getElementById('adhServicePole');
-            if(dirP&&app.directionPole){dirP.value=app.directionPole;if(dirP.onchange)dirP.onchange();}
-            if(divP&&app.divisionPole){divP.value=app.divisionPole;if(divP.onchange)divP.onchange();}
-            if(svcP&&app.servicePole)svcP.value=app.servicePole;
-          }else if(app.rattachement==='dgaAdministrative'){
-            var dirA=document.getElementById('adhDirectionAdmin');
-            var divA=document.getElementById('adhDivisionAdmin');
-            var svcA=document.getElementById('adhServiceAdmin');
-            if(dirA&&app.directionAdmin){dirA.value=app.directionAdmin;if(dirA.onchange)dirA.onchange();}
-            if(divA&&app.divisionAdmin){divA.value=app.divisionAdmin;if(divA.onchange)divA.onchange();}
-            if(svcA&&app.serviceAdmin)svcA.value=app.serviceAdmin;
-          }else if(app.rattachement==='dgaSanitaire'&&!(app.niveauOrganisationnel==='territorial'||(!app.niveauOrganisationnel&&app.province))){
-            var structureR=document.getElementById('adhSanitaireRegionalStructure');
-            var divisionR=document.getElementById('adhSanitaireRegionalDivision');
-            var serviceR=document.getElementById('adhSanitaireRegionalService');
-            var uniteR=document.getElementById('adhSanitaireRegionalUnite');
-            if(structureR&&app.establishment){structureR.value=app.establishment;if(structureR.onchange)structureR.onchange();}
-            if(divisionR&&app.division){divisionR.value=app.division;if(divisionR.onchange)divisionR.onchange();}
-            if(serviceR&&app.serviceGst){serviceR.value=app.serviceGst;if(serviceR.onchange)serviceR.onchange();}
-            if(uniteR&&app.unite)uniteR.value=app.unite;
-            var serviceHospRegional=document.getElementById('adhServiceHospitalier');
-            if(serviceHospRegional&&app.serviceHospitalier)serviceHospRegional.value=app.serviceHospitalier;
-          }else if(app.rattachement==='dgaSanitaire'||app.rattachement==='territorialSanitaire'){
-            var prov=document.getElementById('adhProvince');
-            var espaceSaved=document.getElementById('adhEspaceSanitaire');
-            var districtSaved=document.getElementById('adhDistrict');
-            var divisionSaved=document.getElementById('adhDivision');
-            var etabSaved=document.getElementById('adhEtablissement');
-            var serviceSaved=document.getElementById('adhServiceGst');
-            var uniteSaved=document.getElementById('adhUnite');
-            var serviceHospSaved=document.getElementById('adhServiceHospitalier');
-            if(prov&&app.province){prov.value=app.province;fireChange(prov);}
-            if(espaceSaved&&app.espaceSanitaire){
-              espaceSaved.value=app.espaceSanitaire;
-              if(espaceSaved.onchange)espaceSaved.onchange();
-            }
-            if(districtSaved&&(app.espaceAdministration||app.district)){
-              districtSaved.value=app.espaceAdministration||app.district;
-              fireChange(districtSaved);
-            }
-            if(divisionSaved&&app.division){
-              var divisionExists=Array.prototype.some.call(divisionSaved.options,function(o){return o.value===app.division;});
-              if(!divisionExists){var legacyDivision=document.createElement('option');legacyDivision.value=app.division;legacyDivision.textContent=app.division;divisionSaved.appendChild(legacyDivision);}
-              divisionSaved.value=app.division;
-              if(divisionSaved.onchange)divisionSaved.onchange();
-            }
-            if(etabSaved&&app.establishment){
-              var savedEstablishmentExists=Array.prototype.some.call(etabSaved.options,function(o){return o.value===app.establishment;});
-              if(!savedEstablishmentExists&&(app.establishment.indexOf('direct_')===0||app.establishment.indexOf('hosp_')===0||app.establishment.indexOf('hu_')===0)){
-                var legacyEstablishment=document.createElement('option');legacyEstablishment.value=app.establishment;legacyEstablishment.textContent=app.establishment;etabSaved.appendChild(legacyEstablishment);
-              }
-              if(app.establishment.indexOf('essp_')===0){
-                etabSaved.value='other';
-              }else if(app.establishment.indexOf('direct_')===0||app.establishment.indexOf('hosp_')===0||app.establishment.indexOf('hu_')===0){
-                etabSaved.value=app.establishment;
-              }else{
-                etabSaved.value='other';
-              }
-              if(etabSaved.onchange)etabSaved.onchange();
-            }
-            if(app.establishment && (app.establishmentCommune||app.establishmentType)){
-              var esspIndex=ESSP_LIST.findIndex(function(e){
-                return e.n===app.establishment && e.c===(app.establishmentCommune||'') && e.t===(app.establishmentType||'');
-              });
-              var esspSaved=document.getElementById('adhEsspSelect');
-              if(esspIndex>=0&&esspSaved)esspSaved.value='essp_'+esspIndex;
-            }
-            if(serviceSaved&&app.serviceGst){
-              var savedServiceExists=Array.prototype.some.call(serviceSaved.options,function(o){return o.value===app.serviceGst;});
-              if(!savedServiceExists){var legacyService=document.createElement('option');legacyService.value=app.serviceGst;legacyService.textContent=app.serviceGst;serviceSaved.appendChild(legacyService);}
-              serviceSaved.value=app.serviceGst;
-              if(serviceSaved.onchange)serviceSaved.onchange();
-            }
-            if(uniteSaved&&app.unite)uniteSaved.value=app.unite;
-            if(serviceHospSaved&&app.serviceHospitalier)serviceHospSaved.value=app.serviceHospitalier;
-          }
+          /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
+          if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
+          if(req.district) prefillIfEmpty('adhDistrict',req.district);
+          if(req.division) prefillIfEmpty('adhDivision',req.division);
+          if(req.serviceGst) prefillIfEmpty('adhServiceGst',req.serviceGst);
+          if(req.unite) prefillIfEmpty('adhUnite',req.unite);
+          if(req.serviceHospitalier) prefillIfEmpty('adhServiceHospitalier',req.serviceHospitalier);
+          if(req.espaceSanitaire||req.district) gstCascade();
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
@@ -12505,44 +12384,15 @@ window.UGTM.failed(err);
     /* (loadLocalStructures supprimé — le champ adhStructure a été retiré du formulaire) */
 
     /* === Cascade GST : espace sanitaire → district → établissement → niveau → division → service → unité === */
-var ESSP_CATS={"CSR-1":"Centre de santé rural niveau 1","CSR-2":"Centre de santé rural niveau 2","CSU-1":"Centre de santé urbain niveau 1","CSU-2":"Centre de santé urbain niveau 2","DR":"Dispensaire rural","LSP":"Laboratoire de santé publique","CRSR":"Centre de référence en santé de la reproduction","CDTMR":"Centre de diagnostic et de traitement des maladies respiratoires"};
-var ESSP_LIST=[{"p":"agadir","c":"Agadir (Mun.)","n":"Hay El Mohamadi","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Bensergaou","t":"CSU-2"},{"p":"agadir","c":"Agadir (Mun.)","n":"Anza","t":"CSU-2"},{"p":"agadir","c":"Agadir (Mun.)","n":"Tikiouine","t":"CSU-2"},{"p":"agadir","c":"Agadir (Mun.)","n":"N.Talborjt","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Ihchach","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Bouargane","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Q.Industriel","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Amsernate","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"El Qods","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Essalam","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Taddarte","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Anza Al Ouliya","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"C.Diagnostic Tuberculose","t":"CDTMR"},{"p":"agadir","c":"Agadir (Mun.)","n":"Laboratoire Epidemiologique","t":"LSP"},{"p":"agadir","c":"Agadir (Mun.)","n":"Talborjt","t":"CRSR"},{"p":"agadir","c":"Agadir (Mun.)","n":"Tarik Al Kheir","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Aghroud","t":"CSU-1"},{"p":"agadir","c":"Agadir (Mun.)","n":"Bir Anzarane","t":"CSU-1"},{"p":"agadir","c":"Drargua","n":"Drarga","t":"CSR-1"},{"p":"agadir","c":"Drargua","n":"Tamait Izdar","t":"DR"},{"p":"agadir","c":"Drargua","n":"Azrarag","t":"DR"},{"p":"agadir","c":"Amskroud","n":"Amskroud","t":"CSR-2"},{"p":"agadir","c":"Amskroud","n":"Sidi Boushab","t":"DR"},{"p":"agadir","c":"Amskroud","n":"Tamait Oufella","t":"DR"},{"p":"agadir","c":"Idmine","n":"Assaka Idmine","t":"DR"},{"p":"agadir","c":"Idmine","n":"Ikhrdidene","t":"DR"},{"p":"agadir","c":"Aziar","n":"Aziar","t":"DR"},{"p":"agadir","c":"Imouzzer","n":"Imesker","t":"DR"},{"p":"agadir","c":"Imouzzer","n":"Immouzzer","t":"CSR-2"},{"p":"agadir","c":"Tadrart","n":"Tadrarte","t":"CSR-1"},{"p":"agadir","c":"Tiqqi","n":"Isk Ntiki","t":"CSR-1"},{"p":"agadir","c":"Aqesri","n":"Aqesri","t":"DR"},{"p":"agadir","c":"Aqesri","n":"Inrarene","t":"DR"},{"p":"agadir","c":"Taghazout","n":"Taghazout","t":"DR"},{"p":"agadir","c":"Imsouane","n":"Assaka","t":"CSR-1"},{"p":"agadir","c":"Imsouane","n":"Imsouane","t":"DR"},{"p":"agadir","c":"Imsouane","n":"Sidi Belkacem","t":"DR"},{"p":"agadir","c":"Tamri","n":"Tamri","t":"CSR-2"},{"p":"agadir","c":"Tamri","n":"Ighallene","t":"DR"},{"p":"agadir","c":"Aourir","n":"Tamraghte","t":"CSR-2"},{"p":"chtouka","c":"Ait Baha (Mun.)","n":"Ait Baha","t":"CSU-2"},{"p":"chtouka","c":"Biougra (Mun.)","n":"Biougra","t":"CSU-1"},{"p":"chtouka","c":"Biougra (Mun.)","n":"Biougra","t":"CDTMR"},{"p":"chtouka","c":"Biougra (Mun.)","n":"Touama","t":"CSU-1"},{"p":"chtouka","c":"Sidi Bibi (Mun.)","n":"Sidi Bibi","t":"CSU-2"},{"p":"chtouka","c":"Sidi Bibi (Mun.)","n":"Takade","t":"DR"},{"p":"chtouka","c":"Sidi Bibi (Mun.)","n":"Taddarte","t":"DR"},{"p":"chtouka","c":"Sidi Bibi (Mun.)","n":"Ben Guemoud","t":"DR"},{"p":"chtouka","c":"Sidi Bibi (Mun.)","n":"Ouled Mimoun","t":"DR"},{"p":"chtouka","c":"Ait Amira (Mun.)","n":"Ait Amira","t":"CSU-2"},{"p":"chtouka","c":"Ait Amira (Mun.)","n":"Anou L'jdid","t":"DR"},{"p":"chtouka","c":"Ait Amira (Mun.)","n":"Kbilt Allal","t":"DR"},{"p":"chtouka","c":"Ait Amira (Mun.)","n":"Rjila","t":"DR"},{"p":"chtouka","c":"Ait Amira (Mun.)","n":"Taouss","t":"CSR-2"},{"p":"chtouka","c":"Ait Ouadrim","n":"Ait Ouadrim","t":"CSR-1"},{"p":"chtouka","c":"Sidi AbdallahEl Bouchouari","n":"S.Abdellah","t":"CSR-2"},{"p":"chtouka","c":"Sidi AbdallahEl Bouchouari","n":"Kh.A.Moussa","t":"DR"},{"p":"chtouka","c":"Ida Ougnidif","n":"Ida Ougnidif","t":"CSR-2"},{"p":"chtouka","c":"Ida Ougnidif","n":"Aguerd","t":"DR"},{"p":"chtouka","c":"Tizi Ntakoucht","n":"Takoucht","t":"CSR-1"},{"p":"chtouka","c":"Tizi Ntakoucht","n":"Taledel","t":"DR"},{"p":"chtouka","c":"Aouguenz","n":"Ouagnez","t":"CSR-1"},{"p":"chtouka","c":"Tanalt","n":"Tanalt","t":"CSR-2"},{"p":"chtouka","c":"Targua Ntouchka","n":"Targa Ntouchka","t":"CSR-1"},{"p":"chtouka","c":"Targua Ntouchka","n":"Tiouaziouine","t":"DR"},{"p":"chtouka","c":"Ait Mzal","n":"Ait M'zal","t":"CSR-1"},{"p":"chtouka","c":"Hilala","n":"Hilala","t":"CSR-1"},{"p":"chtouka","c":"Tassegdelt","n":"Taalate","t":"DR"},{"p":"chtouka","c":"Tassegdelt","n":"Zao","t":"DR"},{"p":"chtouka","c":"Tassegdelt","n":"Hellate","t":"CSR-2"},{"p":"chtouka","c":"Belfaa","n":"Belfaa","t":"CSR-2"},{"p":"chtouka","c":"Massa","n":"Massa","t":"CSR-2"},{"p":"chtouka","c":"Massa","n":"Ifentar","t":"DR"},{"p":"chtouka","c":"Sidi Ouassay","n":"Aghbalou","t":"CSR-2"},{"p":"chtouka","c":"Ait Milk","n":"Ait Milk","t":"CSR-2"},{"p":"chtouka","c":"Ait Milk","n":"Ait Yassine","t":"DR"},{"p":"chtouka","c":"Inchaden","n":"Inchaden","t":"CSR-1"},{"p":"chtouka","c":"Ouad Essafa","n":"Oued Essafa","t":"CSR-1"},{"p":"chtouka","c":"Ouad Essafa","n":"Imzilene","t":"DR"},{"p":"chtouka","c":"Ouad Essafa","n":"Ait Oubelkacem","t":"DR"},{"p":"chtouka","c":"Ouad Essafa","n":"Ighraissen","t":"DR"},{"p":"chtouka","c":"Ouad Essafa","n":"Ait Ouagmar","t":"CSR-1"},{"p":"chtouka","c":"Imi Mqourn","n":"Imi Mqourn","t":"CSR-2"},{"p":"chtouka","c":"Sidi Boushab","n":"Sidi Boushab","t":"CSR-1"},{"p":"inezgane","c":"Ait Melloul (Mun.)","n":"A.Melloul","t":"CSU-2"},{"p":"inezgane","c":"Ait Melloul (Mun.)","n":"Lemzar","t":"CSU-1"},{"p":"inezgane","c":"Ait Melloul (Mun.)","n":"Kasba Taher","t":"CSU-1"},{"p":"inezgane","c":"Ait Melloul (Mun.)","n":"Azrou","t":"CSU-1"},{"p":"inezgane","c":"Ait Melloul (Mun.)","n":"Chouhada","t":"CSU-1"},{"p":"inezgane","c":"Lqliaa (Mun.)","n":"Kolea","t":"CSU-2"},{"p":"inezgane","c":"Lqliaa (Mun.)","n":"Sidi Daoud","t":"CSU-1"},{"p":"inezgane","c":"Lqliaa (Mun.)","n":"Laazibe","t":"CSU-1"},{"p":"inezgane","c":"Dcheira El Jihadia (Mun.)","n":"Dcheira","t":"CSU-1"},{"p":"inezgane","c":"Dcheira El Jihadia (Mun.)","n":"Dchira Jihadia (Amougay)","t":"CSU-1"},{"p":"inezgane","c":"Dcheira El Jihadia (Mun.)","n":"Inezgane","t":"CRSR"},{"p":"inezgane","c":"Dcheira El Jihadia (Mun.)","n":"Dcheira Irhalne","t":"CSU-1"},{"p":"inezgane","c":"Inezgane (Mun.)","n":"CDTMR Inezgane","t":"CDTMR"},{"p":"inezgane","c":"Inezgane (Mun.)","n":"Inzgane","t":"CSU-1"},{"p":"inezgane","c":"Inezgane (Mun.)","n":"Tarraste","t":"CSU-1"},{"p":"inezgane","c":"Inezgane (Mun.)","n":"Jorf","t":"CSU-1"},{"p":"inezgane","c":"Oulad Dahou","n":"Oulad Dahou","t":"CSR-1"},{"p":"inezgane","c":"Oulad Dahou","n":"Ali Ben Haddi","t":"DR"},{"p":"inezgane","c":"Oulad Dahou","n":"Tamllalt","t":"DR"},{"p":"inezgane","c":"Temsia","n":"Dar Ben Cheikh","t":"DR"},{"p":"inezgane","c":"Temsia","n":"Temsia","t":"CSR-2"},{"p":"inezgane","c":"Temsia","n":"Ait Moussa","t":"CSR-1"},{"p":"inezgane","c":"Temsia","n":"Ikhorbane","t":"CSR-1"},{"p":"inezgane","c":"Temsia","n":"Labdouaa","t":"DR"},{"p":"taroudant","c":"Ait Iaaza (Mun.)","n":"Ait Iaaza","t":"CSU-2"},{"p":"taroudant","c":"El Guerdane (Mun.)","n":"El Guerdane","t":"CSU-2"},{"p":"taroudant","c":"Irherm (Mun.)","n":"Ighrem","t":"CSU-2"},{"p":"taroudant","c":"Oulad Berhil (Mun.)","n":"Ouled Berhil","t":"CSU-2"},{"p":"taroudant","c":"Oulad Teima (Mun.)","n":"Oulad Teima","t":"CSU-1"},{"p":"taroudant","c":"Oulad Teima (Mun.)","n":"Essafa","t":"CSU-1"},{"p":"taroudant","c":"Oulad Teima (Mun.)","n":"Chrarda","t":"CSU-1"},{"p":"taroudant","c":"Taliouine (Mun.)","n":"Taliouine","t":"CSU-2"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"CDTMR Taroudant","t":"CDTMR"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"LSP Taroudant","t":"LSP"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"Taroudante","t":"CRSR"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"Talmaklate","t":"CSU-1"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"Od Bounouna","t":"CSU-1"},{"p":"taroudant","c":"Taroudannt (Mun.)","n":"M'haita","t":"CSU-1"},{"p":"taroudant","c":"Aoulouz (Mun.)","n":"Aoulouz","t":"CSU-2"},{"p":"taroudant","c":"Ait Abdallah","n":"A. Abdellah","t":"CSR-2"},{"p":"taroudant","c":"Sidi Mzal","n":"Sidi Mzal","t":"DR"},{"p":"taroudant","c":"Tabia","n":"Tabia","t":"CSR-1"},{"p":"taroudant","c":"Toufelaazt","n":"Toufelaazt","t":"CSR-1"},{"p":"taroudant","c":"Toumliline","n":"Imlil","t":"CSR-1"},{"p":"taroudant","c":"Amalou","n":"Tayert","t":"CSR-1"},{"p":"taroudant","c":"Imaouen","n":"Aguerd Noualous","t":"CSR-1"},{"p":"taroudant","c":"Imaouen","n":"Had Imaoune","t":"DR"},{"p":"taroudant","c":"Sidi Boaal","n":"Anzergue","t":"CSR-1"},{"p":"taroudant","c":"Tataoute","n":"Indouzal","t":"CSR-1"},{"p":"taroudant","c":"Tindine","n":"Tindine","t":"CSR-1"},{"p":"taroudant","c":"Tindine","n":"Talidla","t":"DR"},{"p":"taroudant","c":"Adar","n":"Tignatine","t":"CSR-2"},{"p":"taroudant","c":"Adar","n":"Ouzoune","t":"DR"},{"p":"taroudant","c":"Adar","n":"Doussaoune","t":"DR"},{"p":"taroudant","c":"Azaghar N'Irs","n":"Azaghar N'irs","t":"CSR-1"},{"p":"taroudant","c":"Azaghar N'Irs","n":"Ouastouane","t":"DR"},{"p":"taroudant","c":"Azaghar N'Irs","n":"Tlat N'tlaghmine","t":"DR"},{"p":"taroudant","c":"Imi N'Tayart","n":"Berguen","t":"CSR-1"},{"p":"taroudant","c":"Nihit","n":"Nihit","t":"CSR-1"},{"p":"taroudant","c":"Oualqadi","n":"Oualqadi","t":"CSR-1"},{"p":"taroudant","c":"Tisfane","n":"Jemaa Tafraout","t":"CSR-1"},{"p":"taroudant","c":"Ida Ou Gailal","n":"Ida Ou Gailal","t":"CSR-1"},{"p":"taroudant","c":"Igli","n":"Igli","t":"CSR-1"},{"p":"taroudant","c":"Oulad Aissa","n":"Oulad Aissa","t":"CSR-2"},{"p":"taroudant","c":"Sidi Abdellah Ou Said","n":"S.Abdellah Ou Said","t":"CSR-1"},{"p":"taroudant","c":"Igoudar Mnabha","n":"Igoudar","t":"CSR-1"},{"p":"taroudant","c":"Lamhara","n":"Tassoukte","t":"CSR-1"},{"p":"taroudant","c":"Tinzart","n":"Ait Hamd","t":"CSR-1"},{"p":"taroudant","c":"Ouneine","n":"Ouneine","t":"CSR-1"},{"p":"taroudant","c":"Tafingoult","n":"Tafingoult","t":"CSR-2"},{"p":"taroudant","c":"Talgjount","n":"Talgjount","t":"CSR-1"},{"p":"taroudant","c":"Tigouga","n":"Tigouga","t":"CSR-1"},{"p":"taroudant","c":"Tizi N'Test","n":"Chafarni","t":"CSR-1"},{"p":"taroudant","c":"Tizi N'Test","n":"Taouiyalte","t":"DR"},{"p":"taroudant","c":"Arazane","n":"Arazane","t":"CSR-2"},{"p":"taroudant","c":"Arazane","n":"Jorf","t":"DR"},{"p":"taroudant","c":"El Faid","n":"El Faid","t":"CSR-1"},{"p":"taroudant","c":"El Faid","n":"Aguelz","t":"DR"},{"p":"taroudant","c":"El Faid","n":"Tanamroute","t":"DR"},{"p":"taroudant","c":"Ida Ougoummad","n":"Ida Ougoummad","t":"CSR-1"},{"p":"taroudant","c":"Toughmart","n":"Magnoune","t":"CSR-1"},{"p":"taroudant","c":"Sidi Ouaaziz","n":"Ait Oussaih","t":"CSR-1"},{"p":"taroudant","c":"Assads","n":"Assads","t":"CSR-1"},{"p":"taroudant","c":"Machraa El Ain","n":"Machraa El Ain","t":"CSR-1"},{"p":"taroudant","c":"Machraa El Ain","n":"Od MHALLA","t":"DR"},{"p":"taroudant","c":"Tidsi Nissendalene","n":"Imighzer","t":"CSR-1"},{"p":"taroudant","c":"Tidsi Nissendalene","n":"Tidsi","t":"DR"},{"p":"taroudant","c":"Tidsi Nissendalene","n":"Ait Ben Hawa","t":"DR"},{"p":"taroudant","c":"El Koudia El Beida","n":"El Koddia","t":"CSR-2"},{"p":"taroudant","c":"El Koudia El Beida","n":"Boukhachba","t":"DR"},{"p":"taroudant","c":"Lakhnafif","n":"Lakhnafif","t":"CSR-1"},{"p":"taroudant","c":"Lamhadi","n":"Ouled Rahou","t":"CSR-1"},{"p":"taroudant","c":"Ahl Ramel","n":"Ksiba","t":"CSR-2"},{"p":"taroudant","c":"Ahl Ramel","n":"El Aasla","t":"DR"},{"p":"taroudant","c":"Lagfifat","n":"Lagfifat","t":"CSR-2"},{"p":"taroudant","c":"Lagfifat","n":"Sebt Lagfifat","t":"DR"},{"p":"taroudant","c":"Sidi Ahmed Ou Amar","n":"S.A. Ou Aamar","t":"CSR-2"},{"p":"taroudant","c":"Sidi Ahmed Ou Amar","n":"Bouassida","t":"DR"},{"p":"taroudant","c":"Sidi Boumoussa","n":"S.Boumoussa","t":"CSR-1"},{"p":"taroudant","c":"Assaki","n":"Assaki","t":"CSR-1"},{"p":"taroudant","c":"Assaki","n":"Tidnass","t":"DR"},{"p":"taroudant","c":"Assaki","n":"Targa N'mimoun","t":"DR"},{"p":"taroudant","c":"Azrar","n":"Amzlou","t":"CSR-1"},{"p":"taroudant","c":"Tizgzaouine","n":"Tirit","t":"CSR-1"},{"p":"taroudant","c":"Zagmouzen","n":"Agadir N'ait Taleb","t":"CSR-1"},{"p":"taroudant","c":"Ahl Tifnoute","n":"Assarague","t":"CSR-1"},{"p":"taroudant","c":"Ahl Tifnoute","n":"Ikiss","t":"DR"},{"p":"taroudant","c":"Askaouen","n":"Askaouen","t":"CSR-2"},{"p":"taroudant","c":"Iguidi","n":"Iguidi","t":"CSR-1"},{"p":"taroudant","c":"Taouyalte","n":"Taouiyalte","t":"CSR-1"},{"p":"taroudant","c":"Taouyalte","n":"Aaraben","t":"DR"},{"p":"taroudant","c":"Toubkal","n":"Toubkal","t":"CSR-1"},{"p":"taroudant","c":"Ouzioua","n":"Ouzioua","t":"CSR-2"},{"p":"taroudant","c":"Tisrasse","n":"Tisrass","t":"CSR-1"},{"p":"taroudant","c":"Agadir Melloul","n":"Agadir Melloul","t":"CSR-1"},{"p":"taroudant","c":"Agadir Melloul","n":"Asserrarghe","t":"DR"},{"p":"taroudant","c":"Assaisse","n":"Tinidar","t":"DR"},{"p":"taroudant","c":"Assaisse","n":"Assaise","t":"CSR-1"},{"p":"taroudant","c":"Sidi Hsaine","n":"Ighri","t":"CSR-2"},{"p":"taroudant","c":"Tassousfi","n":"Aoudouste","t":"DR"},{"p":"taroudant","c":"Tassousfi","n":"Imgoune","t":"CSR-1"},{"p":"taroudant","c":"Ait Igas","n":"Ai Iguass","t":"CSR-1"},{"p":"taroudant","c":"Freija","n":"Freija","t":"CSR-1"},{"p":"taroudant","c":"Sidi Ahmed Ou Abdallah","n":"S.A.Ou Abdellah","t":"CSR-1"},{"p":"taroudant","c":"Sidi Ahmed Ou Abdallah","n":"Aglagal","t":"DR"},{"p":"taroudant","c":"Sidi Dahmane","n":"Sidi Dahmane","t":"CSR-1"},{"p":"taroudant","c":"Tiout","n":"Tiout","t":"CSR-2"},{"p":"taroudant","c":"Ait Makhlouf","n":"Boulaajlat","t":"CSR-1"},{"p":"taroudant","c":"Imoulass","n":"Imoulass","t":"CSR-1"},{"p":"taroudant","c":"Tafraouten","n":"Tafraouten","t":"CSR-1"},{"p":"taroudant","c":"Tafraouten","n":"Tamssoulte","t":"CSR-2"},{"p":"taroudant","c":"Tafraouten","n":"Tigouliane","t":"DR"},{"p":"taroudant","c":"Tamaloukte","n":"Tamaloukte","t":"CSR-2"},{"p":"taroudant","c":"Bounrar","n":"Migrane","t":"CSR-1"},{"p":"taroudant","c":"Sidi Borja","n":"Sidi Borja","t":"CSR-1"},{"p":"taroudant","c":"Tazemmourt","n":"Tazemmourt","t":"CSR-1"},{"p":"taroudant","c":"Argana","n":"Argana","t":"CSR-2"},{"p":"taroudant","c":"Bigoudine","n":"Bigoudine","t":"CSR-1"},{"p":"taroudant","c":"Bigoudine","n":"Barrage","t":"DR"},{"p":"taroudant","c":"Imilmaiss","n":"Tanoute","t":"CSR-1"},{"p":"taroudant","c":"Talmakante","n":"Talmakante","t":"CSR-1"},{"p":"taroudant","c":"Eddir","n":"D'kheila","t":"CSR-2"},{"p":"taroudant","c":"Issen","n":"Tnine Od Teima","t":"CSR-1"},{"p":"taroudant","c":"Sidi Moussa Lhamri","n":"Brahim Roudani (Ait Hmida)","t":"CSR-2"},{"p":"taroudant","c":"Ahmar Laglalcha","n":"Bouida","t":"CSR-2"},{"p":"taroudant","c":"Ahmar Laglalcha","n":"Oueld Salem","t":"DR"},{"p":"taroudant","c":"Ida Ou Moumen","n":"Ahmer","t":"CSR-2"},{"p":"taroudant","c":"Ida Ou Moumen","n":"Laaouissate","t":"DR"},{"p":"taroudant","c":"Lamnizla","n":"Lamnizla","t":"CSR-1"},{"p":"taroudant","c":"Zaouia Sidi Tahar","n":"Zt. S.TAHER","t":"CSR-1"},{"p":"taroudant","c":"Zaouia Sidi Tahar","n":"Sidi Moussa","t":"DR"},{"p":"tata","c":"Akka (Mun.)","n":"Akka","t":"CSU-2"},{"p":"tata","c":"Fam El Hisn (Mun.)","n":"Fam El Hisne","t":"CSU-2"},{"p":"tata","c":"Fam El Hisn (Mun.)","n":"Icht","t":"CSU-1"},{"p":"tata","c":"Foum Zguid (Mun.)","n":"Foum-Zguid","t":"CSU-2"},{"p":"tata","c":"Foum Zguid (Mun.)","n":"Oued Hellal","t":"CSU-1"},{"p":"tata","c":"Tata (Mun.)","n":"Tata","t":"CSU-1"},{"p":"tata","c":"Tata (Mun.)","n":"Daraa","t":"CSU-1"},{"p":"tata","c":"Tamanarte","n":"Tamanarte (Aguerd)","t":"CSR-2"},{"p":"tata","c":"Tamanarte","n":"Anamer","t":"DR"},{"p":"tata","c":"Ait Ouabelli","n":"Ait Ouabelli","t":"CSR-2"},{"p":"tata","c":"Ait Ouabelli","n":"Tadakouste","t":"DR"},{"p":"tata","c":"Tizounine","n":"Touzounine","t":"CSR-1"},{"p":"tata","c":"Kasbat Sidi Abdellah Ben M'Barek","n":"K S.Abd B.M'barek","t":"CSR-2"},{"p":"tata","c":"Allougoum","n":"Allougoum","t":"CSR-2"},{"p":"tata","c":"Allougoum","n":"Khriouiaa","t":"DR"},{"p":"tata","c":"Tlite","n":"Tlite","t":"CSR-1"},{"p":"tata","c":"Tissint","n":"Tissint","t":"CSR-2"},{"p":"tata","c":"Tissint","n":"Mghimima","t":"DR"},{"p":"tata","c":"Tissint","n":"El Kasbat","t":"DR"},{"p":"tata","c":"Aguinane","n":"Aguinane (Fiferd)","t":"CSR-1"},{"p":"tata","c":"Akka Ighane","n":"Akka-Ighane","t":"CSR-2"},{"p":"tata","c":"Akka Ighane","n":"Akka-Iguerne","t":"DR"},{"p":"tata","c":"Akka Ighane","n":"Dou Ougadir","t":"DR"},{"p":"tata","c":"Ibn Yacoub","n":"Ibn Yacoub (Imintatelt)","t":"CSR-1"},{"p":"tata","c":"Ibn Yacoub","n":"Iligh","t":"DR"},{"p":"tata","c":"Issafen","n":"Issafen","t":"CSR-2"},{"p":"tata","c":"Issafen","n":"Idaoutinest","t":"DR"},{"p":"tata","c":"Issafen","n":"Tizza","t":"DR"},{"p":"tata","c":"Tizaghte","n":"Tizaghte (Tizgui)","t":"CSR-1"},{"p":"tata","c":"Tizaghte","n":"Imi-N-Guisselte","t":"DR"},{"p":"tata","c":"Tagmout","n":"Tagmoute","t":"CSR-2"},{"p":"tata","c":"Tagmout","n":"Assoul","t":"DR"},{"p":"tata","c":"Adis","n":"Addis","t":"CSR-2"},{"p":"tata","c":"Oum El Guerdane","n":"Oum Lguerdane","t":"CSR-1"},{"p":"tata","c":"Tigzmerte","n":"Tigzmerte","t":"CSR-1"},{"p":"tata","c":"Tigzmerte","n":"Imitek","t":"DR"},{"p":"tiznit","c":"Tafraout (Mun.)","n":"Tafraoute","t":"CSU-2"},{"p":"tiznit","c":"Tiznit (Mun.)","n":"Houmman El Fatouaki","t":"CDTMR"},{"p":"tiznit","c":"Tiznit (Mun.)","n":"Houmman El Fatouaki","t":"LSP"},{"p":"tiznit","c":"Tiznit (Mun.)","n":"CRSR Tiznit","t":"CRSR"},{"p":"tiznit","c":"Tiznit (Mun.)","n":"Abdellah Chefchaouni","t":"CSU-1"},{"p":"tiznit","c":"Tiznit (Mun.)","n":"El Mers","t":"CSU-1"},{"p":"tiznit","c":"Anzi","n":"Tiremsane","t":"DR"},{"p":"tiznit","c":"Anzi","n":"Anzi","t":"CSR-2"},{"p":"tiznit","c":"Tafraout El Mouloud","n":"Taf.El Mouloud","t":"CSR-1"},{"p":"tiznit","c":"Tnine Aday","n":"Aday","t":"CSR-1"},{"p":"tiznit","c":"Arbaa Ait Ahmed","n":"Ait Ahmed","t":"CSR-2"},{"p":"tiznit","c":"Ida Ou Gougmar","n":"Tifrmit","t":"CSR-1"},{"p":"tiznit","c":"Ida Ou Gougmar","n":"Takaterte","t":"DR"},{"p":"tiznit","c":"Tizoughrane","n":"Idaousemllal","t":"CSR-2"},{"p":"tiznit","c":"Tizoughrane","n":"Tizoughrane","t":"DR"},{"p":"tiznit","c":"Tizoughrane","n":"Taghzifte","t":"DR"},{"p":"tiznit","c":"Tizoughrane","n":"Azour oulili","t":"DR"},{"p":"tiznit","c":"Sidi Ahmed Ou Moussa","n":"Tazeroualte","t":"CSR-2"},{"p":"tiznit","c":"Sidi Ahmed Ou Moussa","n":"Toumanar","t":"DR"},{"p":"tiznit","c":"Ait Issafen","n":"Assif Oudrar","t":"DR"},{"p":"tiznit","c":"Ait Issafen","n":"Ighir Mouss","t":"CSR-1"},{"p":"tiznit","c":"Tighmi","n":"Tighmi","t":"CSR-2"},{"p":"tiznit","c":"Ammelne","n":"Amelne","t":"CSR-2"},{"p":"tiznit","c":"Tarsouat","n":"Tarsouat","t":"CSR-1"},{"p":"tiznit","c":"Tarsouat","n":"Izerbi","t":"DR"},{"p":"tiznit","c":"Tassrirt","n":"Tassrirt","t":"CSR-1"},{"p":"tiznit","c":"Ait Ouafqa","n":"Ait Ouafqa","t":"CSR-1"},{"p":"tiznit","c":"Irigh N'Tahala","n":"Tahala","t":"CSR-2"},{"p":"tiznit","c":"Afella Ighir","n":"Afella Ighir","t":"CSR-2"},{"p":"tiznit","c":"Tnine Aglou","n":"Aglou","t":"CSR-1"},{"p":"tiznit","c":"Tnine Aglou","n":"Zaouite","t":"DR"},{"p":"tiznit","c":"Tnine Aglou","n":"Igrar S.Abdrahman","t":"DR"},{"p":"tiznit","c":"Tnine Aglou","n":"Al Gaada","t":"DR"},{"p":"tiznit","c":"Tnine Aglou","n":"Laaouina","t":"DR"},{"p":"tiznit","c":"Tnine Aglou","n":"Al Feid","t":"DR"},{"p":"tiznit","c":"Bounaamane","n":"Bounaamane","t":"CSR-2"},{"p":"tiznit","c":"Bounaamane","n":"Tagounsa","t":"DR"},{"p":"tiznit","c":"Sidi Bouabdelli","n":"Sidi Bouabdlli","t":"CSR-1"},{"p":"tiznit","c":"Sidi Bouabdelli","n":"Kh.Tafraout","t":"DR"},{"p":"tiznit","c":"Sidi Bouabdelli","n":"Tisgharine","t":"DR"},{"p":"tiznit","c":"Ouijjane","n":"Ouijjane","t":"CSR-1"},{"p":"tiznit","c":"Ouijjane","n":"Assaka","t":"DR"},{"p":"tiznit","c":"Reggada","n":"Reggada","t":"CSR-2"},{"p":"tiznit","c":"Reggada","n":"Talainte","t":"DR"},{"p":"tiznit","c":"Reggada","n":"Ighir Melloulene","t":"DR"},{"p":"tiznit","c":"Reggada","n":"Igherme","t":"DR"},{"p":"tiznit","c":"Arbaa Rasmouka","n":"Ras Mouka","t":"CSR-2"},{"p":"tiznit","c":"Arbaa Rasmouka","n":"Ait Semlalte","t":"DR"},{"p":"tiznit","c":"El Maader El Kabir","n":"Ouled Noumer","t":"DR"},{"p":"tiznit","c":"El Maader El Kabir","n":"El Maader","t":"CSR-1"},{"p":"tiznit","c":"El Maader El Kabir","n":"Ait Oumribte","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Sahel","t":"CSR-2"},{"p":"tiznit","c":"Arbaa Sahel","n":"Ichafoudene","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Lkraima","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Ilmssite","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Lmssaidira","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Iferda","t":"DR"},{"p":"tiznit","c":"Arbaa Sahel","n":"Bouzerze","t":"DR"}];
-function populateEsspSelect(select,district){
-  if(!select)return;
-  select.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
-  ESSP_LIST.forEach(function(e,index){
-    if(e.p!==district)return;
-    var opt=document.createElement('option');
-    opt.value='essp_'+index;
-    opt.textContent=e.n+' — '+e.c+' — '+e.t;
-    opt.setAttribute('data-essp-index',String(index));
-    select.appendChild(opt);
-  });
-  select.style.display='';
-  if(select.parentElement)select.parentElement.style.display='';
-}
-function selectedEsspEntry(){
-  var select=document.getElementById('adhEsspSelect');
-  if(!select)return null;
-  var value=String(select.value||'');
-  if(value.indexOf('essp_')!==0)return null;
-  var index=Number(value.slice(5));
-  if(!Number.isInteger(index)||String(index)!==value.slice(5))return null;
-  return ESSP_LIST[index]||null;
-}
-;
-var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":"chtouka","n":"Massa","c":"HPr","d":"chtouka"},{"p":"inezgane","n":"Inezgane","c":"HP","d":"inezgane"},{"p":"inezgane","n":"Lqliâa","c":"HPr","d":"inezgane"},{"p":"taroudant","n":"Mokhtar Es-Soussi","c":"HP","d":"taroudant"},{"p":"taroudant","n":"Oulad Teima","c":"HPr","d":"taroudant"},{"p":"taroudant","n":"Taliouine","c":"HPr","d":"taroudant"},{"p":"tata","n":"Tata","c":"HP","d":"tata"},{"p":"tiznit","n":"Hassan 1er","c":"HP","d":"tiznit"},{"p":"tiznit","n":"Tafraout","c":"HPr","d":"tiznit","status":"construction"},{"p":"agadir","n":"HR Hassan II","c":"HR","d":"agadir"}];
+var ESSP_LIST=[{"p":"agadir","n":"Hay El Mohamadi"},{"p":"agadir","n":"Bensergaou"},{"p":"agadir","n":"Anza"},{"p":"agadir","n":"Tikiouine"},{"p":"agadir","n":"N.Talborjt"},{"p":"agadir","n":"Ihchach"},{"p":"agadir","n":"Bouargane"},{"p":"agadir","n":"Q.Industriel"},{"p":"agadir","n":"Amsernate"},{"p":"agadir","n":"El Qods"},{"p":"agadir","n":"Essalam"},{"p":"agadir","n":"Taddarte"},{"p":"agadir","n":"Anza Al Ouliya"},{"p":"agadir","n":"C.Diagnostic Tuberculose"},{"p":"agadir","n":"Laboratoire Epidemiologique"},{"p":"agadir","n":"Talborjt"},{"p":"agadir","n":"Tarik Al Kheir"},{"p":"agadir","n":"Aghroud"},{"p":"agadir","n":"Bir Anzarane"},{"p":"agadir","n":"Drarga"},{"p":"agadir","n":"Tamait Izdar"},{"p":"agadir","n":"Azrarag"},{"p":"agadir","n":"Amskroud"},{"p":"agadir","n":"Sidi Boushab"},{"p":"agadir","n":"Tamait Oufella"},{"p":"agadir","n":"Assaka Idmine"},{"p":"agadir","n":"Ikhrdidene"},{"p":"agadir","n":"Aziar"},{"p":"agadir","n":"Imesker"},{"p":"agadir","n":"Immouzzer"},{"p":"agadir","n":"Tadrarte"},{"p":"agadir","n":"Isk Ntiki"},{"p":"agadir","n":"Aqesri"},{"p":"agadir","n":"Inrarene"},{"p":"agadir","n":"Taghazout"},{"p":"agadir","n":"Assaka"},{"p":"agadir","n":"Imsouane"},{"p":"agadir","n":"Sidi Belkacem"},{"p":"agadir","n":"Tamri"},{"p":"agadir","n":"Ighallene"},{"p":"agadir","n":"Tamraghte"},{"p":"chtouka","n":"Ait Baha"},{"p":"chtouka","n":"Biougra"},{"p":"chtouka","n":"Touama"},{"p":"chtouka","n":"Sidi Bibi"},{"p":"chtouka","n":"Takade"},{"p":"chtouka","n":"Taddarte"},{"p":"chtouka","n":"Ben Guemoud"},{"p":"chtouka","n":"Ouled Mimoun"},{"p":"chtouka","n":"Ait Amira"},{"p":"chtouka","n":"Anou L'jdid"},{"p":"chtouka","n":"Kbilt Allal"},{"p":"chtouka","n":"Rjila"},{"p":"chtouka","n":"Taouss"},{"p":"chtouka","n":"Ait Ouadrim"},{"p":"chtouka","n":"S.Abdellah"},{"p":"chtouka","n":"Kh.A.Moussa"},{"p":"chtouka","n":"Ida Ougnidif"},{"p":"chtouka","n":"Aguerd"},{"p":"chtouka","n":"Takoucht"},{"p":"chtouka","n":"Taledel"},{"p":"chtouka","n":"Ouagnez"},{"p":"chtouka","n":"Tanalt"},{"p":"chtouka","n":"Targa Ntouchka"},{"p":"chtouka","n":"Tiouaziouine"},{"p":"chtouka","n":"Ait M'zal"},{"p":"chtouka","n":"Hilala"},{"p":"chtouka","n":"Taalate"},{"p":"chtouka","n":"Zao"},{"p":"chtouka","n":"Hellate"},{"p":"chtouka","n":"Belfaa"},{"p":"chtouka","n":"Massa"},{"p":"chtouka","n":"Ifentar"},{"p":"chtouka","n":"Aghbalou"},{"p":"chtouka","n":"Ait Milk"},{"p":"chtouka","n":"Ait Yassine"},{"p":"chtouka","n":"Inchaden"},{"p":"chtouka","n":"Oued Essafa"},{"p":"chtouka","n":"Imzilene"},{"p":"chtouka","n":"Ait Oubelkacem"},{"p":"chtouka","n":"Ighraissen"},{"p":"chtouka","n":"Ait Ouagmar"},{"p":"chtouka","n":"Imi Mqourn"},{"p":"chtouka","n":"Sidi Boushab"},{"p":"inezgane","n":"A.Melloul"},{"p":"inezgane","n":"Lemzar"},{"p":"inezgane","n":"Kasba Taher"},{"p":"inezgane","n":"Azrou"},{"p":"inezgane","n":"Chouhada"},{"p":"inezgane","n":"Kolea"},{"p":"inezgane","n":"Sidi Daoud"},{"p":"inezgane","n":"Laazibe"},{"p":"inezgane","n":"Dcheira"},{"p":"inezgane","n":"Dchira Jihadia (Amougay)"},{"p":"inezgane","n":"Inezgane"},{"p":"inezgane","n":"Dcheira Irhalne"},{"p":"inezgane","n":"CDTMR Inezgane"},{"p":"inezgane","n":"Inzgane"},{"p":"inezgane","n":"Tarraste"},{"p":"inezgane","n":"Jorf"},{"p":"inezgane","n":"Oulad Dahou"},{"p":"inezgane","n":"Ali Ben Haddi"},{"p":"inezgane","n":"Tamllalt"},{"p":"inezgane","n":"Dar Ben Cheikh"},{"p":"inezgane","n":"Temsia"},{"p":"inezgane","n":"Ait Moussa"},{"p":"inezgane","n":"Ikhorbane"},{"p":"inezgane","n":"Labdouaa"},{"p":"taroudant","n":"Ait Iaaza"},{"p":"taroudant","n":"El Guerdane"},{"p":"taroudant","n":"Ighrem"},{"p":"taroudant","n":"Ouled Berhil"},{"p":"taroudant","n":"Oulad Teima"},{"p":"taroudant","n":"Essafa"},{"p":"taroudant","n":"Chrarda"},{"p":"taroudant","n":"Taliouine"},{"p":"taroudant","n":"CDTMR Taroudant"},{"p":"taroudant","n":"LSP Taroudant"},{"p":"taroudant","n":"Taroudante"},{"p":"taroudant","n":"Talmaklate"},{"p":"taroudant","n":"Od Bounouna"},{"p":"taroudant","n":"M'haita"},{"p":"taroudant","n":"Aoulouz"},{"p":"taroudant","n":"A. Abdellah"},{"p":"taroudant","n":"Sidi Mzal"},{"p":"taroudant","n":"Tabia"},{"p":"taroudant","n":"Toufelaazt"},{"p":"taroudant","n":"Imlil"},{"p":"taroudant","n":"Tayert"},{"p":"taroudant","n":"Aguerd Noualous"},{"p":"taroudant","n":"Had Imaoune"},{"p":"taroudant","n":"Anzergue"},{"p":"taroudant","n":"Indouzal"},{"p":"taroudant","n":"Tindine"},{"p":"taroudant","n":"Talidla"},{"p":"taroudant","n":"Tignatine"},{"p":"taroudant","n":"Ouzoune"},{"p":"taroudant","n":"Doussaoune"},{"p":"taroudant","n":"Azaghar N'irs"},{"p":"taroudant","n":"Ouastouane"},{"p":"taroudant","n":"Tlat N'tlaghmine"},{"p":"taroudant","n":"Berguen"},{"p":"taroudant","n":"Nihit"},{"p":"taroudant","n":"Oualqadi"},{"p":"taroudant","n":"Jemaa Tafraout"},{"p":"taroudant","n":"Ida Ou Gailal"},{"p":"taroudant","n":"Igli"},{"p":"taroudant","n":"Oulad Aissa"},{"p":"taroudant","n":"S.Abdellah Ou Said"},{"p":"taroudant","n":"Igoudar"},{"p":"taroudant","n":"Tassoukte"},{"p":"taroudant","n":"Ait Hamd"},{"p":"taroudant","n":"Ouneine"},{"p":"taroudant","n":"Tafingoult"},{"p":"taroudant","n":"Talgjount"},{"p":"taroudant","n":"Tigouga"},{"p":"taroudant","n":"Chafarni"},{"p":"taroudant","n":"Taouiyalte"},{"p":"taroudant","n":"Arazane"},{"p":"taroudant","n":"Jorf"},{"p":"taroudant","n":"El Faid"},{"p":"taroudant","n":"Aguelz"},{"p":"taroudant","n":"Tanamroute"},{"p":"taroudant","n":"Ida Ougoummad"},{"p":"taroudant","n":"Magnoune"},{"p":"taroudant","n":"Ait Oussaih"},{"p":"taroudant","n":"Assads"},{"p":"taroudant","n":"Machraa El Ain"},{"p":"taroudant","n":"Od MHALLA"},{"p":"taroudant","n":"Imighzer"},{"p":"taroudant","n":"Tidsi"},{"p":"taroudant","n":"Ait Ben Hawa"},{"p":"taroudant","n":"El Koddia"},{"p":"taroudant","n":"Boukhachba"},{"p":"taroudant","n":"Lakhnafif"},{"p":"taroudant","n":"Ouled Rahou"},{"p":"taroudant","n":"Ksiba"},{"p":"taroudant","n":"El Aasla"},{"p":"taroudant","n":"Lagfifat"},{"p":"taroudant","n":"Sebt Lagfifat"},{"p":"taroudant","n":"S.A. Ou Aamar"},{"p":"taroudant","n":"Bouassida"},{"p":"taroudant","n":"S.Boumoussa"},{"p":"taroudant","n":"Assaki"},{"p":"taroudant","n":"Tidnass"},{"p":"taroudant","n":"Targa N'mimoun"},{"p":"taroudant","n":"Amzlou"},{"p":"taroudant","n":"Tirit"},{"p":"taroudant","n":"Agadir N'ait Taleb"},{"p":"taroudant","n":"Assarague"},{"p":"taroudant","n":"Ikiss"},{"p":"taroudant","n":"Askaouen"},{"p":"taroudant","n":"Iguidi"},{"p":"taroudant","n":"Aaraben"},{"p":"taroudant","n":"Toubkal"},{"p":"taroudant","n":"Ouzioua"},{"p":"taroudant","n":"Tisrass"},{"p":"taroudant","n":"Agadir Melloul"},{"p":"taroudant","n":"Asserrarghe"},{"p":"taroudant","n":"Tinidar"},{"p":"taroudant","n":"Assaise"},{"p":"taroudant","n":"Ighri"},{"p":"taroudant","n":"Aoudouste"},{"p":"taroudant","n":"Imgoune"},{"p":"taroudant","n":"Ai Iguass"},{"p":"taroudant","n":"Freija"},{"p":"taroudant","n":"S.A.Ou Abdellah"},{"p":"taroudant","n":"Aglagal"},{"p":"taroudant","n":"Sidi Dahmane"},{"p":"taroudant","n":"Tiout"},{"p":"taroudant","n":"Boulaajlat"},{"p":"taroudant","n":"Imoulass"},{"p":"taroudant","n":"Tafraouten"},{"p":"taroudant","n":"Tamssoulte"},{"p":"taroudant","n":"Tigouliane"},{"p":"taroudant","n":"Tamaloukte"},{"p":"taroudant","n":"Migrane"},{"p":"taroudant","n":"Sidi Borja"},{"p":"taroudant","n":"Tazemmourt"},{"p":"taroudant","n":"Argana"},{"p":"taroudant","n":"Bigoudine"},{"p":"taroudant","n":"Barrage"},{"p":"taroudant","n":"Tanoute"},{"p":"taroudant","n":"Talmakante"},{"p":"taroudant","n":"D'kheila"},{"p":"taroudant","n":"Tnine Od Teima"},{"p":"taroudant","n":"Brahim Roudani (Ait Hmida)"},{"p":"taroudant","n":"Bouida"},{"p":"taroudant","n":"Oueld Salem"},{"p":"taroudant","n":"Ahmer"},{"p":"taroudant","n":"Laaouissate"},{"p":"taroudant","n":"Lamnizla"},{"p":"taroudant","n":"Zt. S.TAHER"},{"p":"taroudant","n":"Sidi Moussa"},{"p":"tata","n":"Akka"},{"p":"tata","n":"Fam El Hisne"},{"p":"tata","n":"Icht"},{"p":"tata","n":"Foum-Zguid"},{"p":"tata","n":"Oued Hellal"},{"p":"tata","n":"Tata"},{"p":"tata","n":"Daraa"},{"p":"tata","n":"Tamanarte (Aguerd)"},{"p":"tata","n":"Anamer"},{"p":"tata","n":"Ait Ouabelli"},{"p":"tata","n":"Tadakouste"},{"p":"tata","n":"Touzounine"},{"p":"tata","n":"K S.Abd B.M'barek"},{"p":"tata","n":"Allougoum"},{"p":"tata","n":"Khriouiaa"},{"p":"tata","n":"Tlite"},{"p":"tata","n":"Tissint"},{"p":"tata","n":"Mghimima"},{"p":"tata","n":"El Kasbat"},{"p":"tata","n":"Aguinane (Fiferd)"},{"p":"tata","n":"Akka-Ighane"},{"p":"tata","n":"Akka-Iguerne"},{"p":"tata","n":"Dou Ougadir"},{"p":"tata","n":"Ibn Yacoub (Imintatelt)"},{"p":"tata","n":"Iligh"},{"p":"tata","n":"Issafen"},{"p":"tata","n":"Idaoutinest"},{"p":"tata","n":"Tizza"},{"p":"tata","n":"Tizaghte (Tizgui)"},{"p":"tata","n":"Imi-N-Guisselte"},{"p":"tata","n":"Tagmoute"},{"p":"tata","n":"Assoul"},{"p":"tata","n":"Addis"},{"p":"tata","n":"Oum Lguerdane"},{"p":"tata","n":"Tigzmerte"},{"p":"tata","n":"Imitek"},{"p":"tiznit","n":"Tafraoute"},{"p":"tiznit","n":"Houmman El Fatouaki"},{"p":"tiznit","n":"CRSR Tiznit"},{"p":"tiznit","n":"Abdellah Chefchaouni"},{"p":"tiznit","n":"El Mers"},{"p":"tiznit","n":"Tiremsane"},{"p":"tiznit","n":"Anzi"},{"p":"tiznit","n":"Taf.El Mouloud"},{"p":"tiznit","n":"Aday"},{"p":"tiznit","n":"Ait Ahmed"},{"p":"tiznit","n":"Tifrmit"},{"p":"tiznit","n":"Takaterte"},{"p":"tiznit","n":"Idaousemllal"},{"p":"tiznit","n":"Tizoughrane"},{"p":"tiznit","n":"Taghzifte"},{"p":"tiznit","n":"Azour oulili"},{"p":"tiznit","n":"Tazeroualte"},{"p":"tiznit","n":"Toumanar"},{"p":"tiznit","n":"Assif Oudrar"},{"p":"tiznit","n":"Ighir Mouss"},{"p":"tiznit","n":"Tighmi"},{"p":"tiznit","n":"Amelne"},{"p":"tiznit","n":"Tarsouat"},{"p":"tiznit","n":"Izerbi"},{"p":"tiznit","n":"Tassrirt"},{"p":"tiznit","n":"Ait Ouafqa"},{"p":"tiznit","n":"Tahala"},{"p":"tiznit","n":"Afella Ighir"},{"p":"tiznit","n":"Aglou"},{"p":"tiznit","n":"Zaouite"},{"p":"tiznit","n":"Igrar S.Abdrahman"},{"p":"tiznit","n":"Al Gaada"},{"p":"tiznit","n":"Laaouina"},{"p":"tiznit","n":"Al Feid"},{"p":"tiznit","n":"Bounaamane"},{"p":"tiznit","n":"Tagounsa"},{"p":"tiznit","n":"Sidi Bouabdlli"},{"p":"tiznit","n":"Kh.Tafraout"},{"p":"tiznit","n":"Tisgharine"},{"p":"tiznit","n":"Ouijjane"},{"p":"tiznit","n":"Assaka"},{"p":"tiznit","n":"Reggada"},{"p":"tiznit","n":"Talainte"},{"p":"tiznit","n":"Ighir Melloulene"},{"p":"tiznit","n":"Igherme"},{"p":"tiznit","n":"Ras Mouka"},{"p":"tiznit","n":"Ait Semlalte"},{"p":"tiznit","n":"Ouled Noumer"},{"p":"tiznit","n":"El Maader"},{"p":"tiznit","n":"Ait Oumribte"},{"p":"tiznit","n":"Sahel"},{"p":"tiznit","n":"Ichafoudene"},{"p":"tiznit","n":"Lkraima"},{"p":"tiznit","n":"Ilmssite"},{"p":"tiznit","n":"Lmssaidira"},{"p":"tiznit","n":"Iferda"},{"p":"tiznit","n":"Bouzerze"}];
+var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":"inezgane","n":"Inezgane","c":"HP","d":"inezgane"},{"p":"taroudant","n":"Mokhtar Es-Soussi","c":"HP","d":"taroudant"},{"p":"taroudant","n":"Oulad Teima","c":"HPr","d":"taroudant"},{"p":"tata","n":"Tata","c":"HP","d":"tata"},{"p":"tiznit","n":"Hassan 1er","c":"HP","d":"tiznit"},{"p":"agadir","n":"HR Hassan II","c":"HR","d":"agadir"}];
     var GST_DATA = {
       espaces: {
-        agadir: { districts: ['agadir','inezgane','chtouka','tiznit'], label: 'Espace sanitaire Agadir' },
-        taroudant: { districts: ['taroudant','tata'], label: 'Espace sanitaire Taroudant' },
-        administrations: {
-          agadir: { value: 'space_admin_agadir', label: 'Direction Espace sanitaire Agadir / Direction HR Hassan II' },
-          taroudant: { value: 'space_admin_taroudant', label: 'Direction Espace sanitaire Taroudant / Direction HP Mokhtar Es-Soussi' }
-        }
+        agadir: { districts: ['inezgane','chtouka','tiznit'], label: 'Espace sanitaire Agadir' },
+        taroudant: { districts: ['taroudant','tata'], label: 'Espace sanitaire Taroudant' }
       },
       districts: {
-        agadir: 'Agadir', inezgane: 'Inezgane', chtouka: 'Chtouka Aït Baha',
+        inezgane: 'Inezgane', chtouka: 'Chtouka Aït Baha',
         tiznit: 'Tiznit', taroudant: 'Taroudant', tata: 'Tata'
       },
       etablissementsN3: [
@@ -12563,33 +12413,20 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         { value: 'hp_agadir_n1', label: 'Hôpital de proximité Agadir', niveau: 'N1', espace: 'agadir' },
         { value: 'hp_taroudant_n1', label: 'Hôpital de proximité Taroudant', niveau: 'N1', espace: 'taroudant' }
       ],
-      servicesN3Sanitaire: ['Service des affaires médicales', 'Service des soins infirmiers'],
-      servicesN3SanitaireHospitalier: ['Services hospitaliers (à préciser)'],
-      servicesN3Direct: ['Service d’accueil, de la qualité et de la performance', 'Service de la pharmacie'],
-      servicesN3Admin: ['Service du capital humain', 'Service des affaires financières', 'Service de la facturation et du recouvrement', 'Service de l’ingénierie et de la maintenance', 'Service d’achat, de l’approvisionnement et de la logistique'],
-      servicesN3AdminAutres: ['Service du capital humain', 'Service des affaires financières (admissions, facturation et recouvrement intégrés)', 'Service de l’ingénierie et de la maintenance', 'Service d’achat, de l’approvisionnement et de la logistique'],
-      servicesN2Sanitaire: ['Service des affaires médicales', 'Service des soins infirmiers', 'Service de la santé publique'],
-      servicesN2Direct: ['Service de l’accueil, de la qualité et de la performance', 'Service de la pharmacie', 'Commission médicale'],
-      servicesDistrictSanitaire: ['Service des affaires médicales', 'Service des soins infirmiers', 'Service de la santé publique'],
-      servicesDistrictAdministrative: ['Service du capital humain', 'Service des affaires financières', 'Service des achats, de l’approvisionnement et de la logistique', 'Service de l’ingénierie et de la maintenance'],
-      servicesN2Admin: ['Service du capital humain', 'Service des affaires financières', 'Service des achats, de l’approvisionnement et de la logistique', 'Service de l’ingénierie et de la maintenance'],
-      servicesN1: ['Service des affaires administratives', 'Service des soins infirmiers', 'Service des affaires médicales', 'Service de la santé publique'],
-      unitesN1: ['Unité de l’accueil, de la qualité et de la performance', 'Unité de la pharmacie'],
-      // Unités documentées à la page 114 pour le CHU Mohammed VI des Spécialités.
-      unites: {
-        'Capital humain': ['Unité Gestion des RH', 'Unité Formation'],
-        'Affaires financières': ['Unité Régie', 'Unité Comptabilité'],
-        'Ingénierie et Maintenance': ['Unité SI', 'Unité Bâtiments Installations techniques', 'Unité Équipements'],
-        'Achats, Approvisionnement et Logistique': ['Unité Achats', 'Unité Approvisionnement', 'Unité Logistique'],
-        'Facturation Recouvrement': ['Unité Admission', 'Unité Facturation', 'Unité Recouvrement'],
-        'Service Accueil / Qualité / Performance': ['Unité Accueil Assistance sociale', 'Unité Qualité Performance']
-      },
+      servicesN3Sanitaire: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Pharmacie', 'Service Accueil / Qualité / Performance'],
+      servicesN3Admin: ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique'],
+      servicesN2Sanitaire: ['Service Santé publique', 'Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Hôpitaux de proximité', 'ESSP / EMS', 'Service Pharmacie', 'Commission médicale', 'Service Accueil / Qualité / Performance'],
+      servicesN1: ['Service Affaires médicales', 'Service Soins infirmiers', 'Services hospitaliers 1 à n', 'Service Santé publique', 'Service Affaires administratives'],
+      unitesN1: ['Pharmacie', 'Accueil / Qualité / Performance', 'SI', 'Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Approvisionnement / Logistique'],
       pole: {
         directions: [
           { value: 'direction_strategie_sante_publique', label: 'Direction de la stratégie et de la santé publique' },
           { value: 'direction_soins_sante_primaires', label: 'Direction des soins de santé primaires, de la prévention et de la promotion de la santé' },
           { value: 'direction_systemes_information', label: 'Direction des systèmes d\'information' },
-          { value: 'rattachement_direct_dg', label: 'Rattachements directs au Directeur Général (sans direction)' },
+          { value: 'direction_hopital_specialites_agadir', label: 'Direction H.U. Mohammed VI des Spécialités Agadir' },
+          { value: 'direction_hopital_mere_enfant_agadir', label: 'Direction H.U. Mohammed VI Mère-Enfant Agadir' },
+          { value: 'direction_hopital_oncologie_agadir', label: 'Direction H.U. Mohammed VI Oncologie Agadir' },
+          { value: 'direction_hopital_psychiatrie_agadir', label: 'Direction H.U. Mohammed VI Psychiatrie Agadir' }
         ],
         divisions: {
           'direction_strategie_sante_publique': [
@@ -12606,11 +12443,10 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             'Division des logiciels et des systèmes informatiques',
             'Division de la production de l\'information et des statistiques'
           ],
-          'rattachement_direct_dg': [
-            'Division audit, qualité et contrôle de gestion',
-            'Division de la recherche et de l\'innovation',
-            'Services directement rattachés au Directeur Général (sans division)'
-          ],
+          'direction_hopital_specialites_agadir': ['Division Sanitaire', 'Division Administrative'],
+          'direction_hopital_mere_enfant_agadir': ['Division Sanitaire', 'Division Administrative'],
+          'direction_hopital_oncologie_agadir': ['Division Sanitaire', 'Division Administrative'],
+          'direction_hopital_psychiatrie_agadir': ['Division Sanitaire', 'Division Administrative'],
           'division_transverse_audit': ['Division audit, qualité et contrôle de gestion'],
           'division_transverse_recherche': ['Division de la recherche et de l\'innovation']
         },
@@ -12628,8 +12464,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           'Division Sanitaire': ['Service Affaires médicales', 'Service Soins infirmiers', 'Service Pharmacie', 'Service Accueil / Qualité / Performance'],
           'Division Administrative': ['Capital humain', 'Affaires financières', 'Ingénierie et Maintenance', 'Achats, Approvisionnement et Logistique'],
           'Division audit, qualité et contrôle de gestion': ['Service audit', 'Service qualité et sécurité du patient', 'Service contrôle de gestion'],
-          'Division de la recherche et de l\'innovation': ['Service de la recherche et de l\'innovation', 'Service de la coopération et de la communication scientifique'],
-          'Services directement rattachés au Directeur Général (sans division)': ['Service de la communication', 'Service d\'appui à l\'inspection et au contrôle des établissements']
+          'Division de la recherche et de l\'innovation': ['Service de la recherche et de l\'innovation', 'Service de la coopération et de la communication scientifique']
         }
       },
       administrative: {
@@ -12637,11 +12472,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           { value: 'direction_capital_humain', label: 'Direction du capital humain' },
           { value: 'direction_affaires_financieres', label: 'Direction des affaires financières' },
           { value: 'direction_achats_approvisionnement_logistique', label: 'Direction des achats, de l\'approvisionnement et de la logistique' },
-          { value: 'direction_ingenierie_maintenance_patrimoine', label: 'Direction de l\'ingénierie, de la maintenance et du patrimoine' },
-          { value: 'rattachement_direct_dga_admin', label: 'Rattachement direct à la DGA administrative (sans direction)' }
+          { value: 'direction_ingenierie_maintenance_patrimoine', label: 'Direction de l\'ingénierie, de la maintenance et du patrimoine' }
         ],
         divisions: {
-          'rattachement_direct_dga_admin': ['Services directement rattachés à la DGA administrative (sans division)'],
           'direction_capital_humain': [
             'Division de la gestion du personnel',
             'Division des affaires juridiques et sociales',
@@ -12674,28 +12507,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           'Division de l\'approvisionnement et de la logistique': ['Service des approvisionnements et de la logistique diverse', 'Service du parc auto'],
           'Division de l\'approvisionnement et de la logistique pharmaceutique': ['Service de la logistique des produits pharmaceutiques', 'Service de l\'approvisionnement des produits pharmaceutiques'],
           'Division de l\'ingénierie et de la maintenance': ['Service des bâtiments', 'Service des installations techniques', 'Service des équipements'],
-          'Division du patrimoine': ['Service du patrimoine mobilier', 'Service du patrimoine immobilier'],
-          'Services directement rattachés à la DGA administrative (sans division)': ['Service du bureau d\'ordre, de la documentation et des archives']
+          'Division du patrimoine': ['Service du patrimoine mobilier', 'Service du patrimoine immobilier']
         }
       },
       sanitaire: {
-        direction: { value: 'dga_sanitaire_admin', label: 'Directeur Général Adjoint Branche Sanitaire' },
         divisions: [
-          'Division Sanitaire',
-          'Division Administrative'
-        ],
-        composantesDirection: [
-          { value: 'Division Sanitaire', kind: 'division' },
-          { value: 'Division Administrative', kind: 'division' },
-          { value: 'Service de la pharmacie', kind: 'service' },
-          { value: 'Commission médicale', kind: 'commission' },
-          { value: 'Service de l’accueil, de la qualité et de la performance', kind: 'service' }
-        ],
-        rattachementsDirects: [
-          { value: 'direct_pharmacie_regionale', label: 'Division de la pharmacie régionale', kind: 'division' },
-          { value: 'direct_samu', label: 'Service d\'aide médicale urgente régional (SAMU)', kind: 'service' },
-          { value: 'direct_sante_publique', label: 'Service de la santé publique', kind: 'service' },
-          { value: 'direct_bureau_ordre', label: 'Bureau ordre, documentation et archives', kind: 'service' }
+          'Division de la pharmacie régionale',
+          'Service d\'aide médicale urgente régional (SAMU)',
+          'Service de la santé publique'
         ],
         services: {
           'Division de la pharmacie régionale': ['Service de la gestion des médicaments', 'Service de la gestion des dispositifs médicaux', 'Service des réactifs, des consommables et des produits chimiques']
@@ -12919,40 +12738,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       window.addEventListener('resize',closeActive);
     }
 
-    // Dictionnaire de rattachement provincial : affiliation hiérarchique distincte du territoire.
-    var GST_PROVINCE_DICTIONARY = {
-      branches: { pole: 'agadir', dgaAdministrative: 'agadir', dgaSanitaire: '' },
-      espaces: { agadir: 'agadir', taroudant: 'taroudant' },
-      districts: {
-        agadir: 'agadir', inezgane: 'inezgane', chtouka: 'chtouka',
-        tiznit: 'tiznit', taroudant: 'taroudant', tata: 'tata'
-      }
-    };
-    function resolveAdhesionProvince(level, branch, espace, district) {
-      if (level === 'regional') return GST_PROVINCE_DICTIONARY.branches[branch] || '';
-      if (district && Object.prototype.hasOwnProperty.call(GST_PROVINCE_DICTIONARY.districts, district)) {
-        return GST_PROVINCE_DICTIONARY.districts[district];
-      }
-      return GST_PROVINCE_DICTIONARY.espaces[espace] || '';
-    }
-
     function gstCascade() {
       var rattachement = document.getElementById('adhRattachement');
       var rattleVal = rattachement ? rattachement.value : '';
 
       // Masquer tous les groupes de branche
-      ['rattle-pole','rattle-sanitaire','rattle-administrative'].forEach(function(cls){
+      ['rattle-pole','rattle-sanitaire','rattle-administrative','rattle-directionStrategie','rattle-directionSI','rattle-directionSoins','rattle-divisionAudit','rattle-divisionRecherche','rattle-serviceCommunication','rattle-serviceAppuiInspection','rattle-comiteHospitaloUniversitaire','rattle-comitePilotageSuivi'].forEach(function(cls){
         document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display = 'none'; });
       });
-      document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){el.style.display='none';});
-      var staleEssp=document.getElementById('adhEsspSelect');
-      var staleEsspWrap=document.getElementById('adhEsspWrap');
-      if(staleEssp){staleEssp.required=false;staleEssp.value='';}
-      if(staleEsspWrap)staleEsspWrap.style.display='none';
-      var staleHospitalier=document.getElementById('adhServiceHospitalier');
-      var staleHospitalierWrap=document.getElementById('adhServiceHospitalierWrap');
-      if(staleHospitalier){staleHospitalier.value='';}
-      if(staleHospitalierWrap)staleHospitalierWrap.style.display='none';
 
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
@@ -12960,17 +12753,17 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       resetInput('adhEspaceSanitaire');
       resetInput('adhEstablishment');
       resetInput('adhService');
-      if(rattleVal!=='territorialSanitaire'){
-        ['adhDistrict','adhDivision','adhEtablissement','adhServiceGst','adhUnite','adhEsspSelect'].forEach(resetSel);
-        var territorialOther=document.getElementById('adhEtabOtherWrap');
-        if(territorialOther)territorialOther.style.display='none';
-      }
       ['adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
       document.getElementById('adhEtabOtherWrap').style.display='none';
       ['adhDirectionPole','adhDivisionPole','adhServicePole'].forEach(resetSel);
       ['adhDirectionAdmin','adhDivisionAdmin','adhServiceAdmin'].forEach(resetSel);
+      ['adhDivisionStrategie','adhServiceStrategie'].forEach(resetSel);
+      ['adhDivisionSI','adhServiceSI'].forEach(resetSel);
+      ['adhDivisionSoins','adhServiceSoins'].forEach(resetSel);
+      ['adhServiceAudit'].forEach(resetSel);
+      ['adhServiceRecherche'].forEach(resetSel);
 
       if (!rattleVal) { fixSelectLabels('adhRattachement'); return; }
 
@@ -12982,21 +12775,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var svcSel = document.getElementById('adhServicePole');
 
         dirSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        var topStructure=window.adhTopStructure||'';
-        var topDirectionMap={
-          directionStrategie:'direction_strategie_sante_publique',
-          directionSI:'direction_systemes_information',
-          directionSoinsPrimaires:'direction_soins_sante_primaires',
-          divisionAudit:'rattachement_direct_dg',
-          divisionRecherche:'rattachement_direct_dg',
-          serviceCommunication:'rattachement_direct_dg',
-          serviceInspection:'rattachement_direct_dg'
-        };
-        var requiredDirection=topDirectionMap[topStructure]||'';
-        GST_DATA.pole.directions.filter(function(d){return !requiredDirection||d.value===requiredDirection;}).forEach(function(d){
+        GST_DATA.pole.directions.forEach(function(d){
           var opt = document.createElement('option'); opt.value = d.value; opt.textContent = d.label; dirSel.appendChild(opt);
         });
-        if(requiredDirection)dirSel.value=requiredDirection;
         dirSel.disabled = false;
 
         divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
@@ -13011,40 +12792,26 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           divSel.value = ''; svcSel.value = '';
           var dirVal = dirSel.value;
           if (dirVal && GST_DATA.pole.divisions[dirVal]) {
-            var divisionsDisponibles=GST_DATA.pole.divisions[dirVal].slice();
-            var top=window.adhTopStructure||'';
-            var divisionCible={
-              divisionAudit:'Division audit, qualité et contrôle de gestion',
-              divisionRecherche:'Division de la recherche et de l\'innovation',
-              serviceCommunication:'Services directement rattachés au Directeur Général (sans division)',
-              serviceInspection:'Services directement rattachés au Directeur Général (sans division)'
-            };
-            if(divisionCible[top])divisionsDisponibles=divisionsDisponibles.filter(function(x){return x===divisionCible[top];});
-            divisionsDisponibles.forEach(function(div){
+            GST_DATA.pole.divisions[dirVal].forEach(function(div){
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
-            divSel.disabled = divisionsDisponibles.length===0;
-            if(divisionsDisponibles.length===1){divSel.value=divisionsDisponibles[0];divSel.dispatchEvent(new Event('change'));}
+            divSel.disabled = false;
           }
           fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         };
+
         divSel.onchange = function(){
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.disabled = true;
           svcSel.value = '';
           var divVal = divSel.value;
           if (divVal && GST_DATA.pole.services[divVal]) {
-            var servicesDisponibles=GST_DATA.pole.services[divVal].slice();
-            var top=window.adhTopStructure||'';
-            if(top==='serviceCommunication')servicesDisponibles=servicesDisponibles.filter(function(x){return x.toLowerCase().indexOf('communication')>=0;});
-            if(top==='serviceInspection')servicesDisponibles=servicesDisponibles.filter(function(x){return x.toLowerCase().indexOf('inspection')>=0;});
-            servicesDisponibles.forEach(function(svc){
+            GST_DATA.pole.services[divVal].forEach(function(svc){
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
-            svcSel.disabled = servicesDisponibles.length===0;
+            svcSel.disabled = false;
           }
         };
-        if(requiredDirection){dirSel.value=requiredDirection;dirSel.onchange();}
 
         fixSelectLabels('adhDirectionPole'); fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         return;
@@ -13100,73 +12867,131 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         return;
       }
 
-      // === BRANCHE SANITAIRE RÉGIONALE === rattachement direct ou CHU → Division → Service → Unité
-      if (rattleVal === 'dgaSanitaire') {
-        document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){el.style.display='block';});
-        var structure=document.getElementById('adhSanitaireRegionalStructure');
-        var divisionR=document.getElementById('adhSanitaireRegionalDivision');
-        var serviceR=document.getElementById('adhSanitaireRegionalService');
-        var uniteR=document.getElementById('adhSanitaireRegionalUnite');
-        var divisionWrapR=document.getElementById('adhSanitaireRegionalDivisionWrap');
-        var serviceWrapR=document.getElementById('adhSanitaireRegionalServiceWrap');
-        var uniteWrapR=document.getElementById('adhSanitaireRegionalUniteWrap');
-        var serviceHospR=document.getElementById('adhServiceHospitalier');
-        var serviceHospWrapR=document.getElementById('adhServiceHospitalierWrap');
-        if(serviceHospWrapR)serviceHospWrapR.style.display='none';
-        if(serviceHospR)serviceHospR.value='';
-        function clearRegional(sel){sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';sel.value='';sel.disabled=true;}
-        clearRegional(structure);clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
-        var dgaOption=document.createElement('option');dgaOption.value=GST_DATA.sanitaire.direction.value;dgaOption.textContent=GST_DATA.sanitaire.direction.label;structure.appendChild(dgaOption);GST_DATA.sanitaire.rattachementsDirects.forEach(function(item){var o=document.createElement('option');o.value=item.value;o.textContent=item.label;structure.appendChild(o);});
-        GST_DATA.etablissementsN3.forEach(function(item){var o=document.createElement('option');o.value=item.value;o.textContent=item.label;structure.appendChild(o);});
-        structure.disabled=false;
-        divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
-        structure.onchange=function(){
-          clearRegional(divisionR);clearRegional(serviceR);clearRegional(uniteR);
-          divisionWrapR.style.display='none';serviceWrapR.style.display='none';uniteWrapR.style.display='none';
-          if(structure.value.indexOf('hu_')===0){
-            ['Division Administrative','Division Sanitaire'].forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;divisionR.appendChild(o);});
-            var directGroup=document.createElement('option');directGroup.value='Services directement rattachés au directeur de l’hôpital';directGroup.textContent=directGroup.value;divisionR.appendChild(directGroup);
-            divisionR.disabled=false;divisionWrapR.style.display='';
-          } else if(structure.value==='direct_pharmacie_regionale'){
-            var pharmacyDivision=document.createElement('option');pharmacyDivision.value='Division de la pharmacie régionale';pharmacyDivision.textContent=pharmacyDivision.value;divisionR.appendChild(pharmacyDivision);
-            divisionR.disabled=false;divisionWrapR.style.display='';
+      // === BRANCHE : DIRECTION STRATEGIE ET SANTE PUBLIQUE === Division -> Service
+      if (rattleVal === 'directionStrategie') {
+        document.querySelectorAll('.rattle-directionStrategie').forEach(function(el){ el.style.display = 'block'; });
+        var divSel = document.getElementById('adhDivisionStrategie');
+        var svcSel = document.getElementById('adhServiceStrategie');
+        var dirs = GST_DATA.pole.divisions['direction_strategie_sante_publique'] || [];
+        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        dirs.forEach(function(div){ var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt); });
+        divSel.disabled = false;
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        svcSel.disabled = true;
+        divSel.onchange = function(){
+          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          svcSel.disabled = true;
+          var divVal = divSel.value;
+          if (divVal && GST_DATA.pole.services[divVal]) {
+            GST_DATA.pole.services[divVal].forEach(function(svc){ var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt); });
+            svcSel.disabled = false;
           }
-          fixSelectLabels('adhSanitaireRegionalDivision');
         };
-        divisionR.onchange=function(){
-          clearRegional(serviceR);clearRegional(uniteR);serviceWrapR.style.display='none';uniteWrapR.style.display='none';
-          var services=[];
-          if(structure.value.indexOf('hu_')===0){
-            if(divisionR.value==='Division Sanitaire')services=GST_DATA.servicesN3Sanitaire;
-            else if(divisionR.value==='Division Administrative')services=structure.value==='hu_specialites_agadir'?GST_DATA.servicesN3Admin:GST_DATA.servicesN3AdminAutres;
-            else if(divisionR.value==='Services directement rattachés au directeur de l’hôpital')services=GST_DATA.servicesN3Direct;
-          } else if(structure.value==='direct_pharmacie_regionale' && divisionR.value==='Division de la pharmacie régionale'){
-            services=GST_DATA.sanitaire.services['Division de la pharmacie régionale']||[];
-          }
-          services.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;serviceR.appendChild(o);});
-          if(services.length){serviceR.disabled=false;serviceWrapR.style.display='';}
-          fixSelectLabels('adhSanitaireRegionalService');
-        };
-        serviceR.onchange=function(){
-          clearRegional(uniteR);
-          var list=GST_DATA.unites&&GST_DATA.unites[serviceR.value]?GST_DATA.unites[serviceR.value]:[];
-          list.forEach(function(x){var o=document.createElement('option');o.value=x;o.textContent=x;uniteR.appendChild(o);});
-          if(list.length){uniteR.disabled=false;uniteWrapR.style.display='';}
-          var showHospitalier=structure.value==='hu_specialites_agadir'&&divisionR.value==='Division Sanitaire'&&serviceR.value==='Services hospitaliers 1 à n';
-          if(serviceHospWrapR)serviceHospWrapR.style.display=showHospitalier?'':'none';
-          if(!showHospitalier&&serviceHospR)serviceHospR.value='';
-          fixSelectLabels('adhSanitaireRegionalUnite');
-        };
-        fixSelectLabels('adhSanitaireRegionalStructure');
+        fixSelectLabels('adhDivisionStrategie'); fixSelectLabels('adhServiceStrategie');
         return;
       }
 
-      // === BRANCHE TERRITORIALE === Espace → District → Division → Établissement → Service → Unité
-      if (rattleVal === 'territorialSanitaire') {
+      // === BRANCHE : DIRECTION SYSTEMES D'INFORMATION === Division -> Service
+      if (rattleVal === 'directionSI') {
+        document.querySelectorAll('.rattle-directionSI').forEach(function(el){ el.style.display = 'block'; });
+        var divSel = document.getElementById('adhDivisionSI');
+        var svcSel = document.getElementById('adhServiceSI');
+        var dirs = GST_DATA.pole.divisions['direction_systemes_information'] || [];
+        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        dirs.forEach(function(div){ var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt); });
+        divSel.disabled = false;
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        svcSel.disabled = true;
+        divSel.onchange = function(){
+          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          svcSel.disabled = true;
+          var divVal = divSel.value;
+          if (divVal && GST_DATA.pole.services[divVal]) {
+            GST_DATA.pole.services[divVal].forEach(function(svc){ var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt); });
+            svcSel.disabled = false;
+          }
+        };
+        fixSelectLabels('adhDivisionSI'); fixSelectLabels('adhServiceSI');
+        return;
+      }
+
+      // === BRANCHE : DIRECTION SOINS SANTE PRIMAIRES === Division -> Service
+      if (rattleVal === 'directionSoins') {
+        document.querySelectorAll('.rattle-directionSoins').forEach(function(el){ el.style.display = 'block'; });
+        var divSel = document.getElementById('adhDivisionSoins');
+        var svcSel = document.getElementById('adhServiceSoins');
+        var dirs = GST_DATA.pole.divisions['direction_soins_sante_primaires'] || [];
+        divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        dirs.forEach(function(div){ var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt); });
+        divSel.disabled = false;
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        svcSel.disabled = true;
+        divSel.onchange = function(){
+          svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          svcSel.disabled = true;
+          var divVal = divSel.value;
+          if (divVal && GST_DATA.pole.services[divVal]) {
+            GST_DATA.pole.services[divVal].forEach(function(svc){ var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt); });
+            svcSel.disabled = false;
+          }
+        };
+        fixSelectLabels('adhDivisionSoins'); fixSelectLabels('adhServiceSoins');
+        return;
+      }
+
+      // === BRANCHE : DIVISION AUDIT, QUALITE, CONTROLE DE GESTION === Service
+      if (rattleVal === 'divisionAudit') {
+        document.querySelectorAll('.rattle-divisionAudit').forEach(function(el){ el.style.display = 'block'; });
+        var svcSel = document.getElementById('adhServiceAudit');
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        var svcs = GST_DATA.pole.services['Division audit, qualité et contrôle de gestion'] || [];
+        svcs.forEach(function(svc){ var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt); });
+        svcSel.disabled = svcs.length === 0;
+        fixSelectLabels('adhServiceAudit');
+        return;
+      }
+
+      // === BRANCHE : DIVISION RECHERCHE ET INNOVATION === Service
+      if (rattleVal === 'divisionRecherche') {
+        document.querySelectorAll('.rattle-divisionRecherche').forEach(function(el){ el.style.display = 'block'; });
+        var svcSel = document.getElementById('adhServiceRecherche');
+        svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        var svcs = GST_DATA.pole.services['Division de la recherche et de l\'innovation'] || [];
+        svcs.forEach(function(svc){ var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt); });
+        svcSel.disabled = svcs.length === 0;
+        fixSelectLabels('adhServiceRecherche');
+        return;
+      }
+
+      // === BRANCHE : SERVICE COMMUNICATION === (feuille)
+      if (rattleVal === 'serviceCommunication') {
+        document.querySelectorAll('.rattle-serviceCommunication').forEach(function(el){ el.style.display = 'block'; });
+        return;
+      }
+
+      // === BRANCHE : SERVICE APPUI INSPECTION === (feuille)
+      if (rattleVal === 'serviceAppuiInspection') {
+        document.querySelectorAll('.rattle-serviceAppuiInspection').forEach(function(el){ el.style.display = 'block'; });
+        return;
+      }
+
+      // === BRANCHE : COMITE HOSPITALO-UNIVERSITAIRE === (feuille)
+      if (rattleVal === 'comiteHospitaloUniversitaire') {
+        document.querySelectorAll('.rattle-comiteHospitaloUniversitaire').forEach(function(el){ el.style.display = 'block'; });
+        return;
+      }
+
+      // === BRANCHE : COMITE DE PILOTAGE ET DE SUIVI === (feuille)
+      if (rattleVal === 'comitePilotageSuivi') {
+        document.querySelectorAll('.rattle-comitePilotageSuivi').forEach(function(el){ el.style.display = 'block'; });
+        return;
+      }
+
+      // === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité
+      if (rattleVal === 'dgaSanitaire') {
         document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
 
         var espace = document.getElementById('adhEspaceSanitaire');
-        var divisionEspace = document.getElementById('adhDivisionEspace');
         var district = document.getElementById('adhDistrict');
         var etab = document.getElementById('adhEtablissement');
         var etabOther = document.getElementById('adhEtabOtherWrap');
@@ -13178,36 +13003,31 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if (!espace || !district || !etab || !division || !service || !unite) return;
 
         espace.disabled = false;
-        var divisionEspaceWrap = document.getElementById('adhDivisionEspaceWrap');
-        var districtWrap = document.getElementById('adhDistrictWrap');
-        if (divisionEspace) { divisionEspace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; divisionEspace.disabled = true; }
-        district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        district.disabled = true;
-        if (divisionEspaceWrap) divisionEspaceWrap.style.display = '';
-        if (districtWrap) districtWrap.style.display = 'none';
+
         var espVal = espace.value || '';
+        district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+        if (espVal && GST_DATA.espaces[espVal]) {
+          GST_DATA.espaces[espVal].districts.forEach(function(d) {
+            var opt = document.createElement('option');
+            opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
+          });
+          district.disabled = false;
+          district.value = '';
+        } else { district.disabled = true; }
 
         espace.onchange = function(){
           espace.disabled = false;
           espVal = espace.value;
-          if (divisionEspace) {
-            divisionEspace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            divisionEspace.disabled = true;
-            if (espVal && GST_DATA.espaces[espVal]) {
-              GST_DATA.sanitaire.composantesDirection.forEach(function(item) {
-                var opt = document.createElement('option'); opt.value = item.value; opt.textContent = item.value; divisionEspace.appendChild(opt);
-              });
-              divisionEspace.disabled = false;
-            }
-            divisionEspace.value = '';
-          }
           district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           district.disabled = true;
           district.value = '';
-          if (districtWrap) districtWrap.style.display = 'none';
-          var etabWrapOnSpaceChange=document.getElementById('adhEtablissementWrap');if(etabWrapOnSpaceChange)etabWrapOnSpaceChange.style.display='none';
-          var serviceWrapOnSpaceChange=document.getElementById('adhServiceGstWrap');if(serviceWrapOnSpaceChange)serviceWrapOnSpaceChange.style.display='none';
-          var uniteWrapOnSpaceChange=document.getElementById('adhUniteWrap');if(uniteWrapOnSpaceChange)uniteWrapOnSpaceChange.style.display='none';
+          if (espVal && GST_DATA.espaces[espVal]) {
+            GST_DATA.espaces[espVal].districts.forEach(function(d) {
+              var opt = document.createElement('option');
+              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
+            });
+            district.disabled = false;
+          }
           etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           etab.disabled = true;
           etab.value = '';
@@ -13222,319 +13042,129 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           unite.value = '';
           serviceHosp.value = '';
           etabOther.style.display = 'none';
-          var esspSelectOnSpace = document.getElementById('adhEsspSelect');
-          if (esspSelectOnSpace) { esspSelectOnSpace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; esspSelectOnSpace.style.display = 'none'; esspSelectOnSpace.required = false; }
-          var esspWrapOnSpace = document.getElementById('adhEsspWrap');
-          if (esspWrapOnSpace) esspWrapOnSpace.style.display = 'none';
-          var serviceHospWrapOnSpace = document.getElementById('adhServiceHospitalierWrap');
-          if (serviceHospWrapOnSpace) serviceHospWrapOnSpace.style.display = 'none';
         };
-
-        if (divisionEspace) {
-          divisionEspace.onchange = function() {
-            district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            district.value = '';
-            district.disabled = true;
-            if (divisionEspace.value === 'Division Sanitaire' && espVal && GST_DATA.espaces[espVal]) {
-              GST_DATA.espaces[espVal].districts.forEach(function(d) {
-                var opt = document.createElement('option');
-                opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
-              });
-              district.disabled = false;
-              if (districtWrap) districtWrap.style.display = '';
-            } else if (divisionEspace.value && divisionEspace.value !== 'Division Sanitaire') {
-              var directSpaceService=document.getElementById('adhServiceGst');
-              var directSpaceWrap=document.getElementById('adhServiceGstWrap');
-              var directSpaceUnite=document.getElementById('adhUnite');
-              var directSpaceUniteWrap=document.getElementById('adhUniteWrap');
-              if(directSpaceService){directSpaceService.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';directSpaceService.disabled=true;}
-              if(directSpaceUnite){directSpaceUnite.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';directSpaceUnite.disabled=true;}
-              if(directSpaceWrap)directSpaceWrap.style.display='none';if(directSpaceUniteWrap)directSpaceUniteWrap.style.display='none';
-              if(divisionEspace.value==='Division Administrative') GST_DATA.servicesN2Admin.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;directSpaceService.appendChild(opt);});
-              else if(divisionEspace.value==='Service de la pharmacie'||divisionEspace.value==='Service de l’accueil, de la qualité et de la performance'){var directOpt=document.createElement('option');directOpt.value=divisionEspace.value;directOpt.textContent=divisionEspace.value;directSpaceService.appendChild(directOpt);}
-              if(directSpaceService&&directSpaceService.options.length>1){directSpaceService.disabled=false;if(directSpaceWrap)directSpaceWrap.style.display='';}
-            } else if (divisionEspace.value === 'Division Administrative') {
-              if (districtWrap) districtWrap.style.display = 'none';
-              var provinceForSpace = document.getElementById('adhProvince');
-              if (provinceForSpace) provinceForSpace.value = resolveAdhesionProvince('territorial','territorialSanitaire',espVal,'');
-            }
-            // Changer de division d'espace invalide tous les choix des niveaux inférieurs.
-            division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            division.disabled = true; division.value = '';
-            etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            etab.disabled = true; etab.value = '';
-            service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            service.disabled = true; service.value = '';
-            unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            unite.disabled = true; unite.value = '';
-            if (serviceHosp) serviceHosp.value = '';
-            var esspSelectReset = document.getElementById('adhEsspSelect');
-            if (esspSelectReset) { esspSelectReset.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; esspSelectReset.value = ''; esspSelectReset.style.display = 'none'; esspSelectReset.required = false; }
-            var esspWrapReset = document.getElementById('adhEsspWrap');
-            if (esspWrapReset) esspWrapReset.style.display = 'none';
-            var hospitalWrapReset = document.getElementById('adhServiceHospitalierWrap');
-            if (hospitalWrapReset) hospitalWrapReset.style.display = 'none';
-            var etabOtherReset = document.getElementById('adhEtabOtherWrap');
-            if (etabOtherReset) etabOtherReset.style.display = 'none';
-            var etabWrap = document.getElementById('adhEtablissementWrap');
-            var serviceWrap = document.getElementById('adhServiceGstWrap');
-            var uniteWrap = document.getElementById('adhUniteWrap');
-            if (etabWrap) etabWrap.style.display = 'none';
-            if (serviceWrap) serviceWrap.style.display = 'none';
-            if (uniteWrap) uniteWrap.style.display = 'none';
-            if(divisionEspace.value && divisionEspace.value!=='Division Sanitaire'){
-              var spaceService=document.getElementById('adhServiceGst');
-              var spaceServiceWrap=document.getElementById('adhServiceGstWrap');
-              if(spaceService){spaceService.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';spaceService.disabled=true;}
-              if(divisionEspace.value==='Division Administrative') GST_DATA.servicesN2Admin.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;spaceService.appendChild(opt);});
-              else if(divisionEspace.value==='Service de la pharmacie'||divisionEspace.value==='Service de l’accueil, de la qualité et de la performance'){var directOpt=document.createElement('option');directOpt.value=divisionEspace.value;directOpt.textContent=divisionEspace.value;spaceService.appendChild(directOpt);}
-              if(spaceService&&spaceService.options.length>1){spaceService.disabled=false;if(spaceServiceWrap)spaceServiceWrap.style.display='';}
-              if(divisionEspace.value==='Commission médicale' && spaceServiceWrap)spaceServiceWrap.style.display='none';
-            }
-            fixSelectLabels('adhDistrict');
-          };
-        }
 
         var etabSelect = document.getElementById('adhEtablissement');
         if (etabSelect) {
           etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           etabSelect.disabled = true;
+
           etabSelect.onchange = function(){
             var etabVal = etabSelect.value;
-            var divVal = division.value;
-            var selectedHospitalRecord = (typeof HOSP_LIST !== 'undefined' ? HOSP_LIST.filter(function(h){return 'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_')===etabVal;})[0] : null);
             etabOther.style.display = (etabVal === 'other') ? '' : 'none';
+
+            var niveauCode = '';
+            if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
+            else if (etabVal === 'other') niveauCode = espVal ? 'N2' : 'N1';
+            else if (espVal) niveauCode = 'N2';
+
+            division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+            division.disabled = true;
             service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
             service.disabled = true;
-            service.value = '';
             unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
             unite.disabled = true;
-            unite.value = '';
             serviceHosp.value = '';
-            var serviceHospWrapOnEtab = document.getElementById('adhServiceHospitalierWrap');
-            if (serviceHospWrapOnEtab) serviceHospWrapOnEtab.style.display = 'none';
 
+            if (niveauCode === 'N3') {
+              GST_DATA.sanitaire.divisions.forEach(function(d){
+                var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
+              });
+              division.disabled = false;
+            } else if (niveauCode === 'N2') {
+              GST_DATA.sanitaire.divisions.forEach(function(d){
+                var opt = document.createElement('option'); opt.value = d; opt.textContent = d; division.appendChild(opt);
+              });
+              division.disabled = false;
+            } else if (niveauCode === 'N1') {
+              division.disabled = true;
+              service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+              GST_DATA.servicesN1.forEach(function(s){
+                var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
+              });
+              service.disabled = false;
+            }
+
+            serviceHosp.disabled = false;
+
+            // ESSP : mettre à jour la liste quand "Autre établissement" est sélectionné
             var esspSel = document.getElementById('adhEsspSelect');
-            var esspWrap = document.getElementById('adhEsspWrap');
             if (esspSel) {
               esspSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-              esspSel.style.display = 'none';
-              esspSel.required = false;
-              if ((etabVal === 'other' || !etabVal) && divVal === 'Division Sanitaire' && district.value && typeof ESSP_LIST !== 'undefined') {
-                populateEsspSelect(esspSel, district.value);
-                if (esspWrap) esspWrap.style.display = '';
-              } else if (esspWrap) {
-                esspWrap.style.display = 'none';
+              if (etabVal === 'other' && provVal && typeof ESSP_LIST !== 'undefined') {
+                ESSP_LIST.filter(function(e) { return e.p === provVal; }).forEach(function(e) {
+                  var opt = document.createElement('option');
+                  opt.value = e.n; opt.textContent = e.n; esspSel.appendChild(opt);
+                });
+                esspSel.style.display = '';
+              } else {
+                esspSel.style.display = 'none';
               }
             }
 
-            var niveauCode = etabVal && etabVal.indexOf('hu_') === 0 ? 'N3' : (etabVal ? 'N2' : '');
-            var services = [];
-            if(selectedHospitalRecord && selectedHospitalRecord.c==='HPr'){
-              services=GST_DATA.servicesN1;
-              services.forEach(function(s){var opt=document.createElement('option');opt.value=s;opt.textContent=s;service.appendChild(opt);});
-              service.disabled=false;
-              var proximityServiceWrap=document.getElementById('adhServiceGstWrap');
-              if(proximityServiceWrap)proximityServiceWrap.style.display='';
-              fixSelectLabels('adhServiceGst');
-              return;
-            }
-            if(selectedHospitalRecord && (selectedHospitalRecord.c==='HP'||selectedHospitalRecord.c==='HR')){
-              var hospitalWrap=document.getElementById('adhServiceHospitalierWrap');
-              var provincialServiceWrap=document.getElementById('adhServiceGstWrap');
-              if(hospitalWrap)hospitalWrap.style.display='';
-              if(provincialServiceWrap)provincialServiceWrap.style.display='none';
-              return;
-            }
-            // Les détails de services sont documentés uniquement pour le CHU Spécialités.
-            if (niveauCode === 'N3' && etabVal === 'hu_specialites_agadir') {
-              if (divVal === 'Division Sanitaire') services = GST_DATA.servicesN3Sanitaire;
-              else if (divVal === 'Division Administrative') services = GST_DATA.servicesN3Admin;
-              else if (divVal === 'Services directement rattachés à la direction du CHU Spécialités') services = GST_DATA.servicesN3Direct;
-            }
-            services.forEach(function(s){
-              var opt = document.createElement('option');
-              opt.value = s; opt.textContent = s; service.appendChild(opt);
-            });
-            service.disabled = services.length === 0;
-            fixSelectLabels('adhServiceGst');
           };
         }
 
-        division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        division.disabled = true;
         division.onchange = function(){
           var divVal = division.value;
-          if(String(district.value||'').indexOf('space_admin_')===0){
-            etabSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';etabSelect.disabled=true;etabSelect.value='';
-            service.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';service.disabled=true;service.value='';
-            unite.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';unite.disabled=true;unite.value='';
-            var spaceEsspWrap=document.getElementById('adhEsspWrap');if(spaceEsspWrap)spaceEsspWrap.style.display='none';
-            var spaceHospitalWrap=document.getElementById('adhServiceHospitalierWrap');if(spaceHospitalWrap)spaceHospitalWrap.style.display='none';
-            return;
-          }
-          etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          etabSelect.disabled = true;
-          etabSelect.value = '';
-          etabOther.style.display = 'none';
           service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           service.disabled = true;
-          service.value = '';
           unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           unite.disabled = true;
-          unite.value = '';
-          serviceHosp.value = '';
-          var serviceHospWrapOnDivision = document.getElementById('adhServiceHospitalierWrap');
-          if (serviceHospWrapOnDivision) serviceHospWrapOnDivision.style.display = 'none';
-          var esspSelOnDivision = document.getElementById('adhEsspSelect');
-          if (esspSelOnDivision) {
-            esspSelOnDivision.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-            esspSelOnDivision.style.display = 'none';
-            esspSelOnDivision.required = false;
-          }
-          var esspWrapOnDivision = document.getElementById('adhEsspWrap');
-          if (esspWrapOnDivision) esspWrapOnDivision.style.display = 'none';
-          if (!divVal) return;
 
-          if (!district.value) return;
+          var etabVal = etabSelect.value;
+          var niveauCode = '';
+          if (etabVal && etabVal.startsWith('hu_')) niveauCode = 'N3';
+          else if (etabVal === 'other') niveauCode = espVal ? 'N2' : 'N1';
+          else if (espVal) niveauCode = 'N2';
 
-          var directComponent = GST_DATA.sanitaire.composantesDirection.filter(function(x){return x.value===divVal;})[0];
-          if (directComponent) {
-            var directServiceList=[];
-            if(divVal==='Division Administrative') directServiceList=GST_DATA.servicesDistrictAdministrative;
-            else if(divVal==='Division Sanitaire') directServiceList=GST_DATA.servicesDistrictSanitaire;
-            else if(directComponent.kind==='service') directServiceList=[divVal];
-            if(divVal==='Commission médicale'){if(serviceWrap)serviceWrap.style.display='none';if(etabWrap)etabWrap.style.display='none';etabSelect.disabled=true;return;}
-            directServiceList.forEach(function(name){var opt=document.createElement('option');opt.value=name;opt.textContent=name;service.appendChild(opt);});
-            service.disabled=directServiceList.length===0;
-            if(serviceWrap)serviceWrap.style.display=directServiceList.length?'':'none';
-            if(etabWrap)etabWrap.style.display='none';etabSelect.disabled=true;
-            fixSelectLabels('adhServiceGst');return;
+          var services = [];
+          if (niveauCode === 'N3' || niveauCode === 'N2') {
+            if (divVal === 'sanitaire') services = GST_DATA.servicesN3Sanitaire;
+            else if (divVal === 'administrative') services = GST_DATA.servicesN3Admin;
+          } else if (niveauCode === 'N1') {
+            services = GST_DATA.servicesN1;
           }
-          if (divVal !== 'Établissements relevant du District') return;
 
-          if (typeof HOSP_LIST !== 'undefined') {
-            HOSP_LIST.filter(function(h){
-              if (h.p !== district.value) return false;
-              if (h.d && h.d !== district.value) return false;
-              if (h.status === 'construction') return false;
-              return true;
-            }).forEach(function(h){
-              var opt = document.createElement('option');
-              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-              opt.textContent = h.n + ' (' + h.c + ')';
-              etabSelect.appendChild(opt);
-            });
-          }
-          var otherOpt = document.createElement('option');
-          otherOpt.value = 'other';
-          var adhLabels = typeof window.ugtmT === 'function' ? (window.ugtmT() || {}) : {};
-          otherOpt.textContent = divVal === 'Division Sanitaire'
-            ? (adhLabels.adhEsspOrOther || 'ESSP / EMS ou autre établissement')
-            : (adhLabels.adhOtherEtab || 'Autre établissement');
-          etabSelect.appendChild(otherOpt);
-          etabSelect.disabled = false;
-          var esspSelectAfterDivision = document.getElementById('adhEsspSelect');
-          var esspWrapAfterDivision = document.getElementById('adhEsspWrap');
-          if (divVal === 'Division Sanitaire' && district.value && esspSelectAfterDivision && typeof ESSP_LIST !== 'undefined') {
-            populateEsspSelect(esspSelectAfterDivision, district.value);
-            esspSelectAfterDivision.required = false;
-            if (esspWrapAfterDivision) esspWrapAfterDivision.style.display = '';
-          }
-          fixSelectLabels('adhEtablissement');
-          fixSelectLabels('adhEsspSelect');
+          services.forEach(function(s){
+            var opt = document.createElement('option'); opt.value = s; opt.textContent = s; service.appendChild(opt);
+          });
+          service.disabled = services.length === 0;
         };
 
         service.onchange = function(){
           var svcVal = service.value;
           unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           var unites = [];
-          if (etabSelect.value === 'hu_specialites_agadir' && GST_DATA.unites && GST_DATA.unites[svcVal]) {
-            unites = GST_DATA.unites[svcVal];
-          } else if (etabSelect.value.indexOf('hosp_')===0) {
-            var proximityRecord=(typeof HOSP_LIST!=='undefined'?HOSP_LIST.filter(function(h){return 'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_')===etabSelect.value;})[0]:null);
-            if(proximityRecord&&proximityRecord.c==='HPr')unites=GST_DATA.unitesN1||[];
-          }
+          if (GST_DATA.unites[svcVal]) unites = GST_DATA.unites[svcVal];
           unites.forEach(function(u){
-            var opt = document.createElement('option');
-            opt.value = u; opt.textContent = u; unite.appendChild(opt);
+            var opt = document.createElement('option'); opt.value = u; opt.textContent = u; unite.appendChild(opt);
           });
           unite.disabled = unites.length === 0;
-          var proximityUnitWrap=document.getElementById('adhUniteWrap');
-          if(proximityUnitWrap)proximityUnitWrap.style.display=unites.length?'':'none';
-          var serviceHospWrap = document.getElementById('adhServiceHospitalierWrap');
-          var showServiceHosp = etabSelect.value === 'hu_specialites_agadir' && division.value === 'Division Sanitaire' && svcVal === 'Services hospitaliers 1 à n';
-          if (serviceHospWrap) serviceHospWrap.style.display = showServiceHosp ? '' : 'none';
-          if (!showServiceHosp && serviceHosp) serviceHosp.value = '';
         };
 
         var esspSelect = document.getElementById('adhEsspSelect');
         if (esspSelect) {
           esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          esspSelect.style.display = 'none';
-          esspSelect.required = false;
-          var esspWrapInit = document.getElementById('adhEsspWrap');
-          if (esspWrapInit) esspWrapInit.style.display = 'none';
+          if (etabSelect.value === 'other' && provVal && typeof ESSP_LIST !== 'undefined') {
+            ESSP_LIST.filter(function(e) { return e.p === provVal; }).forEach(function(e) {
+              var opt = document.createElement('option');
+              opt.value = e.n; opt.textContent = e.n; esspSelect.appendChild(opt);
+            });
+            esspSelect.style.display = '';
+          } else {
+            esspSelect.style.display = 'none';
+          }
         }
-        var serviceHospWrapInit = document.getElementById('adhServiceHospitalierWrap');
-        if (serviceHospWrapInit) serviceHospWrapInit.style.display = 'none';
 
-                if (espace.value) { espace.onchange(); }
-        fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDivisionEspace'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
+        if (espace.value) { espace.onchange(); }
+        fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         return;
       }
     }
 
     // Attach listeners
-    function configureAdhLevel(level,preserveBranch){
-      var wrap=document.getElementById('adhRattachementWrap'),sel=document.getElementById('adhRattachement');
-      if(!sel)return;
-      var previous=preserveBranch?sel.value:'';
-      sel.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
-      var labels=typeof window.ugtmT==='function'?(window.ugtmT()||{}):{};
-      var choices=level==='regional'?[{value:'pole',key:'adhRattachementPole',label:'Pilotage'},{value:'dgaAdministrative',key:'adhRattachementDGA_Administrative',label:'Direction adjointe administrative'},{value:'dgaSanitaire',key:'adhRattachementDGA_Sanitaire',label:'Direction adjointe sanitaire'}]:level==='territorial'?[{value:'territorialSanitaire',key:'adhRattachementTerritorial',label:'Espaces sanitaires — niveau secondaire et primaire'}]:[];
-      choices.forEach(function(x){var o=document.createElement('option');o.value=x.value;o.textContent=labels[x.key]||x.label;sel.appendChild(o);});
-      if(wrap)wrap.style.display=level==='regional'?'':'none';
-      sel.required=level==='regional';
-      sel.value=level==='territorial'?'territorialSanitaire':(previous&&choices.some(function(x){return x.value===previous;})?previous:'');
-      fixSelectLabels('adhRattachement');
-    }
-    window.configureAdhLevel=configureAdhLevel;
     function attachAdhListeners(){
-      var levelSel=document.getElementById('adhNiveauOrganisationnel');
-      var firstSel=document.getElementById('adhPremierSelecteur');
-      if(firstSel)firstSel.addEventListener('change',function(){
-        var v=firstSel.value;
-        window.adhTopStructure=v;
-        var level='regional';
-        if(levelSel)levelSel.value=level;
-        configureAdhLevel(level,false);
-        var branch=document.getElementById('adhRattachement');
-        var isCommittee=(v==='comiteHospitaloUniversitaire'||v==='comitePilotage');
-        if(branch){
-          if(v==='dgaAdministrative')branch.value='dgaAdministrative';
-          else if(v==='dgaSanitaire')branch.value='dgaSanitaire';
-          else if(isCommittee)branch.value='';
-          else branch.value='pole';
-          branch.required=!isCommittee;
-        }
-        var poleFields=document.querySelectorAll('.rattle-pole');
-        if(isCommittee){
-          poleFields.forEach(function(el){el.style.display='none';});
-          var branchWrap=document.getElementById('adhRattachementWrap');
-          if(branchWrap)branchWrap.style.display='none';
-        }else{
-          var branchWrap=document.getElementById('adhRattachementWrap');
-          if(branchWrap)branchWrap.style.display='';
-        }
-        gstCascade();
-        if(isCommittee){
-          poleFields.forEach(function(el){el.style.display='none';});
-          var branchWrap=document.getElementById('adhRattachementWrap');
-          if(branchWrap)branchWrap.style.display='none';
-        }
-      });
-      if(levelSel)levelSel.addEventListener('change',function(){configureAdhLevel(levelSel.value,false);gstCascade();});
       // Seul le rattachement relance gstCascade (affichage/masquage des branches)
       // Chaque select enfant gère ses propres enfants via son propre onchange
       // défini dans gstCascade : ainsi un choix enfant ne réinitialise jamais ses parents.
@@ -13549,38 +13179,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           fixSelectLabels(id);
         }
       });
-
-      // ESSP / EMS / structures d'appui (décision, chapitre IV, p. 94-95) :
-      // après sélection de la structure, proposer uniquement les trois unités fonctionnelles prévues.
-      var esspUnitSelect = document.getElementById('adhEsspSelect');
-      if (esspUnitSelect) {
-        esspUnitSelect.addEventListener('change', function(){
-          var uniteSelect = document.getElementById('adhUnite');
-          var uniteWrap = document.getElementById('adhUniteWrap');
-          var serviceSelect = document.getElementById('adhServiceGst');
-          var serviceWrap = document.getElementById('adhServiceGstWrap');
-          if (!uniteSelect) return;
-          uniteSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          uniteSelect.value = '';
-          if (serviceSelect) { serviceSelect.value = ''; serviceSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; }
-          var isEssp = String(esspUnitSelect.value || '').indexOf('essp_') === 0;
-          if (isEssp) {
-            ['Unité administrative','Unité des soins et de la santé publique','Unité de la pharmacie'].forEach(function(label){
-              var option = document.createElement('option');
-              option.value = label;
-              option.textContent = label;
-              uniteSelect.appendChild(option);
-            });
-            uniteSelect.disabled = false;
-            if (uniteWrap) uniteWrap.style.display = '';
-            if (serviceWrap) serviceWrap.style.display = 'none';
-          } else {
-            uniteSelect.disabled = true;
-            if (uniteWrap) uniteWrap.style.display = 'none';
-          }
-          fixSelectLabels('adhUnite');
-        });
-      }
 
       // Province → Espace sanitaire : quand la province change, l'espace se met à jour
       var provSel = document.getElementById('adhProvince');
@@ -13605,14 +13203,18 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             espace.value = defaultEspace;
             espace.disabled = false;
           }
-          // Le changement de province choisit l'espace ; l'utilisateur choisit ensuite sa division.
+          // Reconstruire les districts de l'espace
           var espVal = espace ? espace.value : '';
-          var divisionEspace = document.getElementById('adhDivisionEspace');
-          if (divisionEspace) { divisionEspace.value = ''; divisionEspace.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; divisionEspace.disabled = true; }
           district.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           district.disabled = true;
           district.value = '';
-          if (espace && espace.onchange) espace.onchange();
+          if (espVal && GST_DATA.espaces[espVal]) {
+            GST_DATA.espaces[espVal].districts.forEach(function(d) {
+              var opt = document.createElement('option');
+              opt.value = d; opt.textContent = GST_DATA.districts[d] || d; district.appendChild(opt);
+            });
+            district.disabled = false;
+          }
           // Réinitialiser niveaux enfants (pas les parents province/espace)
           if (etab) { etab.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etab.disabled = true; etab.value = ''; }
           if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
@@ -13620,24 +13222,18 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
           if (serviceHosp) serviceHosp.value = '';
           if (etabOther) etabOther.style.display = 'none';
-          var esspSelectOnProvince = document.getElementById('adhEsspSelect');
-          if (esspSelectOnProvince) { esspSelectOnProvince.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; esspSelectOnProvince.style.display = 'none'; esspSelectOnProvince.required = false; }
-          var esspWrapOnProvince = document.getElementById('adhEsspWrap');
-          if (esspWrapOnProvince) esspWrapOnProvince.style.display = 'none';
-          var serviceHospWrapOnProvince = document.getElementById('adhServiceHospitalierWrap');
-          if (serviceHospWrapOnProvince) serviceHospWrapOnProvince.style.display = 'none';
-          fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDivisionEspace'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite');
+          fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite');
         });
         fixSelectLabels('adhProvince');
       }
 
-      // District : proposer d'abord la division, puis les établissements de cette division.
+      // District : met à jour les établissements selon le district (sans toucher aux parents)
       var distSel = document.getElementById('adhDistrict');
       if (distSel) {
         distSel.addEventListener('change', function(){
           var d = distSel.value;
-          var provinceField = document.getElementById('adhProvince');
-          var currentEspace=document.getElementById('adhEspaceSanitaire').value;
+          var espace = document.getElementById('adhEspaceSanitaire');
+          var espVal = espace ? espace.value : '';
           var etabSelect = document.getElementById('adhEtablissement');
           var division = document.getElementById('adhDivision');
           var service = document.getElementById('adhServiceGst');
@@ -13645,53 +13241,55 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var serviceHosp = document.getElementById('adhServiceHospitalier');
           var etabOther = document.getElementById('adhEtabOtherWrap');
           var esspSelect = document.getElementById('adhEsspSelect');
-          var isSpaceAdministration=false;
-          var etabWrap=document.getElementById('adhEtablissementWrap');
-          var serviceWrap=document.getElementById('adhServiceGstWrap');
-          var uniteWrap=document.getElementById('adhUniteWrap');
-          var esspWrapSpecial=document.getElementById('adhEsspWrap');
-          var hospitalWrapSpecial=document.getElementById('adhServiceHospitalierWrap');
-          if(isSpaceAdministration){
-            if(provinceField)provinceField.value=resolveAdhesionProvince('territorial','territorialSanitaire',currentEspace,'');
-            division.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';
-            GST_DATA.sanitaire.divisions.forEach(function(name){var option=document.createElement('option');option.value=name;option.textContent=name;division.appendChild(option);});
-            division.disabled=false;division.value='';
-            if(etabSelect){etabSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';etabSelect.value='';etabSelect.disabled=true;}
-            if(service){service.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';service.value='';service.disabled=true;}
-            if(unite){unite.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';unite.value='';unite.disabled=true;}
-            if(etabWrap)etabWrap.style.display='none';
-            if(serviceWrap)serviceWrap.style.display='none';
-            if(uniteWrap)uniteWrap.style.display='none';
-            if(esspWrapSpecial)esspWrapSpecial.style.display='none';
-            if(hospitalWrapSpecial)hospitalWrapSpecial.style.display='none';
-            if(esspSelect){esspSelect.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>';esspSelect.required=false;}
-            if(serviceHosp)serviceHosp.value='';
-            if(etabOther)etabOther.style.display='none';
-            fixSelectLabels('adhDivision');
-            return;
-          }
-          if(etabWrap)etabWrap.style.display='';
-          if(serviceWrap)serviceWrap.style.display='';
-          if(uniteWrap)uniteWrap.style.display='';
-          if (provinceField) provinceField.value = d || '';
-          division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-          if (d && GST_DATA.sanitaire && GST_DATA.sanitaire.composantesDirection) {
-            GST_DATA.sanitaire.composantesDirection.concat([{value:'Établissements relevant du District',kind:'structures'}]).forEach(function(item){
-              var opt = document.createElement('option'); opt.value = item.value; opt.textContent = item.value; division.appendChild(opt);
+
+          etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
+          etabSelect.disabled = true;
+          etabSelect.value = '';
+
+          // Hôpitaux de l'espace sanitaire ET du district
+          if (espVal && typeof HOSP_LIST !== 'undefined') {
+            HOSP_LIST.filter(function(h) {
+              if (h.e !== espVal) return false;
+              if (d && h.d && h.d !== d) return false;
+              return true;
+            }).forEach(function(h) {
+              var opt = document.createElement('option');
+              opt.value = 'hosp_' + h.n.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+              opt.textContent = h.n + ' (' + h.c + ')'; etabSelect.appendChild(opt);
             });
           }
-          division.disabled = !d;
-          if (etabSelect) { etabSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; etabSelect.disabled = true; etabSelect.value = ''; }
+          // HU N3 si espace agadir (peu importe le district)
+          var espace2 = document.getElementById('adhEspaceSanitaire');
+          var espVal2 = espace2 ? espace2.value : '';
+          if (espVal2 === 'agadir' && typeof GST_DATA !== 'undefined') {
+            GST_DATA.etablissementsN3.forEach(function(e) {
+              var opt = document.createElement('option');
+              opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
+            });
+          }
+          // Hôpitaux de proximité N1 de l'espace
+          if (espVal2 && GST_DATA.etablissementsN1) {
+            GST_DATA.etablissementsN1.forEach(function(e) {
+              if (!e.espace || e.espace === espVal2) {
+                var opt = document.createElement('option');
+                opt.value = e.value; opt.textContent = e.label; etabSelect.appendChild(opt);
+              }
+            });
+          }
+
+          var otherOpt = document.createElement('option');
+          otherOpt.value = 'other';
+          otherOpt.textContent = ((typeof window.ugtmT==='function'&&window.ugtmT().adhOtherEtab)||'Autre établissement') || 'Autre établissement';
+          etabSelect.appendChild(otherOpt);
+          etabSelect.disabled = false;
+
+          // Réinitialiser niveaux enfants
+          if (division) { division.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; division.disabled = true; division.value = ''; }
           if (service) { service.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; service.disabled = true; service.value = ''; }
           if (unite) { unite.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; unite.disabled = true; unite.value = ''; }
           if (serviceHosp) serviceHosp.value = '';
           if (etabOther) etabOther.style.display = 'none';
-          if (esspSelect) { esspSelect.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>'; esspSelect.style.display = 'none'; esspSelect.required = false; }
-          var esspWrap = document.getElementById('adhEsspWrap');
-          if (esspWrap) esspWrap.style.display = 'none';
-          var serviceHospWrap = document.getElementById('adhServiceHospitalierWrap');
-          if (serviceHospWrap) serviceHospWrap.style.display = 'none';
-          fixSelectLabels('adhDivision'); fixSelectLabels('adhEtablissement'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
+          fixSelectLabels('adhEtablissement'); fixSelectLabels('adhDivision'); fixSelectLabels('adhServiceGst'); fixSelectLabels('adhUnite'); fixSelectLabels('adhEsspSelect');
         });
         fixSelectLabels('adhDistrict');
       }
@@ -13699,8 +13297,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     var rattachement = document.getElementById('adhRattachement');
     var rattleVal = rattachement ? rattachement.value : '';
     if (rattleVal === 'pole') document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = 'block'; });
-    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire-regional').forEach(function(el){ el.style.display = 'block'; });
-    if (rattleVal === 'territorialSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
     if (rattleVal === 'dgaAdministrative') document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = 'block'; });
     }
     window.gstCascade = gstCascade;
@@ -13905,44 +13502,40 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         dob:document.getElementById('adhDob').value,
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
-        // La province suit le dictionnaire de rattachement, indépendamment du niveau hiérarchique.
-        niveauOrganisationnel:document.getElementById('adhNiveauOrganisationnel').value,
-        province:resolveAdhesionProvince(
-          document.getElementById('adhNiveauOrganisationnel').value,
-          document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
-          document.getElementById('adhEspaceSanitaire')?document.getElementById('adhEspaceSanitaire').value:'',
-          document.getElementById('adhDistrict')?document.getElementById('adhDistrict').value:''
-        ),
+        province:document.getElementById('adhProvince').value,
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
-        espaceSanitaire:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':document.getElementById('adhEspaceSanitaire').value,
-        district:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(String(document.getElementById('adhDistrict').value||'').indexOf('space_admin_')===0?'':document.getElementById('adhDistrict').value),
-        espaceAdministration:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(String(document.getElementById('adhDistrict').value||'').indexOf('space_admin_')===0?document.getElementById('adhDistrict').value:''),
-        division:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalDivision').value:document.getElementById('adhDivision').value,
-        serviceGst:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalService').value:document.getElementById('adhServiceGst').value,
-        unite:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalUnite').value:document.getElementById('adhUnite').value,
+        espaceSanitaire:document.getElementById('adhEspaceSanitaire').value,
+        district:document.getElementById('adhDistrict').value,
+        division:document.getElementById('adhDivision').value,
+        serviceGst:document.getElementById('adhServiceGst').value,
+        unite:document.getElementById('adhUnite').value,
         serviceHospitalier:document.getElementById('adhServiceHospitalier').value.trim(),
-        structurePrimaire:document.getElementById('adhPremierSelecteur')?document.getElementById('adhPremierSelecteur').value:'',
         directionPole:document.getElementById('adhDirectionPole')?document.getElementById('adhDirectionPole').value:'',
         divisionPole:document.getElementById('adhDivisionPole')?document.getElementById('adhDivisionPole').value:'',
         servicePole:document.getElementById('adhServicePole')?document.getElementById('adhServicePole').value:'',
         directionAdmin:document.getElementById('adhDirectionAdmin')?document.getElementById('adhDirectionAdmin').value:'',
         divisionAdmin:document.getElementById('adhDivisionAdmin')?document.getElementById('adhDivisionAdmin').value:'',
         serviceAdmin:document.getElementById('adhServiceAdmin')?document.getElementById('adhServiceAdmin').value:'',
+        divisionStrategie:document.getElementById('adhDivisionStrategie')?document.getElementById('adhDivisionStrategie').value:'',
+        serviceStrategie:document.getElementById('adhServiceStrategie')?document.getElementById('adhServiceStrategie').value:'',
+        divisionSI:document.getElementById('adhDivisionSI')?document.getElementById('adhDivisionSI').value:'',
+        serviceSI:document.getElementById('adhServiceSI')?document.getElementById('adhServiceSI').value:'',
+        divisionSoins:document.getElementById('adhDivisionSoins')?document.getElementById('adhDivisionSoins').value:'',
+        serviceSoins:document.getElementById('adhServiceSoins')?document.getElementById('adhServiceSoins').value:'',
+        serviceAudit:document.getElementById('adhServiceAudit')?document.getElementById('adhServiceAudit').value:'',
+        serviceRecherche:document.getElementById('adhServiceRecherche')?document.getElementById('adhServiceRecherche').value:'',
         establishment:(function(){
-          if(document.getElementById('adhNiveauOrganisationnel').value==='regional'&&document.getElementById('adhRattachement').value==='dgaSanitaire')return document.getElementById('adhSanitaireRegionalStructure').value||'';
-          var entry=selectedEsspEntry();
-          if(entry)return entry.n;
           var sel=document.getElementById('adhEtablissement');
           if(sel && sel.value && sel.value!=='other')return sel.value;
           if(sel && sel.value==='other'){
+            var essp=document.getElementById('adhEsspSelect');
+            if(essp && essp.value)return essp.value;
             var other=document.getElementById('adhEtabOther');
             if(other && other.value.trim())return other.value.trim();
           }
           return '';
         })(),
-        establishmentCommune:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(function(){var e=selectedEsspEntry();return e?e.c:'';})(),
-        establishmentType:document.getElementById('adhNiveauOrganisationnel').value==='regional'?'':(function(){var e=selectedEsspEntry();return e?e.t:'';})(),
         service:(function(){
           var sel=document.getElementById('adhServiceGst');
           if(sel && sel.value)return sel.value;
