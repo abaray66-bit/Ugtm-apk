@@ -12986,7 +12986,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       ['adhHuDivision','adhHuService'].forEach(resetSel);
       ['adhDistrict','adhDivision','adhEtablissement','adhEsspSelect','adhServiceGst','adhUnite'].forEach(resetSel);
       ['adhPharmacieService'].forEach(resetSel);
-      document.getElementById('adhEspaceEtabOtherWrap').style.display='none';
+      var espaceEtabOtherWrap = document.getElementById('adhEspaceEtabOtherWrap');
+      if (espaceEtabOtherWrap) espaceEtabOtherWrap.style.display = 'none';
       var espSvcHosp = document.getElementById('adhEspaceServiceHosp');
       if (espSvcHosp) espSvcHosp.value = '';
 
