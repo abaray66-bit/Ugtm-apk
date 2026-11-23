@@ -13028,8 +13028,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           }
           fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         };
-        if(requiredDirection){dirSel.value=requiredDirection;dirSel.onchange();}
-
         divSel.onchange = function(){
           svcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
           svcSel.disabled = true;
@@ -13046,6 +13044,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             svcSel.disabled = servicesDisponibles.length===0;
           }
         };
+        if(requiredDirection){dirSel.value=requiredDirection;dirSel.onchange();}
 
         fixSelectLabels('adhDirectionPole'); fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         return;
