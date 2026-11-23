@@ -3176,6 +3176,8 @@ button.primary:active {
 .adh-step-title span{display:grid;place-items:center;width:32px;height:32px;border-radius:var(--radius-s);background:var(--primary-soft);color:var(--primary-strong);font-size:12px;font-weight:800}
 .adh-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .adh-full{grid-column:1/-1}
+/* Les champs dynamiques des cascades commencent chacun sur une nouvelle ligne. */
+.adh-grid > .field[class*="rattle-"]{grid-column:1/-1;min-width:0}
 .adh-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .adh-choice label,.adh-commit{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border-accent);border-radius:var(--radius-m);padding:12px;cursor:pointer;background:var(--surface);transition:border-color .2s ease, box-shadow .2s ease}
 .adh-choice label:hover,.adh-commit:hover{border-color:var(--border-accent-strong);box-shadow:var(--shadow)}
