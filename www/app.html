@@ -11905,6 +11905,13 @@ window.UGTM.failed(err);
           row1('Adresse',app.address);
 
           section('SITUATION PROFESSIONNELLE');
+          if(app.rattachement)row1('Rattachement organisationnel',app.rattachement);
+          if(app.directionPole)row1('Direction (Pôle)',app.directionPole);
+          if(app.divisionPole)row1('Division (Pôle)',app.divisionPole);
+          if(app.servicePole)row1('Service (Pôle)',app.servicePole);
+          if(app.directionAdmin)row1('Direction (Administrative)',app.directionAdmin);
+          if(app.divisionAdmin)row1('Division (Administrative)',app.divisionAdmin);
+          if(app.serviceAdmin)row1('Service (Administrative)',app.serviceAdmin);
           row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
           if(app.espaceSanitaire)row2('Espace sanitaire',app.espaceSanitaire,'District',app.district);
           if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
@@ -13534,11 +13541,19 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             var other=document.getElementById('adhEtabOther');
             if(other && other.value.trim())return other.value.trim();
           }
+          var dirPole=document.getElementById('adhDirectionPole');
+          if(dirPole && dirPole.value)return dirPole.value;
+          var dirAdmin=document.getElementById('adhDirectionAdmin');
+          if(dirAdmin && dirAdmin.value)return dirAdmin.value;
           return '';
         })(),
         service:(function(){
           var sel=document.getElementById('adhServiceGst');
           if(sel && sel.value)return sel.value;
+          var svcPole=document.getElementById('adhServicePole');
+          if(svcPole && svcPole.value)return svcPole.value;
+          var svcAdmin=document.getElementById('adhServiceAdmin');
+          if(svcAdmin && svcAdmin.value)return svcAdmin.value;
           return '';
         })(),
         function:(function(){
