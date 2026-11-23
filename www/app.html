@@ -12822,6 +12822,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       ['rattle-pole','rattle-sanitaire','rattle-hu','rattle-espace','rattle-pharmacie','rattle-santePublique','rattle-samu','rattle-bureauOrdre','rattle-administrative','rattle-directionStrategie','rattle-directionSI','rattle-directionSoins','rattle-divisionAudit','rattle-divisionRecherche','rattle-serviceCommunication','rattle-serviceAppuiInspection','rattle-comiteHospitaloUniversitaire','rattle-comitePilotageSuivi'].forEach(function(cls){
         document.querySelectorAll('.'+cls).forEach(function(el){ el.style.display = 'none'; });
       });
+      if (primaryRattachement === 'dgaSanitaire' && sanitaireWrap) sanitaireWrap.style.display = 'block';
 
       function resetSel(id){ var el=document.getElementById(id); if(el){ el.innerHTML='<option value="" data-i18n="adhStructureChoose"></option>'; el.disabled=false; el.value=''; } }
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
