@@ -8626,6 +8626,14 @@ el.innerHTML=list.length?list.map(function(a){
        '<span>'+esc(t.admRowAddress)+' '+esc(a.address||'')+'</span>',
        '<span>'+esc(t.admRowEtab)+' '+esc(a.establishment||'')+(a.specialty?' · '+esc(t.admRowSpecialty)+' '+esc(a.specialty):'')+'</span>',
        '<span>'+esc(t.admRowService)+' '+esc(a.service||'')+(a.function?' · '+esc(t.admRowFunction)+' '+esc(a.function):'')+'</span>',
+       (a.espaceSanitaire||a.district||a.division||a.serviceGst||a.unite||a.serviceHospitalier)?'<span>'+
+         (a.espaceSanitaire?esc(t.adhEspaceSanitaire||'Espace sanitaire')+' '+esc(a.espaceSanitaire)+' · ':'')+
+         (a.district?esc(t.adhDistrict||'District')+' '+esc(a.district)+' · ':'')+
+         (a.division?esc(t.adhDivision||'Division')+' '+esc(a.division)+' · ':'')+
+         (a.serviceGst?esc(t.adhServiceGst||'Service')+' '+esc(a.serviceGst)+' · ':'')+
+         (a.unite?esc(t.adhUnite||'Unité')+' '+esc(a.unite)+' · ':'')+
+         (a.serviceHospitalier?esc(t.adhServiceHospitalier||'Service hospitalier')+' '+esc(a.serviceHospitalier):'')+
+       '</span>':'',
        a.ppr?'<span>'+esc(t.admRowPpr)+' '+esc(a.ppr)+'</span>':'',
        a.type==='renewal'&&a.reason?'<span>'+esc(t.admRowReason)+' '+esc(a.reason)+'</span>':'',
        a.adminNote?'<span>'+esc(t.admRowNote)+' '+esc(a.adminNote)+'</span>':''
@@ -8839,6 +8847,12 @@ function renderAdhesionDossierInfo(doc){
     row(t.admDocBirth,a.dob)+
     row(t.admDocAddress,a.address)+
     row(t.admDocEtab,a.establishment)+
+    (a.espaceSanitaire?row(t.adhEspaceSanitaire||'Espace sanitaire',a.espaceSanitaire):'')+
+    (a.district?row(t.adhDistrict||'District',a.district):'')+
+    (a.division?row(t.adhDivision||'Division',a.division):'')+
+    (a.serviceGst?row(t.adhServiceGst||'Service',a.serviceGst):'')+
+    (a.unite?row(t.adhUnite||'Unité',a.unite):'')+
+    (a.serviceHospitalier?row(t.adhServiceHospitalier||'Service hospitalier',a.serviceHospitalier):'')+
     row(t.admDocService,a.service)+
     row(t.admDocFunction,(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return a.functionDetail||'Fonction à préciser';var t2=(typeof T==='function')?T():{};return t2['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(a['function']))+
     row(t.admDocSpecialty,(function(v){if(!v)return '';if(v==='other')return a.specialtyOther||'Autre';var t2=(typeof T==='function')?T():{};return t2['adhSpecialty'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||SPECIALITE_FR[v]||v;})(a.specialty))+
@@ -11915,7 +11929,7 @@ window.UGTM.failed(err);
           if(app.serviceAdmin)row1('Service (Administrative)',app.serviceAdmin);
           row1('Établissement / structure', (function(v){if(!v)return '';if(v==='hu_specialites_agadir')return 'HU Mohammed VI des Spécialités Agadir';if(v==='hu_mere_enfant_agadir')return 'HU Mohammed VI Mère-Enfant Agadir';if(v==='hu_oncologie_agadir')return 'HU Mohammed VI Oncologie Agadir';if(v==='hu_psychiatrie_agadir')return 'HU Mohammed VI Psychiatrie Agadir';if(v==='other')return app.establishment||'';return v;})(app.establishment));
           if(app.espaceSanitaire)row2(String(app.espaceSanitaire).indexOf('Direction Espace sanitaire')===0?'Espace sanitaire':'Structure sanitaire',app.espaceSanitaire,'District',app.district);
-          if(app.division)row2('Division',app.division==='sanitaire'?'Division sanitaire':'Division administrative','Service',app.serviceGst);
+          if(app.division)row2('Division',(app.division==='sanitaire'||app.division==='Division sanitaire')?'Division sanitaire':'Division administrative','Service',app.serviceGst);
           if(app.unite)row1('Unité',app.unite);
           if(app.serviceHospitalier)row1('Service hospitalier',app.serviceHospitalier);
           row2('Service / unité',app.service,'Fonction',(function(v){if(!v)return '';if(v==='no_function')return 'Sans fonction';if(v==='function_to_specify')return app.functionDetail||'Fonction à préciser';var t=(typeof T==='function')?T():{};return t['adhFunction'+v.replace(/(^|_)([a-z])/g,function(m,a,b){return b.toUpperCase();})]||FUNCTION_FR[v]||v;})(app['function']));
@@ -13556,8 +13570,11 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var essp=document.getElementById('adhEsspSelect');
           var other=document.getElementById('adhEtabOther');
           if(division&&division.value==='Division sanitaire'){
+            if(sel&&sel.value==='service_sante_publique')return 'Service de la santé publique';
+            if(sel&&sel.value==='service_affaires_medicales')return 'Service des affaires médicales';
+            if(sel&&sel.value==='service_soins_infirmiers')return 'Service des soins infirmiers';
             if(sel&&sel.value==='hospital_provincial')return service?service.value:'';
-            if(sel&&sel.value==='proximity_group')return (essp&&essp.value)||(other&&other.value.trim())||'';
+            if(sel&&sel.value==='proximity_group')return (other&&other.value.trim())||(essp&&essp.value)||'';
             return '';
           }
           if(sel && sel.value && sel.value!=='other')return sel.value;
