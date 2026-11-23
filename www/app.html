@@ -3633,10 +3633,7 @@ window.markNotificationRead=markNotificationRead;
         <!-- === BRANCHE : COMITE DE PILOTAGE ET DE SUIVI === (feuille) -->
         <div class="field rattle-comitePilotageSuivi adh-full" id="adhComitePilotageWrap" style="display:none"><label data-i18n="adhComitePilotage"></label><input type="text" readonly value="Comite de Pilotage et de Suivi"></div>
 
-        <!-- === BRANCHE : SANITAIRE === Province déduite automatiquement depuis le district === -->
-        <div class="field" style="display:none"><label for="adhProvince" data-i18n="adhProvince"></label><select id="adhProvince" required><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="provAgadir"></option><option value="inezgane" data-i18n="provInezgane"></option><option value="chtouka" data-i18n="provChtouka"></option><option value="taroudant" data-i18n="provTaroudant"></option><option value="tiznit" data-i18n="provTiznit"></option><option value="tata" data-i18n="provTata"></option></select></div>
-
-        <!-- === BRANCHE : SANITAIRE === Province → Espace → District → Établissement → Division → Service → Unité -->
+        <!-- === BRANCHE : SANITAIRE === Province déduite automatiquement depuis la structure === -->
         <div class="field rattle-sanitaire" id="adhEspaceSanitaireWrap" style="display:none"><label for="adhEspaceSanitaire" data-i18n="adhEspaceSanitaire"></label><select id="adhEspaceSanitaire"><option value="" data-i18n="selectProvince"></option><option value="agadir" data-i18n="adhEspaceAgadir"></option><option value="taroudant" data-i18n="adhEspaceTaroudant"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDistrictWrap" style="display:none"><label for="adhDistrict" data-i18n="adhDistrict"></label><select id="adhDistrict"><option value="" data-i18n="adhStructureChoose"></option></select></div>
         <div class="field rattle-sanitaire" id="adhDivisionWrap" style="display:none"><label for="adhDivision" data-i18n="adhDivision"></label><select id="adhDivision"><option value="" data-i18n="adhStructureChoose"></option></select></div>
@@ -12248,7 +12245,7 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhDob',draft.dob||'');
           prefillIfEmpty('adhPhone',draft.phone||'');
           prefillIfEmpty('adhAddress',draft.address||'');
-          prefillIfEmpty('adhProvince',draft.province||'');
+          if(!adhProvinceValue)adhProvinceValue=draft.province||'';
           prefillIfEmpty('adhEstablishment',draft.establishment||'');
           prefillIfEmpty('adhService',draft.service||'');
           prefillIfEmpty('adhFunction',draft.function||'');
@@ -12274,7 +12271,7 @@ window.UGTM.failed(err);
 
       /* 4. Préremplissage depuis le Profil Membre */
       prefillIfEmpty('adhPhone',member.phone||'');
-      prefillIfEmpty('adhProvince',member.prov||'');
+      if(!adhProvinceValue)adhProvinceValue=member.prov||'';
       prefillIfEmpty('adhEstablishment',member.etab||'');
 
       var identityFilled=false;
@@ -12310,7 +12307,7 @@ window.UGTM.failed(err);
           prefillIfEmpty('adhDob',app.dob||'');
           prefillIfEmpty('adhPhone',app.phone||'');
           prefillIfEmpty('adhAddress',app.address||'');
-          prefillIfEmpty('adhProvince',app.province||'');
+          if(!adhProvinceValue)adhProvinceValue=app.province||'';
           prefillIfEmpty('adhEstablishment',app.establishment||'');
           prefillIfEmpty('adhService',app.service||'');
           /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
@@ -12321,6 +12318,7 @@ window.UGTM.failed(err);
           if(req.unite) prefillIfEmpty('adhUnite',req.unite);
           if(req.serviceHospitalier) prefillIfEmpty('adhServiceHospitalier',req.serviceHospitalier);
           if(req.espaceSanitaire||req.district) gstCascade();
+          if(req.espaceSanitaire&&!adhProvinceValue)adhProvinceValue=calcProvince('dgaSanitaire',req.espaceSanitaire);
           prefillIfEmpty('adhFunction',app.function||'');
           prefillIfEmpty('adhSpecialty',app.specialty||'');
           prefillIfEmpty('adhPpr',app.ppr||'');
@@ -12768,9 +12766,40 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       window.addEventListener('resize',closeActive);
     }
 
+    /* Province calculée automatiquement depuis la structure organisationnelle sélectionnée.
+       Règle organisationnelle (appliquée aux 11 rattachements) :
+       - Structures explicitement liées à une province (Directions Espace sanitaire) → cette province
+       - CHU de la région (tous à Agadir) → agadir
+       - Structures régionales (siège du GST Souss-Massa à Agadir) → agadir
+       Cette valeur est calculée en JS et jamais saisie manuellement. */
+    var adhProvinceValue = '';
+
+    function calcProvince(rattleVal, espaceVal) {
+      if (rattleVal === 'dgaSanitaire') {
+        var sanProv = {
+          'CHU Mohammed VI – Spécialités Agadir': 'agadir',
+          'CHU Mohammed VI – Mère-Enfant Agadir': 'agadir',
+          'CHU Mohammed VI – Oncologie Agadir': 'agadir',
+          'CHU Mohammed VI – Psychiatrie Agadir': 'agadir',
+          'Direction Espace sanitaire Agadir': 'agadir',
+          'Direction Espace sanitaire Taroudant': 'taroudant',
+          'Division de la pharmacie régionale': 'agadir',
+          'Service de santé publique': 'agadir',
+          "Service d'aide médicale urgente régional (SAMU)": 'agadir',
+          'Bureau d’ordre, de la documentation et des archives': 'agadir'
+        };
+        return sanProv[espaceVal] || '';
+      }
+      /* Tous les autres rattachements : structures régionales, siège à Agadir */
+      return 'agadir';
+    }
+
     function gstCascade() {
       var rattachement = document.getElementById('adhRattachement');
       var rattleVal = rattachement ? rattachement.value : '';
+
+      /* Province réinitialisée au changement de rattachement, recalculée par branche */
+      adhProvinceValue = '';
 
       // Masquer tous les groupes de branche
       ['rattle-pole','rattle-sanitaire','rattle-hu','rattle-espace','rattle-pharmacie','rattle-santePublique','rattle-samu','rattle-bureauOrdre','rattle-administrative','rattle-directionStrategie','rattle-directionSI','rattle-directionSoins','rattle-divisionAudit','rattle-divisionRecherche','rattle-serviceCommunication','rattle-serviceAppuiInspection','rattle-comiteHospitaloUniversitaire','rattle-comitePilotageSuivi'].forEach(function(cls){
@@ -12802,6 +12831,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       if (espSvcHosp) espSvcHosp.value = '';
 
       if (!rattleVal) { fixSelectLabels('adhRattachement'); return; }
+      adhProvinceValue = calcProvince(rattleVal, '');
 
       // === BRANCHE : PÔLE === Direction → Division → Service
       if (rattleVal === 'pole') {
@@ -13186,6 +13216,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if (svcSel) fixSelectLabels('adhServiceGst');
           if (uniteSel) fixSelectLabels('adhUnite');
           if (esspSel) fixSelectLabels('adhEsspSelect');
+          adhProvinceValue = calcProvince('dgaSanitaire', subdivSel.value);
         };
 
         fixSelectLabels('adhEspaceSanitaire'); fixSelectLabels('adhDistrict');
@@ -13427,7 +13458,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         dob:document.getElementById('adhDob').value,
         phone:document.getElementById('adhPhone').value.trim(),
         address:document.getElementById('adhAddress').value.trim(),
-        province:document.getElementById('adhProvince').value,
+        province:adhProvinceValue,
         structureMere:document.getElementById('adhStructureMere')?document.getElementById('adhStructureMere').value:'GST Souss-Massa',
         rattachement:document.getElementById('adhRattachement')?document.getElementById('adhRattachement').value:'',
         // Champs sanitaire (dgaSanitaire)
