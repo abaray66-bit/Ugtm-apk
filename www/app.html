@@ -11904,6 +11904,22 @@ window.UGTM.failed(err);
             return v;
           })(app.establishment));
           if(app.establishmentCommune||app.establishmentType)row2('Commune',app.establishmentCommune||'','Catégorie',app.establishmentType?(ESSP_CATS[app.establishmentType]||app.establishmentType):'');
+          if(app.structurePrimaire){
+            var primaryLabels={
+              dgaAdministrative:'Direction générale adjointe – Branche administrative',
+              dgaSanitaire:'Direction générale adjointe – Branche sanitaire',
+              directionStrategie:'Direction Stratégie et Santé Publique',
+              directionSI:'Direction Systèmes d’Information',
+              directionSoinsPrimaires:'Direction Soins Santé Primaires – Prévention – Promotion de la Santé',
+              divisionAudit:'Division Audit, Qualité, Contrôle de Gestion',
+              divisionRecherche:'Division Recherche et Innovation',
+              serviceCommunication:'Service Communication',
+              serviceInspection:'Service Appui Inspection et Contrôle des Établissements',
+              comiteHospitaloUniversitaire:'Comité Hospitalo-universitaire',
+              comitePilotage:'Comité de Pilotage et de Suivi'
+            };
+            row1('Structure de rattachement',primaryLabels[app.structurePrimaire]||app.structurePrimaire);
+          }
           if(app.rattachement==='pole'){
             if(app.directionPole)row1('Direction',app.directionPole);
             if(app.divisionPole)row1('Division / rattachement',app.divisionPole);
@@ -12324,6 +12340,11 @@ window.UGTM.failed(err);
              enregistrés dans application par submitAdhesion, pas renvoyés
              à plat par getMyAdhesionRequest). */
           if(app.rattachement){
+            var firstSel=document.getElementById('adhPremierSelecteur');
+            if(firstSel&&app.structurePrimaire){
+              firstSel.value=app.structurePrimaire;
+              window.adhTopStructure=app.structurePrimaire;
+            }
             var rattSel=document.getElementById('adhRattachement');
             var levelSel=document.getElementById('adhNiveauOrganisationnel');
             var restoredLevel=app.niveauOrganisationnel||(app.rattachement==='dgaSanitaire'&&app.province?'territorial':'regional');
@@ -12961,9 +12982,21 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var svcSel = document.getElementById('adhServicePole');
 
         dirSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        GST_DATA.pole.directions.forEach(function(d){
+        var topStructure=window.adhTopStructure||'';
+        var topDirectionMap={
+          directionStrategie:'direction_strategie_sante_publique',
+          directionSI:'direction_systemes_information',
+          directionSoinsPrimaires:'direction_soins_sante_primaires',
+          divisionAudit:'rattachement_direct_dg',
+          divisionRecherche:'rattachement_direct_dg',
+          serviceCommunication:'rattachement_direct_dg',
+          serviceInspection:'rattachement_direct_dg'
+        };
+        var requiredDirection=topDirectionMap[topStructure]||'';
+        GST_DATA.pole.directions.filter(function(d){return !requiredDirection||d.value===requiredDirection;}).forEach(function(d){
           var opt = document.createElement('option'); opt.value = d.value; opt.textContent = d.label; dirSel.appendChild(opt);
         });
+        if(requiredDirection)dirSel.value=requiredDirection;
         dirSel.disabled = false;
 
         divSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
@@ -12978,10 +13011,20 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           divSel.value = ''; svcSel.value = '';
           var dirVal = dirSel.value;
           if (dirVal && GST_DATA.pole.divisions[dirVal]) {
-            GST_DATA.pole.divisions[dirVal].forEach(function(div){
+            var divisionsDisponibles=GST_DATA.pole.divisions[dirVal].slice();
+            var top=window.adhTopStructure||'';
+            var divisionCible={
+              divisionAudit:'Division audit, qualité et contrôle de gestion',
+              divisionRecherche:'Division de la recherche et de l\'innovation',
+              serviceCommunication:'Services directement rattachés au Directeur Général (sans division)',
+              serviceInspection:'Services directement rattachés au Directeur Général (sans division)'
+            };
+            if(divisionCible[top])divisionsDisponibles=divisionsDisponibles.filter(function(x){return x===divisionCible[top];});
+            divisionsDisponibles.forEach(function(div){
               var opt = document.createElement('option'); opt.value = div; opt.textContent = div; divSel.appendChild(opt);
             });
-            divSel.disabled = false;
+            divSel.disabled = divisionsDisponibles.length===0;
+            if(divisionsDisponibles.length===1){divSel.value=divisionsDisponibles[0];divSel.dispatchEvent(new Event('change'));}
           }
           fixSelectLabels('adhDivisionPole'); fixSelectLabels('adhServicePole');
         };
@@ -12992,10 +13035,14 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           svcSel.value = '';
           var divVal = divSel.value;
           if (divVal && GST_DATA.pole.services[divVal]) {
-            GST_DATA.pole.services[divVal].forEach(function(svc){
+            var servicesDisponibles=GST_DATA.pole.services[divVal].slice();
+            var top=window.adhTopStructure||'';
+            if(top==='serviceCommunication')servicesDisponibles=servicesDisponibles.filter(function(x){return x.toLowerCase().indexOf('communication')>=0;});
+            if(top==='serviceInspection')servicesDisponibles=servicesDisponibles.filter(function(x){return x.toLowerCase().indexOf('inspection')>=0;});
+            servicesDisponibles.forEach(function(svc){
               var opt = document.createElement('option'); opt.value = svc; opt.textContent = svc; svcSel.appendChild(opt);
             });
-            svcSel.disabled = false;
+            svcSel.disabled = servicesDisponibles.length===0;
           }
         };
 
@@ -13458,7 +13505,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       var firstSel=document.getElementById('adhPremierSelecteur');
       if(firstSel)firstSel.addEventListener('change',function(){
         var v=firstSel.value;
-        var level=(v==='dgaAdministrative'||v==='dgaSanitaire')?'regional':'regional';
+        window.adhTopStructure=v;
+        var level='regional';
         if(levelSel)levelSel.value=level;
         configureAdhLevel(level,false);
         var branch=document.getElementById('adhRattachement');
@@ -13467,7 +13515,19 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           else if(v==='dgaSanitaire')branch.value='dgaSanitaire';
           else branch.value='pole';
         }
+        var poleFields=document.querySelectorAll('.rattle-pole');
+        if(v==='comiteHospitaloUniversitaire'||v==='comitePilotage'){
+          poleFields.forEach(function(el){el.style.display='none';});
+          var branchWrap=document.getElementById('adhRattachementWrap');
+          if(branchWrap)branchWrap.style.display='none';
+        }else{
+          var branchWrap=document.getElementById('adhRattachementWrap');
+          if(branchWrap)branchWrap.style.display='';
+        }
         gstCascade();
+        if(v==='comiteHospitaloUniversitaire'||v==='comitePilotage'){
+          poleFields.forEach(function(el){el.style.display='none';});
+        }
       });
       if(levelSel)levelSel.addEventListener('change',function(){configureAdhLevel(levelSel.value,false);gstCascade();});
       // Seul le rattachement relance gstCascade (affichage/masquage des branches)
@@ -13857,6 +13917,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         serviceGst:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalService').value:document.getElementById('adhServiceGst').value,
         unite:document.getElementById('adhNiveauOrganisationnel').value==='regional'?document.getElementById('adhSanitaireRegionalUnite').value:document.getElementById('adhUnite').value,
         serviceHospitalier:document.getElementById('adhServiceHospitalier').value.trim(),
+        structurePrimaire:document.getElementById('adhPremierSelecteur')?document.getElementById('adhPremierSelecteur').value:'',
         directionPole:document.getElementById('adhDirectionPole')?document.getElementById('adhDirectionPole').value:'',
         divisionPole:document.getElementById('adhDivisionPole')?document.getElementById('adhDivisionPole').value:'',
         servicePole:document.getElementById('adhServicePole')?document.getElementById('adhServicePole').value:'',
