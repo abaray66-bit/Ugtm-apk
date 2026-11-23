@@ -12901,7 +12901,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
               var items=[];
               if(typeof HOSP_LIST!=='undefined'){
                 HOSP_LIST.filter(function(h){return h.d===district.value||h.p===district.value;}).forEach(function(h){
-                  items.push({value:'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_'),label:h.n+' ('+h.c+')'});
+                  var category=h.c==='HP'?'Hôpital provincial':(h.c==='HPr'?'Hôpital de proximité':(h.c==='HR'?'Hôpital régional':h.c));
+                  items.push({value:'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_'),label:h.n+' — '+category});
                 });
               }
               items.push({value:'other',label:'ESSP / EMS / structure d’appui'});
