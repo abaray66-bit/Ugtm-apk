@@ -13077,7 +13077,12 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var huSvcSel = document.getElementById('adhHuService');
 
         huDivSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        huDivSel.disabled = false;
+        (GST_DATA.huDivisions || []).forEach(function(d){
+          var opt = document.createElement('option');
+          opt.value = d.value; opt.textContent = d.label;
+          huDivSel.appendChild(opt);
+        });
+        huDivSel.disabled = huDivSel.options.length > 1;
 
         huSvcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
         huSvcSel.disabled = true;
@@ -13116,13 +13121,25 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         var isTaroudant = (rattleVal === 'espaceTaroudant');
 
         espaceDivSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        espaceDivSel.disabled = false;
+        (GST_DATA.huDivisions || []).forEach(function(d){
+          var opt = document.createElement('option');
+          opt.value = d.value; opt.textContent = d.label;
+          espaceDivSel.appendChild(opt);
+        });
+        espaceDivSel.disabled = espaceDivSel.options.length <= 1;
 
         espaceSvcSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
         espaceSvcSel.disabled = true;
 
         espaceDistSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
-        espaceDistSel.disabled = false;
+        var districtKeys = (GST_DATA.espaceDistricts || {})[isAgadir ? 'agadir' : 'taroudant'] || [];
+        districtKeys.forEach(function(d){
+          var opt = document.createElement('option');
+          opt.value = d;
+          opt.textContent = (GST_DATA.espaceDistrictLabels || {})[d] || d;
+          espaceDistSel.appendChild(opt);
+        });
+        espaceDistSel.disabled = espaceDistSel.options.length <= 1;
 
         espaceEtabSel.innerHTML = '<option value="" data-i18n="adhStructureChoose"></option>';
         espaceEtabSel.disabled = true;
@@ -13177,13 +13194,9 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           // Hôpitaux de l'espace ET du district
           if (typeof HOSP_LIST !== 'undefined') {
             HOSP_LIST.filter(function(h) {
-              if (isAgadir) {
-                if (h.e !== 'agadir') return false;
-                if (distVal && h.d && h.d !== distVal) return false;
-              } else if (isTaroudant) {
-                if (h.e !== 'taroudant') return false;
-                if (distVal && h.d && h.d !== distVal) return false;
-              }
+              if (!distVal || h.d !== distVal) return false;
+              if (isAgadir && ['inezgane','chtouka','tiznit'].indexOf(h.d) === -1) return false;
+              if (isTaroudant && ['taroudant','tata'].indexOf(h.d) === -1) return false;
               return true;
             }).forEach(function(h) {
               var opt = document.createElement('option');
@@ -13322,13 +13335,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       // District (espace) : met à jour les établissements selon le district
       var distSel = document.getElementById('adhEspaceDistrict');
-      if (distSel) {
-        distSel.addEventListener('change', function(){
-          // gstCascade() gère déjà la mise à jour via espaceDistSel.onchange
-          // défini dans la branche espace
-        });
-        fixSelectLabels('adhEspaceDistrict');
-      }
+      if (distSel) fixSelectLabels('adhEspaceDistrict');
 
     // Fallback: afficher les branches même en cas d'erreur
     var rattachement = document.getElementById('adhRattachement');
