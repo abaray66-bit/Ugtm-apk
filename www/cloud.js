@@ -1373,7 +1373,7 @@ async function submitAdhesion(application,signature){
     /* RENOUVELLEMENT : un adhérent déjà accepté peut redéposer son
        dossier, mais uniquement en type 'renewal' avec un motif — le
        dossier repasse alors en attente de validation (cf. firestore.rules). */
-    var renewalAccepted=status==='accepted'&&clean.type==='renewal'&&!!clean.reason;
+    var renewalAccepted=(clean.type==='renewal'&&!!clean.reason&&(status==='accepted'||status==='pending'));
     if(existing&&status!=='needs_completion'&&!renewalAccepted){
       var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre adhésion est déjà acceptée : renouvelez-la avec un motif depuis le formulaire.',refused:'Une décision a déjà été prise concernant votre demande.'};
       var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.');err.code='adhesion/already-exists';err.status=status;throw err;
