@@ -842,6 +842,39 @@ service cloud.firestore {
           || (app.type == 'renewal' && app.reason.size() > 0));
     }
 
+    // Contenu du dossier pour un RENOUVELLEMENT : identique à adhesionAppOk
+    // sauf que 'establishment' est optionnel (certains rattachements comme
+    // directionStrategie, directionSI, etc. n'ont pas d'établissement).
+    function adhesionAppOkRenewal(app, province) {
+      return app is map
+        && app.keys().hasAll(adhesionAppRequiredKeys())
+        && app.keys().hasOnly(adhesionAppKeys())
+        && okText(app.nom, 100)
+        && app.nom.size() > 0
+        && okText(app.prenom, 100)
+        && app.prenom.size() > 0
+        && okText(app.cin, 30)
+        && app.cin.size() > 0
+        && okText(app.dob, 10)
+        && okText(app.phone, 30)
+        && app.phone.size() > 0
+        && okText(app.address, 250)
+        && app.address.size() > 0
+        && okText(app.establishment, 160)
+        && okText(app['service'], 120)
+        && okText(app['function'], 120)
+        && app['function'].size() > 0
+        && okText(app.specialty, 120)
+        && okText(app.ppr, 30)
+        && app.province == province
+        && app.commitment == true
+        && (app.rattachement != 'dgaSanitaire' || app.sanitaryStructure in ['huSpecialitesAgadir','huMereEnfantAgadir','huOncologieAgadir','huPsychiatrieAgadir','espaceAgadir','espaceTaroudant','pharmacieRegionale','serviceSantePublique','serviceSamu','bureauOrdre'])
+        && app.type in ['first', 'renewal']
+        && okText(app.reason, 200)
+        && ((app.type == 'first' && app.reason == '')
+          || (app.type == 'renewal' && app.reason.size() > 0));
+    }
+
     match /adhesionRequests/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
@@ -1016,8 +1049,8 @@ service cloud.firestore {
         && request.resource.data.signature is string
         && request.resource.data.signature.size() > 0
         && request.resource.data.signature.size() <= 20000
-        && adhesionAppOk(request.resource.data.application,
-                         request.resource.data.province);
+        && adhesionAppOkRenewal(request.resource.data.application,
+                          request.resource.data.province);
 
       allow update: if false;
       allow delete: if isAdmin();
