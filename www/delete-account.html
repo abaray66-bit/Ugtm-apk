@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Suppression du compte — UGTM Santé Souss-Massa</title>
+  <style>
+    :root{color-scheme:light;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#202124;background:#f5f6f8}
+    body{margin:0;padding:24px 14px}.panel{max-width:620px;margin:7vh auto;background:#fff;border:1px solid #e1e4e8;border-radius:16px;padding:24px;box-shadow:0 8px 30px #0000000d}
+    h1{font-size:24px;margin:0 0 12px}p,li{line-height:1.55}.muted{color:#5f6368}.warning{background:#fff8e7;border-left:4px solid #d6a12a;padding:12px 14px;margin:18px 0}
+    button{width:100%;border:0;border-radius:10px;background:#8b1e2d;color:white;font-weight:700;font-size:16px;padding:14px;cursor:pointer}
+    button:disabled{opacity:.55;cursor:wait}#status{min-height:24px;margin-top:14px;white-space:pre-wrap}.links{margin-top:20px;font-size:14px}
+  </style>
+  <script src="data.js"></script>
+</head>
+<body>
+  <main class="panel">
+    <h1>Demander la suppression de mon compte</h1>
+    <p>Cette page permet à un utilisateur de l’application UGTM Santé Souss-Massa de confirmer son identité avec Google et de supprimer son compte.</p>
+    <div class="warning">
+      <strong>Archives conservées :</strong>
+      les dossiers d’adhésion et de renouvellement, leurs justificatifs officiels, les signalements et leurs pièces jointes sont conservés dans les archives syndicales. Ces documents peuvent encore contenir des informations permettant de vous identifier.
+    </div>
+    <p class="muted">La suppression retire le compte Google Firebase, le profil membre, les coordonnées de permanence liées au compte, les jetons de notification et les notifications personnelles. Les archives énumérées ci-dessus ne sont pas effacées par cette procédure.</p>
+    <button id="deleteButton" type="button">Continuer avec Google et supprimer mon compte</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <p class="links"><a href="app.html">Retour à l’application UGTM</a></p>
+  </main>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, reauthenticateWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+    const button = document.getElementById('deleteButton');
+    const status = document.getElementById('status');
+    const config = window.APP_DATA && window.APP_DATA.firebase;
+    let auth = null;
+
+    if (!config || !config.apiKey || !config.authDomain || !config.projectId) {
+      button.disabled = true;
+      status.textContent = 'Le service de suppression est indisponible : configuration Firebase absente.';
+    } else {
+      auth = getAuth(initializeApp(config));
+    }
+
+    button.addEventListener('click', async () => {
+      if (!auth) return;
+      button.disabled = true;
+      status.textContent = 'Vérification de votre compte Google…';
+      try {
+        const provider = new GoogleAuthProvider();
+        let user = auth.currentUser;
+        if (!user) {
+          const result = await signInWithPopup(auth, provider);
+          user = result.user;
+        } else {
+          await reauthenticateWithPopup(user, provider);
+          user = auth.currentUser;
+        }
+        if (!user) throw new Error('Connexion Google non confirmée.');
+        const token = await user.getIdToken(true);
+        const backend = config.pushBackendUrl;
+        if (!backend) throw new Error('Le service de suppression n’est pas configuré.');
+        const response = await fetch(String(backend).replace(/\/+$/, '') + '/api/delete-account', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        let result = {};
+        try { result = await response.json(); } catch (e) {}
+        if (!response.ok) throw new Error(result.error || 'La suppression a échoué.');
+        await signOut(auth);
+        status.textContent = 'Votre compte a été supprimé. Les archives syndicales décrites ci-dessus sont conservées.';
+        button.hidden = true;
+      } catch (error) {
+        status.textContent = String(error && error.message || 'Une erreur est survenue.');
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
