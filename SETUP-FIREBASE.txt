@@ -82,8 +82,14 @@ SÉCURITÉ
 DONNÉES PERSONNELLES (à traiter avant le lancement)
    - L'appartenance syndicale est une donnée sensible. Renseignez-vous auprès de la CNDP (loi 09-08) sur
      la déclaration ou l'autorisation nécessaire, notamment parce que la base est hébergée hors du Maroc.
-   - La page « Mon espace » permet à chaque membre de supprimer ses données. Le compte Google lui-même
-     peut ensuite être retiré dans Firebase > Authentication si besoin.
+   - La suppression du compte est disponible dans « Mon espace » et depuis la page externe :
+     https://ugtm-fns-souss-massa.web.app/delete-account.html
+   - Le backend Vercel doit être déployé avec la variable FCM_SERVICE_ACCOUNT déjà utilisée par
+     l'envoi des notifications et ADMIN_EMAILS renseignée. Sans ce backend, la suppression échoue
+     explicitement : aucune suppression partielle côté navigateur n'est lancée.
+   - Les dossiers d'adhésion/renouvellement, leurs justificatifs officiels, les signalements et leurs
+     pièces jointes restent conservés dans les archives syndicales et peuvent contenir des données
+     identifiantes. Cette conservation doit être décrite dans la politique de confidentialité.
 
 EN CAS DE BLOCAGE
    - « auth/unauthorized-domain » : le domaine Netlify n'est pas ajouté à l'étape 3.
