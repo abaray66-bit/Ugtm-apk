@@ -7761,7 +7761,8 @@ return '<li class="mrow"><div class="mi">'+
 
 function renderMe(){
 
-var t=T();
+  console.log('[DIAG] renderMe called, cloud=', S.cloud, 'user=', !!S.user, 'member=', !!S.member);
+  var t=T();
 
 /* Ligne du groupe WhatsApp : masquée tant que l'adhésion n'est pas
    effectivement validée (le contrôle est refait au clic). */
@@ -9784,7 +9785,9 @@ renderFilters();
 renderNews();
 renderAgenda();
 renderAccountButton();
-renderMe();
+  console.log('[DIAG] setSession done, calling renderMe');
+  renderMe();
+
 
 /* Espace administration : les listes et le tableau de bord
    sont régénérés dans la nouvelle langue. */
@@ -11345,7 +11348,8 @@ renderMe();
 
 setNews:function(list){
 
-NEWS=list;
+  console.log('[DIAG] setNews called, list.length=', list ? list.length : 0);
+  NEWS=list;
 
 renderHome();
 renderNews();
@@ -11371,7 +11375,9 @@ renderProvinceContacts();
 },
 
 setReports:function(list){
-S.reports=list||[];
+
+  console.log('[DIAG] setReports called, list.length=', list ? list.length : 0);
+  S.reports=list||[];
 renderAdminReports();
 renderMeReports();
 },
@@ -11409,7 +11415,8 @@ renderAdminLocalProposals();
 },
 setSession:function(s){
 
-var wasManager=S.isAdmin||S.isSubAdmin;
+  console.log('[DIAG] setSession called, user=', !!s.user, 'member=', !!s.member, 'isAdmin=', s.isAdmin, 'isSubAdmin=', s.isSubAdmin, 'isSubAdminLocal=', s.isSubAdminLocal);
+  var wasManager=S.isAdmin||S.isSubAdmin;
 
 S.user = (s && s.user) ? s.user : null;
 S.member = (s && s.member) ? s.member : null;
@@ -11453,7 +11460,9 @@ purgeSession();
 }
 
 renderAccountButton();
-renderMe();
+  console.log('[DIAG] setSession done, calling renderMe');
+  renderMe();
+
 
 if(S.isAdmin&&window.CLOUD&&CLOUD.admin&&CLOUD.admin.getAdminEmails){
 CLOUD.admin.getAdminEmails().then(function(list){
@@ -11608,26 +11617,22 @@ processPendingNotificationTarget();
 loadAppVersion();
 
 if(CLOUD_ON){
-
-import('./cloud.js?v=103')
-
-.then(function(mod){
-
-return mod.init(
-D.firebase,
-window.UGTM
-);
-
-})
-
-.catch(function(err){
-
-console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
-
-window.UGTM.failed(err);
-
-});
-
+  console.log('[DIAG] cloud import start');
+  import('./cloud.js?v=103')
+  .then(function(mod){
+    console.log('[DIAG] cloud module loaded');
+    return mod.init(
+      D.firebase,
+      window.UGTM
+    );
+  })
+  .then(function(){
+    console.log('[DIAG] cloud init done');
+  })
+  .catch(function(err){
+    console.error('CLOUD_IMPORT_ERROR:', err); try { showError(err,false); } catch(e){};
+    window.UGTM.failed(err);
+  });
 }
 
 })();

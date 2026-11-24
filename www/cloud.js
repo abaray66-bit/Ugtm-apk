@@ -109,6 +109,7 @@ function unsub(key){
 
 function subscribeNews(){
 
+  console.log('[DIAG] subscribeNews called, isAdmin=', session.isAdmin, 'member=', !!session.member, 'member.status=', session.member && session.member.status);
   var mode =
     (session.isAdmin ||
     (session.member && session.member.status === 'active'))
@@ -131,7 +132,7 @@ function subscribeNews(){
   unsubs.news = onSnapshot(
     q,
     function(snap){
-
+      console.log('[DIAG] subscribeNews snapshot, docs=', snap.docs.length);
       hooks.setNews(
         snap.docs.map(function(d){
 
@@ -415,6 +416,7 @@ function subscribeLocalAdminProposals(){
 
 function subscribeReports(){
 
+  console.log('[DIAG] subscribeReports called, user=', !!session.user, 'isAdmin=', session.isAdmin, 'isSubAdmin=', session.isSubAdmin, 'isSubAdminLocal=', session.isSubAdminLocal);
   unsub('reports');
 
   if (!session.user) return;
@@ -458,7 +460,7 @@ function subscribeReports(){
     q,
 
     function(snap){
-
+      console.log('[DIAG] subscribeReports snapshot, docs=', snap.docs.length);
       hooks.setReports(
 
         snap.docs.map(function(d){
@@ -590,11 +592,21 @@ function subscribeAdminEmails(user){
 
 function onUser(user){
 
+  console.log('[DIAG] onUser called, user=', !!user, user ? user.uid : 'null');
   unsub('member');
   unsub('members');
   unsub('adminEmails');
 
   if (!user){
+
+    /* Si un utilisateur natif Capacitor a déjà été injecté, on ne
+       réinitialise pas la session à null lors d'un second appel
+       onAuthStateChanged avec user=null (l'instance web n'a pas
+       d'utilisateur courant mais le plugin natif en a un). */
+    if (window.__UGTM_NATIVE_USER_SYNCED__) {
+      console.log('[DIAG] onUser(null) skipped: native user already synced');
+      return;
+    }
 
     unsub('reports');
     unsub('adhesions');
@@ -710,6 +722,20 @@ function onUser(user){
             /* Premier enregistrement du profil : l'application
                ouvre automatiquement le formulaire d'adhésion
                (hook onFirstProfile, cf. app.html). */
+            session.member = normalizeMember({
+              name: user.displayName || '',
+              email: user.email || '',
+              photo: user.photoURL || '',
+              etab: '',
+              prov: '',
+              phone: '',
+              status: 'pending',
+              createdAt: null,
+              activatedAt: null
+            }, user.uid);
+            session.isSubAdmin = false;
+            session.isSubAdminLocal = false;
+            hooks.setSession(session);
             if (hooks && typeof hooks.onFirstProfile === 'function'){
               try { hooks.onFirstProfile(user); } catch (e) {}
             }
@@ -746,6 +772,27 @@ function onUser(user){
 
     function(err){
       hooks.error(err);
+      /* Si le profil membre est inaccessible, on poursuit avec un
+         profil vide pour ne pas bloquer l'affichage ni les abonnements. */
+      session.member = normalizeMember({
+        name: user.displayName || '',
+        email: user.email || '',
+        photo: user.photoURL || '',
+        etab: '',
+        prov: '',
+        phone: '',
+        status: 'pending',
+        createdAt: null,
+        activatedAt: null
+      }, user.uid);
+      session.isSubAdmin = false;
+      session.isSubAdminLocal = false;
+      hooks.setSession(session);
+      if (session.isAdmin || session.isSubAdmin || session.isSubAdminLocal){
+        subscribeMembers();
+        subscribeReports();
+        subscribeAdhesions();
+      }
     }
 
   );
@@ -3100,6 +3147,7 @@ async function loadCapacitorBrowser(){
 
 export async function init(config, h){
 
+  console.log('[DIAG] cloud.init start, config.firebase=', config && config.apiKey ? 'present' : 'absent');
   hooks = h;
 
 
@@ -3136,8 +3184,37 @@ export async function init(config, h){
   auth =
     getAuth(firebaseApp);
 
+  /* Sur Capacitor (mobile), l'authentification peut avoir été établie
+     via le plugin natif FirebaseAuthentication avant le chargement de
+     l'instance web Firebase. Si auth.currentUser est vide mais que
+     nativeAuth dispose d'un utilisateur, on le propage à la session
+     pour que onAuthStateChanged / onUser puissent s'exécuter. */
   try {
-  } catch(e) {}
+    if (!auth || !auth.currentUser) {
+      if (nativeAuth && typeof nativeAuth.currentUser !== 'undefined') {
+        var nu = nativeAuth.currentUser;
+        if (nu && nu.uid) {
+          console.log('[DIAG] nativeAuth.currentUser found, syncing to web auth session');
+          // onUser sera appelé via le handler ci-dessous après onAuthStateChanged
+          // Mais comme onAuthStateChanged ne se déclenche peut-être pas,
+          // on appelle directement onUser avec les infos natives
+          var nativeUser = {
+            uid: nu.uid,
+            displayName: nu.displayName || '',
+            email: nu.email || '',
+            photoURL: nu.photoURL || '',
+            emailVerified: nu.emailVerified !== false
+          };
+          // Stocker pour que onUser puisse y accéder via auth.currentUser
+          // On ne peut pas forcer auth.currentUser, mais on peut appeler onUser directement
+          // après l'enregistrement de l'écouteur
+          window.__UGTM_NATIVE_USER__ = nativeUser;
+        }
+      }
+    }
+  } catch(e) {
+    console.warn('[DIAG] nativeAuth sync check failed:', e && e.message ? e.message : String(e));
+  }
 
   try {
 
@@ -3666,6 +3743,7 @@ async function cloudMarkNotificationRead(id){
   subscribeResponsables();
 
 
+  console.log('[DIAG] onAuthStateChanged register');
   onAuthStateChanged(
     auth,
     onUser
@@ -3673,6 +3751,24 @@ async function cloudMarkNotificationRead(id){
 
 
   hooks.ready();
+
+  console.log('[DIAG] cloud.init done, auth=', !!auth, 'db=', !!db);
+
+  /* Si l'auth web n'a pas d'utilisateur courant mais que le plugin natif
+     Capacitor en a fourni un (stocké dans window.__UGTM_NATIVE_USER__),
+     on appelle onUser directement car onAuthStateChanged ne se déclenche
+     peut-être pas sur l'instance web. */
+  try {
+    if ((!auth || !auth.currentUser) && window.__UGTM_NATIVE_USER__) {
+      var nativeUser = window.__UGTM_NATIVE_USER__;
+      console.log('[DIAG] Calling onUser with native user:', nativeUser.uid);
+      onUser(nativeUser);
+      window.__UGTM_NATIVE_USER__ = null;
+      window.__UGTM_NATIVE_USER_SYNCED__ = true;
+    }
+  } catch(e) {
+    console.warn('[DIAG] native user sync call failed:', e && e.message ? e.message : String(e));
+  }
 
   // Résultat de connexion par redirection (navigateurs standards / repli WebView).
   // L'erreur éventuelle est affichée à l'utilisateur.
