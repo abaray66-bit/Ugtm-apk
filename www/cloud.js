@@ -320,7 +320,7 @@ function refreshAdhesionsDisplay(){
       dob:app.dob||'', phone:app.phone||'',
       establishment:app.establishment||'', specialty:app.specialty||'',
       type:app.type||'first', reason:app.reason||'', date:app.date||'',
-      signed:!!x.adminSignature, signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
+      signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
       validatedByRole:x.validatedByRole||'',
       createdAt:ms(x.createdAt), updatedAt:ms(x.updatedAt),
@@ -337,7 +337,7 @@ function refreshAdhesionsDisplay(){
       dob:app.dob||'', phone:app.phone||'',
       establishment:app.establishment||'', specialty:app.specialty||'',
       type:app.type||'renewal', reason:app.reason||'', date:app.date||'',
-      signed:!!x.adminSignature, signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
+      signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
       validatedByRole:x.validatedByRole||'',
       createdAt:ms(x.createdAt), updatedAt:ms(x.updatedAt),
@@ -1576,8 +1576,9 @@ async function signAdhesion(uid,signature,note){
   if(!sig) throw new Error('La signature du responsable est manquante.');
   if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
 
-  var reqRef = doc(db,'adhesionRequests',String(uid));
-  var memberRef = doc(db,'members',String(uid));
+  var r=resolveAdhesionRef(uid);
+  var reqRef = r.ref;
+  var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
 
   return runTransaction(db, async function(tx){
@@ -1607,6 +1608,13 @@ async function signAdhesion(uid,signature,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     });
+
+    /* Renouvellement : le membre est déjà actif et le dossier initial porte
+       son historique. On ne réactive PAS le membre et on n'incrémente PAS
+       le compteur (pas de doublon de numéro d'adhérent). */
+    if (r.isRenewal) {
+      return no;
+    }
 
     // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
     var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
@@ -1639,11 +1647,11 @@ async function signAdhesion(uid,signature,note){
   }).then(function(no){
     // Notification après transaction réussie (best-effort, ne fait pas échouer l'appelant)
     try {
-      getDoc(doc(db,'adhesionRequests',String(uid))).then(function(reqSnap){
+      getDoc(r.ref).then(function(reqSnap){
         var x = reqSnap.exists() ? reqSnap.data() : {};
         var provForNotif = String(x.province || '');
         if (!provForNotif) {
-          return getDoc(doc(db,'members',String(uid))).then(function(mSnap){
+          return getDoc(doc(db,'members',r.uid)).then(function(mSnap){
             var m = mSnap.exists() ? mSnap.data() : {};
             return String(m.prov || '');
           });
@@ -1651,23 +1659,23 @@ async function signAdhesion(uid,signature,note){
         return provForNotif;
       }).then(function(provForNotif){
         if (!provForNotif) {
-          console.warn('notif: province manquante pour uid=' + String(uid));
+          console.warn('notif: province manquante pour uid=' + r.uid);
           return;
         }
-        return addDoc(collection(db,'notifications',String(uid),'items'), {
-          title:'Adhésion acceptée',
-          body:'Votre adhésion a été validée.',
+        return addDoc(collection(db,'notifications',r.uid,'items'), {
+          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
           createdAt:serverTimestamp(),
           targetScreen:'me',
-          targetId:String(uid),
+          targetId:r.uid,
           province:provForNotif
         }).then(function(){
-          getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+          getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
@@ -1686,8 +1694,9 @@ async function validateAdhesionLocal(uid,note){
   var u=auth.currentUser;
   if(!u) throw new Error('Non connecté');
 
-  var reqRef = doc(db,'adhesionRequests',String(uid));
-  var memberRef = doc(db,'members',String(uid));
+  var r=resolveAdhesionRef(uid);
+  var reqRef = r.ref;
+  var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
 
   return runTransaction(db, async function(tx){
@@ -1719,6 +1728,12 @@ async function validateAdhesionLocal(uid,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     });
+
+    /* Renouvellement : membre déjà actif, historique conservé sur le dossier
+       initial. Pas de réactivation ni d'incrément du compteur. */
+    if (r.isRenewal) {
+      return no;
+    }
 
     // 2. Activer le membre dans LA MÊME transaction
     var name = String(app.prenom||'').trim() + ' ' + String(app.nom||'').trim();
@@ -1752,11 +1767,11 @@ async function validateAdhesionLocal(uid,note){
   }).then(function(no){
     // Notification après transaction réussie (best-effort)
     try {
-      getDoc(doc(db,'adhesionRequests',String(uid))).then(function(reqSnap){
+      getDoc(r.ref).then(function(reqSnap){
         var x = reqSnap.exists() ? reqSnap.data() : {};
         var provForNotif = String(x.province || '');
         if (!provForNotif) {
-          return getDoc(doc(db,'members',String(uid))).then(function(mSnap){
+          return getDoc(doc(db,'members',r.uid)).then(function(mSnap){
             var m = mSnap.exists() ? mSnap.data() : {};
             return String(m.prov || '');
           });
@@ -1764,23 +1779,23 @@ async function validateAdhesionLocal(uid,note){
         return provForNotif;
       }).then(function(provForNotif){
         if (!provForNotif) {
-          console.warn('notif: province manquante pour uid=' + String(uid));
+          console.warn('notif: province manquante pour uid=' + r.uid);
           return;
         }
-        return addDoc(collection(db,'notifications',String(uid),'items'), {
-          title:'Adhésion acceptée',
-          body:'Votre adhésion a été validée.',
+        return addDoc(collection(db,'notifications',r.uid,'items'), {
+          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
           createdAt:serverTimestamp(),
           targetScreen:'me',
-          targetId:String(uid),
+          targetId:r.uid,
           province:provForNotif
         }).then(function(){
-          getDoc(doc(db, 'fcmTokens', String(uid))).then(function(tokSnap){
+          getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', 'Adhésion acceptée', 'Votre adhésion a été validée.', String(uid));
+            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
@@ -1913,33 +1928,59 @@ async function syncMemberPhone(u, phone){
    habilité, et uniquement pour une demande déjà signée (les règles
    Firestore vérifient le statut 'accepted' et la province).
    ========================================================= */
+/* Résout une référence d'adhésion à partir d'un UID simple
+   (adhesionRequests/{uid}) OU d'un chemin complet de renouvellement
+   (adhesionRequests/{uid}/renouvellements/{renewalId}). Renvoie toujours
+   la référence Firestore, l'UID propriétaire, l'ID de renouvellement et
+   un marqueur isRenewal. */
+function resolveAdhesionRef(uidOrPath){
+  var s=String(uidOrPath||'');
+  if(s.indexOf('/')>=0){
+    var parts=s.split('/');
+    return {
+      ref: doc(db, s),
+      uid: parts[1]||'',
+      renewalId: parts[parts.length-1]||'',
+      isRenewal: s.indexOf('/renouvellements/')>=0
+    };
+  }
+  return { ref: doc(db,'adhesionRequests',s), uid:s, renewalId:'', isRenewal:false };
+}
+
+/* Référence du document PDF officiel : sous-collection dédiée pour un
+   renouvellement, document principal pour une première adhésion. */
+function pdfDocRef(uidOrPath){
+  var r=resolveAdhesionRef(uidOrPath);
+  return r.isRenewal
+    ? doc(db,'adhesionDocuments',r.uid,'renouvellements',r.renewalId)
+    : doc(db,'adhesionDocuments',r.uid);
+}
+
 async function getAdhesionDoc(docPath){
   /* docPath peut être :
      - un uid simple (ex: 'gO4o...') -> cherche dans adhesionRequests/{uid}
      - un chemin complet (ex: 'adhesionRequests/gO4o.../renouvellements/Dy1l...') -> cherche directement */
-  var ref = String(docPath).indexOf('/')>=0
-    ? doc(db, String(docPath))
-    : doc(db,'adhesionRequests',String(docPath));
-  var snap=await getDoc(ref);
+  var r=resolveAdhesionRef(docPath);
+  var snap=await getDoc(r.ref);
   /* id = identifiant du document Firestore : c'est la référence unique
      et la provenance du dossier, affichée sur le PDF officiel. */
   if(!snap.exists())return null;
-  var doc=Object.assign({},snap.data(),{id:snap.id});
+  var result=Object.assign({},snap.data(),{id:snap.id});
   /* Pour un document de la collection principale, chercher le dernier
      renouvellement en cours dans la sous-collection. Ne pas le faire pour
      un document déjà dans une sous-collection de renouvellements. */
-  if(String(docPath).indexOf('/')<0){
+  if(!r.isRenewal){
     try{
-      var coll=collection(db,'adhesionRequests',String(docPath),'renouvellements');
+      var coll=collection(db,'adhesionRequests',r.uid,'renouvellements');
       var q=query(coll, where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
       var renewalSnap=await getDocs(q);
     if(!renewalSnap.empty){
-      var r=renewalSnap.docs[0];
-      doc._latestRenewal=Object.assign({},r.data(),{id:r.id});
+      var rr=renewalSnap.docs[0];
+      result._latestRenewal=Object.assign({},rr.data(),{id:rr.id});
     }
   }catch(e){/* sous-collection absente ou vide : on ignore */}
   }
-  return doc;
+  return result;
 }
 /* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
    L'adhérent est identifié directement, sans passer par un code technique. */
@@ -1962,13 +2003,14 @@ async function saveAdhesionPdf(uid,pdfBase64,fileName){
   var request=await getAdhesionDoc(uidStr);
   var province=request?request.province:'';
   if(!province) throw new Error('Dossier introuvable.');
+  var r=resolveAdhesionRef(uidStr);
   /* Nom du fichier : « UGTM- Nom Prénom.pdf » (borné par les règles
      Firestore à 120 caractères). */
   var name=String(fileName||adhesionPdfFileName(request)||'');
   if(name.length>120) name=name.slice(0,120);
-  if(!name) name='demande-adhesion-'+uidStr+'.pdf';
-  return setDoc(doc(db,'adhesionDocuments',uidStr),{
-    uid:uidStr,
+  if(!name) name='demande-adhesion-'+r.uid+'.pdf';
+  return setDoc(pdfDocRef(uidStr),{
+    uid:r.uid,
     province:province,
     structureId:request.structureId||'',
     fileName:name,
@@ -1983,7 +2025,7 @@ async function saveAdhesionPdf(uid,pdfBase64,fileName){
    le contenu, son nom de fichier et sa date d'enregistrement — cette
    date permet de ne pas resservir un PDF périmé (renouvellement). */
 function getSavedAdhesionPdf(uid){
-  return getDoc(doc(db,'adhesionDocuments',String(uid||''))).then(function(s){
+  return getDoc(pdfDocRef(uid)).then(function(s){
     if(!s.exists())return null;
     var d=s.data()||{};
     return {data:String(d.data||''),fileName:String(d.fileName||''),updatedAt:ms(d.updatedAt)};
@@ -2775,7 +2817,7 @@ var admin = {
     if (['pending','needs_completion','accepted','refused'].indexOf(status) < 0){
       return Promise.reject(new Error('Statut invalide'));
     }
-    return updateDoc(doc(db, 'adhesionRequests', String(uid)), {
+    return updateDoc(resolveAdhesionRef(uid).ref, {
       status: status,
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
@@ -2788,11 +2830,11 @@ var admin = {
      laisserait un PDF signé et un état « signée électroniquement »
      orphelins. */
   deleteAdhesion: function(uid){
-    var key = String(uid || '');
-    return deleteDoc(doc(db, 'adhesionDocuments', key))
+    var r = resolveAdhesionRef(uid);
+    return deleteDoc(pdfDocRef(uid))
       .catch(function(){})
       .then(function(){
-        return deleteDoc(doc(db, 'adhesionRequests', key));
+        return deleteDoc(r.ref);
       });
   },
 

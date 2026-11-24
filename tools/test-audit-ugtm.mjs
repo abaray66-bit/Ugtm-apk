@@ -712,10 +712,15 @@ try {
 
   /* Référence : identifiant Firestore porté par le document relu. */
   try {
+    const resolveAdhesionRef = compile('resolveAdhesionRef', {
+      doc: (a, b) => ({ __path: a + '/' + b }),
+      db: {}
+    }, cloud, 'cloud.js');
     const getAdhesionDoc = compile('getAdhesionDoc', {
       doc: (a, b) => ({ __path: a + '/' + b }),
       db: {},
-      getDoc: async () => ({ id: 'uidABC', exists: () => true, data: () => ({ province: 'agadir', status: 'accepted' }) })
+      getDoc: async () => ({ id: 'uidABC', exists: () => true, data: () => ({ province: 'agadir', status: 'accepted' }) }),
+      resolveAdhesionRef
     }, cloud, 'cloud.js');
     const doc = await getAdhesionDoc('uidABC');
     assert(doc && doc.id === 'uidABC',

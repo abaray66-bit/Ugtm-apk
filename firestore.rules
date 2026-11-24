@@ -1052,7 +1052,22 @@ service cloud.firestore {
         && adhesionAppOkRenewal(request.resource.data.application,
                           request.resource.data.province);
 
-      allow update: if false;
+      allow update: if (isAdmin()
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', '')))
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status','adminSignature','signedBy','signedAt',
+                       'validatedBy','validatedAt','validatedByRole','adminNote','updatedAt'])
+        && request.resource.data.status in ['pending','needs_completion','accepted','refused']
+        // Identité liée à l'appelant UNIQUEMENT lorsque la signature /
+        // validation est modifiée : les mises à jour ultérieures (note,
+        // statut) par un autre responsable restent permises.
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['adminSignature','signedBy'])
+            || request.resource.data.signedBy == request.auth.uid)
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['validatedBy','validatedByRole','validatedAt'])
+            || request.resource.data.validatedBy == request.auth.uid);
       allow delete: if isAdmin();
     }
 
@@ -1091,7 +1106,7 @@ service cloud.firestore {
         && request.resource.data.mimeType == 'application/pdf'
         && request.resource.data.data is string
         && request.resource.data.data.size() > 0
-        && request.resource.data.data.size() <= 200000
+        && request.resource.data.data.size() <= 650000
         && request.resource.data.createdAt == request.time
         && request.resource.data.updatedAt == request.time
         && exists(/databases/$(database)/documents/adhesionRequests/$(uid))
@@ -1121,6 +1136,37 @@ service cloud.firestore {
         );
 
       allow delete: if isAdmin();
+
+      // PDF officiel d'un RENOUVELLEMENT : rangé à côté du renouvellement
+      // (sous-collection), le PDF de la première adhésion reste intact.
+      match /renouvellements/{renewalId} {
+        allow read: if isAdmin()
+          || (signedIn() && request.auth.uid == uid)
+          || adhesionIsSubAdminOf(resource.data.get('province', ''))
+          || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
+
+        allow create, update: if (isAdmin()
+            || adhesionIsSubAdminOf(request.resource.data.get('province', ''))
+            || adhesionIsSubAdminLocalOf(request.resource.data.get('structureId', '')))
+          && request.resource.data.keys().hasOnly(
+               ['uid','province','structureId','fileName','mimeType','data','createdAt','updatedAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.province in adhesionProvinces()
+          && okText(request.resource.data.fileName, 120)
+          && request.resource.data.mimeType == 'application/pdf'
+          && request.resource.data.data is string
+          && request.resource.data.data.size() > 0
+          && request.resource.data.data.size() <= 650000
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time
+          && exists(/databases/$(database)/documents/adhesionRequests/$(uid)/renouvellements/$(renewalId))
+          && get(/databases/$(database)/documents/adhesionRequests/$(uid)/renouvellements/$(renewalId)).data.status == 'accepted'
+          && ( get(/databases/$(database)/documents/adhesionRequests/$(uid)/renouvellements/$(renewalId)).data.get('signedBy', '').size() > 0
+            || (get(/databases/$(database)/documents/adhesionRequests/$(uid)/renouvellements/$(renewalId)).data.get('validatedBy', '').size() > 0
+                && get(/databases/$(database)/documents/adhesionRequests/$(uid)/renouvellements/$(renewalId)).data.get('validatedByRole', '') == 'subadminLocal'));
+
+        allow delete: if isAdmin();
+      }
     }
 
   // Le bloc notifications doit être un enfant de

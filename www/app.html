@@ -4111,6 +4111,8 @@ admSignedBadge:`Signée et validée électroniquement`,
   admPdfOnlyValidated:`Seule une demande signée et validée permet de générer le PDF.`,
   admPdfFetched:`PDF récupéré et enregistré sur l’appareil.`,
   admAdhesionSigned:`Signée électroniquement`,
+  admAdhesionLocalValidated:`Validée (sous-admin local)`,
+  admRowRenewal:`Renouvellement`,
   admAdhesionsDenied:`Accès réservé aux responsables.`,
   admAdhesionsEmpty:`Aucune demande d’adhésion enregistrée.`,
   admAdhesionFallback:`Adhérent`,
@@ -4755,7 +4757,9 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfErr:`تعذر إنشاء ملف PDF.`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
-admAdhesionSigned:`موقّع إلكترونياً`,
+ admAdhesionSigned:`موقّع إلكترونياً`,
+ admAdhesionLocalValidated:`تمت المصادقة (مسؤول محلي)`,
+ admRowRenewal:`تجديد`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admMembersTitle:`الأعضاء`,
@@ -4811,7 +4815,9 @@ admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfErr:`تعذر إنشاء ملف PDF.`,
   admPdfOnlyValidated:`لا يمكن إنشاء ملف PDF إلا لطلب موقّع ومصادق عليه.`,
   admPdfFetched:`تم استرجاع ملف PDF وتسجيله على الجهاز.`,
-admAdhesionSigned:`موقّع إلكترونياً`,
+ admAdhesionSigned:`موقّع إلكترونياً`,
+ admAdhesionLocalValidated:`تمت المصادقة (مسؤول محلي)`,
+ admRowRenewal:`تجديد`,
 admAdhesionsDenied:`الوصول مخصص للمسؤولين.`,
 admAdhesionsEmpty:`لا توجد أي طلبات انخراط مسجلة.`,
 admAdhesionFallback:`منخرط`,
@@ -8593,6 +8599,12 @@ function loadAdminStats(force){
 
 
 
+/* Identifiant de document utilisé par les actions admin : chemin complet
+   pour un renouvellement, UID simple pour une première adhésion. */
+function adhesionDocId(a){
+  return a&&a._isRenewal ? ('adhesionRequests/'+a.uid+'/renouvellements/'+a.id) : (a?a.id:'');
+}
+
 function renderAdminAdhesions(){
   var t=T();
   var list=S.adhesions||[];
@@ -8605,7 +8617,7 @@ function renderAdminAdhesions(){
     s==='refused'?t.admStatusRefused:t.admStatusPending;
   }
 el.innerHTML=list.length?list.map(function(a){
-      var docId = a._isRenewal ? ('adhesionRequests/'+a.uid+'/renouvellements/'+a.id) : a.id;
+      var docId = adhesionDocId(a);
       var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(docId)+'">'+esc(t.admViewDossier)+'</button>';
      if(a.status==='pending'||a.status==='needs_completion'){
         actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(docId)+'">'+esc(t.admSignValidate)+'</button>';
@@ -8616,7 +8628,7 @@ el.innerHTML=list.length?list.map(function(a){
         actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(docId)+'">'+esc(t.admRefuse)+'</button>';
      }
       /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
-      if(a.status==='accepted'&&a.signed){
+      if(a.status==='accepted'&&(a.signed||a.validatedBy)){
         actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(docId)+'">'+esc(t.admGeneratePdfLong)+'</button>';
       }
      /* Suppression du dossier : administrateur général seulement (les
@@ -8639,8 +8651,10 @@ el.innerHTML=list.length?list.map(function(a){
        a.adminNote?'<span>'+esc(t.admRowNote)+' '+esc(a.adminNote)+'</span>':''
      ].filter(Boolean).join('');
      return '<li class="mrow"><div class="mi">'+
-     '<strong>'+nom+' · '+stLabel+
-       (a.signed&&a.status==='accepted'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
+      '<strong>'+nom+' · '+stLabel+
+        (a._isRenewal?' <span class="tag renewal">'+esc(t.admRowRenewal||'Renouvellement')+'</span>':'')+
+        (a.status==='accepted'&&a.validatedByRole==='subadminLocal'&&a.validatedBy?' <span class="tag signed">'+esc(t.admAdhesionLocalValidated||'Validée (sous-admin local)')+'</span>':'')+
+        (a.status==='accepted'&&a.signed&&a.validatedByRole!=='subadminLocal'?' <span class="tag signed">'+esc(t.admAdhesionSigned)+'</span>':'')+'</strong>'+
      (head?'<span>'+esc(head)+'</span>':'')+
      '<div class="mi-grid">'+rows+'</div>'+
      '</div><div class="mact">'+actions+'</div></li>';
@@ -10906,7 +10920,7 @@ shareAdhesionPdf(id);
 }
 
 else if(a==='delAdhesion'&&S.isAdmin){
-    var adh=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+    var adh=(S.adhesions||[]).filter(function(x){return adhesionDocId(x)===id;})[0];
     if(!adh){ toast('Demande introuvable'); return; }
     if(adh.status==='pending'||adh.status==='needs_completion'){
         toast('Une demande d\'adhésion en cours ne peut pas être supprimée.');
@@ -10918,7 +10932,7 @@ else if(a==='delAdhesion'&&S.isAdmin){
 }
 
 else if(a==='reviewAdhesion'&&(S.isAdmin||S.isSubAdmin)){
-var adhesion=(S.adhesions||[]).filter(function(x){return x.id===id;})[0];
+var adhesion=(S.adhesions||[]).filter(function(x){return adhesionDocId(x)===id;})[0];
 if(adhesion&&c.admin.updateAdhesionStatus){
 var note=window.prompt(t.admPromptNote,adhesion.adminNote||'');
 if(note!==null)c.admin.updateAdhesionStatus(id,el.getAttribute('data-status'),note).then(function(){toast(t.admToastStatusUpdated);}).catch(showError);
@@ -11965,25 +11979,31 @@ if(CLOUD_ON){
 
           /* Identité du signataire et date de validation : le PDF officiel
              porte la trace de qui a validé le dossier et quand. */
+          var isLocalValidation = !!(request && request.validatedByRole==='subadminLocal' && request.validatedBy);
           var signedBy = request && request.signedBy ? String(request.signedBy) : '';
+          if(isLocalValidation) signedBy = String(request.validatedBy||'');
           var signerMember = (((window.UGTM_SESSION)||{}).members || []).filter(function(m){ return m && String(m.uid) === signedBy; })[0];
           var signerName = signerMember ? (String(signerMember.prenom || '') + ' ' + String(signerMember.nom || '')).trim() : '';
           var isRegionalAdmin = ((window.UGTM_SESSION)||{}).isAdmin && !((window.UGTM_SESSION)||{}).isSubAdmin;
-          var signerPrefix = isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial';
-          var signerDefault = isRegionalAdmin ? 'Abdelaziz Abaray' : '';
+          /* Validation locale : on ne présente JAMAIS le sous-admin local
+             comme un signataire administratif (ni « Secrétaire provincial »,
+             ni « Secrétaire régional »). */
+          var signerPrefix = isLocalValidation ? 'Sous-admin local' : (isRegionalAdmin ? 'Secrétaire régional' : 'Secrétaire provincial');
+          var signerDefault = isLocalValidation ? '' : (isRegionalAdmin ? 'Abdelaziz Abaray' : '');
           var signer = signerPrefix + (signerName ? ' ' + signerName : (signerDefault ? ' ' + signerDefault : ''));
           var validationDate='';
-          if(request&&request.signedAt){
+          var validationStamp = isLocalValidation ? request.validatedAt : request.signedAt;
+          if(validationStamp){
             try{
-              var signedAt=request.signedAt;
+              var signedAt=validationStamp;
               if(signedAt&&typeof signedAt.toDate==='function')signedAt=signedAt.toDate();
               else if(signedAt&&typeof signedAt.toMillis==='function')signedAt=new Date(signedAt.toMillis());
               else signedAt=new Date(signedAt);
               if(signedAt&&!isNaN(signedAt.getTime()))validationDate=signedAt.toLocaleDateString('fr-FR');
             }catch(eDate){}
           }
-          section('VALIDATION');
-          row2('Validée par',signer,'Statut du dossier','VALIDÉE');
+          section(isLocalValidation?'VALIDATION LOCALE':'VALIDATION');
+          row2('Validée par',signer,'Statut du dossier',isLocalValidation?'VALIDÉE (validation locale)':'VALIDÉE');
           row1('Date de validation',validationDate);
 
           /* Pied de page sur CHAQUE page : fil conducteur
