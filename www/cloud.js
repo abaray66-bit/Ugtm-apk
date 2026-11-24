@@ -1334,15 +1334,21 @@ async function getMyAdhesionRequest(){
    /* Un renouvellement en attente (sous-collection) doit être signalé à
       l'adhérent : le dossier parent reste « accepté » (historique intact),
       mais la demande de renouvellement en cours prend le dessus pour
-      l'affichage du statut. */
+      l'affichage du statut. On lit la sous-collection sans filtre ni tri
+      (pas d'index composite requis) et on filtre côté client. */
    try{
-     var rq=query(collection(db,'adhesionRequests',u.uid,'renouvellements'),
-       where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
-     var rs=await getDocs(rq);
-     if(!rs.empty){
-       var rr=rs.docs[0].data()||{};
+     var coll=collection(db,'adhesionRequests',u.uid,'renouvellements');
+     var rs=await getDocs(coll);
+     var pend=rs.docs.filter(function(d){
+       var s=String((d.data()||{}).status||'');
+       return s==='pending'||s==='needs_completion';
+     }).sort(function(a,b){
+       return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
+     });
+     if(pend.length){
+       var rr=pend[0].data()||{};
        out.renewalPending=true;
-       out.renewalId=rs.docs[0].id;
+       out.renewalId=pend[0].id;
        out.status=rr.status||'pending';
        out.adminNote=rr.adminNote||'';
        out.updatedAt=ms(rr.updatedAt)||out.updatedAt;
@@ -1990,13 +1996,18 @@ async function getAdhesionDoc(docPath){
   if(!r.isRenewal){
     try{
       var coll=collection(db,'adhesionRequests',r.uid,'renouvellements');
-      var q=query(coll, where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
-      var renewalSnap=await getDocs(q);
-    if(!renewalSnap.empty){
-      var rr=renewalSnap.docs[0];
-      result._latestRenewal=Object.assign({},rr.data(),{id:rr.id});
-    }
-  }catch(e){/* sous-collection absente ou vide : on ignore */}
+      var renewalSnap=await getDocs(coll);
+      var pend=renewalSnap.docs.filter(function(d){
+        var s=String((d.data()||{}).status||'');
+        return s==='pending'||s==='needs_completion';
+      }).sort(function(a,b){
+        return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
+      });
+      if(pend.length){
+        var rr=pend[0];
+        result._latestRenewal=Object.assign({},rr.data(),{id:rr.id});
+      }
+    }catch(e){/* sous-collection absente ou vide : on ignore */}
   }
   return result;
 }
