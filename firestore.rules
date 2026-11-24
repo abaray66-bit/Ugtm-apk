@@ -1071,6 +1071,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Collection group « renouvellements » : les requêtes collectionGroup
+    // exigent une règle à wildcard récursif (rules_version 2). Sans elle,
+    // l'écouteur admin échoue avec « Missing or insufficient permissions ».
+    // L'appartenance est portée par le champ uid du document.
+    match /{path=**}/renouvellements/{docId} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == resource.data.uid)
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
+    }
+
     // ==========================================================
     // PDF SIGNÉ DES DEMANDES D'ADHÉSION
     // Pièce jointe du dossier : refusée si aucune demande n'existe
