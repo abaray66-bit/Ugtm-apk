@@ -2152,20 +2152,36 @@ async function deleteAccount(){
     );
   }
 
-  // Réauthentifier avant toute suppression de données, pour éviter de laisser
-  // un compte actif sans profil si Firebase exige une connexion récente.
+  // Réauthentification Google obligatoire avant l'opération serveur.
   await reauthenticateForAccountDeletion(u);
 
+  var configured = (window.APP_DATA && window.APP_DATA.firebase && window.APP_DATA.firebase.pushBackendUrl) || '';
+  if (!configured) throw new Error('Service de suppression indisponible : URL du backend absente.');
+
+  var token = await u.getIdToken(true);
+  var response = await fetch(String(configured).replace(/\\/+$/, '') + '/api/delete-account', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: '{}'
+  });
+  var raw = '';
+  try { raw = await response.text(); } catch (e) {}
+  var result = {};
+  try { result = JSON.parse(raw); } catch (e) {}
+  if (!response.ok) {
+    throw new Error((result.error || 'La suppression du compte a échoué.') +
+      (result.code ? ' (' + result.code + ')' : ''));
+  }
+
+  // Le backend a supprimé le compte et les données de profil supprimables.
+  // Les dossiers d'adhésion et les signalements archivés restent conservés.
   unsub('member');
   unsub('members');
   unsub('reports');
-
-  // Les signalements soumis ne sont pas supprimés par la suppression du compte.
-  await deleteDoc(doc(db, 'responsables', u.uid));
-  if (memberSnap.exists()) await deleteDoc(memberRef);
-
-  // Ne pas masquer les erreurs : l'interface doit distinguer une suppression réussie d'un échec.
-  await deleteUser(u);
+  await signOut();
 }
 
 
