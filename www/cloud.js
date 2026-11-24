@@ -2159,7 +2159,7 @@ async function deleteAccount(){
   if (!configured) throw new Error('Service de suppression indisponible : URL du backend absente.');
 
   var token = await u.getIdToken(true);
-  var response = await fetch(String(configured).replace(/\\/+$/, '') + '/api/delete-account', {
+  var response = await fetch(String(configured).replace(/\/+$/, '') + '/api/delete-account', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
