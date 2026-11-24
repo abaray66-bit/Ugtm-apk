@@ -8605,24 +8605,25 @@ function renderAdminAdhesions(){
     s==='refused'?t.admStatusRefused:t.admStatusPending;
   }
 el.innerHTML=list.length?list.map(function(a){
-     var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admViewDossier)+'</button>';
+      var docId = a._isRenewal ? ('adhesionRequests/'+a.uid+'/renouvellements/'+a.id) : a.id;
+      var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(docId)+'">'+esc(t.admViewDossier)+'</button>';
      if(a.status==='pending'||a.status==='needs_completion'){
-        actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admSignValidate)+'</button>';
+        actions+='<button type="button" class="btn primary small" data-adm-act="signAdhesion" data-id="'+esc(docId)+'">'+esc(t.admSignValidate)+'</button>';
         if(S.isSubAdminLocal&&!S.isAdmin&&!S.isSubAdmin){
-          actions+='<button type="button" class="btn primary small" data-adm-act="validateAdhesionLocal" data-id="'+esc(a.id)+'">'+esc(t.admLocalValidate)+'</button>';
+          actions+='<button type="button" class="btn primary small" data-adm-act="validateAdhesionLocal" data-id="'+esc(docId)+'">'+esc(t.admLocalValidate)+'</button>';
         }
-        actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(a.id)+'">'+esc(t.admAskCompletion)+'</button>';
-        actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(a.id)+'">'+esc(t.admRefuse)+'</button>';
+        actions+='<button type="button" class="btn ghost small" data-adm-act="reviewAdhesion" data-status="needs_completion" data-id="'+esc(docId)+'">'+esc(t.admAskCompletion)+'</button>';
+        actions+='<button type="button" class="btn ghost small danger" data-adm-act="reviewAdhesion" data-status="refused" data-id="'+esc(docId)+'">'+esc(t.admRefuse)+'</button>';
      }
       /* Le PDF officiel n'est proposé que sur une demande signée et validée. */
       if(a.status==='accepted'&&a.signed){
-        actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(a.id)+'">'+esc(t.admGeneratePdfLong)+'</button>';
+        actions+='<button type="button" class="btn ghost small" data-adm-act="generateAdhesionPdf" data-id="'+esc(docId)+'">'+esc(t.admGeneratePdfLong)+'</button>';
       }
      /* Suppression du dossier : administrateur général seulement (les
         règles Firestore n'autorisent la suppression qu'à l'admin). Elle
         emporte le PDF signé et les deux signatures. */
      if(S.isAdmin){
-       actions+='<button type="button" class="btn ghost small danger" data-adm-act="delAdhesion" data-id="'+esc(a.id)+'">'+esc(t.admDeleteAdhesion)+'</button>';
+       actions+='<button type="button" class="btn ghost small danger" data-adm-act="delAdhesion" data-id="'+esc(docId)+'">'+esc(t.admDeleteAdhesion)+'</button>';
      }
      var head=[a.date?fmtDateFr(a.date):'',provName(a.province,lang)||a.province||''].filter(Boolean).join(' · ');
      var nom=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);

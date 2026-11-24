@@ -12,7 +12,7 @@ import {
   initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager,
   collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, addDoc, increment,
   onSnapshot, query, where, orderBy, limit, serverTimestamp, deleteField, runTransaction,
-  writeBatch, arrayUnion
+  writeBatch, arrayUnion, collectionGroup
 } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging.js';
 
@@ -51,6 +51,9 @@ var unsubs = {
   publicProvinceContacts: null,
   adminEmails: null
 };
+
+var adhMainDocs = [];
+var adhRenewalsDocs = [];
 
 var newsMode = null;
 
@@ -305,6 +308,45 @@ function reportProvinceLabel(code){
    province portée par le dossier). L'adhérent lit le sien via
    getMyAdhesionRequest() : pas d'abonnement côté membre.
    ========================= */
+function refreshAdhesionsDisplay(){
+  var all=[];
+  adhMainDocs.forEach(function(d){
+    var x=d.data();
+    var app=x.application||{};
+    all.push({
+      id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
+      status:x.status||'pending', adminNote:x.adminNote||'',
+      nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
+      dob:app.dob||'', phone:app.phone||'',
+      establishment:app.establishment||'', specialty:app.specialty||'',
+      type:app.type||'first', reason:app.reason||'', date:app.date||'',
+      signed:!!x.adminSignature, signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
+      validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
+      validatedByRole:x.validatedByRole||'',
+      createdAt:ms(x.createdAt), updatedAt:ms(x.updatedAt),
+      _isRenewal:false
+    });
+  });
+  adhRenewalsDocs.forEach(function(d){
+    var x=d.data();
+    var app=x.application||{};
+    all.push({
+      id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
+      status:x.status||'pending', adminNote:x.adminNote||'',
+      nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
+      dob:app.dob||'', phone:app.phone||'',
+      establishment:app.establishment||'', specialty:app.specialty||'',
+      type:app.type||'renewal', reason:app.reason||'', date:app.date||'',
+      signed:!!x.adminSignature, signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
+      validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
+      validatedByRole:x.validatedByRole||'',
+      createdAt:ms(x.createdAt), updatedAt:ms(x.updatedAt),
+      _isRenewal:true
+    });
+  });
+  hooks.setAdhesions(all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+}
+
 function subscribeAdhesions(){
   unsub('adhesions');
   if (!session.user || !(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal)) { hooks.setAdhesions([]); return; }
@@ -320,30 +362,24 @@ function subscribeAdhesions(){
     q = query(collection(db, 'adhesionRequests'), where('structureId', '==', adminStructure));
   }
   unsubs.adhesions = onSnapshot(q, function(snap){
-    if(window.DEBUG) console.log('[Debug Admin] subscribeAdhesions: docs=', snap.docs.length, 'isAdmin=', session.isAdmin, 'isSubAdmin=', session.isSubAdmin, 'isSubAdminLocal=', session.isSubAdminLocal);
-    hooks.setAdhesions(snap.docs.map(function(d){
-      var x = d.data();
-      var app = x.application || {};
-      return {
-        id: d.id,
-        uid: x.uid || '',
-        province: x.province || '',
-        structureId: x.structureId || '',
-        status: x.status || 'pending',
-        adminNote: x.adminNote || '',
-        nom: app.nom || '', prenom: app.prenom || '', cin: app.cin || '',
-        dob: app.dob || '', phone: app.phone || '',
-        establishment: app.establishment || '', specialty: app.specialty || '',
-        type: app.type || 'first', reason: app.reason || '', date: app.date || '',
-        signed: !!x.adminSignature,
-        signedBy: x.signedBy || '',
-        signedAt: ms(x.signedAt),
-        validatedBy: x.validatedBy || '',
-        validatedAt: ms(x.validatedAt),
-        validatedByRole: x.validatedByRole || '',
-        createdAt: ms(x.createdAt), updatedAt: ms(x.updatedAt)
-      };
-    }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+    adhMainDocs=snap.docs;
+    refreshAdhesionsDisplay();
+  }, function(err){ hooks.error(err, true); });
+
+  /* Sous-collection des renouvellements : collectionGroup pour voir tous
+     les renouvellements, filtrés côté client par province/structure selon le rôle. */
+  var rq=collectionGroup(db,'renouvellements');
+  unsubs.adhesionsRenewals = onSnapshot(rq, function(snap){
+    var docs=snap.docs;
+    if(session.isSubAdmin){
+      var prov=String(session.member && session.member.adminProvince || '');
+      docs=docs.filter(function(d){return String(d.data().province||'')===prov;});
+    }else if(session.isSubAdminLocal){
+      var struct=String(session.member && session.member.adminStructure || '');
+      docs=docs.filter(function(d){return String(d.data().structureId||'')===struct;});
+    }
+    adhRenewalsDocs=docs;
+    refreshAdhesionsDisplay();
   }, function(err){ hooks.error(err, true); });
 }
 
@@ -1877,23 +1913,32 @@ async function syncMemberPhone(u, phone){
    habilité, et uniquement pour une demande déjà signée (les règles
    Firestore vérifient le statut 'accepted' et la province).
    ========================================================= */
-async function getAdhesionDoc(uid){
-  var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
+async function getAdhesionDoc(docPath){
+  /* docPath peut être :
+     - un uid simple (ex: 'gO4o...') -> cherche dans adhesionRequests/{uid}
+     - un chemin complet (ex: 'adhesionRequests/gO4o.../renouvellements/Dy1l...') -> cherche directement */
+  var ref = String(docPath).indexOf('/')>=0
+    ? doc(db, String(docPath))
+    : doc(db,'adhesionRequests',String(docPath));
+  var snap=await getDoc(ref);
   /* id = identifiant du document Firestore : c'est la référence unique
      et la provenance du dossier, affichée sur le PDF officiel. */
   if(!snap.exists())return null;
   var doc=Object.assign({},snap.data(),{id:snap.id});
-  /* Chercher le dernier renouvellement en cours (pending / needs_completion)
-     dans la sous-collection adhesionRequests/{uid}/renouvellements. */
-  try{
-    var coll=collection(db,'adhesionRequests',String(uid),'renouvellements');
-    var q=query(coll, where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
-    var renewalSnap=await getDocs(q);
+  /* Pour un document de la collection principale, chercher le dernier
+     renouvellement en cours dans la sous-collection. Ne pas le faire pour
+     un document déjà dans une sous-collection de renouvellements. */
+  if(String(docPath).indexOf('/')<0){
+    try{
+      var coll=collection(db,'adhesionRequests',String(docPath),'renouvellements');
+      var q=query(coll, where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
+      var renewalSnap=await getDocs(q);
     if(!renewalSnap.empty){
       var r=renewalSnap.docs[0];
       doc._latestRenewal=Object.assign({},r.data(),{id:r.id});
     }
   }catch(e){/* sous-collection absente ou vide : on ignore */}
+  }
   return doc;
 }
 /* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
