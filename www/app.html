@@ -12253,8 +12253,8 @@ if(CLOUD_ON){
           prefillIfEmpty('adhPhone',draft.phone||'');
           prefillIfEmpty('adhAddress',draft.address||'');
           if(!adhProvinceValue)adhProvinceValue=draft.province||'';
-          prefillIfEmpty('adhEstablishment',draft.establishment||'');
-          prefillIfEmpty('adhService',draft.service||'');
+          prefillIfEmpty('adhEtablissement',draft.establishment||'');
+          prefillIfEmpty('adhServiceGst',draft.service||'');
           prefillIfEmpty('adhFunction',draft.function||'');
           prefillIfEmpty('adhSpecialty',draft.specialty||'');
           prefillIfEmpty('adhPpr',draft.ppr||'');
@@ -12279,7 +12279,7 @@ if(CLOUD_ON){
       /* 4. Préremplissage depuis le Profil Membre */
       prefillIfEmpty('adhPhone',member.phone||'');
       if(!adhProvinceValue)adhProvinceValue=member.prov||'';
-      prefillIfEmpty('adhEstablishment',member.etab||'');
+      prefillIfEmpty('adhEtablissement',member.etab||'');
 
       var identityFilled=false;
       function fillIdentityFromProfile(){
@@ -12315,8 +12315,8 @@ if(CLOUD_ON){
           prefillIfEmpty('adhPhone',app.phone||'');
           prefillIfEmpty('adhAddress',app.address||'');
           if(!adhProvinceValue)adhProvinceValue=app.province||'';
-          prefillIfEmpty('adhEstablishment',app.establishment||'');
-          prefillIfEmpty('adhService',app.service||'');
+          prefillIfEmpty('adhEtablissement',app.establishment||'');
+          prefillIfEmpty('adhServiceGst',app.service||'');
           /* Pré-remplissage des nouveaux champs GST (stockés en top-level) */
           if(req.espaceSanitaire) prefillIfEmpty('adhEspaceSanitaire',req.espaceSanitaire);
           if(req.district) prefillIfEmpty('adhDistrict',req.district);
@@ -12355,8 +12355,10 @@ if(CLOUD_ON){
 
           /* Les champs communs établissement/service sont resaisis selon la branche,
              on ne conserve pas les valeurs de l'ancienne demande. */
-          document.getElementById('adhEstablishment').value='';
-          document.getElementById('adhService').value='';
+          var estEl=document.getElementById('adhEtablissement');
+          var svcEl=document.getElementById('adhServiceGst');
+          if(estEl)estEl.value='';
+          if(svcEl)svcEl.value='';
 
           /* Appliquer l'affichage final */
           window.toggleConditionalFields();
@@ -12370,8 +12372,10 @@ if(CLOUD_ON){
       /* 6. Forcer l'affichage au chargement initial */
       /* Les champs communs établissement/service sont resaisis selon la branche,
          on ne conserve pas les valeurs de l'ancienne demande ou du profil. */
-      document.getElementById('adhEstablishment').value='';
-      document.getElementById('adhService').value='';
+      var estEl2=document.getElementById('adhEtablissement');
+      var svcEl2=document.getElementById('adhServiceGst');
+      if(estEl2)estEl2.value='';
+      if(svcEl2)svcEl2.value='';
       window.toggleConditionalFields();
 
       if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
@@ -13028,8 +13032,8 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
       function resetInput(id){ var el=document.getElementById(id); if(el){ el.value=''; } }
 
       resetInput('adhEspaceSanitaire');
-      resetInput('adhEstablishment');
-      resetInput('adhService');
+      resetInput('adhEtablissement');
+      resetInput('adhServiceGst');
       ['adhFunction','adhSpecialty','adhPpr'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.value='';
       });
