@@ -1301,6 +1301,23 @@ async function submitAdhesion(application,signature){
   if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
   if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
   var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid);
+
+  /* Mapping des noms d'affichage des structures sanitaires vers les clés
+     internes exigées par les règles Firestore (adhesionAppOk, champ
+     sanitaryStructure dans application). */
+  var sanitaryStructureMap = {
+    'CHU Mohammed VI – Spécialités Agadir': 'huSpecialitesAgadir',
+    'CHU Mohammed VI – Mère-Enfant Agadir': 'huMereEnfantAgadir',
+    'CHU Mohammed VI – Oncologie Agadir': 'huOncologieAgadir',
+    'CHU Mohammed VI – Psychiatrie Agadir': 'huPsychiatrieAgadir',
+    'Direction Espace sanitaire Agadir': 'espaceAgadir',
+    'Direction Espace sanitaire Taroudant': 'espaceTaroudant',
+    'Division de la pharmacie régionale': 'pharmacieRegionale',
+    'Service de santé publique': 'serviceSantePublique',
+    "Service d'aide médicale urgente régional (SAMU)": 'serviceSamu',
+    'Bureau d’ordre, de la documentation et des archives': 'bureauOrdre'
+  };
+
   var clean={
     nom:String(application.nom||'').trim().slice(0,100),prenom:String(application.prenom||'').trim().slice(0,100),
     cin:String(application.cin||'').trim().slice(0,30),dob:String(application.dob||'').slice(0,10),
@@ -1308,7 +1325,9 @@ async function submitAdhesion(application,signature){
     structureMere:String(application.structureMere||'GST Souss-Massa').trim().slice(0,80),
     rattachement:String(application.rattachement||'').slice(0,40),
     province:String(application.province||'').slice(0,40),establishment:String(application.establishment||'').trim().slice(0,160),
-    espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),
+    espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),
+    sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',
+    district:String(application.district||'').trim().slice(0,40),
     division:String(application.division||'').trim().slice(0,40),
     serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),
     serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),
@@ -1366,9 +1385,9 @@ async function submitAdhesion(application,signature){
          la signature du responsable de la soumission précédente est
          effacée. Le dossier repart avec UNE seule signature — celle de
          l'adhérent — et la case du responsable à valider. */
-       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,updatedAt:serverTimestamp()});
+       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,updatedAt:serverTimestamp()});
      }else{
-       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
      }
     return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){
