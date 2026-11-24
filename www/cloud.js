@@ -317,8 +317,10 @@ function refreshAdhesionsDisplay(){
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
       status:x.status||'pending', adminNote:x.adminNote||'',
       nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
-      dob:app.dob||'', phone:app.phone||'',
+      dob:app.dob||'', phone:app.phone||'', address:app.address||'',
       establishment:app.establishment||'', specialty:app.specialty||'',
+      service:app.service||'', serviceGst:app.serviceGst||'', unite:app.unite||'',
+      serviceHospitalier:app.serviceHospitalier||'',
       type:app.type||'first', reason:app.reason||'', date:app.date||'',
       signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
@@ -334,8 +336,10 @@ function refreshAdhesionsDisplay(){
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
       status:x.status||'pending', adminNote:x.adminNote||'',
       nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
-      dob:app.dob||'', phone:app.phone||'',
+      dob:app.dob||'', phone:app.phone||'', address:app.address||'',
       establishment:app.establishment||'', specialty:app.specialty||'',
+      service:app.service||'', serviceGst:app.serviceGst||'', unite:app.unite||'',
+      serviceHospitalier:app.serviceHospitalier||'',
       type:app.type||'renewal', reason:app.reason||'', date:app.date||'',
       signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
@@ -344,7 +348,19 @@ function refreshAdhesionsDisplay(){
       _isRenewal:true
     });
   });
-  hooks.setAdhesions(all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); }));
+  /* Tri du plus récent au plus ancien, puis dédoublonnage des renouvellements
+     par adhérent : plusieurs soumissions successives ne doivent pas produire
+     une avalanche de lignes identiques. On ne conserve que le renouvellement
+     le plus récent de chaque uid (le dossier initial reste affiché à part). */
+  all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  var seenRenewal={};
+  var deduped=all.filter(function(a){
+    if(!a._isRenewal) return true;
+    if(seenRenewal[a.uid]) return false;
+    seenRenewal[a.uid]=true;
+    return true;
+  });
+  hooks.setAdhesions(deduped);
 }
 
 function subscribeAdhesions(){
@@ -1426,6 +1442,20 @@ async function submitAdhesion(application,signature){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature est manquante.');
   if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
+  /* Un seul renouvellement en attente à la fois : évite l'accumulation de
+     dossiers identiques (une soumission par clic). */
+  if(clean.type==='renewal'){
+    try{
+      var pendSnap=await getDocs(collection(db,'adhesionRequests',uid,'renouvellements'));
+      var hasPending=pendSnap.docs.some(function(d){
+        return String((d.data()||{}).status||'')==='pending';
+      });
+      if(hasPending) throw new Error('Un renouvellement est déjà en attente de traitement.');
+    }catch(e){
+      if(e&&e.message&&e.message.indexOf('déjà en attente')>=0) throw e;
+      /* autre erreur de lecture : on n'empêche pas la soumission */
+    }
+  }
   var result = await runTransaction(db,async function(tx){
     var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
