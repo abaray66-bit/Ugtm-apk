@@ -1425,7 +1425,7 @@ async function submitAdhesion(application,signature){
           adminNote:'',
           createdAt:serverTimestamp(),
           updatedAt:serverTimestamp(),
-          renewalOf: existing.id,
+          renewalOf: uid,
           previousStatus: existing.status,
           previousApplication: existing.application,
           previousSignature: existing.signature,
