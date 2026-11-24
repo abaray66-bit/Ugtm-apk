@@ -4320,10 +4320,10 @@ save:`Enregistrer`,
 saved:`Informations enregistrées`,
 
 signOut:`Se déconnecter`,
-delData:`Supprimer mes données`,
-delConfirm:`Supprimer votre profil et vous déconnecter ? Cette action est définitive. Les signalements déjà envoyés restent conservés et peuvent contenir des éléments permettant de vous identifier.`,
+delData:`Supprimer mon compte`,
+delConfirm:`Supprimer définitivement votre compte UGTM ? Le profil, les notifications personnelles et les jetons de notification seront supprimés. Les dossiers d’adhésion et de renouvellement, leurs justificatifs officiels, les signalements et leurs pièces jointes sont conservés dans les archives syndicales et peuvent encore contenir des informations permettant de vous identifier.`, 
 
-deleted:`Données supprimées`,
+deleted:`Compte supprimé. Les archives syndicales sont conservées.`, 
  adminOpen:`Espace administrateur`,
  errPrefix:`Une erreur est survenue`,
  errWord:`erreur`,
@@ -5025,10 +5025,10 @@ save:`حفظ`,
 saved:`تم حفظ المعلومات`,
 
 signOut:`تسجيل الخروج`,
-delData:`حذف بياناتي`,
-delConfirm:`هل تريدون حذف ملفكم الشخصي وتسجيل الخروج؟ هذا الإجراء نهائي. ستظل التبليغات المرسلة محفوظة، وقد يتضمن محتواها معلومات تكشف هويتكم.`,
+delData:`حذف حسابي`, 
+delConfirm:`هل تريدون حذف حسابكم نهائياً؟ سيتم حذف الملف الشخصي والإشعارات الشخصية ورموز الإشعارات. ستظل ملفات الانخراط والتجديد ووثائقها الرسمية والتبليغات ومرفقاتها محفوظة في الأرشيف النقابي، وقد تتضمن معلومات تسمح بالتعرف على هويتكم.`, 
 
-deleted:`تم حذف البيانات`,
+deleted:`تم حذف الحساب. وسيظل الأرشيف النقابي محفوظاً.`, 
  adminOpen:`فضاء المسؤول`,
  errPrefix:`حدث خطأ`,
  errWord:`خطأ`,
@@ -7817,7 +7817,7 @@ $('meAdminLink').hidden=!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);
 // compte : son mandat est révocable par l'administrateur principal seul.
 // Le bouton est masqué ici et les règles Firestore refusent aussi la
 // suppression (cf. deleteAccount dans cloud.js).
-$('meDelLink').hidden=!!S.isSubAdmin;
+$('meDelLink').hidden=!!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);
 
 renderMeReports();
 refreshMyAdhesionStatus(false);
