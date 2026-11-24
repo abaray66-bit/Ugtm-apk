@@ -7829,15 +7829,21 @@ box.innerHTML='<p class="hint">'+t.meAdhesionLoading+'</p>';
 c.getAdhesionDoc(String(S.user.uid)).then(function(doc){
   if(!doc){box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';return;}
   var a=doc.application||{};
+  var renewal=doc._latestRenewal||{};
+  var showStatus = renewal.status ? renewal.status : doc.status;
+  var showType = (renewal.application&&renewal.application.type==='renewal')
+    ?t.meAdhesionRenewal
+    :(a.type==='renewal'?t.meAdhesionRenewal:t.meAdhesionFirst);
   function row(l,v){return '<div class="adhesion-info-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';}
   var html='<h3>'+t.meAdhesionTitle+'</h3>';
   html+=row(t.meAdhesionName,((a.nom||'')+' '+(a.prenom||'')).trim()||t.meAdhesionFallback);
-  html+=row(t.meAdhesionStatus,t['st_'+doc.status]||doc.status);
+  html+=row(t.meAdhesionStatus,t['st_'+showStatus]||showStatus);
   html+=row(t.meAdhesionCIN,a.cin||'—');
   html+=row(t.meAdhesionPhone,a.phone||'—');
   html+=row(t.meAdhesionProvince,provName(doc.province,'fr')||doc.province||'—');
-  html+=row(t.meAdhesionType,a.type==='renewal'?t.meAdhesionRenewal:t.meAdhesionFirst);
-  if(doc.status==='accepted')html+='<p class="hint ok">'+t.meAdhesionValidated+'</p>';
+  html+=row(t.meAdhesionType,showType);
+  if(showStatus==='accepted')html+='<p class="hint ok">'+t.meAdhesionValidated+'</p>';
+  if(renewal.status==='pending')html+='<p class="hint">Renouvellement en attente de validation administrative.</p>';
   box.innerHTML=html;
 }).catch(function(){
   box.textContent=t.meAdhesionError;

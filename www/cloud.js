@@ -1380,16 +1380,76 @@ async function submitAdhesion(application,signature){
     }
     if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
     if(isSanitaire&&existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
+    var renewalRef = null;
     if(existing){
-      /* NOUVELLE SOUMISSION (complément d'information ou renouvellement) :
-         la signature du responsable de la soumission précédente est
-         effacée. Le dossier repart avec UNE seule signature — celle de
-         l'adhérent — et la case du responsable à valider. */
-       tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,updatedAt:serverTimestamp()});
-     }else{
-       tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-     }
-    return {id:uid,status:'pending',completed:!!existing};
+      if(clean.type === 'renewal'){
+        /* RENOUVELLEMENT : historisation — on n'écrase PAS l'ancien dossier.
+           On crée un nouveau document de renouvellement dans la sous-collection
+           adhesionRequests/{uid}/renouvellements/{autoId}. L'ancien document
+           conserve ses signatures, validations et dates historiques. */
+        var renewalColl=collection(db,'adhesionRequests',uid,'renouvellements');
+        renewalRef=doc(renewalColl);
+        tx.set(renewalRef,{
+          uid:uid,
+          email:String(u.email||'').slice(0,254),
+          province:clean.province,
+          structureId:String(application.structureId||'').trim().slice(0,40),
+          espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),
+          sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',
+          district:String(application.district||'').trim().slice(0,40),
+          division:String(application.division||'').trim().slice(0,40),
+          serviceGst:String(application.serviceGst||'').trim().slice(0,120),
+          unite:String(application.unite||'').trim().slice(0,120),
+          serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),
+          rattachement:clean.rattachement,
+          directionPole:clean.directionPole,
+          divisionPole:clean.divisionPole,
+          servicePole:clean.servicePole,
+          directionAdmin:clean.directionAdmin,
+          divisionAdmin:clean.divisionAdmin,
+          serviceAdmin:clean.serviceAdmin,
+          directionStrategie:clean.divisionStrategie,
+          divisionStrategie:clean.divisionStrategie,
+          serviceStrategie:clean.serviceStrategie,
+          directionSI:clean.divisionSI,
+          divisionSI:clean.divisionSI,
+          serviceSI:clean.serviceSI,
+          directionSoins:clean.divisionSoins,
+          divisionSoins:clean.divisionSoins,
+          serviceSoins:clean.serviceSoins,
+          serviceAudit:clean.serviceAudit,
+          serviceRecherche:clean.serviceRecherche,
+          application:clean,
+          signature:sig,
+          status:'pending',
+          adminNote:'',
+          createdAt:serverTimestamp(),
+          updatedAt:serverTimestamp(),
+          renewalOf: existing.id,
+          previousStatus: existing.status,
+          previousApplication: existing.application,
+          previousSignature: existing.signature,
+          previousAdminSignature: existing.adminSignature,
+          previousSignedBy: existing.signedBy,
+          previousSignedAt: existing.signedAt,
+          previousStructureId: existing.structureId,
+          previousEspaceSanitaire: existing.espaceSanitaire,
+          previousSanitaryStructure: existing.sanitaryStructure,
+          previousDistrict: existing.district,
+          previousDivision: existing.division,
+          previousServiceGst: existing.serviceGst,
+          previousUnite: existing.unite,
+          previousServiceHospitalier: existing.serviceHospitalier,
+          previousRattachement: existing.rattachement
+        });
+      } else {
+        /* Complément d'information : update du dossier existant. */
+        tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,updatedAt:serverTimestamp()});
+      }
+    } else {
+      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    }
+     return {id:uid,status:'pending',completed:!!existing, renewalId: (clean.type==='renewal'&&existing)?renewalRef.id:null};
   }).then(async function(result){
     /* Le formulaire d'adhésion est la saisie de
        référence du téléphone (le formulaire de profil
@@ -1821,7 +1881,20 @@ async function getAdhesionDoc(uid){
   var snap=await getDoc(doc(db,'adhesionRequests',String(uid)));
   /* id = identifiant du document Firestore : c'est la référence unique
      et la provenance du dossier, affichée sur le PDF officiel. */
-  return snap.exists()?Object.assign({},snap.data(),{id:snap.id}):null;
+  if(!snap.exists())return null;
+  var doc=Object.assign({},snap.data(),{id:snap.id});
+  /* Chercher le dernier renouvellement en cours (pending / needs_completion)
+     dans la sous-collection adhesionRequests/{uid}/renouvellements. */
+  try{
+    var coll=collection(db,'adhesionRequests',String(uid),'renouvellements');
+    var q=query(coll, where('status','in',['pending','needs_completion']), orderBy('createdAt','desc'), limit(1));
+    var renewalSnap=await getDocs(q);
+    if(!renewalSnap.empty){
+      var r=renewalSnap.docs[0];
+      doc._latestRenewal=Object.assign({},r.data(),{id:r.id});
+    }
+  }catch(e){/* sous-collection absente ou vide : on ignore */}
+  return doc;
 }
 /* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
    L'adhérent est identifié directement, sans passer par un code technique. */

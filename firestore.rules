@@ -994,6 +994,59 @@ service cloud.firestore {
     }
 
     // ==========================================================
+    // RENOUVELLEMENTS D'ADHÉSION (historisation)
+    // Chaque renouvellement crée un nouveau document dans la
+    // sous-collection adhesionRequests/{uid}/renouvellements/{docId}.
+    // L'adhérent propriétaire peut créer un renouvellement ; l'ancien
+    // dossier (adhesionRequests/{uid}) reste intact avec ses signatures,
+    // validations et dates historiques.
+    match /adhesionRequests/{uid}/renouvellements/{docId} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == uid)
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
+
+      allow create: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasAll([
+          'uid', 'email', 'province', 'application', 'signature',
+          'status', 'adminNote', 'createdAt', 'updatedAt',
+          'renewalOf'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'province', 'application', 'signature',
+          'status', 'adminNote', 'createdAt', 'updatedAt',
+          'structureId', 'espaceSanitaire', 'sanitaryStructure', 'district', 'division',
+          'serviceGst', 'unite', 'serviceHospitalier',
+          'rattachement', 'directionPole', 'divisionPole', 'servicePole',
+          'directionAdmin', 'divisionAdmin', 'serviceAdmin',
+          'directionStrategie', 'divisionStrategie', 'serviceStrategie',
+          'directionSI', 'divisionSI', 'serviceSI',
+          'directionSoins', 'divisionSoins', 'serviceSoins',
+          'serviceAudit', 'serviceRecherche',
+          'renewalOf',
+          'previousStatus', 'previousApplication', 'previousSignature',
+          'previousAdminSignature', 'previousSignedBy', 'previousSignedAt',
+          'previousStructureId', 'previousEspaceSanitaire', 'previousSanitaryStructure',
+          'previousDistrict', 'previousDivision', 'previousServiceGst',
+          'previousUnite', 'previousServiceHospitalier', 'previousRattachement'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.adminNote == ''
+        && request.resource.data.application.type == 'renewal'
+        && request.resource.data.application.reason.size() > 0
+        && okText(request.resource.data.email, 254)
+        && request.resource.data.signature is string
+        && request.resource.data.signature.size() > 0
+        && request.resource.data.signature.size() <= 20000
+        && adhesionAppOk(request.resource.data.application,
+                         request.resource.data.province);
+
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================================
     // PDF SIGNÉ DES DEMANDES D'ADHÉSION
     // Pièce jointe du dossier : refusée si aucune demande n'existe
     // pour ce compte, ou si sa province ne correspond pas.
