@@ -1078,7 +1078,7 @@ jobs:
             | grep -i "SHA-256 digest:" \
             | head -1 \
             | sed 's/.*SHA-256 digest:[ ]*//i' \
-            | tr -d '[:space:]' \
+            | tr -d '[:space:]:' \
             | tr '[:lower:]' '[:upper:]')"
 
           if [ -z "$APK_CERT_FP" ]; then
@@ -1117,7 +1117,7 @@ jobs:
             | grep -i "SHA256:" \
             | head -1 \
             | sed 's/.*SHA256:[ ]*//i' \
-            | tr -d '[:space:]' \
+            | tr -d '[:space:]:' \
             | tr '[:lower:]' '[:upper:]')"
 
           if [ -z "$AAB_CERT_FP" ]; then
