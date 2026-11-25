@@ -12,6 +12,8 @@ firebase-debug.*.log
 *serviceAccount*.json
 google-services.json
 google-services-info.plist
+*.keystore
+*.jks
 
 # Système / éditeurs
 .DS_Store
