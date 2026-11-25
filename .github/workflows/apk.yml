@@ -19,8 +19,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-    contents: read
-    actions: read
+      contents: read
+      actions: read
 
     steps:
 
@@ -1040,7 +1040,7 @@ jobs:
 
       - name: Vérifier APK
         run: |
-          set -e
+          set -euo pipefail
 
           APK="android/app/build/outputs/apk/release/app-release.apk"
 
@@ -1071,10 +1071,23 @@ jobs:
             | sort -V \
             | tail -1)
 
-          "$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify \
-            --verbose \
-            --print-certs \
-            "$APK"
+          APK_CERTS="$("$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner" verify --print-certs "$APK")"
+          echo "$APK_CERTS"
+
+          APK_CERT_FP="$(echo "$APK_CERTS" \
+            | grep -i "SHA-256 digest:" \
+            | head -1 \
+            | sed 's/.*SHA-256 digest:[ ]*//i' \
+            | tr -d '[:space:]' \
+            | tr '[:lower:]' '[:upper:]')"
+
+          if [ -z "$APK_CERT_FP" ]; then
+            echo "ERREUR : empreinte certificat APK introuvable."
+            exit 1
+          fi
+
+          echo "APK_CERT_FP=$APK_CERT_FP" >> "$GITHUB_ENV"
+          echo "Empreinte certificat APK extraite."
 
       # ==========================================================
       # VERIFICATION AAB
@@ -1082,7 +1095,7 @@ jobs:
 
       - name: Vérifier AAB
         run: |
-          set -e
+          set -euo pipefail
 
           AAB="android/app/build/outputs/bundle/release/app-release.aab"
 
@@ -1095,7 +1108,47 @@ jobs:
           echo "AAB GENERE"
           ls -lh "$AAB"
 
-          jarsigner -verify -verbose -certs "$AAB" | head -20
+          jarsigner -verify -verbose "$AAB"
+
+          AAB_CERTS="$(keytool -printcert -jarfile "$AAB")"
+          echo "$AAB_CERTS"
+
+          AAB_CERT_FP="$(echo "$AAB_CERTS" \
+            | grep -i "SHA256:" \
+            | head -1 \
+            | sed 's/.*SHA256:[ ]*//i' \
+            | tr -d '[:space:]' \
+            | tr '[:lower:]' '[:upper:]')"
+
+          if [ -z "$AAB_CERT_FP" ]; then
+            echo "ERREUR : empreinte certificat AAB introuvable."
+            exit 1
+          fi
+
+          echo "AAB_CERT_FP=$AAB_CERT_FP" >> "$GITHUB_ENV"
+          echo "Empreinte certificat AAB extraite."
+
+      # ==========================================================
+      # COMPARAISON EMPREINTES CERTIFICATS APK ET AAB
+      # ==========================================================
+
+      - name: Comparer empreintes certificats APK et AAB
+        run: |
+          set -euo pipefail
+
+          if [ -z "${APK_CERT_FP:-}" ] || [ -z "${AAB_CERT_FP:-}" ]; then
+            echo "ERREUR : empreinte certificat manquante (APK ou AAB)."
+            exit 1
+          fi
+
+          if [ "$APK_CERT_FP" != "$AAB_CERT_FP" ]; then
+            echo "ERREUR : empreintes certificat APK et AAB différentes."
+            echo "APK : $APK_CERT_FP"
+            echo "AAB : $AAB_CERT_FP"
+            exit 1
+          fi
+
+          echo "Empreintes certificat identiques : $APK_CERT_FP"
 
       - name: Calculer SHA-256 de l'APK
         shell: bash
@@ -1141,6 +1194,7 @@ jobs:
       # ==========================================================
 
       - name: Vérifier si la release existe
+        if: false
         id: release_check
         run: |
           set -e
@@ -1162,6 +1216,7 @@ jobs:
       # ==========================================================
 
       - name: Créer la release GitHub
+        if: false
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.UGTM_VERSION_NAME }}
@@ -1181,6 +1236,7 @@ jobs:
       # ==========================================================
 
       - name: Publication OTA automatique (update.json)
+        if: false
         run: |
           set -euo pipefail
 
