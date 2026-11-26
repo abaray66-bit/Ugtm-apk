@@ -12887,7 +12887,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
         if(serviceHosp)serviceHosp.value='';
         ['district','division','etab','service','unite'].forEach(function(k){show(k,false);});
       }
-      function setProvince(v){adhProvinceValue=(v&&typeof calcProvince==='function')?(calcProvince('dgaSanitaire',v)||''):'';}
+      function setProvince(v){adhProvinceValue=(v&&typeof calcProvince==='function')?(calcProvince('dgaSanitaire',v)||''):'';if(!adhProvinceValue&&GST_DATA.districts&&GST_DATA.districts[v])adhProvinceValue=v;}
       function setServices(items){
         fill(service,items);show('service',!!(items&&items.length));
         fill(unite,[]);show('unite',false);
