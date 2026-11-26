@@ -8628,9 +8628,7 @@ function renderAdminAdhesions(){
     s==='accepted'?t.admStatusValidated:
     s==='refused'?t.admStatusRefused:t.admStatusPending;
   }
-var _mainDocs=list.filter(function(a){return!a._isRenewal;});
-var _renewalDocs=list.filter(function(a){return a._isRenewal;});
-function _renderAdhesionRow(a){
+el.innerHTML=list.length?list.map(function(a){
       var docId = adhesionDocId(a);
       var actions='<button type="button" class="btn ghost small" data-adm-act="viewAdhesion" data-id="'+esc(docId)+'">'+esc(t.admViewDossier)+'</button>';
      if(a.status==='pending'||a.status==='needs_completion'){
@@ -8672,17 +8670,7 @@ function _renderAdhesionRow(a){
      (head?'<span>'+esc(head)+'</span>':'')+
      '<div class="mi-grid">'+rows+'</div>'+
      '</div><div class="mact">'+actions+'</div></li>';
-   }
-  var _parts=[];
-  if(_mainDocs.length){
-    _parts.push('<li class="rgroup" style="border-top:none;padding-top:0">Dossiers d\'adhésion</li>');
-    _parts.push(_mainDocs.map(_renderAdhesionRow).join(''));
-  }
-  if(_renewalDocs.length){
-    _parts.push('<li class="rgroup" style="border-top:none">Renouvellements en attente</li>');
-    _parts.push(_renewalDocs.map(_renderAdhesionRow).join(''));
-  }
-  el.innerHTML=_parts.length?_parts.join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
+   }).join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
  }
 
 /* =========================
@@ -8861,18 +8849,6 @@ function openAdhesionDossier(id,canSign){
   c.getAdhesionDoc(id).then(function(doc){
     if(signModalId!==id)return;
     renderAdhesionDossierInfo(doc);
-    /* Dossier déjà accepté : on ne peut pas re-signer. On masque le
-       pavé de signature du responsable et on informe clairement. */
-    if(signModalCanSign && doc && doc.status==='accepted'){
-      var area=$('admSignArea');
-      var confirmBtn=$('admSignConfirm');
-      if(area)area.hidden=true;
-      if(confirmBtn)confirmBtn.hidden=true;
-      if(info){
-        info.innerHTML+='<p class="hint" style="color:var(--alert);margin-top:8px">Ce dossier est déjà signé et validé. Aucune nouvelle signature n\'est nécessaire.</p>';
-      }
-      signModalCanSign=false;
-    }
   }).catch(function(){
     if(signModalId!==id)return;
     if(info)info.innerHTML='<p class="hint">'+esc(T().admDossierUnavailable)+'</p>';
@@ -8908,16 +8884,16 @@ function renderAdhesionDossierInfo(doc){
     (doc.signature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignMember)+'</span><img src="'+esc(doc.signature)+'" alt="'+esc(t.admDocSignMember)+'"></div>'
       :'')+
-    /* Signature responsable : une seule trace s'affiche. La signature
-       du responsable (adminSignature) est affichée en priorité sur la
-       trace de validation locale pour éviter l'affichage en double. */
-    var signAdmin = doc.status==='accepted' && doc.adminSignature;
-    var signLocal = doc.status==='accepted' && doc.validatedByRole==='subadminLocal' && doc.validatedBy;
-    (signAdmin
+    /* La signature du responsable n'est affichée que pour un dossier
+       VALIDÉ : une nouvelle soumission (renouvellement) repart sans
+       l'ancienne signature — deux cases au total, pas trois. */
+    (doc.status==='accepted'&&doc.adminSignature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignAdmin)+'</span><img src="'+esc(doc.adminSignature)+'" alt="'+esc(t.admDocSignAdmin)+'"></div>'
-      : signLocal
-        ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignLocal)+': '+esc(doc.validatedBy)+' ('+fmtDateTimeFr(doc.validatedAt)+')</span></div>'
-        :'');
+      :'')+
+    /* Validation locale : afficher les traces validatedBy/validatedAt/validatedByRole */
+    (doc.status==='accepted'&&doc.validatedByRole==='subadminLocal'&&doc.validatedBy
+      ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignLocal)+': '+esc(doc.validatedBy)+' ('+fmtDateTimeFr(doc.validatedAt)+')</span></div>'
+      :'');
 }
 
 function closeSignAdhesionModal(){
