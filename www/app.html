@@ -13591,10 +13591,16 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           var service=document.getElementById('adhServiceGst');
           var essp=document.getElementById('adhEsspSelect');
           var other=document.getElementById('adhEtabOther');
+          /* P0.2 : branche sanitaire — repli sur la structure (établissement réel)
+             uniquement si aucun établissement plus précis n'est saisi. */
+          var rattle=document.getElementById('adhRattachement');
+          var espace=document.getElementById('adhEspaceSanitaire');
+          var isSanitaire=!!(rattle&&rattle.value==='dgaSanitaire');
+          var fallback=(isSanitaire&&espace)?espace.value:'';
           if(division&&division.value==='Division sanitaire'){
             if(sel&&sel.value==='hospital_provincial')return service?service.value:'';
             if(sel&&sel.value==='proximity_group')return (essp&&essp.value)||(other&&other.value.trim())||'';
-            return '';
+            return fallback;
           }
           if(sel && sel.value && sel.value!=='other')return sel.value;
           if(sel && sel.value==='other'){
@@ -13605,7 +13611,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
           if(dirPole && dirPole.value)return dirPole.value;
           var dirAdmin=document.getElementById('adhDirectionAdmin');
           if(dirAdmin && dirAdmin.value)return dirAdmin.value;
-          return '';
+          return fallback;
         })(),
         service:(function(){
           var division=document.getElementById('adhDivision');
