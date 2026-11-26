@@ -349,19 +349,26 @@ function refreshAdhesionsDisplay(){
       _isRenewal:true
     });
   });
-  /* Tri du plus récent au plus ancien, puis dédoublonnage des renouvellements
-     par adhérent : plusieurs soumissions successives ne doivent pas produire
-     une avalanche de lignes identiques. On ne conserve que le renouvellement
-     le plus récent de chaque uid (le dossier initial reste affiché à part). */
-  all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  /* Tri: pending/needs_completion first, then by date descending. */
+  all.sort(function(a,b){
+    var waitingA = (a.status==='pending'||a.status==='needs_completion')?1:0;
+    var waitingB = (b.status==='pending'||b.status==='needs_completion')?1:0;
+    if(waitingB!==waitingA) return waitingB-waitingA;
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+  /* Renewals already processed (accepted/refused) are excluded from the
+     pending renewals list: once signed, they disappear from that section.
+     Only renewals pending processing remain. */
   var seenRenewal={};
   var deduped=all.filter(function(a){
     if(!a._isRenewal) return true;
+    if(a.status!=='pending' && a.status!=='needs_completion') return false;
     if(seenRenewal[a.uid]) return false;
     seenRenewal[a.uid]=true;
     return true;
   });
   hooks.setAdhesions(deduped);
+
 }
 
 function subscribeAdhesions(){
