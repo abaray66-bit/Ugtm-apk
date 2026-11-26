@@ -4104,6 +4104,7 @@ admSignMissing:`Veuillez signer avant de valider l’adhésion.`,
 admSignSending:`Enregistrement de la signature…`,
 admSignDone:`Adhésion signée et validée.`,
 admSignErr:`Impossible d’enregistrer la signature.`,
+admSignNoLongerPending:`Ce dossier a déjà été traité. Statut actuel : %1. Fermez cette fenêtre et vérifiez la liste actualisée.`,
 admSignedBadge:`Signée et validée électroniquement`,
   admPdfGenerating:`Génération du PDF…`,
   admPdfDone:`PDF généré et enregistré sur l’appareil.`,
@@ -4751,6 +4752,7 @@ admSignMissing:`يرجى التوقيع قبل المصادقة على الان�
 admSignSending:`جار تسجيل التوقيع…`,
 admSignDone:`تم توقيع الانخراط والمصادقة عليه.`,
 admSignErr:`تعذر تسجيل التوقيع.`,
+admSignNoLongerPending:`تمت معالجة هذا الملف بالفعل. الحالة الحالية: %1. أغلقوا هذه النافذة وتحققوا من القائمة المحدّثة.`,
 admSignedBadge:`تم التوقيع والمصادقة إلكترونياً`,
   admPdfGenerating:`جار إنشاء ملف PDF…`,
   admPdfDone:`تم إنشاء ملف PDF وتسجيله على الجهاز.`,
@@ -8836,6 +8838,24 @@ function openAdhesionDossier(id,canSign){
   if(!c||!c.getAdhesionDoc){if(info)info.innerHTML='';return;}
   c.getAdhesionDoc(id).then(function(doc){
     if(signModalId!==id)return;
+    /* Le statut de la liste peut être devenu obsolète entre le clic et
+       l'ouverture du dossier (validation par un autre responsable).
+       Ne jamais laisser le pavé de signature ouvert si le document
+       relu dans Firestore n'est plus en attente. */
+    if(signModalCanSign && (!doc || (doc.status!=='pending' && doc.status!=='needs_completion'))){
+      signModalCanSign=false;
+      if(area)area.hidden=true;
+      if(confirmBtn)confirmBtn.hidden=true;
+      if(doc)renderAdhesionDossierInfo(doc);
+      if(info){
+        var statusLabel=doc&&doc.status==='accepted'?t.admStatusValidated:
+          doc&&doc.status==='refused'?t.admStatusRefused:
+          doc&&doc.status==='needs_completion'?t.admStatusCompletion:
+          t.admStatusPending;
+        info.innerHTML+='<p class="hint">'+esc(String(t.admSignNoLongerPending||'Ce dossier a déjà été traité. Statut actuel : %1.').replace('%1',statusLabel))+'</p>';
+      }
+      return;
+    }
     renderAdhesionDossierInfo(doc);
   }).catch(function(){
     if(signModalId!==id)return;
