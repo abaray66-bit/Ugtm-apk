@@ -8674,15 +8674,16 @@ function _renderAdhesionRow(a){
  '</div><div class="mact">'+actions+'</div></li>';
 }
 var _parts=[];
-if(_mainDocs.length){
-  _parts.push('<li class="rgroup" style="border-top:none;padding-top:0">Dossiers d\'adhésion</li>');
-  _parts.push(_mainDocs.map(_renderAdhesionRow).join(''));
-}
 if(_renewalDocs.length){
-  _parts.push('<li class="rgroup" style="border-top:none">Renouvellements en attente</li>');
+  _parts.push('<li class="rgroup" style="border-top:none;padding-top:0">Renouvellements en attente</li>');
   _parts.push(_renewalDocs.map(_renderAdhesionRow).join(''));
 }
+if(_mainDocs.length){
+  _parts.push('<li class="rgroup" style="border-top:none">Dossiers d\'adhésion</li>');
+  _parts.push(_mainDocs.map(_renderAdhesionRow).join(''));
+}
 el.innerHTML=_parts.length?_parts.join(''):'<li class="empty">'+t.admAdhesionsEmpty+'</li>';
+
 
  }
 
