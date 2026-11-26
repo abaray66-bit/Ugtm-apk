@@ -99,7 +99,8 @@ function normalizeMember(d, uid){
     adminProvince: d.adminProvince || d.province || '',
     adminStructure: d.adminStructure || '',
     createdAt: ms(d.createdAt),
-    activatedAt: ms(d.activatedAt)
+    activatedAt: ms(d.activatedAt),
+    adhesionFormRequestedAt: ms(d.adhesionFormRequestedAt)
   };
 }
 
@@ -2404,12 +2405,15 @@ var admin = {
       var member = memberSnap.data() || {};
       if (member.status !== 'pending')
         throw new Error('La demande concerne uniquement un compte en attente.');
+      if (member.adhesionFormRequestedAt) return true;
       var reqSnap = await getDoc(doc(db, 'adhesionRequests', String(uid || '')));
       if (reqSnap.exists())
         throw new Error('Un dossier d’adhésion existe déjà : utilisez le traitement des dossiers.');
       var title = 'Veuillez compléter votre formulaire d’adhésion';
       var body = 'Votre compte est créé, mais aucun dossier d’adhésion n’a été reçu. Ouvrez Mon espace puis complétez le formulaire d’adhésion.';
-      await addDoc(collection(db, 'notifications', String(uid), 'items'), {
+      var notificationRef = doc(collection(db, 'notifications', String(uid), 'items'));
+      var batch = writeBatch(db);
+      batch.set(notificationRef, {
         title: title,
         body: body,
         type: 'adhesion_request',
@@ -2420,6 +2424,8 @@ var admin = {
         read: false,
         createdAt: serverTimestamp()
       });
+      batch.update(memberRef, { adhesionFormRequestedAt: serverTimestamp() });
+      await batch.commit();
       try {
         if (typeof window.cloudSendPush === 'function') {
           window.cloudSendPush('adhesion_request', title, body, String(uid), String(uid));
