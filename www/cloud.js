@@ -357,6 +357,11 @@ function refreshAdhesionsDisplay(){
   var seenRenewal={};
   var deduped=all.filter(function(a){
     if(!a._isRenewal) return true;
+    /* Les renouvellements déjà traités (accepted/refused) ne doivent pas
+       encombrer la section « Renouvellements en attente » : une fois
+       validés, ils disparaissent de cette liste. Seuls les renouvellements
+       en attente de traitement y restent. */
+    if(a.status!=='pending' && a.status!=='needs_completion') return false;
     if(seenRenewal[a.uid]) return false;
     seenRenewal[a.uid]=true;
     return true;
