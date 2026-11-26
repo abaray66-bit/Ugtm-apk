@@ -2394,6 +2394,42 @@ var admin = {
     },
 
 
+  requestAdhesionForm:
+    async function(uid){
+      if (!session.user || !session.isAdmin)
+        throw new Error('Action réservée à l’administrateur principal.');
+      var memberRef = doc(db, 'members', String(uid || ''));
+      var memberSnap = await getDoc(memberRef);
+      if (!memberSnap.exists()) throw new Error('Membre introuvable.');
+      var member = memberSnap.data() || {};
+      if (member.status !== 'pending')
+        throw new Error('La demande concerne uniquement un compte en attente.');
+      var reqSnap = await getDoc(doc(db, 'adhesionRequests', String(uid || '')));
+      if (reqSnap.exists())
+        throw new Error('Un dossier d’adhésion existe déjà : utilisez le traitement des dossiers.');
+      var title = 'Veuillez compléter votre formulaire d’adhésion';
+      var body = 'Votre compte est créé, mais aucun dossier d’adhésion n’a été reçu. Ouvrez Mon espace puis complétez le formulaire d’adhésion.';
+      await addDoc(collection(db, 'notifications', String(uid), 'items'), {
+        title: title,
+        body: body,
+        type: 'adhesion_request',
+        targetType: 'adhesion_request',
+        targetId: String(uid),
+        authorUid: session.user.uid,
+        province: String(member.prov || ''),
+        read: false,
+        createdAt: serverTimestamp()
+      });
+      try {
+        if (typeof window.cloudSendPush === 'function') {
+          window.cloudSendPush('adhesion_request', title, body, String(uid), String(uid));
+        }
+      } catch(pushError) {
+        console.warn('Notification push de complément non envoyée:', pushError);
+      }
+      return true;
+    },
+
   setStatus:
     async function(uid, status){
       var ref = doc(db, 'members', uid);
