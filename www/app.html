@@ -8862,15 +8862,17 @@ function openAdhesionDossier(id,canSign){
   c.getAdhesionDoc(id).then(function(doc){
     if(signModalId!==id)return;
     renderAdhesionDossierInfo(doc);
-    /* Dossier déjà accepté : on ne peut pas re-signer. On masque le
-       pavé de signature du responsable et on informe clairement. */
-    if(signModalCanSign && doc && doc.status==='accepted'){
+    /* Dossier déjà traité (accepted / refused / autre) : on ne peut pas
+       re-signer. On masque le pavé de signature du responsable et on
+       informe clairement. Seuls pending et needs_completion sont signables. */
+    var signable = (doc && (doc.status==='pending' || doc.status==='needs_completion'));
+    if(signModalCanSign && !signable){
       var area=$('admSignArea');
       var confirmBtn=$('admSignConfirm');
       if(area)area.hidden=true;
       if(confirmBtn)confirmBtn.hidden=true;
       if(info){
-        info.innerHTML+='<p class="hint" style="color:var(--alert);margin-top:8px">Ce dossier est déjà signé et validé. Aucune nouvelle signature n\'est nécessaire.</p>';
+        info.innerHTML+='<p class="hint" style="color:var(--alert);margin-top:8px">Ce dossier est déjà traité ('+(doc&&doc.status?doc.status:'inconnu')+'). Aucune nouvelle signature n\'est nécessaire.</p>';
       }
       signModalCanSign=false;
     }
