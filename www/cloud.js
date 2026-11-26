@@ -2407,7 +2407,12 @@ var admin = {
       /* Avant toute activation, exiger une adhésion validée (sauf admin général, sous-admin provincial ou sous-admin local pour création directe) */
       if (status === 'active' && prior.status !== 'active'){
         var callerRole = (session.member && session.member.role) || '';
-        var isAdmin = callerRole === 'admin' || callerRole === 'subadmin' || callerRole === 'subadminLocal';
+        /* Le statut d'administrateur général est porté par session.isAdmin
+           (liste config/admins + liste de secours data.js), pas nécessairement
+           par members/{uid}.role. Les sous-admins sont également identifiés
+           par les drapeaux de session établis après lecture du profil actif. */
+        var isAdmin = !!(session.isAdmin || session.isSubAdmin || session.isSubAdminLocal) ||
+          callerRole === 'admin' || callerRole === 'subadmin' || callerRole === 'subadminLocal';
         if (!isAdmin) {
           var reqRef = doc(db, 'adhesionRequests', String(uid));
           var reqSnap = await getDoc(reqRef);
