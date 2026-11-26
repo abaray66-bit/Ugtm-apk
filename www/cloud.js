@@ -349,23 +349,14 @@ function refreshAdhesionsDisplay(){
       _isRenewal:true
     });
   });
-  /* Tri : les dossiers en attente (pending / needs_completion) passent en
-     priorité en haut de la liste pour être traités en premier, puis tri par
-     date décroissante (le plus récent d'abord) au sein de chaque groupe. */
-  all.sort(function(a,b){
-    var waitingA = (a.status==='pending'||a.status==='needs_completion')?1:0;
-    var waitingB = (b.status==='pending'||b.status==='needs_completion')?1:0;
-    if(waitingB!==waitingA) return waitingB-waitingA;
-    return (b.createdAt||0)-(a.createdAt||0);
-  });
+  /* Tri du plus récent au plus ancien, puis dédoublonnage des renouvellements
+     par adhérent : plusieurs soumissions successives ne doivent pas produire
+     une avalanche de lignes identiques. On ne conserve que le renouvellement
+     le plus récent de chaque uid (le dossier initial reste affiché à part). */
+  all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
   var seenRenewal={};
   var deduped=all.filter(function(a){
     if(!a._isRenewal) return true;
-    /* Les renouvellements déjà traités (accepted/refused) ne doivent pas
-       encombrer la section « Renouvellements en attente » : une fois
-       validés, ils disparaissent de cette liste. Seuls les renouvellements
-       en attente de traitement y restent. */
-    if(a.status!=='pending' && a.status!=='needs_completion') return false;
     if(seenRenewal[a.uid]) return false;
     seenRenewal[a.uid]=true;
     return true;
