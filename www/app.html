@@ -4447,6 +4447,7 @@ deleted:`Données supprimées`,
   admMemFilterBlocked:`Suspendus`,
   admMemFilterAll:`Tous`,
   admMemValidate:`Valider`,
+  admMemRequestForm:`Demander de remplir le formulaire`,
   admMemSuspend:`Suspendre`,
   admMemReactivate:`Réactiver`,
   admMemSetSubAdmin:`Nommer sous-admin`,
@@ -5149,6 +5150,7 @@ deleted:`تم حذف البيانات`,
   admMemFilterBlocked:`موقوفون`,
   admMemFilterAll:`الكل`,
   admMemValidate:`المصادقة`,
+  admMemRequestForm:`طلب استكمال استمارة الانخراط`,
   admMemSuspend:`تجميد`,
   admMemReactivate:`إعادة التنشيط`,
   admMemSetSubAdmin:`تعيين مسؤول فرعي`,
@@ -7941,8 +7943,14 @@ var uid=esc(m.uid);
 
 var acts='';
 
-if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin))
+if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin)){
+var hasAdhesionRequest=(S.adhesions||[]).some(function(r){return String(r.uid||r.id)===String(m.uid);});
+if(S.isAdmin&&!hasAdhesionRequest){
+acts+='<button type="button" class="btn primary small" data-adm-act="requestAdhesionForm" data-uid="'+uid+'">'+esc(t.admMemRequestForm)+'</button>';
+}else{
 acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">'+esc(t.admMemValidate)+'</button>';
+}
+}
 
 if(S.isAdmin&&m.status==='active')
 acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">'+esc(t.admMemSuspend)+'</button>';
@@ -10817,6 +10825,14 @@ c.admin.removeResponsable(uid)
 .then(function(){toast(t.admToastRespRemoved);})
 .catch(showError);
 
+}
+
+else if(a==='requestAdhesionForm'&&S.isAdmin&&m){
+if(!c.admin.requestAdhesionForm){toast('Fonction de demande de formulaire indisponible.',4500);return;}
+if(!window.confirm('Demander à cet utilisateur de compléter son formulaire d’adhésion ?'))return;
+c.admin.requestAdhesionForm(uid)
+.then(function(){toast('Demande envoyée à l’utilisateur.');})
+.catch(showError);
 }
 
 else if(a==='activate'&&(S.isAdmin||S.isSubAdmin)&&m){
