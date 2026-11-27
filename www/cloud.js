@@ -1563,8 +1563,6 @@ async function submitAdhesion(application,signature){
       try {
         await updateDoc(doc(db,'members',uid), {
           name: String((clean.prenom||'')+' '+(clean.nom||'')).trim(),
-          prov: String(clean.province||'').trim(),
-          adminProvince: String(clean.province||'').trim(),
           updatedAt: serverTimestamp()
         });
       } catch(e){ console.warn('syncMemberProvince:', e); }
