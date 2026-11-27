@@ -4447,6 +4447,8 @@ deleted:`Données supprimées`,
   admMemFilterBlocked:`Suspendus`,
   admMemFilterAll:`Tous`,
   admMemValidate:`Valider`,
+  admMemRequestForm:`Demander de remplir le formulaire`,
+  admMemRequestSent:`Demande envoyée`,
   admMemSuspend:`Suspendre`,
   admMemReactivate:`Réactiver`,
   admMemSetSubAdmin:`Nommer sous-admin`,
@@ -5149,6 +5151,8 @@ deleted:`تم حذف البيانات`,
   admMemFilterBlocked:`موقوفون`,
   admMemFilterAll:`الكل`,
   admMemValidate:`المصادقة`,
+  admMemRequestForm:`طلب استكمال استمارة الانخراط`,
+  admMemRequestSent:`تم إرسال الطلب`,
   admMemSuspend:`تجميد`,
   admMemReactivate:`إعادة التنشيط`,
   admMemSetSubAdmin:`تعيين مسؤول فرعي`,
@@ -7941,8 +7945,16 @@ var uid=esc(m.uid);
 
 var acts='';
 
-if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin))
+if(m.status==='pending'&&(S.isAdmin||S.isSubAdmin)){
+var hasAdhesionRequest=(S.adhesions||[]).some(function(r){return String(r.uid||r.id)===String(m.uid);});
+if(S.isAdmin&&!hasAdhesionRequest&&!m.adhesionFormRequestedAt){
+acts+='<button type="button" class="btn primary small" data-adm-act="requestAdhesionForm" data-uid="'+uid+'">'+esc(t.admMemRequestForm)+'</button>';
+}else if(S.isAdmin&&!hasAdhesionRequest&&m.adhesionFormRequestedAt){
+acts+='<span class="tag statut">'+esc(t.admMemRequestSent)+'</span>';
+}else{
 acts+='<button type="button" class="btn primary small" data-adm-act="activate" data-uid="'+uid+'">'+esc(t.admMemValidate)+'</button>';
+}
+}
 
 if(S.isAdmin&&m.status==='active')
 acts+='<button type="button" class="btn ghost small" data-adm-act="block" data-uid="'+uid+'">'+esc(t.admMemSuspend)+'</button>';
@@ -10819,6 +10831,17 @@ c.admin.removeResponsable(uid)
 
 }
 
+else if(a==='requestAdhesionForm'&&S.isAdmin&&m){
+if(!c.admin.requestAdhesionForm){toast('Fonction de demande de formulaire indisponible.',4500);return;}
+if(!window.confirm('Demander à cet utilisateur de compléter son formulaire d’adhésion ?'))return;
+c.admin.requestAdhesionForm(uid)
+.then(function(){
+if(m){m.adhesionFormRequestedAt=Date.now();renderAdminMembers();}
+toast('Demande envoyée à l’utilisateur.');
+})
+.catch(showError);
+}
+
 else if(a==='activate'&&(S.isAdmin||S.isSubAdmin)&&m){
 
 c.admin.setStatus(
@@ -11639,7 +11662,7 @@ loadAppVersion();
 
 if(CLOUD_ON){
   console.log('[DIAG] cloud import start');
-  import('./cloud.js?v=105')
+  import('./cloud.js?v=106')
   .then(function(mod){
     console.log('[DIAG] cloud module loaded');
     return mod.init(
@@ -12930,98 +12953,47 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
             show('division',true);label('adhDivision','Division');
             fill(division,['Services directement rattachés à la direction','Division administrative','Division sanitaire']);
             division.onchange=function(){
-              fill(etab,[]);show('etab',false);
-              fill(service,[]);show('service',false);
-              fill(unite,[]);show('unite',false);
+              fill(etab,[]);show('etab',false);fill(unite,[]);show('unite',false);
               if(serviceHospWrap)serviceHospWrap.style.display='none';
-              if(serviceHosp)serviceHosp.value='';
-              if(essp){fill(essp,[]);essp.style.display='none';}
-              if(otherWrap)otherWrap.style.display='none';
-              if(otherText)otherText.value='';
               if(!division.value){setServices([]);return;}
-              if(division.value==='Services directement rattachés à la direction'||
-                 division.value==='Division administrative'){
-                setServices(espaceModel[division.value]||[]);
-                return;
+              if(division.value==='Services directement rattachés à la direction'){setServices(espaceModel[division.value]);return;}
+              if(division.value==='Division administrative'){setServices(espaceModel[division.value]);return;}
+              setServices(espaceModel['Division sanitaire']);
+              if(serviceHospWrap)serviceHospWrap.style.display='';
+              show('etab',true);label('adhEtablissement','Hôpital de proximité ou ESSP / EMS / structure d’appui');
+              var items=[];
+              if(typeof HOSP_LIST!=='undefined'){
+                HOSP_LIST.filter(function(h){return h.d===district.value||h.p===district.value;}).forEach(function(h){
+                  var category=h.c==='HP'?'Hôpital provincial':(h.c==='HPr'?'Hôpital de proximité':(h.c==='HR'?'Hôpital régional':h.c));
+                  items.push({value:'hosp_'+h.n.toLowerCase().replace(/[^a-z0-9]+/g,'_'),label:h.n+' — '+category});
+                });
               }
-
-              /* Division sanitaire : un sélecteur unique à cinq choix.
-                 Les niveaux complémentaires ne s'affichent qu'après le choix concerné. */
-              show('etab',true);
-              label('adhEtablissement','Service ou établissement sanitaire');
-              fill(etab,[
-                {value:'service_sante_publique',label:'Service de la santé publique'},
-                {value:'service_affaires_medicales',label:'Service des affaires médicales'},
-                {value:'service_soins_infirmiers',label:'Service des soins infirmiers'},
-                {value:'hospital_provincial',label:'Hôpital provincial du district'},
-                {value:'proximity_group',label:'Hôpital de proximité / ESSP / EMS / structure d’appui'}
-              ]);
+              items.push({value:'other',label:'ESSP / EMS / structure d’appui'});
+              fill(etab,items);
               etab.onchange=function(){
-                fill(service,[]);show('service',false);
-                fill(unite,[]);show('unite',false);
-                if(serviceHospWrap)serviceHospWrap.style.display='none';
-                if(serviceHosp)serviceHosp.value='';
                 if(essp){fill(essp,[]);essp.style.display='none';}
                 if(otherWrap)otherWrap.style.display='none';
                 if(otherText)otherText.value='';
-
-                if(etab.value==='hospital_provincial'){
-                  label('adhServiceGst','Hôpital provincial du district');
-                  var provincial=(typeof HOSP_LIST!=='undefined'?HOSP_LIST:[])
-                    .filter(function(h){return h.d===district.value&&h.c==='HP';})
-                    .map(function(h){return {value:h.n,label:h.n};});
-                  fill(service,provincial);show('service',true);
-                  service.onchange=function(){
-                    if(serviceHospWrap)serviceHospWrap.style.display=service.value?'':'none';
-                    if(serviceHosp)serviceHosp.value='';
-                  };
-                  return;
-                }
-
-                if(etab.value==='proximity_group'){
-                  label('adhServiceGst','Type de structure');
-                  fill(service,[
-                    {value:'Hôpital de proximité',label:'Hôpital de proximité'},
-                    {value:'Structure d’appui',label:'Structure d’appui'},
-                    {value:'EMS',label:'EMS'},
-                    {value:'ESSP',label:'ESSP'}
-                  ]);
-                  show('service',true);
-                  service.onchange=function(){
-                    if(essp){fill(essp,[]);essp.style.display='none';}
+                if(etab.value==='other'){
+                  if(serviceHospWrap)serviceHospWrap.style.display='none';
+                  if(serviceHosp)serviceHosp.value='';
+                  if(essp&&typeof ESSP_LIST!=='undefined'){
+                    var rows=ESSP_LIST.filter(function(e){return e.p===district.value;});
+                    var nameCounts={};rows.forEach(function(e){nameCounts[e.n]=(nameCounts[e.n]||0)+1;});
+                    fill(essp,rows.map(function(e){
+                      var duplicate=nameCounts[e.n]>1;
+                      return {value:duplicate?e.n+' ('+e.t+')':e.n,label:e.n+(e.t?' — '+e.t:'')+(duplicate&&e.c?' ('+e.c+')':'')};
+                    }));
+                    essp.style.display='';
                     if(otherWrap)otherWrap.style.display='';
-                    if(otherText)otherText.value='';
-                    label('adhEtabOther','Structure sélectionnée ou à préciser');
-                    var rows=[];
-                    if(service.value==='Hôpital de proximité'&&typeof HOSP_LIST!=='undefined'){
-                      rows=HOSP_LIST.filter(function(h){return h.d===district.value&&h.c==='HPr';})
-                        .map(function(h){return {n:h.n,t:'Hôpital de proximité',c:''};});
-                    }else if(service.value==='ESSP'&&typeof ESSP_LIST!=='undefined'){
-                      var esspOrder=['CSU-2','CSU-1','CSR-2','CSR-1','DR'];
-                      rows=ESSP_LIST.filter(function(e){
-                        return e.p===district.value&&esspOrder.indexOf(e.t)!==-1;
-                      }).sort(function(a,b){
-                        return esspOrder.indexOf(a.t)-esspOrder.indexOf(b.t);
-                      });
-                    }else if(service.value==='Structure d’appui'&&typeof ESSP_LIST!=='undefined'){
-                      rows=ESSP_LIST.filter(function(e){
-                        return e.p===district.value&&['CDTMR','LSP','CRSR'].indexOf(e.t)!==-1;
-                      });
-                    }
-                    if(essp&&rows.length){
-                      var counts={};rows.forEach(function(e){counts[e.n]=(counts[e.n]||0)+1;});
-                      fill(essp,rows.map(function(e){
-                        var duplicate=counts[e.n]>1;
-                        return {value:duplicate?e.n+' ('+e.t+')':e.n,label:e.n+(e.t?' — '+e.t:'')+(duplicate&&e.c?' ('+e.c+')':'')};
-                      }));
-                      essp.style.display='';
-                    }
-                    /* EMS n'a pas de liste nominative dans les données actuelles :
-                       le champ libre reste disponible sans inventer de noms. */
-                  };
-                  return;
-                }
-                /* Les trois premiers choix sont des services finaux. */
+                  }
+                  setServices([]);
+                  fill(unite,esspUnits);show('unite',true);
+                }else if(etab.value){
+                  if(serviceHospWrap)serviceHospWrap.style.display='';
+                  setServices(hpServices);
+                  fill(unite,hpUnits);show('unite',true);
+                }else{setServices([]);fill(unite,[]);show('unite',false);}
               };
             };
           };
@@ -13305,7 +13277,6 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
       // === BRANCHE : DGA SANITAIRE === 10 structures directes et cascades propres
       if (rattleVal === 'dgaSanitaire') {
-        document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
         gstSanitaireInit();
         return;
       }
@@ -13342,7 +13313,7 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
     var rattachement = document.getElementById('adhRattachement');
     var rattleVal = rattachement ? rattachement.value : '';
     if (rattleVal === 'pole') document.querySelectorAll('.rattle-pole').forEach(function(el){ el.style.display = 'block'; });
-    if (rattleVal === 'dgaSanitaire') document.querySelectorAll('.rattle-sanitaire').forEach(function(el){ el.style.display = 'block'; });
+    if (rattleVal === 'dgaSanitaire') { var firstSanitaire=document.getElementById('adhEspaceSanitaireWrap'); if(firstSanitaire)firstSanitaire.style.display='block'; }
     if (rattleVal === 'dgaAdministrative') document.querySelectorAll('.rattle-administrative').forEach(function(el){ el.style.display = 'block'; });
     }
     window.gstCascade = gstCascade;
