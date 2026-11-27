@@ -3502,7 +3502,8 @@ function renderNotifications(list){
         },100);
       }
       else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
-        if(!S.isAdmin&&!S.isSubAdmin){ go('adhesion'); }
+        var isAdmHere=(typeof S!=='undefined'&&S)?(S.isAdmin||S.isSubAdmin):false;
+        if(!isAdmHere){ go('adhesion'); }
         else { go('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
       }
       else if(n.targetType==='news' && typeof go==='function') go('news');
@@ -7263,7 +7264,8 @@ function openNotificationTarget(type,id){
     return true;
   }
   if(targetType==='adhesion'||targetType==='adhesion_request'||targetType==='adhesion_renewal'){
-    if(!S.isAdmin&&!S.isSubAdmin&&!S.isSubAdminLocal){ go('adhesion'); return true; }
+    var isAdmHere=(typeof S!=='undefined'&&S)?(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal):false;
+    if(!isAdmHere){ go('adhesion'); return true; }
     go('me');
     openAdhesionDossier(targetId,false);
     return true;
