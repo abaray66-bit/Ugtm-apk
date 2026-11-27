@@ -349,19 +349,26 @@ function refreshAdhesionsDisplay(){
       _isRenewal:true
     });
   });
-  /* Tri du plus récent au plus ancien, puis dédoublonnage des renouvellements
-     par adhérent : plusieurs soumissions successives ne doivent pas produire
-     une avalanche de lignes identiques. On ne conserve que le renouvellement
-     le plus récent de chaque uid (le dossier initial reste affiché à part). */
-  all.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+  /* Tri: pending/needs_completion first, then by date descending. */
+  all.sort(function(a,b){
+    var waitingA = (a.status==='pending'||a.status==='needs_completion')?1:0;
+    var waitingB = (b.status==='pending'||b.status==='needs_completion')?1:0;
+    if(waitingB!==waitingA) return waitingB-waitingA;
+    return (b.createdAt||0)-(a.createdAt||0);
+  });
+  /* Renewals already processed (accepted/refused) are excluded from the
+     pending renewals list: once signed, they disappear from that section.
+     Only renewals pending processing remain. */
   var seenRenewal={};
   var deduped=all.filter(function(a){
     if(!a._isRenewal) return true;
+    if(a.status!=='pending' && a.status!=='needs_completion') return false;
     if(seenRenewal[a.uid]) return false;
     seenRenewal[a.uid]=true;
     return true;
   });
   hooks.setAdhesions(deduped);
+
 }
 
 function subscribeAdhesions(){
@@ -1655,14 +1662,22 @@ async function signAdhesion(uid,signature,note){
     var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     // 1. Valider la demande (signature électronique du responsable)
-    tx.update(reqRef, {
+    /* Renouvellement : on met à jour le dossier principal avec les
+       données du renouvellement (application, signature) pour que le
+       PDF et l'affichage utilisent les informations à jour. */
+    var updateData = {
       status: 'accepted',
       adminSignature: sig,
       signedBy: u.uid,
       signedAt: serverTimestamp(),
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
-    });
+    };
+    if (r.isRenewal) {
+      updateData.application = req.application || {};
+      updateData.signature = req.signature || '';
+    }
+    tx.update(reqRef, updateData);
 
     /* Renouvellement : le membre est déjà actif et le dossier initial porte
        son historique. On ne réactive PAS le membre et on n'incrémente PAS
@@ -1775,14 +1790,22 @@ async function validateAdhesionLocal(uid,note){
     var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     // 1. Valider la demande (traces du sous-admin local)
-    tx.update(reqRef, {
+    /* Renouvellement : on met à jour le dossier principal avec les
+       données du renouvellement (application, signature) pour que le
+       PDF et l'affichage utilisent les informations à jour. */
+    var updateData = {
       status: 'accepted',
       validatedBy: u.uid,
       validatedAt: serverTimestamp(),
       validatedByRole: 'subadminLocal',
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
-    });
+    };
+    if (r.isRenewal) {
+      updateData.application = req.application || {};
+      updateData.signature = req.signature || '';
+    }
+    tx.update(reqRef, updateData);
 
     /* Renouvellement : membre déjà actif, historique conservé sur le dossier
        initial. Pas de réactivation ni d'incrément du compteur. */

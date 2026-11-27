@@ -7340,8 +7340,12 @@ function adhesionValidatedMessage(t,m){
 }
 
 /* Ligne de statut du COMPTE dans « Mon espace ».
-   #meAdhesionStatus porte l'état de la DEMANDE (attente de signature,   complément, signée, refusée) : la ligne de compte n'intervient que   lorsqu'elle apporte une information DISTINCTE — compte suspendu,   adhésion validée (+ année), ou dossier signé en attente   d'activation. Plus de doublon « en cours de validation » + « en   attente de signature » pour un même état. */
-function renderMyMemberStatus(){
+   #meAdhesionStatus porte l'état de la DEMANDE (attente de signature,   complément, signée, refusée) : la ligne de compte n'intervient que   lorsqu'elle apporte une information DISTINCTE — compte suspendu,   adhésion validée (+ année), ou dossier signé en attente   d'activation. Plus de doublon « en cours de validation » + « en   attente de signature » pour un même état.
+   requestStatus : statut de la demande de renouvellement (pending /
+   needs_completion) si le membre en a déposé une ; dans ce cas, la
+   ligne de compte « adhesion validée » est masquée pour éviter le
+   doublon avec la ligne de demande affichée par showMyAdhesionStatus. */
+function renderMyMemberStatus(requestStatus){
   var box=$('meStatus');
   if(!box)return;
   var t=T();
@@ -7358,6 +7362,15 @@ function renderMyMemberStatus(){
     return;
   }
   if(m.status==='active'){
+    /* Si le membre a un renouvellement en attente, on ne montre pas
+       « adhesion validée » ici : showMyAdhesionStatus affichera le
+       message de renouvellement en attente (pending) à la place,
+       évitant le doublon. */
+    if(requestStatus==='pending'||requestStatus==='needs_completion'){
+      box.hidden=true;
+      box.textContent='';
+      return;
+    }
     box.hidden=false;
     box.className='statusline active';
     box.textContent=adhesionValidatedMessage(t,m);
@@ -7604,9 +7617,9 @@ function showMyAdhesionStatus(request){
   var fillBtn=$('meAdhesionButton');
   var t=T();
   /* La ligne de statut du compte dépend de la demande connue : on la   recalcule à chaque état affiché. */
-  renderMyMemberStatus();
   updateDialogueSocialButton(request);
   var st=request?String(request.status||'none'):'none';
+  renderMyMemberStatus(st);
   /* Accès au formulaire conditionné au statut du dossier ET au
      profil : un adhérent déjà actif (carte validée, SM-XXXX) ne
      remplit le formulaire que pour un renouvellement avec motif,

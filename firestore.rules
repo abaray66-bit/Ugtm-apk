@@ -928,7 +928,13 @@ service cloud.firestore {
               || adhesionIsSubAdminLocalOf(resource.data.get('structureId', '')))
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'adminNote', 'adminSignature', 'signedBy', 'signedAt', 'updatedAt',
-                      'structureId', 'validatedBy', 'validatedAt', 'validatedByRole'])
+                      'structureId', 'validatedBy', 'validatedAt', 'validatedByRole',
+                      'application', 'signature'])
+          /* 'application' et 'signature' sont autorises uniquement pour un
+             renouvellement : le dossier principal est mis a jour avec les
+             nouvelles donnees du renouvellement valide (ecrasement
+             controle par les branches ci-dessous qui exigent un responsable
+             habilite et un statut 'accepted'). */
           && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
           && okText(request.resource.data.adminNote, 1000)
           && request.resource.data.updatedAt == request.time
