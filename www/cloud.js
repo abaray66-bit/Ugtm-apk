@@ -1464,6 +1464,7 @@ async function submitAdhesion(application,signature){
       /* autre erreur de lecture : on n'empêche pas la soumission */
     }
   }
+  console.log('[submitAdhesion] uid=', uid, 'type=', clean.type, 'province=', clean.province, 'application=', JSON.stringify(clean), 'signatureLen=', sig.length);
   var result = await runTransaction(db,async function(tx){
     var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
