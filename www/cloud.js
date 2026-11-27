@@ -33,7 +33,7 @@ function notificationTargetUrl(data){
   }
   var type=String(info.notificationType||info.targetType||'');
   var id=String(info.notificationId||info.targetId||'');
-  if((type==='news'||type==='event'||type==='adhesion')&&id){
+  if((type==='news'||type==='event'||type==='adhesion'||type==='adhesion_request'||type==='adhesion_renewal')&&id){
     target.searchParams.set('notificationType',type);
     target.searchParams.set('notificationId',id);
   }
@@ -1389,9 +1389,9 @@ async function submitAdhesion(application,signature){
     'Direction Espace sanitaire Agadir': 'espaceAgadir',
     'Direction Espace sanitaire Taroudant': 'espaceTaroudant',
     'Division de la pharmacie régionale': 'pharmacieRegionale',
-    'Service de santé publique': 'serviceSantePublique',
+    'Service de la santé publique': 'serviceSantePublique',
     "Service d'aide médicale urgente régional (SAMU)": 'serviceSamu',
-    'Bureau d’ordre, de la documentation et des archives': 'bureauOrdre'
+    "Bureau d'ordre, de la documentation et des archives": 'bureauOrdre'
   };
 
   var clean={
