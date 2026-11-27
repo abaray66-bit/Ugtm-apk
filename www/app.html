@@ -3503,8 +3503,9 @@ function renderNotifications(list){
       }
       else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
         var isAdmHere=(typeof S!=='undefined'&&S)?(S.isAdmin||S.isSubAdmin):false;
-        if(!isAdmHere){ go('adhesion'); }
-        else { go('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
+        var goToAdhesion=(typeof go==='function')?go:(typeof window.ugtmGo==='function')?window.ugtmGo:null;
+        if(!isAdmHere&&goToAdhesion){ goToAdhesion('adhesion'); }
+        else if(isAdmHere&&goToAdhesion){ goToAdhesion('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
       }
       else if(n.targetType==='news' && typeof go==='function') go('news');
       else if(n.targetType==='event' && typeof go==='function') go('agenda');
