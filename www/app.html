@@ -8666,15 +8666,16 @@ el.innerHTML=list.length?list.map(function(a){
        actions+='<button type="button" class="btn ghost small danger" data-adm-act="delAdhesion" data-id="'+esc(docId)+'">'+esc(t.admDeleteAdhesion)+'</button>';
      }
      var head=[a.date?fmtDateFr(a.date):'',provName(a.province,lang)||a.province||''].filter(Boolean).join(' · ');
-     var nom=esc(((a.nom||'')+' '+(a.prenom||'')).trim()||t.admAdhesionFallback);
+     var app=a.application||{};
+     var nom=esc(((app.nom||'')+' '+(app.prenom||'')).trim()||t.admAdhesionFallback);
      var stLabel=esc(label(a.status));
      var rows=[
-       '<span>'+esc(t.admRowCin)+' '+esc(a.cin||'')+'</span>',
-       '<span>'+esc(t.admRowPhone)+' '+esc(a.phone||'')+'</span>',
-       '<span>'+esc(t.admRowAddress)+' '+esc(a.address||'')+'</span>',
-       '<span>'+esc(t.admRowEtab)+' '+esc(a.establishment||'')+(a.specialty?' · '+esc(t.admRowSpecialty)+' '+esc(a.specialty):'')+'</span>',
-       '<span>'+esc(t.admRowService)+' '+esc(a.service||'')+(a.function?' · '+esc(t.admRowFunction)+' '+esc(a.function):'')+'</span>',
-       a.ppr?'<span>'+esc(t.admRowPpr)+' '+esc(a.ppr)+'</span>':'',
+       '<span>'+esc(t.admRowCin)+' '+esc(app.cin||a.cin||'')+'</span>',
+       '<span>'+esc(t.admRowPhone)+' '+esc(app.phone||a.phone||'')+'</span>',
+       '<span>'+esc(t.admRowAddress)+' '+esc(app.address||a.address||'')+'</span>',
+       '<span>'+esc(t.admRowEtab)+' '+esc(app.establishment||a.establishment||'')+(app.specialty||a.specialty?' · '+esc(t.admRowSpecialty)+' '+esc(app.specialty||a.specialty):'')+'</span>',
+       '<span>'+esc(t.admRowService)+' '+esc(app.service||a.service||'')+(app.function||a.function?' · '+esc(t.admRowFunction)+' '+esc(app.function||a.function):'')+'</span>',
+       (app.ppr||a.ppr)?'<span>'+esc(t.admRowPpr)+' '+esc(app.ppr||a.ppr)+'</span>':'',
        a.type==='renewal'&&a.reason?'<span>'+esc(t.admRowReason)+' '+esc(a.reason)+'</span>':'',
        a.adminNote?'<span>'+esc(t.admRowNote)+' '+esc(a.adminNote)+'</span>':''
      ].filter(Boolean).join('');
