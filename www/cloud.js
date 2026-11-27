@@ -332,6 +332,7 @@ function refreshAdhesionsDisplay(){
     var app=x.application||x.formData||{};
     all.push({
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
+      application:app,
       status:x.status||'pending', adminNote:x.adminNote||'',
       nom:adhesionField(app,x,['nom','lastName','name']), prenom:adhesionField(app,x,['prenom','firstName']),
       cin:adhesionField(app,x,['cin','CIN']), dob:adhesionField(app,x,['dob','dateNaissance']),
@@ -354,6 +355,7 @@ function refreshAdhesionsDisplay(){
     var app=mergeAdhesionApplication(x.application||x.formData||{},x.previousApplication,true);
     all.push({
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
+      application:app,
       status:x.status||'pending', adminNote:x.adminNote||'',
       nom:adhesionField(app,x,['nom','lastName','name']), prenom:adhesionField(app,x,['prenom','firstName']),
       cin:adhesionField(app,x,['cin','CIN']), dob:adhesionField(app,x,['dob','dateNaissance']),
