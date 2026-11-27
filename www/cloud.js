@@ -2063,7 +2063,7 @@ function mergeAdhesionApplication(current, previous, isRenewal){
       out[key]=value;
     }
   });
-  if(isRenewal&&!out.type)out.type='renewal';
+  if(isRenewal)out.type='renewal';
   return out;
 }
 
