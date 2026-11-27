@@ -311,17 +311,33 @@ function reportProvinceLabel(code){
    ========================= */
 function refreshAdhesionsDisplay(){
   var all=[];
+  /* Les demandes historiques et les renouvellements n'ont pas toujours
+     exactement le même niveau d'imbrication. Lire chaque champ d'abord
+     dans application, puis dans le document, sans écraser une valeur
+     renseignée par une chaîne vide. */
+  function adhesionField(app, root, keys){
+    for(var i=0;i<keys.length;i++){
+      var v=app&&app[keys[i]];
+      if(v!==undefined&&v!==null&&String(v).trim()!=='') return v;
+      v=root&&root[keys[i]];
+      if(v!==undefined&&v!==null&&String(v).trim()!=='') return v;
+    }
+    return '';
+  }
   adhMainDocs.forEach(function(d){
     var x=d.data();
-    var app=x.application||{};
+    var app=x.application||x.formData||{};
     all.push({
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
       status:x.status||'pending', adminNote:x.adminNote||'',
-      nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
-      dob:app.dob||'', phone:app.phone||'', address:app.address||'',
-      establishment:app.establishment||'', specialty:app.specialty||'',
-      service:app.service||'', serviceGst:app.serviceGst||'', unite:app.unite||'',
-      serviceHospitalier:app.serviceHospitalier||'',
+      nom:adhesionField(app,x,['nom','lastName','name']), prenom:adhesionField(app,x,['prenom','firstName']),
+      cin:adhesionField(app,x,['cin','CIN']), dob:adhesionField(app,x,['dob','dateNaissance']),
+      phone:adhesionField(app,x,['phone','telephone','tel']), address:adhesionField(app,x,['address','adresse']),
+      establishment:adhesionField(app,x,['establishment','etab','etablissement']),
+      specialty:adhesionField(app,x,['specialty','specialite']),
+      service:adhesionField(app,x,['service','serviceHospitalier','serviceGst','servicePole','serviceAdmin','serviceStrategie','serviceSI','serviceSoins','serviceAudit','serviceRecherche','unite']),
+      serviceGst:adhesionField(app,x,['serviceGst']), unite:adhesionField(app,x,['unite']),
+      serviceHospitalier:adhesionField(app,x,['serviceHospitalier']),
       type:app.type||'first', reason:app.reason||'', date:app.date||'',
       signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
@@ -332,15 +348,18 @@ function refreshAdhesionsDisplay(){
   });
   adhRenewalsDocs.forEach(function(d){
     var x=d.data();
-    var app=x.application||{};
+    var app=x.application||x.formData||{};
     all.push({
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
       status:x.status||'pending', adminNote:x.adminNote||'',
-      nom:app.nom||'', prenom:app.prenom||'', cin:app.cin||'',
-      dob:app.dob||'', phone:app.phone||'', address:app.address||'',
-      establishment:app.establishment||'', specialty:app.specialty||'',
-      service:app.service||'', serviceGst:app.serviceGst||'', unite:app.unite||'',
-      serviceHospitalier:app.serviceHospitalier||'',
+      nom:adhesionField(app,x,['nom','lastName','name']), prenom:adhesionField(app,x,['prenom','firstName']),
+      cin:adhesionField(app,x,['cin','CIN']), dob:adhesionField(app,x,['dob','dateNaissance']),
+      phone:adhesionField(app,x,['phone','telephone','tel']), address:adhesionField(app,x,['address','adresse']),
+      establishment:adhesionField(app,x,['establishment','etab','etablissement']),
+      specialty:adhesionField(app,x,['specialty','specialite']),
+      service:adhesionField(app,x,['service','serviceHospitalier','serviceGst','servicePole','serviceAdmin','serviceStrategie','serviceSI','serviceSoins','serviceAudit','serviceRecherche','unite']),
+      serviceGst:adhesionField(app,x,['serviceGst']), unite:adhesionField(app,x,['unite']),
+      serviceHospitalier:adhesionField(app,x,['serviceHospitalier']),
       type:app.type||'renewal', reason:app.reason||'', date:app.date||'',
       signed:!!x.adminSignature||((x.validatedByRole==='subadminLocal')&&!!x.validatedBy), signedBy:x.signedBy||'', signedAt:ms(x.signedAt),
       validatedBy:x.validatedBy||'', validatedAt:ms(x.validatedAt),
