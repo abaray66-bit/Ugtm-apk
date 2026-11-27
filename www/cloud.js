@@ -2049,10 +2049,7 @@ async function getAdhesionDoc(docPath){
     try{
       var coll=collection(db,'adhesionRequests',r.uid,'renouvellements');
       var renewalSnap=await getDocs(coll);
-      var pend=renewalSnap.docs.filter(function(d){
-        var s=String((d.data()||{}).status||'');
-        return s==='pending'||s==='needs_completion';
-      }).sort(function(a,b){
+      var pend=renewalSnap.docs.slice().sort(function(a,b){
         return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
       });
       if(pend.length){
