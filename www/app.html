@@ -7865,8 +7865,8 @@ if(!c||!c.getAdhesionDoc){box.textContent=t.adhServiceUnavailable;return;}
 box.innerHTML='<p class="hint">'+t.meAdhesionLoading+'</p>';
 c.getAdhesionDoc(String(S.user.uid)).then(function(doc){
   if(!doc){box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';return;}
-  var a=doc.application||{};
   var renewal=doc._latestRenewal||{};
+  var a=renewal.application||doc.application||{};
   var showStatus = renewal.status ? renewal.status : doc.status;
   var showType = (renewal.application&&renewal.application.type==='renewal')
     ?t.meAdhesionRenewal
