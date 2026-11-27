@@ -1039,8 +1039,9 @@ service cloud.firestore {
     // Chaque renouvellement crée un nouveau document dans la
     // sous-collection adhesionRequests/{uid}/renouvellements/{docId}.
     // L'adhérent propriétaire peut créer un renouvellement ; l'ancien
-    // dossier (adhesionRequests/{uid}) reste intact avec ses signatures,
-    // validations et dates historiques.
+    // dossier (adhesionRequests/{uid}) reste intact jusqu'à la validation
+    // du renouvellement, auquel cas il est écrasé avec les nouvelles
+    // données (application, signature) et archivé dans adhesionHistory.
     match /adhesionRequests/{uid}/renouvellements/{docId} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
@@ -1058,7 +1059,11 @@ service cloud.firestore {
         && request.resource.data.signature.size() > 0
         && request.resource.data.signature.size() <= 20000
         && adhesionAppOkRenewal(request.resource.data.application,
-                          request.resource.data.province);
+                          request.resource.data.province)
+        // Un renouvellement ne peut etre cree que si le dossier principal
+        // existe et est deja accepte (pas de renouvellement orphelin).
+        && exists(/databases/$(database)/documents/adhesionRequests/$(uid))
+        && get(/databases/$(database)/documents/adhesionRequests/$(uid)).data.status == 'accepted';
 
       allow update: if (isAdmin()
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
