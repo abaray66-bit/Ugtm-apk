@@ -1642,6 +1642,7 @@ async function signAdhesion(uid,signature,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var parentRef = doc(db, 'adhesionRequests', r.uid);
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1677,6 +1678,36 @@ async function signAdhesion(uid,signature,note){
       updateData.application = req.application || {};
       updateData.signature = req.signature || '';
     }
+
+    // Renouvellement : audit trail avant écrasement du parent, puis mise à jour
+    // du dossier principal avec les données du renouvellement.
+    if (r.isRenewal) {
+      var parentSnap = await tx.get(parentRef);
+      if (parentSnap.exists()) {
+        var now = Date.now();
+        var parentData = parentSnap.data();
+        tx.set(doc(db, 'adhesionHistory', r.uid, String(now)), {
+          source: 'adhesionRequests',
+          uid: r.uid,
+          province: parentData.province || '',
+          structureId: parentData.structureId || '',
+          archivedAt: serverTimestamp(),
+          archivedBy: u.uid,
+          data: parentData
+        });
+        tx.update(parentRef, {
+          status: 'accepted',
+          application: req.application || {},
+          signature: req.signature || '',
+          adminSignature: sig,
+          signedBy: u.uid,
+          signedAt: serverTimestamp(),
+          adminNote: String(note || '').slice(0,1000),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+
     tx.update(reqRef, updateData);
 
     /* Renouvellement : le membre est déjà actif et le dossier initial porte
@@ -1768,6 +1799,7 @@ async function validateAdhesionLocal(uid,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var parentRef = doc(db, 'adhesionRequests', r.uid);
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1805,6 +1837,36 @@ async function validateAdhesionLocal(uid,note){
       updateData.application = req.application || {};
       updateData.signature = req.signature || '';
     }
+
+    // Renouvellement : audit trail avant écrasement du parent, puis mise à jour
+    // du dossier principal avec les données du renouvellement.
+    if (r.isRenewal) {
+      var parentSnap = await tx.get(parentRef);
+      if (parentSnap.exists()) {
+        var now = Date.now();
+        var parentData = parentSnap.data();
+        tx.set(doc(db, 'adhesionHistory', r.uid, String(now)), {
+          source: 'adhesionRequests',
+          uid: r.uid,
+          province: parentData.province || '',
+          structureId: parentData.structureId || '',
+          archivedAt: serverTimestamp(),
+          archivedBy: u.uid,
+          data: parentData
+        });
+        tx.update(parentRef, {
+          status: 'accepted',
+          application: req.application || {},
+          signature: req.signature || '',
+          validatedBy: u.uid,
+          validatedAt: serverTimestamp(),
+          validatedByRole: 'subadminLocal',
+          adminNote: String(note || '').slice(0,1000),
+          updatedAt: serverTimestamp()
+        });
+      }
+    }
+
     tx.update(reqRef, updateData);
 
     /* Renouvellement : membre déjà actif, historique conservé sur le dossier

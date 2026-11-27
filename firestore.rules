@@ -938,6 +938,8 @@ service cloud.firestore {
           && request.resource.data.status in ['pending', 'needs_completion', 'accepted', 'refused']
           && okText(request.resource.data.adminNote, 1000)
           && request.resource.data.updatedAt == request.time
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['application', 'signature'])
+              || resource.data.status == 'accepted')
           && (
             // Décision simple : complément demandé, refus, remise en attente.
             // Seuls status, adminNote et updatedAt peuvent changer ; les
@@ -1075,6 +1077,22 @@ service cloud.firestore {
               .hasAny(['validatedBy','validatedByRole','validatedAt'])
             || request.resource.data.validatedBy == request.auth.uid);
       allow delete: if isAdmin();
+    }
+
+    // HISTORIQUE DES ÉCRASEMENTS DE DOSSIER — archive immuable des versions
+    // précédentes d'adhesionRequests avant qu'un renouvellement n'en écrase
+    // les données (application, signature). Conservé pour traçabilité légale.
+    match /adhesionHistory/{uid}/{docId} {
+      allow read: if isAdmin()
+        || (signedIn() && request.auth.uid == resource.data.uid)
+        || adhesionIsSubAdminOf(resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
+
+      allow create: if isAdmin()
+        || adhesionIsSubAdminOf(request.resource.data.get('province', ''))
+        || adhesionIsSubAdminLocalOf(request.resource.data.get('structureId', ''));
+
+      allow update, delete: if false;
     }
 
     // Collection group « renouvellements » : les requêtes collectionGroup
