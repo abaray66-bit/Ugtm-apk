@@ -1638,11 +1638,26 @@ async function signAdhesion(uid,signature,note){
 
   var r=resolveAdhesionRef(uid);
   var reqRef = r.ref;
+  /* DIAGNOSTIC TEMPORAIRE — lecture seule : aucune signature ni donnée de membre journalisée. */
+  console.info('[SIGN_ADHESION_DIAG] cible', {
+    inputPath: String(uid||''),
+    resolvedPath: reqRef.path,
+    ownerUid: r.uid,
+    renewalId: r.renewalId || '',
+    isRenewal: !!r.isRenewal
+  });
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
+    var diagnosticStatus = reqSnap.exists() ? ((reqSnap.data() || {}).status || '(status absent)') : '(document absent)';
+    console.info('[SIGN_ADHESION_DIAG] document lu', {
+      resolvedPath: reqRef.path,
+      exists: reqSnap.exists(),
+      status: diagnosticStatus,
+      isRenewal: !!r.isRenewal
+    });
     if (!reqSnap.exists()) throw new Error('Dossier d\'adhésion introuvable');
     var req = reqSnap.data();
     if (req.status !== 'pending' && req.status !== 'needs_completion') {
