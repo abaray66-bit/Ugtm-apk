@@ -3489,29 +3489,39 @@ function renderNotifications(list){
     p.appendChild(titleEl);
     if(bodyEl.textContent) p.appendChild(bodyEl);
     p.onclick=function(){
+      var navigate=(typeof window.ugtmGo==='function')?window.ugtmGo:null;
       if(n.targetType==='dialogue'){
-        if(typeof window.openDialogueViewer==='function'){ if(typeof go==='function') go('home'); window.openDialogueViewer(n.targetId||''); }
+        if(typeof window.openDialogueViewer==='function'){
+          if(navigate)navigate('home');
+          window.openDialogueViewer(n.targetId||'');
+        }
       }
-      else if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function') window.openNotificationTarget(n.targetType,n.targetId);
+      else if((n.targetType==='news'||n.targetType==='event') && n.targetId && typeof window.openNotificationTarget==='function'){
+        window.openNotificationTarget(n.targetType,n.targetId);
+      }
       else if(n.targetType==='report' && n.targetId){
-        if(typeof go==='function') go('admin');
-        if(typeof showAdmTab==='function') showAdmTab('reports');
+        if(navigate)navigate('admin');
+        if(typeof window.ugtmShowAdmTab==='function')window.ugtmShowAdmTab('reports');
         setTimeout(function(){
           var el=document.getElementById('report-'+n.targetId);
           if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});
         },100);
       }
       else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
-        var isAdmHere=(typeof S!=='undefined'&&S)?(S.isAdmin||S.isSubAdmin):false;
-        var goToAdhesion=(typeof go==='function')?go:(typeof window.ugtmGo==='function')?window.ugtmGo:null;
-        if(!isAdmHere&&goToAdhesion){ goToAdhesion('adhesion'); }
-        else if(isAdmHere&&goToAdhesion){ goToAdhesion('admin'); showAdmTab('adhesions'); openAdhesionDossier(n.targetId,false); }
+        var isAdmHere=typeof window.ugtmIsManager==='function'&&window.ugtmIsManager();
+        if(!isAdmHere&&navigate){
+          navigate('adhesion');
+        }else if(isAdmHere&&navigate){
+          navigate('admin');
+          if(typeof window.ugtmShowAdmTab==='function')window.ugtmShowAdmTab('adhesions');
+          if(typeof window.ugtmOpenAdhesionDossier==='function')window.ugtmOpenAdhesionDossier(n.targetId,false);
+        }
       }
-      else if(n.targetType==='news' && typeof go==='function') go('news');
-      else if(n.targetType==='event' && typeof go==='function') go('agenda');
-      else if(typeof go==='function') go('me');
+      else if(n.targetType==='news' && navigate)navigate('news');
+      else if(n.targetType==='event' && navigate)navigate('agenda');
+      else if(navigate)navigate('me');
 
-      if(n.read===false && typeof markNotificationRead==='function') markNotificationRead(n.id);
+      if(n.read===false && typeof markNotificationRead==='function')markNotificationRead(n.id);
       if(window.setNotificationsPopup)window.setNotificationsPopup(false);
     };
     if(n.read===false){
@@ -7444,6 +7454,7 @@ return '<div class="mcard">'+
 
 var myAdhesionStatusUid='';
 var myAdhesionStatusCache=null;
+var adhesionRequestAutoOpenedUid='';
 var myAdhesionStatusPromise=null;
   function renderAdminDialogue(){
     var info=$('admDialogueInfo'); var list=$('admDialogueList');
@@ -9922,6 +9933,9 @@ window.adhesionKnownStatus=adhesionKnownStatus;
 window.ugtmToast=toast;
 window.ugtmGo=go;
 window.ugtmT=T;
+window.ugtmShowAdmTab=showAdmTab;
+window.ugtmOpenAdhesionDossier=openAdhesionDossier;
+window.ugtmIsManager=function(){return !!(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal);};
 
 /* Session courante (utilisateur + fiche membre) : le parcours
    d'adHISION (script dédié) s'en sert pour pré-remplir le
@@ -11522,6 +11536,29 @@ purgeSession();
 renderAccountButton();
   console.log('[DIAG] setSession done, calling renderMe');
   renderMe();
+
+  /* Une demande de complément envoyée par l'administration doit
+     ouvrir le formulaire au prochain accès direct à l'application.
+     On ne le rouvre pas si un dossier a déjà été transmis ou traité. */
+  if(!S.user){
+    adhesionRequestAutoOpenedUid='';
+  }else if(S.member&&S.member.adhesionFormRequestedAt&&!S.isAdmin&&!S.isSubAdmin&&!S.isSubAdminLocal){
+    var requestedUid=String(S.user.uid||'');
+    if(requestedUid&&adhesionRequestAutoOpenedUid!==requestedUid){
+      adhesionRequestAutoOpenedUid=requestedUid;
+      refreshMyAdhesionStatus(true).then(function(req){
+        if(!S.user||String(S.user.uid||'')!==requestedUid)return;
+        var requestStatus=req?String(req.status||'none'):'none';
+        var access=adhesionAccessFor(requestStatus);
+        if(access.mode!=='free'&&access.mode!=='completion')return;
+        if(window.applyAdhesionRenewalLock)window.applyAdhesionRenewalLock();
+        if(window.initDigitalAdhesion)window.initDigitalAdhesion();
+        go('adhesion');
+      }).catch(function(err){
+        console.warn('Ouverture du formulaire demandé indisponible:',err);
+      });
+    }
+  }
 
 
 if(S.isAdmin&&window.CLOUD&&CLOUD.admin&&CLOUD.admin.getAdminEmails){
