@@ -316,10 +316,13 @@ function refreshAdhesionsDisplay(){
      dans application, puis dans le document, sans écraser une valeur
      renseignée par une chaîne vide. */
   function adhesionField(app, root, keys){
+    var previous=root&&root.previousApplication;
     for(var i=0;i<keys.length;i++){
       var v=app&&app[keys[i]];
       if(v!==undefined&&v!==null&&String(v).trim()!=='') return v;
       v=root&&root[keys[i]];
+      if(v!==undefined&&v!==null&&String(v).trim()!=='') return v;
+      v=previous&&previous[keys[i]];
       if(v!==undefined&&v!==null&&String(v).trim()!=='') return v;
     }
     return '';
@@ -348,7 +351,7 @@ function refreshAdhesionsDisplay(){
   });
   adhRenewalsDocs.forEach(function(d){
     var x=d.data();
-    var app=x.application||x.formData||{};
+    var app=mergeAdhesionApplication(x.application||x.formData||{},x.previousApplication,true);
     all.push({
       id:d.id, uid:x.uid||'', province:x.province||'', structureId:x.structureId||'',
       status:x.status||'pending', adminNote:x.adminNote||'',
@@ -1667,7 +1670,9 @@ async function signAdhesion(uid,signature,note){
     if (req.status !== 'pending' && req.status !== 'needs_completion') {
       throw new Error('Le dossier n\'est pas en attente (déjà traité ou refusé).');
     }
-    var app = req.application || {};
+    var app = r.isRenewal
+      ? mergeAdhesionApplication(req.application||req.formData||{},req.previousApplication,true)
+      : (req.application||req.formData||{});
     if (!app.nom || !app.prenom || !app.cin || !app.dob) {
       throw new Error('Application d\'adhésion incomplète');
     }
@@ -1679,9 +1684,9 @@ async function signAdhesion(uid,signature,note){
     var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     // 1. Valider la demande (signature électronique du responsable)
-    /* Renouvellement : on met à jour le dossier principal avec les
-       données du renouvellement (application, signature) pour que le
-       PDF et l'affichage utilisent les informations à jour. */
+    /* reqRef désigne le document exact : pour un renouvellement, il s'agit
+       de la sous-collection. On y persiste l'application réparée en conservant
+       les nouvelles valeurs et en restaurant les champs précédemment vides. */
     var updateData = {
       status: 'accepted',
       adminSignature: sig,
@@ -1691,7 +1696,7 @@ async function signAdhesion(uid,signature,note){
       updatedAt: serverTimestamp()
     };
     if (r.isRenewal) {
-      updateData.application = req.application || {};
+      updateData.application = app;
       updateData.signature = req.signature || '';
     }
     tx.update(reqRef, updateData);
@@ -1793,7 +1798,9 @@ async function validateAdhesionLocal(uid,note){
     if (req.status !== 'pending' && req.status !== 'needs_completion') {
       throw new Error('Le dossier n\'est pas en attente (déjà traité ou refusé).');
     }
-    var app = req.application || {};
+    var app = r.isRenewal
+      ? mergeAdhesionApplication(req.application||req.formData||{},req.previousApplication,true)
+      : (req.application||req.formData||{});
     if (!app.nom || !app.prenom || !app.cin || !app.dob) {
       throw new Error('Application d\'adhésion incomplète');
     }
@@ -1807,9 +1814,9 @@ async function validateAdhesionLocal(uid,note){
     var no = 'SM-' + String(Math.floor(next)).padStart(4, '0');
 
     // 1. Valider la demande (traces du sous-admin local)
-    /* Renouvellement : on met à jour le dossier principal avec les
-       données du renouvellement (application, signature) pour que le
-       PDF et l'affichage utilisent les informations à jour. */
+    /* reqRef désigne le document exact : pour un renouvellement, il s'agit
+       de la sous-collection. On y persiste l'application réparée en conservant
+       les nouvelles valeurs et en restaurant les champs précédemment vides. */
     var updateData = {
       status: 'accepted',
       validatedBy: u.uid,
@@ -1819,7 +1826,7 @@ async function validateAdhesionLocal(uid,note){
       updatedAt: serverTimestamp()
     };
     if (r.isRenewal) {
-      updateData.application = req.application || {};
+      updateData.application = app;
       updateData.signature = req.signature || '';
     }
     tx.update(reqRef, updateData);
@@ -2042,6 +2049,24 @@ function resolveAdhesionRef(uidOrPath){
   return { ref: doc(db,'adhesionRequests',s), uid:s, renewalId:'', isRenewal:false };
 }
 
+/* Un renouvellement conserve une copie de l'application précédente.
+   Si un ancien document de renouvellement a une application partielle ou
+   vide, restaurer les valeurs manquantes sans écraser les nouvelles saisies. */
+function mergeAdhesionApplication(current, previous, isRenewal){
+  var out=Object.assign({},previous||{});
+  Object.keys(current||{}).forEach(function(key){
+    var value=current[key];
+    if(value!==undefined&&value!==null&&
+       (typeof value!=='string'||value.trim()!=='')){
+      out[key]=value;
+    }else if(!Object.prototype.hasOwnProperty.call(out,key)){
+      out[key]=value;
+    }
+  });
+  if(isRenewal&&!out.type)out.type='renewal';
+  return out;
+}
+
 /* Référence du document PDF officiel : sous-collection dédiée pour un
    renouvellement, document principal pour une première adhésion. */
 function pdfDocRef(uidOrPath){
@@ -2061,6 +2086,13 @@ async function getAdhesionDoc(docPath){
      et la provenance du dossier, affichée sur le PDF officiel. */
   if(!snap.exists())return null;
   var result=Object.assign({},snap.data(),{id:snap.id});
+  if(r.isRenewal){
+    result.application=mergeAdhesionApplication(
+      result.application||result.formData||{},
+      result.previousApplication,
+      true
+    );
+  }
   /* Pour un document de la collection principale, chercher le dernier
      renouvellement en cours dans la sous-collection. Ne pas le faire pour
      un document déjà dans une sous-collection de renouvellements. */
@@ -2082,7 +2114,7 @@ async function getAdhesionDoc(docPath){
 /* Nom du fichier PDF d'un dossier : « UGTM- Nom Prénom.pdf ».
    L'adhérent est identifié directement, sans passer par un code technique. */
 function adhesionPdfFileName(doc){
-  var a=(doc&&doc.application)||{};
+  var a=doc?mergeAdhesionApplication(doc.application||{},doc.previousApplication,!!doc.renewalOf):{};
   var base=(String(a.nom||'').trim()+' '+String(a.prenom||'').trim()).replace(/\s+/g,' ').trim();
   base=base.replace(/[\\/:*?"<>|]/g,' ').replace(/\s+/g,' ').trim();
   if(!base)base='demande-adhesion';
