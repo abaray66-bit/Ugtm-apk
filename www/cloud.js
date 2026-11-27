@@ -1686,7 +1686,7 @@ async function signAdhesion(uid,signature,note){
       if (parentSnap.exists()) {
         var now = Date.now();
         var parentData = parentSnap.data();
-        tx.set(doc(db, 'adhesionHistory', r.uid, String(now)), {
+        tx.set(doc(db, 'adhesionHistory', r.uid + '_' + String(now)), {
           source: 'adhesionRequests',
           uid: r.uid,
           province: parentData.province || '',
@@ -1695,16 +1695,24 @@ async function signAdhesion(uid,signature,note){
           archivedBy: u.uid,
           data: parentData
         });
-        tx.update(parentRef, {
+        // Effacer les anciennes traces de validation de l'autre type avant
+        // de poser la nouvelle signature (évite le conflit de règles Firestore).
+        var parentUpdate = {
           status: 'accepted',
           application: req.application || {},
           signature: req.signature || '',
-          adminSignature: sig,
-          signedBy: u.uid,
-          signedAt: serverTimestamp(),
-          adminNote: String(note || '').slice(0,1000),
           updatedAt: serverTimestamp()
-        });
+        };
+        if (u.uid) {
+          parentUpdate.adminSignature = sig;
+          parentUpdate.signedBy = u.uid;
+          parentUpdate.signedAt = serverTimestamp();
+          parentUpdate.validatedBy = '';
+          parentUpdate.validatedAt = '';
+          parentUpdate.validatedByRole = '';
+        }
+        parentUpdate.adminNote = String(note || '').slice(0,1000);
+        tx.update(parentRef, parentUpdate);
       }
     }
 
@@ -1845,7 +1853,7 @@ async function validateAdhesionLocal(uid,note){
       if (parentSnap.exists()) {
         var now = Date.now();
         var parentData = parentSnap.data();
-        tx.set(doc(db, 'adhesionHistory', r.uid, String(now)), {
+        tx.set(doc(db, 'adhesionHistory', r.uid + '_' + String(now)), {
           source: 'adhesionRequests',
           uid: r.uid,
           province: parentData.province || '',
@@ -1854,16 +1862,24 @@ async function validateAdhesionLocal(uid,note){
           archivedBy: u.uid,
           data: parentData
         });
-        tx.update(parentRef, {
+        // Effacer les anciennes traces de validation de l'autre type avant
+        // de poser la nouvelle validation (évite le conflit de règles Firestore).
+        var parentUpdate = {
           status: 'accepted',
           application: req.application || {},
           signature: req.signature || '',
-          validatedBy: u.uid,
-          validatedAt: serverTimestamp(),
-          validatedByRole: 'subadminLocal',
-          adminNote: String(note || '').slice(0,1000),
           updatedAt: serverTimestamp()
-        });
+        };
+        if (u.uid) {
+          parentUpdate.validatedBy = u.uid;
+          parentUpdate.validatedAt = serverTimestamp();
+          parentUpdate.validatedByRole = 'subadminLocal';
+          parentUpdate.adminSignature = '';
+          parentUpdate.signedBy = '';
+          parentUpdate.signedAt = '';
+        }
+        parentUpdate.adminNote = String(note || '').slice(0,1000);
+        tx.update(parentRef, parentUpdate);
       }
     }
 

@@ -1082,7 +1082,8 @@ service cloud.firestore {
     // HISTORIQUE DES ÉCRASEMENTS DE DOSSIER — archive immuable des versions
     // précédentes d'adhesionRequests avant qu'un renouvellement n'en écrase
     // les données (application, signature). Conservé pour traçabilité légale.
-    match /adhesionHistory/{uid}/{docId} {
+    // Document ID : {uid}_{timestamp} (structure plate, pas de sous-collection).
+    match /adhesionHistory/{docId} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == resource.data.uid)
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
