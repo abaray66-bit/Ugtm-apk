@@ -4382,6 +4382,7 @@ deleted:`Données supprimées`,
   admLocalNoProposals:`Aucune proposition.`,
   admLocalArchived:`Archivée`,
   admLocalArchive:`Archiver`,
+  admLocalEdit:`Modifier`,
   admLocalDelete:`Supprimer`,
   admLocalStructReq:`Nom requis.`,
   admLocalStructCreated:`Structure créée.`,
@@ -8787,8 +8788,9 @@ function renderAdminLocalStructures(){
   if(listItems.length===0) html+='<li class="empty">'+t.admLocalNoStructures+'</li>';
   html+=listItems.map(function(s){
     var arch=s.archived?' <span class="tag">'+t.admLocalArchived+'</span>':'';
-    var btn='<button type="button" class="btn ghost small danger" data-adm-act="deleteLocalStructure" data-struct="'+esc(s.id)+'">'+t.admLocalDelete+'</button>';
-    return '<li class="mrow"><div class="mi"><strong>'+esc(s.name)+'</strong><span>'+t.admLocalStructId+': '+esc(s.id)+'</span><span>'+esc(s.etab)+'</span><span>'+esc(s.province)+arch+'</span></div><div class="mact">'+btn+'</div></li>';
+    var btnEdit='<button type="button" class="btn ghost small" data-adm-act="editLocalStructure" data-struct="'+esc(s.id)+'" data-name="'+esc(s.name)+'" data-etab="'+esc(s.etab)+'" data-province="'+esc(s.province)+'">'+t.admLocalEdit+'</button>';
+    var btnDel='<button type="button" class="btn ghost small danger" data-adm-act="deleteLocalStructure" data-struct="'+esc(s.id)+'">'+t.admLocalDelete+'</button>';
+    return '<li class="mrow"><div class="mi"><strong>'+esc(s.name)+'</strong><span>'+t.admLocalStructId+': '+esc(s.id)+'</span><span>'+esc(s.etab)+'</span><span>'+esc(s.province)+arch+'</span></div><div class="mact">'+btnEdit+' '+btnDel+'</div></li>';
   }).join('');
   html+='</ul>';
   list.innerHTML=html;
@@ -10713,7 +10715,8 @@ sel.style.width='100%';sel.style.marginBottom='12px';sel.style.background='var(-
 structs.forEach(function(s){
 var o=document.createElement('option');
 o.value=s.id||s.structureId||'';
-o.textContent=(s.name||s.etab||'')+' ('+(s.id||s.structureId||'')+')';
+var label=(s.name||'')+(s.etab?' · '+esc(s.etab):'');
+    o.textContent=label;
 sel.appendChild(o);
 });
 var btns=document.createElement('div');
@@ -10729,7 +10732,7 @@ if(!sid){toast('Sélectionnez une structure.');return;}
 dlg.remove();
 if(!window.confirm(String(t.admConfirmSetSubAdminLocal||'Nommer ce membre sous-admin local de cette structure ?').replace('%1',uid))){return;}
 c.admin.setSubAdminLocal(uid,sid)
-.then(function(){toast(t.admToastSubAdminLocalNamed||'Sous-admin local nommé.');})
+.then(function(){toast(t.admToastSubAdminLocalNamed||'Sous-admin local nommé.'); renderProvinceContacts();})
 .catch(showError);
 };
 btns.appendChild(btnOk);btns.appendChild(btnCancel);

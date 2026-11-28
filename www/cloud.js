@@ -3024,6 +3024,25 @@ var admin = {
       });
     },
 
+  updateLocalStructure:
+    function(structureId, data){
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\\'administrateur général.'));
+      var sid = String(structureId || '');
+      if (!sid) return Promise.reject(new Error('structureId requis.'));
+      var name = String(data && data.name || '').trim();
+      if (!name) return Promise.reject(new Error('Nom de structure requis.'));
+      if (name.length > 120) return Promise.reject(new Error('Nom trop long (120 max).'));
+      var etab = String(data && data.etab || '').trim().slice(0,160);
+      var province = String(data && data.province || '').trim().slice(0,40);
+      if (!province) return Promise.reject(new Error('Province requise.'));
+      return updateDoc(doc(db, 'localStructures', sid), {
+        name: name,
+        etab: etab,
+        province: province,
+        updatedAt: serverTimestamp()
+      });
+    },
+
   deleteLocalStructure:
     function(structureId){
       if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
