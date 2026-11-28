@@ -3026,7 +3026,7 @@ var admin = {
 
   updateLocalStructure:
     function(structureId, data){
-      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\\'administrateur général.'));
+      if (!session.isAdmin) return Promise.reject(new Error('Réservé à l\'administrateur général.'));
       var sid = String(structureId || '');
       if (!sid) return Promise.reject(new Error('structureId requis.'));
       var name = String(data && data.name || '').trim();
