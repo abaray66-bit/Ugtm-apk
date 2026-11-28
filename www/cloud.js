@@ -99,8 +99,7 @@ function normalizeMember(d, uid){
     adminProvince: d.adminProvince || d.province || '',
     adminStructure: d.adminStructure || '',
     createdAt: ms(d.createdAt),
-    activatedAt: ms(d.activatedAt),
-    adhesionFormRequestedAt: ms(d.adhesionFormRequestedAt)
+    activatedAt: ms(d.activatedAt)
   };
 }
 
@@ -2404,47 +2403,6 @@ var admin = {
       return deleteDoc(doc(db, 'responsables', uid));
     },
 
-
-  requestAdhesionForm:
-    async function(uid){
-      if (!session.user || !session.isAdmin)
-        throw new Error('Action réservée à l’administrateur principal.');
-      var memberRef = doc(db, 'members', String(uid || ''));
-      var memberSnap = await getDoc(memberRef);
-      if (!memberSnap.exists()) throw new Error('Membre introuvable.');
-      var member = memberSnap.data() || {};
-      if (member.status !== 'pending')
-        throw new Error('La demande concerne uniquement un compte en attente.');
-      if (member.adhesionFormRequestedAt) return true;
-      var reqSnap = await getDoc(doc(db, 'adhesionRequests', String(uid || '')));
-      if (reqSnap.exists())
-        throw new Error('Un dossier d’adhésion existe déjà : utilisez le traitement des dossiers.');
-      var title = 'Veuillez compléter votre formulaire d’adhésion';
-      var body = 'Votre compte est créé, mais aucun dossier d’adhésion n’a été reçu. Ouvrez Mon espace puis complétez le formulaire d’adhésion.';
-      var notificationRef = doc(collection(db, 'notifications', String(uid), 'items'));
-      var batch = writeBatch(db);
-      batch.set(notificationRef, {
-        title: title,
-        body: body,
-        type: 'adhesion_request',
-        targetType: 'adhesion_request',
-        targetId: String(uid),
-        authorUid: session.user.uid,
-        province: String(member.prov || ''),
-        read: false,
-        createdAt: serverTimestamp()
-      });
-      batch.update(memberRef, { adhesionFormRequestedAt: serverTimestamp() });
-      await batch.commit();
-      try {
-        if (typeof window.cloudSendPush === 'function') {
-          window.cloudSendPush('adhesion_request', title, body, String(uid), String(uid));
-        }
-      } catch(pushError) {
-        console.warn('Notification push de complément non envoyée:', pushError);
-      }
-      return true;
-    },
 
   setStatus:
     async function(uid, status){
