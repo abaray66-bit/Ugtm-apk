@@ -1378,63 +1378,13 @@ async function getMyAdhesionRequest(){
    var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
    if(!snap.exists()) return null;
    var x=snap.data()||{};
-   var out={id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{},renewalPending:false};
-   /* Un renouvellement en attente (sous-collection) doit être signalé à
-      l'adhérent : le dossier parent reste « accepté » (historique intact),
-      mais la demande de renouvellement en cours prend le dessus pour
-      l'affichage du statut. On lit la sous-collection sans filtre ni tri
-      (pas d'index composite requis) et on filtre côté client. */
-   try{
-     var coll=collection(db,'adhesionRequests',u.uid,'renouvellements');
-     var rs=await getDocs(coll);
-     var pend=rs.docs.filter(function(d){
-       var s=String((d.data()||{}).status||'');
-       return s==='pending'||s==='needs_completion';
-     }).sort(function(a,b){
-       return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
-     });
-     if(pend.length){
-       var rr=pend[0].data()||{};
-       out.renewalPending=true;
-       out.renewalId=pend[0].id;
-       out.status=rr.status||'pending';
-       out.adminNote=rr.adminNote||'';
-       out.updatedAt=ms(rr.updatedAt)||out.updatedAt;
-     }
-   }catch(e){/* sous-collection absente : on garde le statut du dossier initial */}
-   return out;
+   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{}};
 }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
   if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
   if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
   var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid);
-
-  /* FALLBACK PAR EMAIL pour renouvellement :
-     Si l'adherent a change d'UID Firebase (reinstallation, autre appareil),
-     son dossier initial peut etre sous un autre UID. Pour un renouvellement,
-     on cherche une adhesion 'accepted' avec le meme email et on utilise
-     cet UID comme parent du renouvellement. */
-  if(application.type==='renewal'){
-    try{
-      var emailQuery = query(
-        collection(db,'adhesionRequests'),
-        where('email','==',String(u.email||'').toLowerCase()),
-        where('status','==','accepted')
-      );
-      var emailSnap = await getDocs(emailQuery);
-      if(!emailSnap.empty){
-        var found = emailSnap.docs[0];
-        if(found.id !== uid){
-          console.log('[submitAdhesion] Renewal fallback: using parent UID', found.id, 'instead of', uid);
-          uid = found.id;
-          requestRef = doc(db,'adhesionRequests',uid);
-        }
-      }
-    }catch(e){
-      console.warn('[submitAdhesion] Email fallback search failed:', e);
-    }
-  }
 
   /* Mapping des noms d'affichage des structures sanitaires vers les clés
      internes exigées par les règles Firestore (adhesionAppOk, champ
@@ -1500,104 +1450,73 @@ async function submitAdhesion(application,signature){
   var sig=String(signature||'');
   if(!sig) throw new Error('La signature est manquante.');
   if(sig.length>20000) throw new Error('La signature est trop volumineuse. Signez à nouveau.');
-  /* Un seul renouvellement en attente à la fois : évite l'accumulation de
-     dossiers identiques (une soumission par clic). */
-  if(clean.type==='renewal'){
-    try{
-      var pendSnap=await getDocs(collection(db,'adhesionRequests',uid,'renouvellements'));
-      var hasPending=pendSnap.docs.some(function(d){
-        return String((d.data()||{}).status||'')==='pending';
-      });
-      if(hasPending) throw new Error('Un renouvellement est déjà en attente de traitement.');
-    }catch(e){
-      if(e&&e.message&&e.message.indexOf('déjà en attente')>=0) throw e;
-      /* autre erreur de lecture : on n'empêche pas la soumission */
-    }
-  }
   var result = await runTransaction(db,async function(tx){
     var reqSnap=await tx.get(requestRef);
     var existing=reqSnap.exists()?reqSnap.data():null;
     var status=existing?String(existing.status||'pending'):'';
-    /* RENOUVELLEMENT : un adhérent déjà accepté peut redéposer son
-       dossier, mais uniquement en type 'renewal' avec un motif — le
-       dossier repasse alors en attente de validation (cf. firestore.rules). */
-    var renewalAccepted=(clean.type==='renewal'&&!!clean.reason&&(status==='accepted'||status==='pending'));
+    /* Le renouvellement reste dans le dossier principal : seul un dossier
+       accepté peut être renvoyé avec le type renewal et un motif. */
+    var renewalAccepted=status==='accepted'&&clean.type==='renewal'&&!!clean.reason;
     if(existing&&status!=='needs_completion'&&!renewalAccepted){
       var messages={pending:'Votre demande est déjà enregistrée et en attente de traitement.',accepted:'Votre adhésion est déjà acceptée : renouvelez-la avec un motif depuis le formulaire.',refused:'Une décision a déjà été prise concernant votre demande.'};
       var err=new Error(messages[status]||'Une demande existe déjà pour ce compte.');err.code='adhesion/already-exists';err.status=status;throw err;
     }
     if(existing&&existing.uid!==uid) throw new Error('Le dossier existant ne correspond pas à votre compte.');
     if(isSanitaire&&existing&&existing.province!==clean.province) throw new Error('La province du dossier ne peut pas être modifiée pendant un complément.');
-    var renewalRef = null;
+
+    var commonData={
+      structureId:String(application.structureId||'').trim().slice(0,40),
+      espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),
+      sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',
+      district:String(application.district||'').trim().slice(0,40),
+      division:String(application.division||'').trim().slice(0,40),
+      serviceGst:String(application.serviceGst||'').trim().slice(0,120),
+      unite:String(application.unite||'').trim().slice(0,120),
+      serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),
+      rattachement:clean.rattachement,
+      directionPole:clean.directionPole,
+      divisionPole:clean.divisionPole,
+      servicePole:clean.servicePole,
+      directionAdmin:clean.directionAdmin,
+      divisionAdmin:clean.divisionAdmin,
+      serviceAdmin:clean.serviceAdmin,
+      divisionStrategie:clean.divisionStrategie,
+      serviceStrategie:clean.serviceStrategie,
+      divisionSI:clean.divisionSI,
+      serviceSI:clean.serviceSI,
+      divisionSoins:clean.divisionSoins,
+      serviceSoins:clean.serviceSoins,
+      serviceAudit:clean.serviceAudit,
+      serviceRecherche:clean.serviceRecherche
+    };
     if(existing){
-      if(clean.type === 'renewal'){
-        /* RENOUVELLEMENT : historisation — on n'écrase PAS l'ancien dossier.
-           On crée un nouveau document de renouvellement dans la sous-collection
-           adhesionRequests/{uid}/renouvellements/{autoId}. L'ancien document
-           conserve ses signatures, validations et dates historiques. */
-        var renewalColl=collection(db,'adhesionRequests',uid,'renouvellements');
-        renewalRef=doc(renewalColl);
-        tx.set(renewalRef,{
-          uid:uid,
-          email:String(u.email||'').slice(0,254),
-          province:clean.province,
-          structureId:String(application.structureId||'').trim().slice(0,40),
-          espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),
-          sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',
-          district:String(application.district||'').trim().slice(0,40),
-          division:String(application.division||'').trim().slice(0,40),
-          serviceGst:String(application.serviceGst||'').trim().slice(0,120),
-          unite:String(application.unite||'').trim().slice(0,120),
-          serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),
-          rattachement:clean.rattachement,
-          directionPole:clean.directionPole,
-          divisionPole:clean.divisionPole,
-          servicePole:clean.servicePole,
-          directionAdmin:clean.directionAdmin,
-          divisionAdmin:clean.divisionAdmin,
-          serviceAdmin:clean.serviceAdmin,
-          directionStrategie:clean.divisionStrategie,
-          divisionStrategie:clean.divisionStrategie,
-          serviceStrategie:clean.serviceStrategie,
-          directionSI:clean.divisionSI,
-          divisionSI:clean.divisionSI,
-          serviceSI:clean.serviceSI,
-          directionSoins:clean.divisionSoins,
-          divisionSoins:clean.divisionSoins,
-          serviceSoins:clean.serviceSoins,
-          serviceAudit:clean.serviceAudit,
-          serviceRecherche:clean.serviceRecherche,
-          application:clean,
-          signature:sig,
-          status:'pending',
-          adminNote:'',
-          createdAt:serverTimestamp(),
-          updatedAt:serverTimestamp(),
-          renewalOf: uid,
-          previousStatus: String(existing.status||''),
-          previousApplication: existing.application||{},
-          previousSignature: String(existing.signature||''),
-          previousAdminSignature: String(existing.adminSignature||''),
-          previousSignedBy: String(existing.signedBy||''),
-          previousSignedAt: String(existing.signedAt||''),
-          previousStructureId: String(existing.structureId||''),
-          previousEspaceSanitaire: String(existing.espaceSanitaire||''),
-          previousSanitaryStructure: String(existing.sanitaryStructure||''),
-          previousDistrict: String(existing.district||''),
-          previousDivision: String(existing.division||''),
-          previousServiceGst: String(existing.serviceGst||''),
-          previousUnite: String(existing.unite||''),
-          previousServiceHospitalier: String(existing.serviceHospitalier||''),
-          previousRattachement: String(existing.rattachement||'')
-        });
-      } else {
-        /* Complément d'information : update du dossier existant. */
-        tx.update(requestRef,{application:clean,signature:sig,status:'pending',adminNote:'',adminSignature:'',signedBy:'',signedAt:'',structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,updatedAt:serverTimestamp()});
-      }
-    } else {
-      tx.set(requestRef,{uid:uid,email:String(u.email||'').slice(0,254),province:clean.province,structureId:String(application.structureId||'').trim().slice(0,40),espaceSanitaire:String(application.espaceSanitaire||'').trim().slice(0,40),sanitaryStructure:sanitaryStructureMap[application.espaceSanitaire]||'',district:String(application.district||'').trim().slice(0,40),division:String(application.division||'').trim().slice(0,40),serviceGst:String(application.serviceGst||'').trim().slice(0,120),unite:String(application.unite||'').trim().slice(0,120),serviceHospitalier:String(application.serviceHospitalier||'').trim().slice(0,120),rattachement:clean.rattachement,directionPole:clean.directionPole,divisionPole:clean.divisionPole,servicePole:clean.servicePole,directionAdmin:clean.directionAdmin,divisionAdmin:clean.divisionAdmin,serviceAdmin:clean.serviceAdmin,directionStrategie:clean.divisionStrategie,divisionStrategie:clean.divisionStrategie,serviceStrategie:clean.serviceStrategie,directionSI:clean.divisionSI,divisionSI:clean.divisionSI,serviceSI:clean.serviceSI,directionSoins:clean.divisionSoins,divisionSoins:clean.divisionSoins,serviceSoins:clean.serviceSoins,serviceAudit:clean.serviceAudit,serviceRecherche:clean.serviceRecherche,application:clean,signature:sig,status:'pending',adminNote:'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      /* Complément ou renouvellement : mise à jour du même dossier UID.
+         La signature précédente du responsable est remise à zéro pour
+         que la nouvelle soumission repasse par la validation normale. */
+      tx.update(requestRef,Object.assign({},commonData,{
+        application:clean,
+        signature:sig,
+        status:'pending',
+        adminNote:'',
+        adminSignature:'',
+        signedBy:'',
+        signedAt:'',
+        updatedAt:serverTimestamp()
+      }));
+    }else{
+      tx.set(requestRef,Object.assign({},commonData,{
+        uid:uid,
+        email:String(u.email||'').slice(0,254),
+        province:clean.province,
+        application:clean,
+        signature:sig,
+        status:'pending',
+        adminNote:'',
+        createdAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      }));
     }
-     return {id:uid,status:'pending',completed:!!existing, renewalId: (clean.type==='renewal'&&existing)?renewalRef.id:null};
+    return {id:uid,status:'pending',completed:!!existing};
   }).then(async function(result){
     /* Le formulaire d'adhésion est la saisie de
        référence du téléphone (le formulaire de profil
@@ -1690,6 +1609,7 @@ async function signAdhesion(uid,signature,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var renewalRequest = false;
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1704,6 +1624,10 @@ async function signAdhesion(uid,signature,note){
     if (!app.nom || !app.prenom || !app.cin || !app.dob) {
       throw new Error('Application d\'adhésion incomplète');
     }
+    var isRenewal = r.isRenewal || app.type === 'renewal';
+    renewalRequest = isRenewal;
+    var memberSnap = isRenewal ? await tx.get(memberRef) : null;
+    var existingMemberNo = memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1723,7 +1647,7 @@ async function signAdhesion(uid,signature,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     };
-    if (r.isRenewal) {
+    if (isRenewal) {
       updateData.application = app;
       updateData.signature = req.signature || '';
     }
@@ -1732,8 +1656,8 @@ async function signAdhesion(uid,signature,note){
     /* Renouvellement : le membre est déjà actif et le dossier initial porte
        son historique. On ne réactive PAS le membre et on n'incrémente PAS
        le compteur (pas de doublon de numéro d'adhérent). */
-    if (r.isRenewal) {
-      return no;
+    if (isRenewal && existingMemberNo) {
+      return existingMemberNo;
     }
 
     // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
@@ -1783,8 +1707,8 @@ async function signAdhesion(uid,signature,note){
           return;
         }
         return addDoc(collection(db,'notifications',r.uid,'items'), {
-          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
-          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
+          title: renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
@@ -1795,7 +1719,7 @@ async function signAdhesion(uid,signature,note){
         }).then(function(){
           getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
+            window.cloudSendPush('adhesion', renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée', renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
@@ -1818,6 +1742,7 @@ async function validateAdhesionLocal(uid,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var renewalRequest = false;
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1834,6 +1759,10 @@ async function validateAdhesionLocal(uid,note){
     }
     var structureId = String(req.structureId || '');
     if (!structureId) throw new Error('Le dossier ne porte aucune structureId.');
+    var isRenewal = r.isRenewal || app.type === 'renewal';
+    renewalRequest = isRenewal;
+    var memberSnap = isRenewal ? await tx.get(memberRef) : null;
+    var existingMemberNo = memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1853,7 +1782,7 @@ async function validateAdhesionLocal(uid,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     };
-    if (r.isRenewal) {
+    if (isRenewal) {
       updateData.application = app;
       updateData.signature = req.signature || '';
     }
@@ -1861,8 +1790,8 @@ async function validateAdhesionLocal(uid,note){
 
     /* Renouvellement : membre déjà actif, historique conservé sur le dossier
        initial. Pas de réactivation ni d'incrément du compteur. */
-    if (r.isRenewal) {
-      return no;
+    if (isRenewal && existingMemberNo) {
+      return existingMemberNo;
     }
 
     // 2. Activer le membre dans LA MÊME transaction
@@ -1913,8 +1842,8 @@ async function validateAdhesionLocal(uid,note){
           return;
         }
         return addDoc(collection(db,'notifications',r.uid,'items'), {
-          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
-          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
+          title: renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
@@ -1925,7 +1854,7 @@ async function validateAdhesionLocal(uid,note){
         }).then(function(){
           getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
+            window.cloudSendPush('adhesion', renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée', renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
@@ -2120,22 +2049,6 @@ async function getAdhesionDoc(docPath){
       result.previousApplication,
       true
     );
-  }
-  /* Pour un document de la collection principale, chercher le dernier
-     renouvellement en cours dans la sous-collection. Ne pas le faire pour
-     un document déjà dans une sous-collection de renouvellements. */
-  if(!r.isRenewal){
-    try{
-      var coll=collection(db,'adhesionRequests',r.uid,'renouvellements');
-      var renewalSnap=await getDocs(coll);
-      var pend=renewalSnap.docs.slice().sort(function(a,b){
-        return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
-      });
-      if(pend.length){
-        var rr=pend[0];
-        result._latestRenewal=Object.assign({},rr.data(),{id:rr.id});
-      }
-    }catch(e){/* sous-collection absente ou vide : on ignore */}
   }
   return result;
 }
