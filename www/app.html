@@ -6783,25 +6783,22 @@ if(report.response){
           pdf.text(prepareArabicText('Historique du dossier'), margin, y, {align:'left'}); y+=8;
           pdf.setLineWidth(0.3);
           pdf.line(margin, y, pageW-margin, y); y+=6;
-          interventions.forEach(function(iv, idx){
+          interventions.forEach(function(iv){
             pdf.setFontSize(12);
             var author = (iv.authorName||iv.authorUid||'') + (iv.authorRole?' ('+iv.authorRole+')':'');
-            pdf.text(prepareArabicText('• '+author+' — '+iv.type), margin, y, {align:'left'}); y+=4;
+            pdf.text(prepareArabicText('• '+author+' — '+iv.type), margin, y, {align:'left'}); y+=5;
             if(iv.content){
               var ivLines=pdf.splitTextToSize(prepareArabicText(String(iv.content)), pageW-margin*2);
               pdf.setFontSize(11);
               var isArabicIv=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(iv.content));
-              pdf.text(ivLines, isArabicIv?pageW-margin:margin, y, {align:isArabicIv?'right':'left'}); y+=ivLines.length*5+3;
+              pdf.text(ivLines, isArabicIv?pageW-margin:margin, y, {align:isArabicIv?'right':'left'}); y+=ivLines.length*5+4;
             }
             if(iv.statusBefore&&iv.statusAfter&&iv.statusBefore!==iv.statusAfter){
               pdf.setFontSize(10);
-              pdf.text(prepareArabicText('Statut: '+iv.statusBefore+' → '+iv.statusAfter), margin, y, {align:'left'}); y+=3;
+              pdf.text(prepareArabicText('Statut: '+iv.statusBefore+' → '+iv.statusAfter), margin, y, {align:'left'}); y+=4;
             }
-            if(idx < interventions.length-1){
-              pdf.setLineWidth(0.2);
-              pdf.line(margin, y+2, pageW-margin, y+2); y+=7;
-            }
-            if(y>285){ pdf.addPage(); y=15; }
+            y+=2;
+            if(y>270){ pdf.addPage(); y=15; }
           });
         }
         /* Photos jointes */
