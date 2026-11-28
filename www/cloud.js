@@ -1374,11 +1374,65 @@ async function saveProfile(p){
 async function getMyAdhesionRequest(){
    var u=auth.currentUser;
    if(!u) throw new Error('Connectez-vous pour consulter votre demande.');
-   var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
+   var uid=u.uid;
+   var email=String(u.email||'').toLowerCase();
+   var requestRef=doc(db,'adhesionRequests',uid);
+   var snap=await getDoc(requestRef);
+
+   /* FALLBACK PAR EMAIL : si l'adherent a change d'UID Firebase (reinstallation,
+      autre appareil), son dossier initial peut etre sous un autre UID.
+      On cherche une adhesion 'accepted' avec le meme email. */
+   if(!snap.exists() && email){
+     try{
+       var emailQuery = query(
+         collection(db,'adhesionRequests'),
+         where('email','==',email),
+         where('status','==','accepted')
+       );
+       var emailSnap = await getDocs(emailQuery);
+       if(!emailSnap.empty){
+         var found = emailSnap.docs[0];
+         console.log('[getMyAdhesionRequest] Email fallback: using canonical UID', found.id, 'instead of', uid);
+         uid = found.id;
+         requestRef = doc(db,'adhesionRequests',uid);
+         snap = await getDoc(requestRef);
+       }
+     }catch(e){
+       console.warn('[getMyAdhesionRequest] Email fallback search failed:', e);
+     }
+   }
+
    if(!snap.exists()) return null;
    var x=snap.data()||{};
-   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{}};
-}
+   var out={id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{},renewalPending:false,canonicalUid:uid};
+   /* Un renouvellement en attente (sous-collection) doit etre signale a
+      l'adherent : le dossier parent reste 'accepte' (historique intact),
+      mais la demande de renouvellement en cours prend le dessus pour
+      l'affichage du statut. On lit la sous-collection sans filtre ni tri
+      (pas d'index composite requis) et on filtre cote client. */
+   try{
+     var coll=collection(db,'adhesionRequests',uid,'renouvellements');
+     var rs=await getDocs(coll);
+     var pend=rs.docs.filter(function(d){
+       var s=String((d.data()||{}).status||'');
+       return s==='pending'||s==='needs_completion';
+     }).sort(function(a,b){
+       return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
+     });
+     if(pend.length){
+       var rr=pend[0].data()||{};
+       out.renewalPending=true;
+       out.renewalId=pend[0].id;
+       out.status=rr.status||'pending';
+       out.adminNote=rr.adminNote||'';
+       out.updatedAt=ms(rr.updatedAt)||out.updatedAt;
+       /* Pour un renouvellement en attente, l'application a afficher/preremplir
+          est celle du renouvellement, pas celle du dossier initial. */
+       out.application = mergeAdhesionApplication(rr.application||rr.formData||{}, rr.previousApplication, true);
+     }
+   }catch(e){/* sous-collection absente : on garde le statut du dossier initial */}
+   return out;
+ }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
   if(!u) throw new Error('Connectez-vous avant d’envoyer votre demande.');
