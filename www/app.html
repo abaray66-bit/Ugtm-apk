@@ -3507,7 +3507,21 @@ function renderNotifications(list){
           if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'center'});
         },100);
       }
-      else if((n.targetType==='adhesion_request'||n.targetType==='adhesion_renewal') && n.targetId){
+      else if(n.targetType==='adhesion_renewal'){
+        /* Notification de renouvellement : ouvrir le formulaire
+           de l'adhérent, sans tenter d'ouvrir un dossier admin. */
+        if(navigate)navigate('me');
+        setTimeout(function(){
+          var renewalButton=document.getElementById('meAdhesionButton');
+          if(typeof window.adhesionOpenGate==='function'){
+            window.adhesionOpenGate(renewalButton);
+          }else if(navigate){
+            navigate('adhesion');
+            setTimeout(function(){if(typeof initDigitalAdhesion==='function')initDigitalAdhesion();},150);
+          }
+        },100);
+      }
+      else if(n.targetType==='adhesion_request' && n.targetId){
         var isAdmHere=typeof window.ugtmIsManager==='function'&&window.ugtmIsManager();
         if(!isAdmHere&&navigate){
           navigate('adhesion');
@@ -7270,7 +7284,23 @@ function openNotificationTarget(type,id){
     setTimeout(function(){var row=document.getElementById('event-'+targetId);if(row&&row.scrollIntoView)row.scrollIntoView({behavior:'smooth',block:'center'});},50);
     return true;
   }
-  if(targetType==='adhesion'||targetType==='adhesion_request'||targetType==='adhesion_renewal'){
+  if(targetType==='adhesion_renewal'){
+    /* Une notification de renouvellement appartient au parcours
+       de l'adhérent : elle ouvre le formulaire unique, jamais un
+       dossier d'administration recherché par l'identifiant cible. */
+    go('me');
+    setTimeout(function(){
+      var renewalButton=document.getElementById('meAdhesionButton');
+      if(typeof window.adhesionOpenGate==='function'){
+        window.adhesionOpenGate(renewalButton);
+      }else{
+        go('adhesion');
+        setTimeout(function(){initDigitalAdhesion();},150);
+      }
+    },100);
+    return true;
+  }
+  if(targetType==='adhesion'||targetType==='adhesion_request'){
     var isAdmHere=(typeof S!=='undefined'&&S)?(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal):false;
     if(!isAdmHere){ go('adhesion'); return true; }
     go('me');
