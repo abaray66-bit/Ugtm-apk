@@ -1612,6 +1612,7 @@ async function signAdhesion(uid,signature,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var renewalRequest = false;
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1627,6 +1628,7 @@ async function signAdhesion(uid,signature,note){
       throw new Error('Application d\'adhésion incomplète');
     }
     var isRenewal = r.isRenewal || app.type === 'renewal';
+    renewalRequest = isRenewal;
     var memberSnap = isRenewal ? await tx.get(memberRef) : null;
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
@@ -1707,8 +1709,8 @@ async function signAdhesion(uid,signature,note){
           return;
         }
         return addDoc(collection(db,'notifications',r.uid,'items'), {
-          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
-          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
+          title: renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
@@ -1719,7 +1721,7 @@ async function signAdhesion(uid,signature,note){
         }).then(function(){
           getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
+            window.cloudSendPush('adhesion', renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée', renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
@@ -1742,6 +1744,7 @@ async function validateAdhesionLocal(uid,note){
   var reqRef = r.ref;
   var memberRef = doc(db,'members',r.uid);
   var seqRef = doc(db,'counters','memberNumbers');
+  var renewalRequest = false;
 
   return runTransaction(db, async function(tx){
     var reqSnap = await tx.get(reqRef);
@@ -1759,6 +1762,7 @@ async function validateAdhesionLocal(uid,note){
     var structureId = String(req.structureId || '');
     if (!structureId) throw new Error('Le dossier ne porte aucune structureId.');
     var isRenewal = r.isRenewal || app.type === 'renewal';
+    renewalRequest = isRenewal;
     var memberSnap = isRenewal ? await tx.get(memberRef) : null;
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
@@ -1839,8 +1843,8 @@ async function validateAdhesionLocal(uid,note){
           return;
         }
         return addDoc(collection(db,'notifications',r.uid,'items'), {
-          title: r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée',
-          body: r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
+          title: renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée',
+          body: renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.',
           type:'adhesion',
           read:false,
           authorUid:u.uid,
@@ -1851,7 +1855,7 @@ async function validateAdhesionLocal(uid,note){
         }).then(function(){
           getDoc(doc(db, 'fcmTokens', r.uid)).then(function(tokSnap){
             var tok = tokSnap.exists() && tokSnap.data() && tokSnap.data().token;
-            window.cloudSendPush('adhesion', r.isRenewal ? 'Renouvellement accepté' : 'Adhésion acceptée', r.isRenewal ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
+            window.cloudSendPush('adhesion', renewalRequest ? 'Renouvellement accepté' : 'Adhésion acceptée', renewalRequest ? 'Votre renouvellement a été validé.' : 'Votre adhésion a été validée.', r.uid);
           }).catch(function(){});
         }).catch(function(e){ console.warn('notif create', e); });
       }).catch(function(e){ console.warn('notif province', e); });
