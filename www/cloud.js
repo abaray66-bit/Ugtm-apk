@@ -1378,31 +1378,7 @@ async function getMyAdhesionRequest(){
    var snap=await getDoc(doc(db,'adhesionRequests',u.uid));
    if(!snap.exists()) return null;
    var x=snap.data()||{};
-   var out={id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{},renewalPending:false};
-   /* Un renouvellement en attente (sous-collection) doit être signalé à
-      l'adhérent : le dossier parent reste « accepté » (historique intact),
-      mais la demande de renouvellement en cours prend le dessus pour
-      l'affichage du statut. On lit la sous-collection sans filtre ni tri
-      (pas d'index composite requis) et on filtre côté client. */
-   try{
-     var coll=collection(db,'adhesionRequests',u.uid,'renouvellements');
-     var rs=await getDocs(coll);
-     var pend=rs.docs.filter(function(d){
-       var s=String((d.data()||{}).status||'');
-       return s==='pending'||s==='needs_completion';
-     }).sort(function(a,b){
-       return (ms((b.data()||{}).createdAt)||0)-(ms((a.data()||{}).createdAt)||0);
-     });
-     if(pend.length){
-       var rr=pend[0].data()||{};
-       out.renewalPending=true;
-       out.renewalId=pend[0].id;
-       out.status=rr.status||'pending';
-       out.adminNote=rr.adminNote||'';
-       out.updatedAt=ms(rr.updatedAt)||out.updatedAt;
-     }
-   }catch(e){/* sous-collection absente : on garde le statut du dossier initial */}
-   return out;
+   return {id:snap.id,status:x.status||'pending',province:x.province||'',createdAt:ms(x.createdAt),updatedAt:ms(x.updatedAt),adminNote:x.adminNote||'',signedAt:ms(x.signedAt),application:x.application||{}};
 }
 async function submitAdhesion(application,signature){
   var u=auth.currentUser;
