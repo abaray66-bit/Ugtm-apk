@@ -7776,9 +7776,25 @@ return;
 }
 
 var uid=S.user.uid;
+var userEmail = (S.user.email||'').toLowerCase();
 var mine=(S.reports||[]).filter(function(r){
 return !r.anonymous&&r.ownerUid===uid;
 });
+
+/* FALLBACK PAR EMAIL : si l'utilisateur a change d'UID Firebase,
+   ses anciens signalements sont sous l'ancien UID. On cherche
+   les membres avec le meme email et on inclut leurs rapports. */
+if(mine.length===0 && userEmail){
+  var otherUids = (S.members||[])
+    .filter(function(m){ return (m.email||'').toLowerCase()===userEmail && m.uid!==uid; })
+    .map(function(m){ return m.uid; });
+  if(otherUids.length){
+    var more = (S.reports||[]).filter(function(r){
+      return !r.anonymous && otherUids.includes(r.ownerUid);
+    });
+    mine = mine.concat(more);
+  }
+}
 
 wrap.hidden=false;
 none.hidden=mine.length>0;
