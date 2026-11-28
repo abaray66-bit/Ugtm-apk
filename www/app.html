@@ -7548,10 +7548,11 @@ var myAdhesionStatusPromise=null;
     var hbtn=document.getElementById('homeDialogueSocialBtn');
     if(hbtn) hbtn.addEventListener('click', function(){
       var connected=!!(typeof S!=='undefined'&&S.user&&S.user.uid);
+      var isManager=!!(typeof S!=='undefined'&&(S.isAdmin||S.isSubAdmin||S.isSubAdminLocal));
       var req=(typeof myAdhesionStatusCache!=='undefined')?myAdhesionStatusCache:null;
       var memberActive=!!(typeof S!=='undefined'&&S.member&&S.member.status==='active');
       var signedForm=!!(req && req.status==='accepted' && req.signedAt);
-      if(!(connected && memberActive && signedForm)){
+      if(!(connected && (isManager || (memberActive && signedForm)))){
         if(typeof toast==='function') toast('Réservé aux adhérents');
         return;
       }
