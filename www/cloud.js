@@ -1627,6 +1627,7 @@ async function signAdhesion(uid,signature,note){
     var isRenewal = r.isRenewal || app.type === 'renewal';
     renewalRequest = isRenewal;
     var memberSnap = isRenewal ? await tx.get(memberRef) : null;
+    var existingMemberNo = memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1655,8 +1656,8 @@ async function signAdhesion(uid,signature,note){
     /* Renouvellement : le membre est déjà actif et le dossier initial porte
        son historique. On ne réactive PAS le membre et on n'incrémente PAS
        le compteur (pas de doublon de numéro d'adhérent). */
-    if (isRenewal) {
-      return memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
+    if (isRenewal && existingMemberNo) {
+      return existingMemberNo;
     }
 
     // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
@@ -1761,6 +1762,7 @@ async function validateAdhesionLocal(uid,note){
     var isRenewal = r.isRenewal || app.type === 'renewal';
     renewalRequest = isRenewal;
     var memberSnap = isRenewal ? await tx.get(memberRef) : null;
+    var existingMemberNo = memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1788,8 +1790,8 @@ async function validateAdhesionLocal(uid,note){
 
     /* Renouvellement : membre déjà actif, historique conservé sur le dossier
        initial. Pas de réactivation ni d'incrément du compteur. */
-    if (isRenewal) {
-      return memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
+    if (isRenewal && existingMemberNo) {
+      return existingMemberNo;
     }
 
     // 2. Activer le membre dans LA MÊME transaction
