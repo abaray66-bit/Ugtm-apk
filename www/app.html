@@ -13839,33 +13839,23 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
     /* Statut courant : dossier en ligne, sinon dernier statut
        connu (cache local). */
-    function currentAccess(req){
+    function currentAccess(req,statusLoaded){
       if(req){
         return (typeof window.adhesionAccessFor==='function')
           ?window.adhesionAccessFor(String(req.status||'none'))
           :{mode:'free',message:''};
       }
-      /* Statut en ligne indisponible : dernier statut connu. */
-      var known=(typeof window.adhesionKnownStatus==='function')
-        ?window.adhesionKnownStatus()
-        :null;
+      /* Une lecture Firestore réussie sans dossier signifie que
+         l'utilisateur authentifié a quitté avant d'envoyer le formulaire :
+         on lui permet de reprendre le formulaire unique. */
       var cached=(typeof window.adhesionAccess==='function')
         ?window.adhesionAccess()
         :{mode:'free',message:''};
-      if(known!==null&&known!==undefined&&known!==''){
-        /* Statut connu (même ancien) : la règle habituelle s'applique. */
-        return cached;
-      }
-      /* Aucun statut connu (hors ligne au premier clic). La fiche
-         membre en mémoire reste une information : un adhérent actif
-         reste soumis à la règle du renouvellement. */
       if(cached.mode!=='free')return cached;
-      /* Utilisateur connecté sans aucune information sur son
-         dossier : on refuse l'ouverture, faute de pouvoir garantir
-         l'absence d'une demande en attente ou d'un renouvellement. */
+      if(statusLoaded)return{mode:'free',message:''};
+      /* Si la lecture a échoué (hors ligne), ne pas confondre
+         l'absence de dossier avec un statut impossible à vérifier. */
       if(connected)return{mode:'unknown',message:t.adhStatusUnknownBlock};
-      /* Sans compte, aucune demande n'existe : le formulaire reste
-         accessible (première adhésion). */
       return{mode:'free',message:''};
     }
 
@@ -13887,13 +13877,13 @@ var HOSP_LIST=[{"p":"chtouka","n":"Mokhtar Soussi","c":"HP","d":"chtouka"},{"p":
 
     try{
       window.refreshMyAdhesionStatus(true).then(function(req){
-        decide(currentAccess(req));
+        decide(currentAccess(req,true));
       }).catch(function(){
         /* Statut indisponible : la décision repose sur le dernier
            statut connu ; sans information, le formulaire reste
            accessible (la transaction Firestore refuse de toute
            façon un doublon). */
-        decide(currentAccess(null));
+        decide(currentAccess(null,false));
       });
     }catch(errStatus){
       openForm();
