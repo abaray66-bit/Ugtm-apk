@@ -1410,6 +1410,32 @@ async function submitAdhesion(application,signature){
   if(!application||typeof application!=='object') throw new Error('Dossier incomplet.');
   var uid=u.uid, requestRef=doc(db,'adhesionRequests',uid);
 
+  /* FALLBACK PAR EMAIL pour renouvellement :
+     Si l'adherent a change d'UID Firebase (reinstallation, autre appareil),
+     son dossier initial peut etre sous un autre UID. Pour un renouvellement,
+     on cherche une adhesion 'accepted' avec le meme email et on utilise
+     cet UID comme parent du renouvellement. */
+  if(application.type==='renewal'){
+    try{
+      var emailQuery = query(
+        collection(db,'adhesionRequests'),
+        where('email','==',String(u.email||'').toLowerCase()),
+        where('status','==','accepted')
+      );
+      var emailSnap = await getDocs(emailQuery);
+      if(!emailSnap.empty){
+        var found = emailSnap.docs[0];
+        if(found.id !== uid){
+          console.log('[submitAdhesion] Renewal fallback: using parent UID', found.id, 'instead of', uid);
+          uid = found.id;
+          requestRef = doc(db,'adhesionRequests',uid);
+        }
+      }
+    }catch(e){
+      console.warn('[submitAdhesion] Email fallback search failed:', e);
+    }
+  }
+
   /* Mapping des noms d'affichage des structures sanitaires vers les clés
      internes exigées par les règles Firestore (adhesionAppOk, champ
      sanitaryStructure dans application). */

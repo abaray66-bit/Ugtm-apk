@@ -7864,25 +7864,46 @@ if(!S.user){box.textContent='';return;}
 var c=cloud();
 if(!c||!c.getAdhesionDoc){box.textContent=t.adhServiceUnavailable;return;}
 box.innerHTML='<p class="hint">'+t.meAdhesionLoading+'</p>';
-c.getAdhesionDoc(String(S.user.uid)).then(function(doc){
-  if(!doc){box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';return;}
-  var renewal=doc._latestRenewal||{};
-  var a=renewal.application||doc.application||{};
-  var showStatus = renewal.status ? renewal.status : doc.status;
-  var showType = (renewal.application&&renewal.application.type==='renewal')
-    ?t.meAdhesionRenewal
-    :(a.type==='renewal'?t.meAdhesionRenewal:t.meAdhesionFirst);
-  function row(l,v){return '<div class="adhesion-info-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';}
-  var html='<h3>'+t.meAdhesionTitle+'</h3>';
-  html+=row(t.meAdhesionName,((a.nom||'')+' '+(a.prenom||'')).trim()||t.meAdhesionFallback);
-  html+=row(t.meAdhesionStatus,t['st_'+showStatus]||showStatus);
-  html+=row(t.meAdhesionCIN,a.cin||'—');
-  html+=row(t.meAdhesionPhone,a.phone||'—');
-  html+=row(t.meAdhesionProvince,provName(doc.province,'fr')||doc.province||'—');
-  html+=row(t.meAdhesionType,showType);
-  if(showStatus==='accepted')html+='<p class="hint ok">'+t.meAdhesionValidated+'</p>';
-  if(renewal.status==='pending')html+='<p class="hint">Renouvellement en attente de validation administrative.</p>';
-  box.innerHTML=html;
+
+function tryLoadAdhesion(uid){
+  return c.getAdhesionDoc(String(uid)).then(function(doc){
+    if(!doc) return null;
+    var renewal=doc._latestRenewal||{};
+    var a=renewal.application||doc.application||{};
+    var showStatus = renewal.status ? renewal.status : doc.status;
+    var showType = (renewal.application&&renewal.application.type==='renewal')
+      ?t.meAdhesionRenewal
+      :(a.type==='renewal'?t.meAdhesionRenewal:t.meAdhesionFirst);
+    function row(l,v){return '<div class="adhesion-info-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';}
+    var html='<h3>'+t.meAdhesionTitle+'</h3>';
+    html+=row(t.meAdhesionName,((a.nom||'')+' '+(a.prenom||'')).trim()||t.meAdhesionFallback);
+    html+=row(t.meAdhesionStatus,t['st_'+showStatus]||showStatus);
+    html+=row(t.meAdhesionCIN,a.cin||'—');
+    html+=row(t.meAdhesionPhone,a.phone||'—');
+    html+=row(t.meAdhesionProvince,provName(doc.province,'fr')||doc.province||'—');
+    html+=row(t.meAdhesionType,showType);
+    if(showStatus==='accepted')html+='<p class="hint ok">'+t.meAdhesionValidated+'</p>';
+    if(renewal.status==='pending')html+='<p class="hint">Renouvellement en attente de validation administrative.</p>';
+    box.innerHTML=html;
+    return doc;
+  });
+}
+
+tryLoadAdhesion(S.user.uid).then(function(doc){
+  if(doc) return;
+  // Admin fallback: si pas de doc sous UID courant, chercher membre par email
+  if(S.isAdmin && S.user && S.user.email){
+    var email = S.user.email.toLowerCase();
+    var members = S.members || [];
+    var match = members.find(function(m){ return (m.email||'').toLowerCase() === email && m.uid !== S.user.uid; });
+    if(match && match.uid){
+      tryLoadAdhesion(match.uid);
+    } else {
+      box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';
+    }
+  } else {
+    box.innerHTML='<p class="hint">'+t.meAdhesionNone+'</p>';
+  }
 }).catch(function(){
   box.textContent=t.meAdhesionError;
 });
@@ -8889,6 +8910,7 @@ function renderAdhesionDossierInfo(doc){
   if(!el)return;
   if(!doc){el.innerHTML='<p class="hint">'+esc(T().admDossierNotFound)+'</p>';return;}
   var a=doc.application||{};
+  var isRenewal = doc._isRenewal || a.type==='renewal';
   function row(l,v){
     return '<div class="adhdoc-row"><span>'+l+'</span><b>'+esc(String(v||'—'))+'</b></div>';
   }
@@ -8910,12 +8932,11 @@ function renderAdhesionDossierInfo(doc){
     (a.type==='renewal'?row(t.admDocReason,a.reason):'')+
     row(t.admDocDate,a.date?fmtDateFr(a.date):'')+
     '</div>'+
+    /* Signature adhérent : affichée si présente (dossier initial ou renouvellement) */
     (doc.signature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignMember)+'</span><img src="'+esc(doc.signature)+'" alt="'+esc(t.admDocSignMember)+'"></div>'
       :'')+
-    /* La signature du responsable n'est affichée que pour un dossier
-       VALIDÉ : une nouvelle soumission (renouvellement) repart sans
-       l'ancienne signature — deux cases au total, pas trois. */
+    /* Signature responsable : seulement si dossier validé (accepted) */
     (doc.status==='accepted'&&doc.adminSignature
       ?'<div class="adhdoc-sign"><span>'+esc(t.admDocSignAdmin)+'</span><img src="'+esc(doc.adminSignature)+'" alt="'+esc(t.admDocSignAdmin)+'"></div>'
       :'')+
@@ -10978,8 +10999,11 @@ else if(a==='delAdhesion'&&S.isAdmin){
     var adh=(S.adhesions||[]).filter(function(x){return adhesionDocId(x)===id;})[0];
     if(!adh){ toast('Demande introuvable'); return; }
     if(adh.status==='pending'||adh.status==='needs_completion'){
-        toast('Une demande d\'adhésion en cours ne peut pas être supprimée.');
-        return;
+        // Autoriser la suppression des renouvellements en attente (orphelins ou erronés)
+        if(!adh._isRenewal){
+            toast('Une demande d\'adhésion en cours ne peut pas être supprimée.');
+            return;
+        }
     }
     if(adh&&window.confirm(String(t.admConfirmDeleteAdhesion).replace('%1',((adh.nom||'')+' '+(adh.prenom||'')).trim()||id))){
     c.admin.deleteAdhesion(id).then(function(){toast(t.admToastAdhesionDeleted);}).catch(showError);
