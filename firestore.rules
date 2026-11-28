@@ -878,6 +878,7 @@ service cloud.firestore {
     match /adhesionRequests/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
+        || (signedIn() && request.auth.email != null && request.auth.email == resource.data.email)
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
         || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
 
@@ -1042,6 +1043,7 @@ service cloud.firestore {
     match /adhesionRequests/{uid}/renouvellements/{docId} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
+        || (signedIn() && request.auth.email != null && request.auth.email == resource.data.email)
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
         || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
 
@@ -1096,6 +1098,7 @@ service cloud.firestore {
     match /adhesionDocuments/{uid} {
       allow read: if isAdmin()
         || (signedIn() && request.auth.uid == uid)
+        || (signedIn() && request.auth.email != null && request.auth.email == resource.data.email)
         || adhesionIsSubAdminOf(resource.data.get('province', ''))
         || adhesionIsSubAdminLocalOf(resource.data.get('structureId', ''));
 
