@@ -1650,6 +1650,8 @@ async function signAdhesion(uid,signature,note){
     if (!app.nom || !app.prenom || !app.cin || !app.dob) {
       throw new Error('Application d\'adhésion incomplète');
     }
+    var isRenewal = r.isRenewal || app.type === 'renewal';
+    var memberSnap = isRenewal ? await tx.get(memberRef) : null;
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1669,7 +1671,7 @@ async function signAdhesion(uid,signature,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     };
-    if (r.isRenewal) {
+    if (isRenewal) {
       updateData.application = app;
       updateData.signature = req.signature || '';
     }
@@ -1678,8 +1680,8 @@ async function signAdhesion(uid,signature,note){
     /* Renouvellement : le membre est déjà actif et le dossier initial porte
        son historique. On ne réactive PAS le membre et on n'incrémente PAS
        le compteur (pas de doublon de numéro d'adhérent). */
-    if (r.isRenewal) {
-      return no;
+    if (isRenewal) {
+      return memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
     }
 
     // 2. Activer le membre dans LA MÊME transaction (atomicité signature + activation)
@@ -1780,6 +1782,8 @@ async function validateAdhesionLocal(uid,note){
     }
     var structureId = String(req.structureId || '');
     if (!structureId) throw new Error('Le dossier ne porte aucune structureId.');
+    var isRenewal = r.isRenewal || app.type === 'renewal';
+    var memberSnap = isRenewal ? await tx.get(memberRef) : null;
 
     // Lecture du compteur AVANT toute écriture (règle Firestore : reads before writes)
     var seqSnap = await tx.get(seqRef);
@@ -1799,7 +1803,7 @@ async function validateAdhesionLocal(uid,note){
       adminNote: String(note || '').slice(0,1000),
       updatedAt: serverTimestamp()
     };
-    if (r.isRenewal) {
+    if (isRenewal) {
       updateData.application = app;
       updateData.signature = req.signature || '';
     }
@@ -1807,8 +1811,8 @@ async function validateAdhesionLocal(uid,note){
 
     /* Renouvellement : membre déjà actif, historique conservé sur le dossier
        initial. Pas de réactivation ni d'incrément du compteur. */
-    if (r.isRenewal) {
-      return no;
+    if (isRenewal) {
+      return memberSnap && memberSnap.exists() ? String((memberSnap.data()||{}).memberNo||'') : '';
     }
 
     // 2. Activer le membre dans LA MÊME transaction
