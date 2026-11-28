@@ -1544,7 +1544,7 @@ async function submitAdhesion(application,signature){
       }));
     }
     return {id:uid,status:'pending',completed:!!existing};
-  }).then(async function(result){  }).then(async function(result){
+  }).then(async function(result){
     /* Le formulaire d'adhésion est la saisie de
        référence du téléphone (le formulaire de profil
        a été retiré) : le numéro saisi est reporté sur
